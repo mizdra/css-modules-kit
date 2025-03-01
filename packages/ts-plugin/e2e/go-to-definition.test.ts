@@ -34,6 +34,7 @@ describe('Go to Definition', async () => {
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
+          "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
           "paths": { "@/*": ["./*"] }
         },
         "cmkOptions": {

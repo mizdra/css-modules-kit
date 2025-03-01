@@ -34,13 +34,7 @@ interface Tsserver {
 export function launchTsserver(): Tsserver {
   const server = serverHarness.launchServer(
     require.resolve('typescript/lib/tsserver.js'),
-    [
-      '--disableAutomaticTypingAcquisition',
-      '--globalPlugins',
-      '@css-modules-kit/ts-plugin',
-      '--pluginProbeLocations',
-      __dirname,
-    ],
+    ['--disableAutomaticTypingAcquisition'],
     [],
   );
   let seq = 0;

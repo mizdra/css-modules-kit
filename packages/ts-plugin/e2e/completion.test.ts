@@ -30,6 +30,7 @@ describe('Completion', async () => {
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
+          "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
           "jsx": "react-jsx",
           "types": ["${reactDtsPath}"]
         },

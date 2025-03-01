@@ -21,7 +21,9 @@ describe('Get Code Fixes', async () => {
     `,
     'tsconfig.json': dedent`
       {
-        "compilerOptions": {},
+        "compilerOptions": {
+          "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
+        },
         "cmkOptions": {
           "dtsOutDir": "generated"
         }

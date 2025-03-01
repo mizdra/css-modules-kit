@@ -11,7 +11,10 @@ describe('Refactor', async () => {
     'b.ts': '',
     'tsconfig.json': dedent`
       {
-        "compilerOptions": { "jsx": "react-jsx" },
+        "compilerOptions": {
+          "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
+          "jsx": "react-jsx"
+        },
         "cmkOptions": {
           "dtsOutDir": "generated"
         }
