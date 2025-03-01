@@ -35,7 +35,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
       };
       export default styles;
       ",
@@ -68,8 +69,8 @@ describe('createDts', () => {
         },
         "mapping": {
           "generatedOffsets": [
-            27,
-            60,
+            42,
+            75,
           ],
           "lengths": [
             6,
@@ -80,7 +81,8 @@ describe('createDts', () => {
             1,
           ],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
         local1: '' as readonly string,
         local2: '' as readonly string,
       };
@@ -128,27 +130,27 @@ describe('createDts', () => {
             9,
           ],
           "generatedOffsets": [
-            126,
-            198,
+            141,
+            213,
           ],
           "lengths": [
             9,
             16,
           ],
           "sourceOffsets": [
-            74,
-            139,
+            89,
+            154,
           ],
         },
         "mapping": {
           "generatedOffsets": [
-            44,
-            74,
-            99,
-            126,
-            139,
-            171,
-            198,
+            59,
+            89,
+            114,
+            141,
+            154,
+            186,
+            213,
           ],
           "lengths": [
             16,
@@ -169,7 +171,8 @@ describe('createDts', () => {
             4,
           ],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
         ...(await import('./a.module.css')).default,
         imported1: (await import('./b.module.css')).default.imported1,
         aliasedImported2: (await import('./c.module.css')).default.imported2,
@@ -199,8 +202,8 @@ describe('createDts', () => {
         },
         "mapping": {
           "generatedOffsets": [
-            27,
-            77,
+            42,
+            92,
           ],
           "lengths": [
             6,
@@ -211,7 +214,8 @@ describe('createDts', () => {
             0,
           ],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
         local1: '' as readonly string,
         ...(await import('./a.module.css')).default,
       };
@@ -260,27 +264,27 @@ describe('createDts', () => {
             9,
           ],
           "generatedOffsets": [
-            126,
-            198,
+            141,
+            213,
           ],
           "lengths": [
             9,
             16,
           ],
           "sourceOffsets": [
-            74,
-            139,
+            89,
+            154,
           ],
         },
         "mapping": {
           "generatedOffsets": [
-            44,
-            74,
-            99,
-            126,
-            139,
-            171,
-            198,
+            59,
+            89,
+            114,
+            141,
+            154,
+            186,
+            213,
           ],
           "lengths": [
             16,
@@ -301,7 +305,8 @@ describe('createDts', () => {
             4,
           ],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
         ...(await import('@/a.module.css')).default,
         imported1: (await import('@/b.module.css')).default.imported1,
         aliasedImported2: (await import('@/c.module.css')).default.imported2,
@@ -349,7 +354,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
       };
       export default styles;
       ",
@@ -380,7 +386,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {
+        "text": "// @ts-nocheck
+      declare const styles = {
       };
       export default styles;
       ",

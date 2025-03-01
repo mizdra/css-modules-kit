@@ -72,7 +72,13 @@ export function createDts(
     return resolved !== undefined && options.matchesPattern(resolved);
   });
 
-  let text = `declare const ${STYLES_EXPORT_NAME} = {\n`;
+  // MEMO: Depending on the TypeScript compilation options, the generated type definition file contains compile errors.
+  // For example, it contains `Top-level 'await' expressions are only allowed when the 'module' option is set to ...` error.
+  //
+  // If `--skipLibCheck` is false, those errors will be reported by `tsc`. However, these are negligible errors.
+  // Therefore, `@ts-nocheck` is added to the generated type definition file.
+  let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
+
   for (const token of localTokens) {
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
