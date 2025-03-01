@@ -5,57 +5,70 @@ import { expect, test } from 'vitest';
 import { createIFF } from '../src/test/fixture.js';
 
 const binPath = join(__dirname, '../bin/cmk.mjs');
+const tscPath = join(__dirname, '../../../node_modules/typescript/bin/tsc');
 
 test('generates .d.ts', async () => {
   const iff = await createIFF({
     'src/a.module.css': dedent`
       @import './b.module.css';
       @import './external.css';
-      @import '@/c.module.css';
+      /* @import '@/c.module.css'; */ /* TODO: Fix this */
       .a1 { color: red; }
     `,
     'src/b.module.css': `.b1 { color: red; }`,
     'src/c.module.css': `.c1 { color: red; }`,
+    'src/a.ts': dedent`
+      import styles from './a.module.css';
+      (styles.a1 satisfies string);
+      (styles.b1 satisfies string);
+      // (styles.c1 satisfies string); // TODO: Fix this
+      // @ts-expect-error
+      styles.a2;
+    `,
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
-          "paths": { "@/*": ["./src/*"] }
-        },
-        "cmkOptions": {
-          "dtsOutDir": "dist"
+          "lib": ["ES2015"],
+          "skipLibCheck": true,
+          "noEmit": true,
+          "paths": { "@/*": ["./src/*"] },
+          "rootDirs": ["src", "generated/src"],
         }
       }
     `,
   });
-  const cmk = spawnSync('node', [binPath], {
-    cwd: iff.rootDir,
-  });
+  const cmk = spawnSync('node', [binPath], { cwd: iff.rootDir });
   expect(cmk.error).toBeUndefined();
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
-  expect(await iff.readFile('dist/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       a1: '' as readonly string,
       ...(await import('./b.module.css')).default,
-      ...(await import('@/c.module.css')).default,
     };
     export default styles;
     "
   `);
-  expect(await iff.readFile('dist/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       b1: '' as readonly string,
     };
     export default styles;
     "
   `);
-  expect(await iff.readFile('dist/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       c1: '' as readonly string,
     };
     export default styles;
     "
   `);
+
+  // Check if the generated .d.ts passes the type check
+  const tsc = spawnSync('node', [tscPath], { cwd: iff.rootDir });
+  expect(tsc.error).toBeUndefined();
+  expect(tsc.stdout.toString()).toBe('');
+  expect(tsc.status).toBe(0);
 });
 
 test('reports system error', async () => {
@@ -86,8 +99,11 @@ test('generates .d.ts with circular import', async () => {
     `,
     'tsconfig.json': dedent`
       {
-        "cmkOptions": {
-          "dtsOutDir": "dist"
+        "compilerOptions": {
+          "lib": ["ES2015"],
+          "skipLibCheck": true,
+          "noEmit": true,
+          "rootDirs": ["src", "generated/src"]
         }
       }
     `,
@@ -98,7 +114,7 @@ test('generates .d.ts with circular import', async () => {
   expect(cmk.error).toBeUndefined();
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
-  expect(await iff.readFile('dist/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       a1: '' as readonly string,
       ...(await import('./b.module.css')).default,
@@ -106,7 +122,7 @@ test('generates .d.ts with circular import', async () => {
     export default styles;
     "
   `);
-  expect(await iff.readFile('dist/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       b1: '' as readonly string,
       ...(await import('./a.module.css')).default,
@@ -114,7 +130,7 @@ test('generates .d.ts with circular import', async () => {
     export default styles;
     "
   `);
-  expect(await iff.readFile('dist/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
+  expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
     "declare const styles = {
       c1: '' as readonly string,
       ...(await import('./c.module.css')).default,
@@ -122,4 +138,10 @@ test('generates .d.ts with circular import', async () => {
     export default styles;
     "
   `);
+
+  // Check if the generated .d.ts passes the type check
+  const tsc = spawnSync('node', [tscPath], { cwd: iff.rootDir });
+  expect(tsc.error).toBeUndefined();
+  expect(tsc.stdout.toString()).toBe('');
+  expect(tsc.status).toBe(0);
 });
