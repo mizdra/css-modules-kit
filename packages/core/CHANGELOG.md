@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.0.4
+
+### Patch Changes
+
+- 2eb908f: Resolve import specifiers taking into account `baseUrl` and `imports`
+
 ## 0.0.3
 
 ### Patch Changes
