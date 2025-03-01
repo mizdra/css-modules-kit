@@ -3,7 +3,6 @@ import type { Rule } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
 
-// TODO: Report cjs-module-lexer compatibility problem to stylelint
 const { createPlugin, utils } = stylelint;
 
 const ruleName = 'css-modules-kit/no-unused-class-names';
