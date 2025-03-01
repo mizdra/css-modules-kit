@@ -14,7 +14,7 @@ export function formatDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   }
   result += `${formatCategory(diagnostic.category)}: `;
   result += diagnostic.text;
-  // TODO: Add source code if diagnostics has a location
+  // TODO(#124): Add source code if diagnostics has a location
   return result;
 }
 
@@ -25,7 +25,7 @@ export function formatSystemError(error: SystemError): string {
   result += styleText('gray', error.code);
   result += ': ';
   result += error.message;
-  // TODO: Include cause if exists
+  // TODO(#118): Include cause if exists
   return result;
 }
 
