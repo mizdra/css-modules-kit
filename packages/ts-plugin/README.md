@@ -74,19 +74,30 @@ https://github.com/user-attachments/assets/3502150a-985d-45f3-9912-bbc183e41c03
 
 ## Installation
 
+First, install the package.
+
 ```bash
 npm i -D @css-modules-kit/ts-plugin
 ```
 
 ## Usage
 
-Add the "plugin" option to your tsconfig.json file. For example:
+Second, add the "plugin" option to your tsconfig.json file. For example:
 
 ```jsonc
 {
   "compilerOptions": {
-    "plugins": [{ "name": "@css-modules-kit/ts-plugin" }],
+    "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
   },
+}
+```
+
+Then, add the followed options to your `.vscode/settings.json`.
+
+```json
+{
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
 
