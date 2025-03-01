@@ -1,3 +1,4 @@
+// @ts-nocheck
 declare const styles = {
   a_1: '' as readonly string,
   a_2: '' as readonly string,
