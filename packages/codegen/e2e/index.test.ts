@@ -31,7 +31,7 @@ test('generates .d.ts', async () => {
           "lib": ["ES2015"],
           "noEmit": true,
           "paths": { "@/*": ["./src/*"] },
-          "rootDirs": ["src", "generated/src"],
+          "rootDirs": [".", "generated"]
         }
       }
     `,
@@ -104,7 +104,7 @@ test('generates .d.ts with circular import', async () => {
         "compilerOptions": {
           "lib": ["ES2015"],
           "noEmit": true,
-          "rootDirs": ["src", "generated/src"]
+          "rootDirs": [".", "generated"]
         }
       }
     `,

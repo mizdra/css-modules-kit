@@ -1,6 +1,5 @@
 @import './b.module.css';
 @value c_1, c_2 as c_alias from './c.module.css';
-@import '@/src/d.module.css';
 .a_1 { color: red; }
 .a_2 { color: red; }
 .a_2 { color: red; }

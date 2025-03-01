@@ -8,8 +8,9 @@
     "jsx": "react-jsx",
 
     "noEmit": true,
+    "incremental": false,
     "paths": { "@/*": ["./*"] },
-    "rootDirs": ["src", "generated/src"],
+    "rootDirs": [".", "generated"],
     "types": [] // Simplify tsserver.log
   },
   "cmkOptions": {

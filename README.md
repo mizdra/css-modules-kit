@@ -8,9 +8,7 @@ By default, CSS Modules have limited language features in editors. For example:
 
 - Clicking on `styles.button` does not jump to its definition in `Button.module.css`.
 - When renaming `styles.button`, the corresponding `.button {...}` in `Button.module.css` is not renamed.
-  - The reverse is also true.
 - Performing "Find All References" on `styles.button` does not find its definition in `Button.module.css`.
-  - The reverse is also true.
 
 It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not handle CSS files. Since tsserver does not hold information about CSS files, it cannot calculate jump destinations or determine which code should be renamed.
 
@@ -38,7 +36,7 @@ In TypeScript, the `include`/`exclude` properties specify which `*.ts` files to 
 ```jsonc
 {
   // For example, if your project's `*.module.css` files are in `src/`:
-  "include": ["src"],
+  "include": ["src"], // Default is ["**/*"], so it can be omitted
   "compilerOptions": {
     // ...
   },
