@@ -1,4 +1,5 @@
 import dedent from 'dedent';
+import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 import { findTsConfigFile, normalizeConfig, readTsConfigFile } from './config.js';
 import { TsConfigFileNotFoundError } from './error.js';
@@ -15,6 +16,39 @@ test('findTsConfigFile', async () => {
   expect(findTsConfigFile(iff.paths['sub'])).toEqual(iff.paths['sub/tsconfig.json']);
 });
 
+describe('normalizeConfig', () => {
+  const defaultConfig = {
+    includes: undefined,
+    excludes: undefined,
+    dtsOutDir: undefined,
+    arbitraryExtensions: undefined,
+  };
+  test('resolves options', () => {
+    expect(
+      normalizeConfig(
+        {
+          ...defaultConfig,
+          includes: ['src'],
+          excludes: ['src/test'],
+          dtsOutDir: 'generated',
+        },
+        '/app',
+      ),
+    ).toMatchInlineSnapshot(`
+      {
+        "arbitraryExtensions": false,
+        "dtsOutDir": "/app/generated",
+        "excludes": [
+          "/app/src/test",
+        ],
+        "includes": [
+          "/app/src",
+        ],
+      }
+    `);
+  });
+});
+
 describe('readTsConfigFile', () => {
   test('returns a config object', async () => {
     const iff = await createIFF({
@@ -22,6 +56,9 @@ describe('readTsConfigFile', () => {
         {
           "include": ["src"],
           "exclude": ["src/test"],
+          "compilerOptions": {
+            "module": "esnext"
+          },
           "cmkOptions": {
             "dtsOutDir": "generated/cmk"
           }
@@ -33,10 +70,12 @@ describe('readTsConfigFile', () => {
       config: {
         includes: ['src'],
         excludes: ['src/test'],
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: undefined,
       },
+      compilerOptions: expect.objectContaining({
+        module: ts.ModuleKind.ESNext,
+      }),
       diagnostics: [],
     });
   });
@@ -59,10 +98,10 @@ describe('readTsConfigFile', () => {
       config: {
         includes: ['src'],
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       },
+      compilerOptions: expect.any(Object),
       diagnostics: [],
     });
   });
@@ -73,10 +112,7 @@ describe('readTsConfigFile', () => {
           "include": ["src", 1],
           "exclude": ["src/test", 1],
           "compilerOptions": {
-            "paths": {
-              "@/*": ["./*", 1],
-              "#/*": 1,
-            }
+            "module": 1
           },
           "cmkOptions": {
             "dtsOutDir": 1,
@@ -92,10 +128,12 @@ describe('readTsConfigFile', () => {
       config: {
         includes: ['src'],
         excludes: ['src/test'],
-        paths: { '@/*': ['./*'] },
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
       },
+      compilerOptions: expect.objectContaining({
+        module: undefined,
+      }),
       diagnostics: [
         {
           type: 'semantic',
@@ -131,10 +169,9 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -144,27 +181,20 @@ describe('readTsConfigFile', () => {
         'tsconfig.base.json': dedent`
           {
             "include": ["include1"],
-            "exclude": ["exclude1"],
-            "compilerOptions": {
-              "paths": { "@/*": ["./paths1/*"] }
-            }
+            "exclude": ["exclude1"]
           }
         `,
         'tsconfig.json': dedent`
           {
             "extends": "./tsconfig.base.json",
             "include": ["include2"],
-            "exclude": ["exclude2"],
-            "compilerOptions": {
-              "paths": { "@/*": ["./paths2/*"], "#/*": ["./paths2/*"] }
-            }
+            "exclude": ["exclude2"]
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: ['include2'],
         excludes: ['exclude2'],
-        paths: { '@/*': ['./paths2/*'], '#/*': ['./paths2/*'] },
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
       });
@@ -188,10 +218,9 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -209,10 +238,9 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: undefined,
       });
@@ -235,10 +263,9 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -258,74 +285,12 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
-        paths: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
     });
-  });
-});
-
-describe('normalizeConfig', () => {
-  const defaultConfig = {
-    includes: undefined,
-    excludes: undefined,
-    paths: undefined,
-    dtsOutDir: undefined,
-    arbitraryExtensions: undefined,
-  };
-  test('resolves options', () => {
-    expect(
-      normalizeConfig(
-        {
-          ...defaultConfig,
-          includes: ['src'],
-          excludes: ['src/test'],
-          dtsOutDir: 'generated',
-        },
-        '/app',
-      ),
-    ).toMatchInlineSnapshot(`
-      {
-        "arbitraryExtensions": false,
-        "dtsOutDir": "/app/generated",
-        "excludes": [
-          "/app/src/test",
-        ],
-        "includes": [
-          "/app/src",
-        ],
-        "paths": {},
-      }
-    `);
-  });
-  test('resolves paths', () => {
-    expect(
-      normalizeConfig(
-        {
-          ...defaultConfig,
-          paths: { '@/*': ['./*'] },
-          dtsOutDir: 'generated',
-        },
-        '/app',
-      ),
-    ).toMatchInlineSnapshot(`
-      {
-        "arbitraryExtensions": false,
-        "dtsOutDir": "/app/generated",
-        "excludes": [],
-        "includes": [
-          "/app/**/*",
-        ],
-        "paths": {
-          "@/*": [
-            "/app/*",
-          ],
-        },
-      }
-    `);
   });
 });

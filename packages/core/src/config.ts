@@ -17,7 +17,6 @@ type RemoveUndefined<T> = {
 export interface CMKConfig {
   includes: string[];
   excludes: string[];
-  paths: Record<string, string[]>;
   dtsOutDir: string;
   arbitraryExtensions: boolean;
   /**
@@ -59,18 +58,18 @@ export interface CMKConfig {
    */
   basePath: string;
   configFileName: string;
+  compilerOptions: ts.CompilerOptions;
   /** The diagnostics that occurred while reading the config file. */
   diagnostics: SemanticDiagnostic[];
 }
 
 /**
- * The config loaded from `tsconfig.json`.
+ * The config loaded from `ts.ParsedCommandLine['raw']`.
  * This is unnormalized. Paths are relative, and some options may be omitted.
  */
-interface UnnormalizedCMKConfig {
+interface UnnormalizedRawConfig {
   includes: string[] | undefined;
   excludes: string[] | undefined;
-  paths: Record<string, string[]> | undefined;
   dtsOutDir: string | undefined;
   arbitraryExtensions: boolean | undefined;
 }
@@ -79,17 +78,24 @@ interface UnnormalizedCMKConfig {
  * The validated data of `ts.ParsedCommandLine['raw']`.
  */
 interface ParsedRawData {
-  config: UnnormalizedCMKConfig;
+  config: UnnormalizedRawConfig;
   diagnostics: SemanticDiagnostic[];
 }
 
-// eslint-disable-next-line complexity
+export function findTsConfigFile(project: string): string | undefined {
+  const configFile =
+    ts.sys.directoryExists(project) ?
+      ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
+    : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
+  if (!configFile) return undefined;
+  return resolve(configFile);
+}
+
 function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
   const result: ParsedRawData = {
     config: {
       includes: undefined,
       excludes: undefined,
-      paths: undefined,
       dtsOutDir: undefined,
       arbitraryExtensions: undefined,
     },
@@ -113,21 +119,6 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
       result.config.excludes = excludes;
     }
     // MEMO: The errors for this option are reported by `tsc` or `tsserver`, so we don't need to report.
-  }
-  if ('compilerOptions' in raw && typeof raw.compilerOptions === 'object' && raw.compilerOptions !== null) {
-    if ('paths' in raw.compilerOptions) {
-      if (typeof raw.compilerOptions.paths === 'object' && raw.compilerOptions.paths !== null) {
-        const paths: Record<string, string[]> = {};
-        for (const [key, value] of Object.entries(raw.compilerOptions.paths)) {
-          if (Array.isArray(value)) {
-            const resolvedValue = value.filter((v) => typeof v === 'string');
-            paths[key] = resolvedValue;
-          }
-        }
-        result.config.paths = paths;
-      }
-      // MEMO: The errors for this option are reported by `tsc` or `tsserver`, so we don't need to report.
-    }
   }
   if ('cmkOptions' in raw && typeof raw.cmkOptions === 'object' && raw.cmkOptions !== null) {
     if ('dtsOutDir' in raw.cmkOptions) {
@@ -159,39 +150,10 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
 }
 export { parseRawData as parseRawDataForTest };
 
-/**
- * Reads the `tsconfig.json` file and returns the normalized config.
- * Even if the `tsconfig.json` file contains syntax or semantic errors,
- * this function attempts to parse as much as possible and still returns a valid config.
- *
- * @param project The absolute path to the project directory or the path to `tsconfig.json`.
- * @throws {TsConfigFileNotFoundError}
- */
-export function readConfigFile(project: string): CMKConfig {
-  const { configFileName, config, diagnostics } = readTsConfigFile(project);
-  const basePath = dirname(configFileName);
-  return {
-    ...normalizeConfig(config, basePath),
-    basePath,
-    configFileName,
-    diagnostics,
-  };
-}
-
-export function findTsConfigFile(project: string): string | undefined {
-  const configFile =
-    ts.sys.directoryExists(project) ?
-      ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
-    : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
-  if (!configFile) return undefined;
-  return resolve(configFile);
-}
-
 function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): ParsedRawData {
   const result: ParsedRawData = { config: { ...base.config }, diagnostics: [...base.diagnostics] };
   if (overrides.config.includes !== undefined) result.config.includes = overrides.config.includes;
   if (overrides.config.excludes !== undefined) result.config.excludes = overrides.config.excludes;
-  if (overrides.config.paths !== undefined) result.config.paths = overrides.config.paths;
   if (overrides.config.dtsOutDir !== undefined) result.config.dtsOutDir = overrides.config.dtsOutDir;
   if (overrides.config.arbitraryExtensions !== undefined)
     result.config.arbitraryExtensions = overrides.config.arbitraryExtensions;
@@ -204,7 +166,10 @@ function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): Pars
  */
 export function readTsConfigFile(project: string): {
   configFileName: string;
-} & ParsedRawData {
+  config: UnnormalizedRawConfig;
+  compilerOptions: ts.CompilerOptions;
+  diagnostics: SemanticDiagnostic[];
+} {
   const configFileName = findTsConfigFile(project);
   if (!configFileName) throw new TsConfigFileNotFoundError();
 
@@ -249,34 +214,45 @@ export function readTsConfigFile(project: string): {
 
   return {
     configFileName,
+    compilerOptions: parsedCommandLine.options,
     ...parsedRawData,
   };
 }
 
-function resolvePaths(paths: Record<string, string[]> | undefined, cwd: string): Record<string, string[]> {
-  if (paths === undefined) return {};
-  const resolvedPaths: Record<string, string[]> = {};
-  for (const [key, value] of Object.entries(paths)) {
-    resolvedPaths[key] = value.map((path) => join(cwd, path));
-  }
-  return resolvedPaths;
-}
-
 /**
- * Normalize the config. Resolve relative paths to absolute paths, and set default values for missing options.
+ * Normalize `UnnormalizedRawConfig`. Resolve relative paths to absolute paths, and set default values for missing options.
  * @param basePath A root directory to resolve relative path entries in the config file to.
  */
 export function normalizeConfig(
-  config: UnnormalizedCMKConfig,
+  config: UnnormalizedRawConfig,
   basePath: string,
-): RemoveUndefined<UnnormalizedCMKConfig> {
+): RemoveUndefined<UnnormalizedRawConfig> {
   return {
     // If `include` is not specified, fallback to the default include spec.
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
     includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
     excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
-    paths: resolvePaths(config.paths, basePath),
     dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
     arbitraryExtensions: config.arbitraryExtensions ?? false,
+  };
+}
+
+/**
+ * Reads the `tsconfig.json` file and returns the normalized config.
+ * Even if the `tsconfig.json` file contains syntax or semantic errors,
+ * this function attempts to parse as much as possible and still returns a valid config.
+ *
+ * @param project The absolute path to the project directory or the path to `tsconfig.json`.
+ * @throws {TsConfigFileNotFoundError}
+ */
+export function readConfigFile(project: string): CMKConfig {
+  const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
+  const basePath = dirname(configFileName);
+  return {
+    ...normalizeConfig(config, basePath),
+    basePath,
+    configFileName,
+    compilerOptions,
+    diagnostics,
   };
 }
