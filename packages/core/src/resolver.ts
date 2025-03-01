@@ -15,7 +15,7 @@ export interface ResolverOptions {
  */
 export type Resolver = (specifier: string, options: ResolverOptions) => string | undefined;
 
-export function createResolver(paths: Record<string, string[]>): Resolver {
+export function createResolver(paths: Record<string, string[]>, resolvePackageJsonImports: boolean): Resolver {
   return (_specifier: string, options: ResolverOptions) => {
     let specifier = _specifier;
 
@@ -28,7 +28,12 @@ export function createResolver(paths: Record<string, string[]>): Resolver {
         return ts.sys.fileExists(fileName);
       },
     };
-    const { resolvedModule } = ts.resolveModuleName(specifier, options.request, { paths }, host);
+    const { resolvedModule } = ts.resolveModuleName(
+      specifier,
+      options.request,
+      { paths, resolvePackageJsonImports },
+      host,
+    );
     if (resolvedModule) {
       // TODO: Logging that the paths is used.
       specifier = resolvedModule.resolvedFileName.replace(/\.module\.d\.css\.ts$/u, '.module.css');

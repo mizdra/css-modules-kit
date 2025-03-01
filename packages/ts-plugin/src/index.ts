@@ -33,7 +33,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     }
   }
 
-  const resolver = createResolver(config.paths);
+  const resolver = createResolver(config.paths, config.resolvePackageJsonImports);
   const matchesPattern = createMatchesPattern(config);
 
   return {

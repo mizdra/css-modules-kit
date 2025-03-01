@@ -18,6 +18,7 @@ export interface CMKConfig {
   includes: string[];
   excludes: string[];
   paths: Record<string, string[]>;
+  resolvePackageJsonImports: boolean;
   dtsOutDir: string;
   arbitraryExtensions: boolean;
   /**
@@ -204,7 +205,9 @@ function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): Pars
  */
 export function readTsConfigFile(project: string): {
   configFileName: string;
-} & ParsedRawData {
+  config: UnnormalizedCMKConfig & { resolvePackageJsonImports: boolean | undefined };
+  diagnostics: SemanticDiagnostic[];
+} {
   const configFileName = findTsConfigFile(project);
   if (!configFileName) throw new TsConfigFileNotFoundError();
 
@@ -249,7 +252,12 @@ export function readTsConfigFile(project: string): {
 
   return {
     configFileName,
-    ...parsedRawData,
+    config: {
+      ...parsedRawData.config,
+      resolvePackageJsonImports: parsedCommandLine.options.resolvePackageJsonImports,
+    },
+    diagnostics: parsedRawData.diagnostics,
+    // ...parsedRawData,
   };
 }
 
@@ -267,15 +275,16 @@ function resolvePaths(paths: Record<string, string[]> | undefined, cwd: string):
  * @param basePath A root directory to resolve relative path entries in the config file to.
  */
 export function normalizeConfig(
-  config: UnnormalizedCMKConfig,
+  config: UnnormalizedCMKConfig & { resolvePackageJsonImports: boolean | undefined },
   basePath: string,
-): RemoveUndefined<UnnormalizedCMKConfig> {
+): RemoveUndefined<UnnormalizedCMKConfig & { resolvePackageJsonImports: boolean | undefined }> {
   return {
     // If `include` is not specified, fallback to the default include spec.
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
     includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
     excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
     paths: resolvePaths(config.paths, basePath),
+    resolvePackageJsonImports: config.resolvePackageJsonImports ?? false,
     dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
     arbitraryExtensions: config.arbitraryExtensions ?? false,
   };

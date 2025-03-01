@@ -34,6 +34,7 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: ['src/test'],
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: undefined,
       },
@@ -60,6 +61,7 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       },
@@ -93,6 +95,7 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: ['src/test'],
         paths: { '@/*': ['./*'] },
+        resolvePackageJsonImports: undefined,
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
       },
@@ -121,6 +124,7 @@ describe('readTsConfigFile', () => {
       const iff = await createIFF({
         'tsconfig.base.json': dedent`
           {
+            "compilerOptions": { "resolvePackageJsonImports": true },
             "cmkOptions": { "dtsOutDir": "generated/cmk" }
           }
         `,
@@ -131,10 +135,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: true,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -161,10 +166,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: ['include2'],
         excludes: ['exclude2'],
         paths: { '@/*': ['./paths2/*'], '#/*': ['./paths2/*'] },
+        resolvePackageJsonImports: undefined,
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
       });
@@ -188,10 +194,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -209,10 +216,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: undefined,
       });
@@ -235,10 +243,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -258,10 +267,11 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
+        resolvePackageJsonImports: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -274,6 +284,7 @@ describe('normalizeConfig', () => {
     includes: undefined,
     excludes: undefined,
     paths: undefined,
+    resolvePackageJsonImports: undefined,
     dtsOutDir: undefined,
     arbitraryExtensions: undefined,
   };
@@ -299,6 +310,7 @@ describe('normalizeConfig', () => {
           "/app/src",
         ],
         "paths": {},
+        "resolvePackageJsonImports": false,
       }
     `);
   });
@@ -325,6 +337,7 @@ describe('normalizeConfig', () => {
             "/app/*",
           ],
         },
+        "resolvePackageJsonImports": false,
       }
     `);
   });
