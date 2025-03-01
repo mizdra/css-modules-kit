@@ -35,7 +35,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {};
+        "text": "declare const styles = {
+      };
       export default styles;
       ",
       }
@@ -348,7 +349,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {};
+        "text": "declare const styles = {
+      };
       export default styles;
       ",
       }
@@ -378,7 +380,8 @@ describe('createDts', () => {
           "lengths": [],
           "sourceOffsets": [],
         },
-        "text": "declare const styles = {};
+        "text": "declare const styles = {
+      };
       export default styles;
       ",
       }

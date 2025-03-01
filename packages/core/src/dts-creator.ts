@@ -43,6 +43,7 @@ interface LinkedCodeMapping extends CodeMapping {
  * ```
  * The d.ts file would be:
  * ```ts
+ * // @ts-nocheck
  * const styles = {
  *   local1: '' as readonly string,
  *   local2: '' as readonly string,
@@ -70,15 +71,6 @@ export function createDts(
     const resolved = options.resolver(tokenImporter.from, { request: fileName });
     return resolved !== undefined && options.matchesPattern(resolved);
   });
-
-  // If the CSS module file has no tokens, return an .d.ts file with an empty object.
-  if (localTokens.length === 0 && tokenImporters.length === 0) {
-    return {
-      text: `declare const ${STYLES_EXPORT_NAME} = {};\nexport default ${STYLES_EXPORT_NAME};\n`,
-      mapping,
-      linkedCodeMapping,
-    };
-  }
 
   let text = `declare const ${STYLES_EXPORT_NAME} = {\n`;
   for (const token of localTokens) {
