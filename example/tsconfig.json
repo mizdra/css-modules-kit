@@ -10,6 +10,7 @@
     "noEmit": true,
     "incremental": false,
     "paths": { "@/*": ["./*"] },
+    "resolvePackageJsonImports": true,
     "rootDirs": [".", "generated"],
     "types": [] // Simplify tsserver.log
   },
