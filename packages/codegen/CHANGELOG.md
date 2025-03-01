@@ -1,5 +1,14 @@
 # @css-modules-kit/codegen
 
+## 0.1.2
+
+### Patch Changes
+
+- 2eb908f: Resolve import specifiers taking into account `baseUrl` and `imports`
+- 984ae9e: Fix problem with `tsc` reporting an error with `--skipLibCheck=false`
+- Updated dependencies [2eb908f]
+  - @css-modules-kit/core@0.0.4
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @css-modules-kit/ts-plugin
 
+## 0.0.4
+
+### Patch Changes
+
+- 2eb908f: Resolve import specifiers taking into account `baseUrl` and `imports`
+- Updated dependencies [2eb908f]
+  - @css-modules-kit/core@0.0.4
+
 ## 0.0.3
 
 ### Patch Changes
