@@ -3,7 +3,6 @@ import type { Rule } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
 
-// TODO: Report cjs-module-lexer compatibility problem to stylelint
 const { createPlugin, utils } = stylelint;
 
 const ruleName = 'css-modules-kit/no-unused-class-names';
@@ -55,7 +54,7 @@ const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {
  * The syntax pattern for consuming tokens imported from CSS Module.
  * @example `styles.foo`
  */
-// TODO: Support `styles['foo']` and `styles["foo"]`
+// TODO(#125): Support `styles['foo']` and `styles["foo"]`
 // MEMO: The `xxxStyles.foo` format is not supported, because the css module file for current component file is usually imported with `styles`.
 //       It is sufficient to support only the `styles.foo` format.
 const TOKEN_CONSUMER_PATTERN = /styles\.([$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*)/gu;
