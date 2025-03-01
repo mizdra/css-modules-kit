@@ -25,6 +25,12 @@ Additionally, css-modules-kit provides various development tools for CSS Modules
 - [`@css-modules-kit/stylelint-plugin`](packages/stylelint-plugin/README.md)
   - A stylelint plugin for CSS Modules
 
+## How to try demo
+
+1. Open this repository with VS Code
+2. Open `Run and Debug` menu
+3. Select `ts-plugin: debug` configuration and start debugging
+
 ## Configuration
 
 css-modules-kit uses `tsconfig.json` as its configuration file.
