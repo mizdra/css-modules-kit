@@ -43,6 +43,7 @@ interface LinkedCodeMapping extends CodeMapping {
  * ```
  * The d.ts file would be:
  * ```ts
+ * // @ts-nocheck
  * const styles = {
  *   local1: '' as readonly string,
  *   local2: '' as readonly string,
@@ -71,16 +72,13 @@ export function createDts(
     return resolved !== undefined && options.matchesPattern(resolved);
   });
 
-  // If the CSS module file has no tokens, return an .d.ts file with an empty object.
-  if (localTokens.length === 0 && tokenImporters.length === 0) {
-    return {
-      text: `declare const ${STYLES_EXPORT_NAME} = {};\nexport default ${STYLES_EXPORT_NAME};\n`,
-      mapping,
-      linkedCodeMapping,
-    };
-  }
+  // MEMO: Depending on the TypeScript compilation options, the generated type definition file contains compile errors.
+  // For example, it contains `Top-level 'await' expressions are only allowed when the 'module' option is set to ...` error.
+  //
+  // If `--skipLibCheck` is false, those errors will be reported by `tsc`. However, these are negligible errors.
+  // Therefore, `@ts-nocheck` is added to the generated type definition file.
+  let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
-  let text = `declare const ${STYLES_EXPORT_NAME} = {\n`;
   for (const token of localTokens) {
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);

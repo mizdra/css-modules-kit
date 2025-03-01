@@ -34,14 +34,16 @@ describe('runCMK', () => {
     });
     await runCMK(iff.rootDir, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "declare const styles = {
+      "// @ts-nocheck
+      declare const styles = {
         a1: '' as readonly string,
       };
       export default styles;
       "
     `);
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "declare const styles = {
+      "// @ts-nocheck
+      declare const styles = {
         b1: '' as readonly string,
       };
       export default styles;
@@ -75,7 +77,8 @@ describe('runCMK', () => {
     });
     await runCMK(iff.rootDir, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "declare const styles = {
+      "// @ts-nocheck
+      declare const styles = {
         ...(await import('./b.module.css')).default,
       };
       export default styles;
@@ -127,7 +130,8 @@ describe('runCMK', () => {
     });
     await runCMK(iff.rootDir, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "declare const styles = {
+      "// @ts-nocheck
+      declare const styles = {
         a1: '' as readonly string,
       };
       export default styles;
