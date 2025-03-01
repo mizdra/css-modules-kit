@@ -82,6 +82,15 @@ interface ParsedRawData {
   diagnostics: SemanticDiagnostic[];
 }
 
+export function findTsConfigFile(project: string): string | undefined {
+  const configFile =
+    ts.sys.directoryExists(project) ?
+      ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
+    : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
+  if (!configFile) return undefined;
+  return resolve(configFile);
+}
+
 function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
   const result: ParsedRawData = {
     config: {
@@ -140,35 +149,6 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
   return result;
 }
 export { parseRawData as parseRawDataForTest };
-
-/**
- * Reads the `tsconfig.json` file and returns the normalized config.
- * Even if the `tsconfig.json` file contains syntax or semantic errors,
- * this function attempts to parse as much as possible and still returns a valid config.
- *
- * @param project The absolute path to the project directory or the path to `tsconfig.json`.
- * @throws {TsConfigFileNotFoundError}
- */
-export function readConfigFile(project: string): CMKConfig {
-  const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
-  const basePath = dirname(configFileName);
-  return {
-    ...normalizeConfig(config, basePath),
-    basePath,
-    configFileName,
-    compilerOptions,
-    diagnostics,
-  };
-}
-
-export function findTsConfigFile(project: string): string | undefined {
-  const configFile =
-    ts.sys.directoryExists(project) ?
-      ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
-    : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
-  if (!configFile) return undefined;
-  return resolve(configFile);
-}
 
 function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): ParsedRawData {
   const result: ParsedRawData = { config: { ...base.config }, diagnostics: [...base.diagnostics] };
@@ -254,5 +234,25 @@ export function normalizeConfig(
     excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
     dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
     arbitraryExtensions: config.arbitraryExtensions ?? false,
+  };
+}
+
+/**
+ * Reads the `tsconfig.json` file and returns the normalized config.
+ * Even if the `tsconfig.json` file contains syntax or semantic errors,
+ * this function attempts to parse as much as possible and still returns a valid config.
+ *
+ * @param project The absolute path to the project directory or the path to `tsconfig.json`.
+ * @throws {TsConfigFileNotFoundError}
+ */
+export function readConfigFile(project: string): CMKConfig {
+  const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
+  const basePath = dirname(configFileName);
+  return {
+    ...normalizeConfig(config, basePath),
+    basePath,
+    configFileName,
+    compilerOptions,
+    diagnostics,
   };
 }

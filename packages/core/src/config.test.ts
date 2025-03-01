@@ -16,6 +16,39 @@ test('findTsConfigFile', async () => {
   expect(findTsConfigFile(iff.paths['sub'])).toEqual(iff.paths['sub/tsconfig.json']);
 });
 
+describe('normalizeConfig', () => {
+  const defaultConfig = {
+    includes: undefined,
+    excludes: undefined,
+    dtsOutDir: undefined,
+    arbitraryExtensions: undefined,
+  };
+  test('resolves options', () => {
+    expect(
+      normalizeConfig(
+        {
+          ...defaultConfig,
+          includes: ['src'],
+          excludes: ['src/test'],
+          dtsOutDir: 'generated',
+        },
+        '/app',
+      ),
+    ).toMatchInlineSnapshot(`
+      {
+        "arbitraryExtensions": false,
+        "dtsOutDir": "/app/generated",
+        "excludes": [
+          "/app/src/test",
+        ],
+        "includes": [
+          "/app/src",
+        ],
+      }
+    `);
+  });
+});
+
 describe('readTsConfigFile', () => {
   test('returns a config object', async () => {
     const iff = await createIFF({
@@ -259,38 +292,5 @@ describe('readTsConfigFile', () => {
         arbitraryExtensions: true,
       });
     });
-  });
-});
-
-describe('normalizeConfig', () => {
-  const defaultConfig = {
-    includes: undefined,
-    excludes: undefined,
-    dtsOutDir: undefined,
-    arbitraryExtensions: undefined,
-  };
-  test('resolves options', () => {
-    expect(
-      normalizeConfig(
-        {
-          ...defaultConfig,
-          includes: ['src'],
-          excludes: ['src/test'],
-          dtsOutDir: 'generated',
-        },
-        '/app',
-      ),
-    ).toMatchInlineSnapshot(`
-      {
-        "arbitraryExtensions": false,
-        "dtsOutDir": "/app/generated",
-        "excludes": [
-          "/app/src/test",
-        ],
-        "includes": [
-          "/app/src",
-        ],
-      }
-    `);
   });
 });
