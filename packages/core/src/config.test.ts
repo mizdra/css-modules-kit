@@ -131,7 +131,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
@@ -161,7 +161,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: ['include2'],
         excludes: ['exclude2'],
         paths: { '@/*': ['./paths2/*'], '#/*': ['./paths2/*'] },
@@ -188,7 +188,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
@@ -209,7 +209,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
@@ -235,7 +235,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
@@ -258,7 +258,7 @@ describe('readTsConfigFile', () => {
           }
         `,
       });
-      expect(readTsConfigFile(iff.rootDir).config).toEqual({
+      expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: undefined,
         excludes: undefined,
         paths: undefined,
