@@ -67,7 +67,7 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
     process.exit(1);
   }
 
-  const resolver = createResolver(config.paths);
+  const resolver = createResolver(config.compilerOptions);
   const matchesPattern = createMatchesPattern(config);
 
   const cssModuleMap = new Map<string, CSSModule>();
