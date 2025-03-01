@@ -29,7 +29,6 @@ test('generates .d.ts', async () => {
       {
         "compilerOptions": {
           "lib": ["ES2015"],
-          "skipLibCheck": true,
           "noEmit": true,
           "paths": { "@/*": ["./src/*"] },
           "rootDirs": ["src", "generated/src"],
@@ -42,7 +41,8 @@ test('generates .d.ts', async () => {
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       a1: '' as readonly string,
       ...(await import('./b.module.css')).default,
     };
@@ -50,14 +50,16 @@ test('generates .d.ts', async () => {
     "
   `);
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       b1: '' as readonly string,
     };
     export default styles;
     "
   `);
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       c1: '' as readonly string,
     };
     export default styles;
@@ -101,7 +103,6 @@ test('generates .d.ts with circular import', async () => {
       {
         "compilerOptions": {
           "lib": ["ES2015"],
-          "skipLibCheck": true,
           "noEmit": true,
           "rootDirs": ["src", "generated/src"]
         }
@@ -115,7 +116,8 @@ test('generates .d.ts with circular import', async () => {
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       a1: '' as readonly string,
       ...(await import('./b.module.css')).default,
     };
@@ -123,7 +125,8 @@ test('generates .d.ts with circular import', async () => {
     "
   `);
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       b1: '' as readonly string,
       ...(await import('./a.module.css')).default,
     };
@@ -131,7 +134,8 @@ test('generates .d.ts with circular import', async () => {
     "
   `);
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
-    "declare const styles = {
+    "// @ts-nocheck
+    declare const styles = {
       c1: '' as readonly string,
       ...(await import('./c.module.css')).default,
     };
