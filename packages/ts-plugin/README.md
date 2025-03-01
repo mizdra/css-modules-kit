@@ -25,12 +25,12 @@ https://github.com/user-attachments/assets/df1e2feb-2a1a-4bf5-ae70-1cac36d90409
 
 </details>
 
-<details>
+<!-- <details>
 <summary>Automatically update import statements when moving `*.module.css`</summary>
 
 https://github.com/user-attachments/assets/4af168fa-357d-44e1-b010-3053802bf1a2
 
-</details>
+</details> -->
 
 <details>
 <summary>Create CSS Module file for current file.</summary>
@@ -41,7 +41,7 @@ https://github.com/user-attachments/assets/05f9e839-9617-43dc-a519-d5a20adf1146
 
 </details>
 
-<details>
+<!-- <details>
 <summary>Complete `className={...}` instead of `className="..."`</summary>
 
 In projects where CSS Modules are used, the element is styled with `className={styles.xxx}`. However, when you type `className`, `className="..."` is completed. This is annoying to the user.
@@ -50,7 +50,7 @@ So, instead of `className="..."` instead of `className={...}` instead of `classN
 
 https://github.com/user-attachments/assets/b3609c8a-123f-4f4b-af8c-3c8bf7ab4363
 
-</details>
+</details> -->
 
 <details>
 <summary>Prioritize the `styles' import for the current component file</summary>
@@ -63,16 +63,18 @@ So I have made it so that the `styles` of the CSS Module file corresponding to t
 
 </details>
 
-<details>
+<!-- <details>
 <summary>Add missing CSS rule</summary>
 
 If you are trying to use a class name that is not defined, you can add it with Quick Fixes.
 
 https://github.com/user-attachments/assets/3502150a-985d-45f3-9912-bbc183e41c03
 
-</details>
+</details> -->
 
 ## Installation
+
+First, install the package.
 
 ```bash
 npm i -D @css-modules-kit/ts-plugin
@@ -80,13 +82,22 @@ npm i -D @css-modules-kit/ts-plugin
 
 ## Usage
 
-Add the "plugin" option to your tsconfig.json file. For example:
+Second, add the "plugin" option to your tsconfig.json file. For example:
 
 ```jsonc
 {
   "compilerOptions": {
-    "plugins": [{ "name": "@css-modules-kit/ts-plugin" }],
+    "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
   },
+}
+```
+
+Then, add the followed options to your `.vscode/settings.json`.
+
+```json
+{
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
 ```
 

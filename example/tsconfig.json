@@ -11,6 +11,7 @@
     "incremental": false,
     "paths": { "@/*": ["./*"] },
     "rootDirs": [".", "generated"],
+    "plugins": [{ "name": "@css-modules-kit/ts-plugin", "languages": ["css"] }],
     "types": [] // Simplify tsserver.log
   },
   "cmkOptions": {
