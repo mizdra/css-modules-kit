@@ -29,16 +29,17 @@ export async function activate(_context: vscode.ExtensionContext) {
   // If not disabled, "rename" and "references" will behave in a way the user does not want.
   const cssExtension = vscode.extensions.getExtension('vscode.css-language-features');
   if (cssExtension) {
-    vscode.window
-      .showInformationMessage(
-        '"Rename Symbol" and "Find All References" do not work in some cases because the "CSS Language Features" extension is enabled. Disabling the extension will make them work.',
-        'Show "CSS Language Features" extension',
-      )
-      .then((selected) => {
-        if (selected) {
-          vscode.commands.executeCommand('workbench.extensions.search', '@builtin css-language-features');
-        }
-      });
+    // Temporarily commented out
+    // vscode.window
+    //   .showInformationMessage(
+    //     '"Rename Symbol" and "Find All References" do not work in some cases because the "CSS Language Features" extension is enabled. Disabling the extension will make them work.',
+    //     'Show "CSS Language Features" extension',
+    //   )
+    //   .then((selected) => {
+    //     if (selected) {
+    //       vscode.commands.executeCommand('workbench.extensions.search', '@builtin css-language-features');
+    //     }
+    //   });
   } else {
     // If vscode.css-language-features extension is disabled, start the customized language server for *.css, *.scss, and *.less.
     // The language server is based on the vscode-css-languageservice, but "rename" and "references" features are disabled.
