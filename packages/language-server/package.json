@@ -11,7 +11,7 @@
   },
   "author": "mizdra <pp.mizdra@gmail.com>",
   "license": "MIT",
-  "private": true,
+  "private": false,
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b tsconfig.build.json"
