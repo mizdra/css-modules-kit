@@ -45,7 +45,7 @@ export async function activate(_context: vscode.ExtensionContext) {
     // The language server is based on the vscode-css-languageservice, but "rename" and "references" features are disabled.
 
     // TODO: Do not use Node.js API
-    const serverModulePath = require.resolve('css-modules-kit-language-server');
+    const serverModulePath = require.resolve('@css-modules-kit/language-server');
 
     const serverOptions: lsp.ServerOptions = {
       run: {

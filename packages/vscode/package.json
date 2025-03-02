@@ -56,8 +56,8 @@
     }
   },
   "dependencies": {
-    "css-modules-kit-language-server": "../language-server",
-    "@css-modules-kit/ts-plugin": "../ts-plugin",
+    "@css-modules-kit/language-server": "^0.0.0",
+    "@css-modules-kit/ts-plugin": "^0.0.3",
     "vscode-languageclient": "^9.0.1"
   }
 }
