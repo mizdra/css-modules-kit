@@ -36,6 +36,7 @@
     "@types/react": "^19.0.8",
     "@types/vscode": "^1.97.0",
     "@typescript/server-harness": "^0.3.5",
+    "@vscode/vsce": "^3.2.2",
     "dedent": "^1.5.3",
     "eslint": "^9.20.1",
     "npm-run-all2": "^7.0.2",

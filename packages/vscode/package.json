@@ -1,6 +1,6 @@
 {
-  "name": "@css-modules-kit/vscode",
-  "displayName": "@css-modules-kit/vscode",
+  "name": "css-modules-kit-vscode",
+  "displayName": "CSS Modules Kit",
   "description": "The VS Code extension for CSS Modules",
   "version": "0.0.0",
   "type": "commonjs",
@@ -15,7 +15,10 @@
   "private": true,
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc -b tsconfig.build.json"
+    "build": "tsc -b tsconfig.build.json",
+    "vscode:prepublish": "run-s vscode:prepublish:rewrite-root-package-json vscode:prepublish:npm-install",
+    "vscode:prepublish:rewrite-root-package-json": "jq 'del(.workspaces)' ../../package.json > tmp.json && mv tmp.json ../../package.json",
+    "vscode:prepublish:npm-install": "npm i"
   },
   "engines": {
     "vscode": "^1.77.0"
@@ -56,8 +59,8 @@
     }
   },
   "dependencies": {
-    "css-modules-kit-language-server": "../language-server",
-    "@css-modules-kit/ts-plugin": "../ts-plugin",
+    "@css-modules-kit/language-server": "^0.0.0",
+    "@css-modules-kit/ts-plugin": "^0.0.3",
     "vscode-languageclient": "^9.0.1"
   }
 }
