@@ -1,5 +1,13 @@
 # @css-modules-kit/ts-plugin
 
+## 0.0.5
+
+### Patch Changes
+
+- 7df2e70: Release test
+- Updated dependencies [7df2e70]
+  - @css-modules-kit/core@0.0.5
+
 ## 0.0.4
 
 ### Patch Changes
