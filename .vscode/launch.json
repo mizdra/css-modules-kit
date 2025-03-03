@@ -12,27 +12,6 @@
       "preLaunchTask": "npm: build - packages/codegen"
     },
     {
-      "name": "ts-plugin: debug",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--profile-temp",
-        "--skip-welcome",
-        "--folder-uri=${workspaceFolder}/example",
-        "${workspaceFolder}/example/src/index.tsx"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/packages/ts-plugin/dist/**/*.js",
-        "${workspaceFolder}/packages/ts-plugin/dist/**/*.cjs",
-        "${workspaceFolder}/packages/ts-plugin/dist/**/*.mjs"
-      ],
-      "preLaunchTask": "npm: build - packages/ts-plugin",
-      "env": {
-        "TSS_DEBUG": "5859"
-      }
-    },
-    {
       "name": "vscode: debug",
       "type": "extensionHost",
       "request": "launch",
@@ -76,11 +55,6 @@
     {
       "name": "vscode: debug + Attach debugger to tsserver",
       "configurations": ["vscode: debug", "Attach debugger to tsserver"],
-      "stopAll": true
-    },
-    {
-      "name": "ts-plugin: debug + Attach debugger to tsserver",
-      "configurations": ["ts-plugin: debug", "Attach debugger to tsserver"],
       "stopAll": true
     }
   ]
