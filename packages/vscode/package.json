@@ -18,7 +18,7 @@
     "build": "tsc -b tsconfig.build.json",
     "vscode:prepublish": "run-s vscode:prepublish:rewrite-root-package-json vscode:prepublish:npm-install",
     "vscode:prepublish:rewrite-root-package-json": "jq 'del(.workspaces)' ../../package.json > tmp.json && mv tmp.json ../../package.json",
-    "vscode:prepublish:npm-install": "npm i"
+    "vscode:prepublish:npm-install": "npm i --no-package-lock --production"
   },
   "engines": {
     "vscode": "^1.77.0"
