@@ -25,6 +25,7 @@ jobs:
       - run: npm install
       - run: npm run build
       - run: npx @changesets/cli tag
+      - run: git push --follow-tags
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
@@ -33,6 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-      - run: npx vsce publish --no-git-tag-version
+      - run: npx -w packages/vscode vsce publish --no-git-tag-version
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
