@@ -24,11 +24,15 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run build
+      - run: npx @changesets/cli tag
       - name: Create Release Pull Request or Publish to npm
         uses: changesets/action@v1
         with:
-          publish: npx @changesets/cli publish
+          publish: npx @changesets/cli publish --no-git-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
+      - run: npx vsce publish --no-git-tag-version
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}

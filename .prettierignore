@@ -1,3 +1,3 @@
-/dist
+**/dist
 /example/generated
 /example/src

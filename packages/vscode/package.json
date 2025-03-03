@@ -1,6 +1,6 @@
 {
-  "name": "@css-modules-kit/vscode",
-  "displayName": "@css-modules-kit/vscode",
+  "name": "css-modules-kit-vscode",
+  "displayName": "CSS Modules Kit",
   "description": "The VS Code extension for CSS Modules",
   "version": "0.0.0",
   "type": "commonjs",
