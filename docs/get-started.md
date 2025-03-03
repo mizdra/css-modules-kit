@@ -5,7 +5,7 @@
 To enable CSS Modules language features in your editor, you need to install [`@css-modules-kit/ts-plugin`](../packages/ts-plugin/README.md) (ts-plugin). The installation method varies by editor.
 
 - For VS Code:
-  - Install the [CSS Modules Kit extension](#)
+  - Install the [CSS Modules Kit extension](https://marketplace.visualstudio.com/items?itemName=mizdra.css-modules-kit-vscode)
 - For Neovim:
   - Install [`@css-modules-kit/ts-plugin`](../packages/ts-plugin/README.md#installation) and [set up the configuration](../packages/ts-plugin/README.md)
 - For Emacs:
@@ -41,7 +41,7 @@ Finally, you need to configure your tsconfig.json so that the ts-plugin and code
 
 Below is an example configuration:
 
-```json
+```jsonc
 {
   // Omitting the `include` option is equivalent to using `["**/*"]`
   "compilerOptions": {
@@ -68,8 +68,8 @@ Below is an example configuration:
     "strict": true,
 
     /* Completeness */
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+  },
 }
 ```
 
