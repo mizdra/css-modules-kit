@@ -25,6 +25,7 @@ jobs:
       - run: npm install
       - run: npm run build
       - name: Create Release Pull Request or Publish to npm
+        id: changesets
         uses: changesets/action@v1
         with:
           publish: npx @changesets/cli publish
@@ -33,5 +34,6 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
       - run: npx -w packages/vscode vsce publish --no-git-tag-version --skip-duplicate
+        if: steps.changesets.outputs.published == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
