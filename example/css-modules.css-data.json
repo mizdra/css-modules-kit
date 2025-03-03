@@ -1,0 +1,5 @@
+{
+  "version": 1.1,
+  "properties": [{ "name": "composes", "description": "Extend styles from another rule" }],
+  "atDirectives": [{ "name": "@value", "description": "Define values with CSS Modules" }]
+}
