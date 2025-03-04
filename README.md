@@ -153,3 +153,9 @@ Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts
   - See [#121](https://github.com/mizdra/css-modules-kit/issues/121) for more details.
 - css-modules-kit does not work on VS Code for Web
   - This is to simplify implementation.
+
+## History of this project
+
+This project was created as a next-generation tool to replace [happy-css-modules](https://github.com/mizdra/happy-css-modules)
+
+happy-css-modules was also a tool that provided language functionality for `*.module.css`. However, the tool was limited in the type of language features it could provide. To solve this limitation, css-modules-kit was created.
