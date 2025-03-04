@@ -1,4 +1,4 @@
-# css-modules-kit
+# CSS Modules Kit
 
 A toolkit for making CSS Modules useful.
 
