@@ -16,10 +16,6 @@ css-modules-kit addresses this by using a TypeScript Language Service Plugin. Wi
 
 Additionally, css-modules-kit provides various development tools for CSS Modules, such as a stylelint plugin and a utility for generating `*.d.ts` files.
 
-## Get Started
-
-Please read the [Get Started](docs/get-started.md) guide.
-
 ## Supported Language Features
 
 <details>
@@ -90,6 +86,10 @@ https://github.com/user-attachments/assets/3502150a-985d-45f3-9912-bbc183e41c03
 
 </details>
 
+## Get Started
+
+Please read the [Get Started](docs/get-started.md) guide.
+
 ## How to try demo
 
 1. Open this repository with VS Code
@@ -133,10 +133,21 @@ Specifies the directory where `*.d.ts` files are output. The default is `"genera
 
 Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts`. The default is `false`.
 
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "arbitraryExtensions": true,
+  },
+}
+```
+
 ## Limitations
 
 - Sass/Less are not supported to simplify the implementation
 - `:local .foo {...}` (without any arguments) is not supported to simplify the implementation
 - `:global .foo {...}` (without any arguments) is not supported to simplify the implementation
-- Some editors do not allow rename on `*.module.css`
+- Some editors do not allow rename from `*.module.css`
   - See [#121](https://github.com/mizdra/css-modules-kit/issues/121) for more details.
