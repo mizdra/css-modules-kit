@@ -151,3 +151,5 @@ Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts
 - `:global .foo {...}` (without any arguments) is not supported to simplify the implementation
 - Some editors do not allow rename from `*.module.css`
   - See [#121](https://github.com/mizdra/css-modules-kit/issues/121) for more details.
+- css-modules-kit does not work on VS Code for Web
+  - This is to simplify implementation.
