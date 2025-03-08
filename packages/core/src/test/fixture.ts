@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
-// @ts-expect-error -- `require(esm)` is not supported by tsc, so ignore the error
 import { defineIFFCreator } from '@mizdra/inline-fixture-files';
 import { join } from '../path.js';
 
