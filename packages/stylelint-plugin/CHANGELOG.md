@@ -1,5 +1,16 @@
 # @css-modules-kit/stylelint-plugin
 
+## 0.1.0
+
+### Minor Changes
+
+- e899e5e: refactor: move `findUsedTokenNames` to core
+
+### Patch Changes
+
+- Updated dependencies [e899e5e]
+  - @css-modules-kit/core@0.1.0
+
 ## 0.0.5
 
 ### Patch Changes

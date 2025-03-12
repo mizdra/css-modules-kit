@@ -1,5 +1,12 @@
 # @css-modules-kit/codegen
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [e899e5e]
+  - @css-modules-kit/core@0.1.0
+
 ## 0.1.3
 
 ### Patch Changes

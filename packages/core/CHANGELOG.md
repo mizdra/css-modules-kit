@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.1.0
+
+### Minor Changes
+
+- e899e5e: refactor: move `findUsedTokenNames` to core
+
 ## 0.0.5
 
 ### Patch Changes
