@@ -49,6 +49,16 @@
       "runtimeArgs": ["stylelint", "src/**/*.css"],
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/stylelint-plugin"
+    },
+    {
+      "name": "eslint-plugin: debug",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/example",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["eslint", "src/**/*.css"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/eslint-plugin"
     }
   ],
   "compounds": [

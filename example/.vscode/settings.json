@@ -3,5 +3,6 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "../node_modules/typescript/lib",
   "git.openRepositoryInParentFolders": "never",
-  "css.customData": ["./css-modules.css-data.json"]
+  "css.customData": ["./css-modules.css-data.json"],
+  "eslint.validate": ["css"]
 }
