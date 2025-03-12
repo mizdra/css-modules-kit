@@ -11,7 +11,8 @@
     "packages/ts-plugin",
     "packages/language-server",
     "packages/vscode",
-    "packages/stylelint-plugin"
+    "packages/stylelint-plugin",
+    "packages/eslint-plugin"
   ],
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
@@ -27,6 +28,7 @@
   "prettier": "@mizdra/prettier-config-mizdra",
   "devDependencies": {
     "@changesets/cli": "^2.28.1",
+    "@eslint/css": "^0.4.0",
     "@mizdra/eslint-config-mizdra": "^6.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
     "@mizdra/prettier-config-mizdra": "^2.0.0",
