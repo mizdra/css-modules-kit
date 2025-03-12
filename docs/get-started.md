@@ -75,15 +75,14 @@ Below is an example configuration:
 
 This completes the minimal setup.
 
-## Install stylelint-plugin (Optional)
+## Install linter plugin (Optional)
 
-We provide linter rules for CSS Modules. Currently, the supported linter is stylelint.
+We provide linter plugin for CSS Modules. Currently, we support the following linters:
 
-To install stylelint-plugin, run the following command:
+- [stylelint-plugin](../packages/stylelint-plugin/README.md)
+- [eslint-plugin](../packages/eslint-plugin/README.md)
 
-```bash
-npm i -D @css-modules-kit/stylelint-plugin
-```
+All linter plugins offer the same set of rules. So please choose and install one.
 
 ## Customization (Optional)
 

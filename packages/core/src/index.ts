@@ -29,6 +29,7 @@ export {
   isComponentFileName,
   isCSSModuleFile,
   findComponentFile,
+  findComponentFileSync,
   type MatchesPattern,
   createMatchesPattern,
   getFileNamesByPattern,

@@ -36,6 +36,23 @@ export async function findComponentFile(
   return undefined;
 }
 
+export function findComponentFileSync(
+  cssModuleFileName: string,
+  readFileSync: (path: string) => string,
+): { fileName: string; text: string } | undefined {
+  const pathWithoutExtension = cssModuleFileName.slice(0, -CSS_MODULE_EXTENSION.length);
+  for (const path of COMPONENT_EXTENSIONS.map((ext) => pathWithoutExtension + ext)) {
+    try {
+      // TODO: Cache the result of readFile
+      const text = readFileSync(path);
+      return { fileName: path, text };
+    } catch {
+      continue;
+    }
+  }
+  return undefined;
+}
+
 export type MatchesPattern = (fileName: string) => boolean;
 
 /**
