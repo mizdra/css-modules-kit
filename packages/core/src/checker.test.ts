@@ -5,7 +5,7 @@ import type { CSSModule } from './parser/css-module-parser.js';
 import { createResolver } from './resolver.js';
 import { createAtImportTokenImporter, createAtValueTokenImporter } from './test/token.js';
 
-const resolver = createResolver({});
+const resolver = createResolver({}, undefined);
 
 describe('checkCSSModule', () => {
   test('report diagnostics for non-existing module', () => {

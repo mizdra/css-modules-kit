@@ -33,7 +33,8 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     }
   }
 
-  const resolver = createResolver(config.compilerOptions);
+  const moduleResolutionCache = info.languageServiceHost.getModuleResolutionCache?.();
+  const resolver = createResolver(config.compilerOptions, moduleResolutionCache);
   const matchesPattern = createMatchesPattern(config);
 
   return {
