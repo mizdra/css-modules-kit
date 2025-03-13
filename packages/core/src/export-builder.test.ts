@@ -5,7 +5,7 @@ import { resolve } from './path.js';
 import { createResolver } from './resolver.js';
 import { createAtImportTokenImporter, createAtValueTokenImporter, createToken } from './test/token.js';
 
-const resolver = createResolver({});
+const resolver = createResolver({}, undefined);
 
 describe('ExportBuilder', () => {
   test('build export record', () => {

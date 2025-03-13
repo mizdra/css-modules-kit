@@ -18,6 +18,7 @@ import {
   parseCSSModule,
   readConfigFile,
 } from '@css-modules-kit/core';
+import ts from 'typescript';
 import { writeDtsFile } from './dts-writer.js';
 import { ReadCSSModuleFileError } from './error.js';
 import type { Logger } from './logger/logger.js';
@@ -67,7 +68,14 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
     process.exit(1);
   }
 
-  const resolver = createResolver(config.compilerOptions);
+  const getCanonicalFileName = (fileName: string) =>
+    ts.sys.useCaseSensitiveFileNames ? fileName : fileName.toLowerCase();
+  const moduleResolutionCache = ts.createModuleResolutionCache(
+    config.basePath,
+    getCanonicalFileName,
+    config.compilerOptions,
+  );
+  const resolver = createResolver(config.compilerOptions, moduleResolutionCache);
   const matchesPattern = createMatchesPattern(config);
 
   const cssModuleMap = new Map<string, CSSModule>();

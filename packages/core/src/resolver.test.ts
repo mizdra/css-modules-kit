@@ -27,7 +27,7 @@ describe('createResolver', async () => {
   });
   const request = iff.paths['request.module.css'];
   test('resolves relative path', () => {
-    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir));
+    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
     expect(resolve('./a.module.css', { request })).toBe(iff.paths['a.module.css']);
     expect(resolve('./dir/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
   });
@@ -43,6 +43,7 @@ describe('createResolver', async () => {
           },
           iff.rootDir,
         ),
+        undefined,
       );
       expect(resolve('@/a.module.css', { request })).toBe(iff.paths['paths1/a.module.css']);
       expect(resolve('@/b.module.css', { request })).toBe(iff.paths['paths2/b.module.css']);
@@ -60,6 +61,7 @@ describe('createResolver', async () => {
           },
           iff.rootDir,
         ),
+        undefined,
       );
       expect(resolve('@/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
     });
@@ -72,6 +74,7 @@ describe('createResolver', async () => {
         },
         iff.rootDir,
       ),
+      undefined,
     );
     expect(resolve('#a.module.css', { request })).toBe(iff.paths['a.module.css']);
     expect(resolve('#dir/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
@@ -84,11 +87,12 @@ describe('createResolver', async () => {
         },
         iff.rootDir,
       ),
+      undefined,
     );
     expect(resolve('a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
   });
   test('does not resolve invalid path', () => {
-    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir));
+    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
     expect(resolve('http://example.com', { request })).toBe(undefined);
     expect(resolve('package', { request })).toBe(undefined);
     expect(resolve('@scope/package', { request })).toBe(undefined);

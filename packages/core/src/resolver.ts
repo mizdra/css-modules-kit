@@ -16,7 +16,10 @@ export interface ResolverOptions {
  */
 export type Resolver = (specifier: string, options: ResolverOptions) => string | undefined;
 
-export function createResolver(compilerOptions: CompilerOptions): Resolver {
+export function createResolver(
+  compilerOptions: CompilerOptions,
+  moduleResolutionCache: ts.ModuleResolutionCache | undefined,
+): Resolver {
   return (_specifier: string, options: ResolverOptions) => {
     let specifier = _specifier;
 
@@ -29,7 +32,13 @@ export function createResolver(compilerOptions: CompilerOptions): Resolver {
         return ts.sys.fileExists(fileName);
       },
     };
-    const { resolvedModule } = ts.resolveModuleName(specifier, options.request, compilerOptions, host);
+    const { resolvedModule } = ts.resolveModuleName(
+      specifier,
+      options.request,
+      compilerOptions,
+      host,
+      moduleResolutionCache,
+    );
     if (resolvedModule) {
       // TODO: Logging that the paths is used.
       specifier = resolvedModule.resolvedFileName.replace(/\.module\.d\.css\.ts$/u, '.module.css');
