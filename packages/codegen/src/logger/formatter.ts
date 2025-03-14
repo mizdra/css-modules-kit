@@ -1,4 +1,4 @@
-import { styleText } from 'node:util';
+import { inspect, styleText } from 'node:util';
 import {
   type Diagnostic,
   type DiagnosticCategory,
@@ -6,6 +6,13 @@ import {
   relative,
   type SystemError,
 } from '@css-modules-kit/core';
+
+function shouldColorize(): boolean {
+  return (
+    !!process.env['FORCE_COLOR'] ||
+    (!process.env['NO_COLORS'] && !process.env['NODE_DISABLE_COLORS'] && process.stderr.hasColors())
+  );
+}
 
 export function formatDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   let result = '';
@@ -25,7 +32,10 @@ export function formatSystemError(error: SystemError): string {
   result += styleText('gray', error.code);
   result += ': ';
   result += error.message;
-  // TODO(#118): Include cause if exists
+  if (error.cause !== undefined) {
+    result += '\n';
+    result += `[cause]: ${inspect(error.cause, { colors: shouldColorize() })}`.replace(/^/gmu, '  ');
+  }
   return result;
 }
 
