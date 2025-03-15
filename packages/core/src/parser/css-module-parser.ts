@@ -127,6 +127,8 @@ export type TokenImporter = AtImportTokenImporter | AtValueTokenImporter;
 export interface CSSModule {
   /** Absolute path of the file */
   fileName: string;
+  /** The content of the file */
+  text: string;
   /**
    * List of token names defined in the file.
    * @example
@@ -164,7 +166,7 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
     if (e instanceof CssSyntaxError) {
       const start = { line: e.line ?? 1, column: e.column ?? 1 };
       return {
-        cssModule: { fileName, localTokens: [], tokenImporters: [] },
+        cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
         diagnostics: [
           {
             type: 'syntactic',
@@ -185,6 +187,7 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
   const { localTokens, tokenImporters, diagnostics } = collectTokens(ast);
   const cssModule = {
     fileName,
+    text,
     localTokens,
     tokenImporters,
   };
