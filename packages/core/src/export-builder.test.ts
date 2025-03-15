@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { createExportBuilder } from './export-builder.js';
-import type { CSSModule } from './parser/css-module-parser.js';
 import { resolve } from './path.js';
 import { createResolver } from './resolver.js';
+import { createCSSModule } from './test/css-module.js';
 import { createAtImportTokenImporter, createAtValueTokenImporter, createToken } from './test/token.js';
 
 const resolver = createResolver({}, undefined);
@@ -14,11 +14,10 @@ describe('ExportBuilder', () => {
       matchesPattern: () => true,
       resolver: () => undefined,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.css'),
       localTokens: [createToken('a_1')],
-      tokenImporters: [],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [
@@ -31,17 +30,15 @@ describe('ExportBuilder', () => {
     const exportBuilder = createExportBuilder({
       getCSSModule: (path) => {
         if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
-            tokenImporters: [],
-          };
+          });
         } else if (path === resolve('/c.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/c.module.css'),
             localTokens: [createToken('c_1'), createToken('c_2')],
-            tokenImporters: [],
-          };
+          });
         } else {
           return undefined;
         }
@@ -53,14 +50,14 @@ describe('ExportBuilder', () => {
       },
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [
         createAtImportTokenImporter('./b.module.css'),
         createAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [
@@ -75,17 +72,16 @@ describe('ExportBuilder', () => {
     const exportBuilder = createExportBuilder({
       getCSSModule: (path) => {
         if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
             tokenImporters: [createAtImportTokenImporter('./c.module.css')],
-          };
+          });
         } else if (path === resolve('/c.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/c.module.css'),
             localTokens: [createToken('c_1')],
-            tokenImporters: [],
-          };
+          });
         } else {
           return undefined;
         }
@@ -97,11 +93,11 @@ describe('ExportBuilder', () => {
       },
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [
@@ -118,11 +114,10 @@ describe('ExportBuilder', () => {
       matchesPattern: () => true,
       resolver: () => undefined,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [],
       tokenImporters: [createAtImportTokenImporter('./unresolvable.module.css')],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [],
@@ -135,11 +130,10 @@ describe('ExportBuilder', () => {
       matchesPattern: (path) => path !== resolve('/b.module.css'),
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [],
@@ -152,11 +146,10 @@ describe('ExportBuilder', () => {
       matchesPattern: () => true,
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [],
       tokenImporters: [createAtImportTokenImporter('./non-existing.module.css')],
-    };
+    });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [],
@@ -170,22 +163,21 @@ describe('ExportBuilder', () => {
       getCSSModule: (path) => {
         getCSSModuleCalls++;
         if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
-            tokenImporters: [],
-          };
+          });
         }
         return undefined;
       },
       matchesPattern: () => true,
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
 
     // First build should call getCSSModule
     const result1 = exportBuilder.build(cssModule);
@@ -218,22 +210,21 @@ describe('ExportBuilder', () => {
       getCSSModule: (path) => {
         getCSSModuleCalls++;
         if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
-            tokenImporters: [],
-          };
+          });
         }
         return undefined;
       },
       matchesPattern: () => true,
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
 
     // First build
     exportBuilder.build(cssModule);
@@ -253,27 +244,26 @@ describe('ExportBuilder', () => {
       getCSSModule: (path) => {
         getCSSModuleCalls++;
         if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
-            tokenImporters: [],
-          };
+          });
         }
         return undefined;
       },
       matchesPattern: () => true,
       resolver,
     });
-    const moduleA: CSSModule = {
+    const moduleA = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
-    const moduleC: CSSModule = {
+    });
+    const moduleC = createCSSModule({
       fileName: resolve('/c.module.css'),
       localTokens: [createToken('c_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
 
     // Build moduleA
     exportBuilder.build(moduleA);
@@ -292,28 +282,28 @@ describe('ExportBuilder', () => {
     const exportBuilder = createExportBuilder({
       getCSSModule: (path) => {
         if (path === resolve('/a.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/a.module.css'),
             localTokens: [createToken('a_1')],
             tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-          };
+          });
         } else if (path === resolve('/b.module.css')) {
-          return {
+          return createCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [createToken('b_1')],
             tokenImporters: [createAtImportTokenImporter('./a.module.css')],
-          };
+          });
         }
         return undefined;
       },
       matchesPattern: () => true,
       resolver,
     });
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [createToken('a_1')],
       tokenImporters: [createAtImportTokenImporter('./b.module.css')],
-    };
+    });
 
     // Should not cause infinite recursion
     const result = exportBuilder.build(cssModule);

@@ -1,22 +1,21 @@
 import { describe, expect, test } from 'vitest';
 import { checkCSSModule } from './checker.js';
 import type { ExportBuilder } from './export-builder.js';
-import type { CSSModule } from './parser/css-module-parser.js';
 import { createResolver } from './resolver.js';
+import { createCSSModule } from './test/css-module.js';
 import { createAtImportTokenImporter, createAtValueTokenImporter } from './test/token.js';
 
 const resolver = createResolver({}, undefined);
 
 describe('checkCSSModule', () => {
   test('report diagnostics for non-existing module', () => {
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: '/a.module.css',
-      localTokens: [],
       tokenImporters: [
         createAtImportTokenImporter('./b.module.css'),
         createAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
-    };
+    });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: [] }),
       clearCache: () => {},
@@ -58,11 +57,10 @@ describe('checkCSSModule', () => {
     `);
   });
   test('report diagnostics for non-exported token', () => {
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: '/a.module.css',
-      localTokens: [],
       tokenImporters: [createAtValueTokenImporter('./b.module.css', ['b_1', 'b_2'])],
-    };
+    });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: ['b_1'] }),
       clearCache: () => {},
@@ -90,11 +88,10 @@ describe('checkCSSModule', () => {
     `);
   });
   test('ignore token importers for unresolvable modules', () => {
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: '/a.module.css',
-      localTokens: [],
       tokenImporters: [createAtImportTokenImporter('./unresolvable.module.css')],
-    };
+    });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: [] }),
       clearCache: () => {},
@@ -106,14 +103,13 @@ describe('checkCSSModule', () => {
     expect(diagnostics).toEqual([]);
   });
   test('ignore token importers that do not match the pattern', () => {
-    const cssModule: CSSModule = {
+    const cssModule = createCSSModule({
       fileName: '/a.module.css',
-      localTokens: [],
       tokenImporters: [
         createAtImportTokenImporter('./b.module.css'),
         createAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
-    };
+    });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: [] }),
       clearCache: () => {},
