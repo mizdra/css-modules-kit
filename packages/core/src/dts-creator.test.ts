@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
 import { dirname, join } from './path.js';
+import { fakeCSSModule } from './test/css-module.js';
 
 const options: CreateDtsOptions = {
   resolver: (specifier, { request }) => join(dirname(request), specifier),
@@ -13,16 +14,7 @@ function fakeLoc(offset: number) {
 
 describe('createDts', () => {
   test('creates d.ts file if css module file has no tokens', () => {
-    expect(
-      createDts(
-        {
-          fileName: '/test.module.css',
-          localTokens: [],
-          tokenImporters: [],
-        },
-        options,
-      ),
-    ).toMatchInlineSnapshot(`
+    expect(createDts(fakeCSSModule(), options)).toMatchInlineSnapshot(`
       {
         "linkedCodeMapping": {
           "generatedLengths": [],
@@ -46,8 +38,7 @@ describe('createDts', () => {
   test('creates d.ts file with local tokens', () => {
     expect(
       createDts(
-        {
-          fileName: '/test.module.css',
+        fakeCSSModule({
           localTokens: [
             {
               name: 'local1',
@@ -55,8 +46,7 @@ describe('createDts', () => {
             },
             { name: 'local2', loc: fakeLoc(1) },
           ],
-          tokenImporters: [],
-        },
+        }),
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -94,9 +84,7 @@ describe('createDts', () => {
   test('creates d.ts file with token importers', () => {
     expect(
       createDts(
-        {
-          fileName: '/test.module.css',
-          localTokens: [],
+        fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: './a.module.css', fromLoc: fakeLoc(0) },
             {
@@ -119,7 +107,7 @@ describe('createDts', () => {
               fromLoc: fakeLoc(5),
             },
           ],
-        },
+        }),
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -185,11 +173,10 @@ describe('createDts', () => {
   test('creates types in the order of local tokens and token importers', () => {
     expect(
       createDts(
-        {
-          fileName: '/test.module.css',
+        fakeCSSModule({
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
-        },
+        }),
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -228,9 +215,8 @@ describe('createDts', () => {
     const resolver = (specifier: string) => specifier.replace('@', '/src');
     expect(
       createDts(
-        {
+        fakeCSSModule({
           fileName: '/src/test.module.css',
-          localTokens: [],
           tokenImporters: [
             { type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) },
             {
@@ -253,7 +239,7 @@ describe('createDts', () => {
               fromLoc: fakeLoc(5),
             },
           ],
-        },
+        }),
         { ...options, resolver },
       ),
     ).toMatchInlineSnapshot(`
@@ -319,9 +305,7 @@ describe('createDts', () => {
   test('does not create types for external files', () => {
     expect(
       createDts(
-        {
-          fileName: '/test.module.css',
-          localTokens: [],
+        fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: 'external.css', fromLoc: fakeLoc(0) },
             {
@@ -338,7 +322,7 @@ describe('createDts', () => {
               fromLoc: fakeLoc(3),
             },
           ],
-        },
+        }),
         { ...options, matchesPattern: () => false },
       ),
     ).toMatchInlineSnapshot(`
@@ -366,11 +350,10 @@ describe('createDts', () => {
     const resolver = (_specifier: string) => undefined;
     expect(
       createDts(
-        {
+        fakeCSSModule({
           fileName: '/src/test.module.css',
-          localTokens: [],
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
-        },
+        }),
         { ...options, resolver },
       ),
     ).toMatchInlineSnapshot(`

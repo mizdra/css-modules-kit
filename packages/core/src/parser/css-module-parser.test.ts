@@ -258,6 +258,22 @@ describe('parseCSSModule', () => {
               "name": "value",
             },
           ],
+          "text": ".basic {}
+      .cascading {}
+      .cascading {}
+      .pseudo_class_1 {}
+      .pseudo_class_2:hover {}
+      :not(.pseudo_class_3) {}
+      .multiple_selector_1.multiple_selector_2 {}
+      .combinator_1 + .combinator_2 {}
+      @supports (display: flex) {
+        @media screen and (min-width: 900px) {
+          .at_rule {}
+        }
+      }
+      .selector_list_1, .selector_list_2 {}
+      :local(.local_1) {}
+      @value value: #BF4040;",
           "tokenImporters": [],
         },
         "diagnostics": [],
@@ -277,6 +293,8 @@ describe('parseCSSModule', () => {
         "cssModule": {
           "fileName": "/test.module.css",
           "localTokens": [],
+          "text": "@import './a.module.css';
+      @value a, b as alias from './a.module.css';",
           "tokenImporters": [
             {
               "from": "./a.module.css",
@@ -390,6 +408,8 @@ describe('parseCSSModule', () => {
               "name": "local1",
             },
           ],
+          "text": ":local .local1 {}
+      @value;",
           "tokenImporters": [],
         },
         "diagnostics": [
@@ -455,6 +475,7 @@ describe('parseCSSModule', () => {
         "cssModule": {
           "fileName": "/test.module.css",
           "localTokens": [],
+          "text": ".a {",
           "tokenImporters": [],
         },
         "diagnostics": [
@@ -500,6 +521,7 @@ describe('parseCSSModule', () => {
               "name": "a",
             },
           ],
+          "text": ".a {",
           "tokenImporters": [],
         },
         "diagnostics": [],

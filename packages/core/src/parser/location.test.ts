@@ -2,11 +2,11 @@ import dedent from 'dedent';
 import selectorParser from 'postcss-selector-parser';
 import { describe, expect, test } from 'vitest';
 import type { DiagnosticPosition } from '../diagnostic.js';
-import { createRoot, createRules } from '../test/ast.js';
+import { fakeRoot, fakeRules } from '../test/ast.js';
 import { calcDiagnosticsLocationForSelectorParserNode } from './location.js';
 
 function calcLocations(source: string) {
-  const [rule] = createRules(createRoot(source));
+  const [rule] = fakeRules(fakeRoot(source));
   const root = selectorParser().astSync(rule!);
   const result: { node: string; type: string; start: DiagnosticPosition; end: DiagnosticPosition }[] = [];
   root.walk((node) => {
