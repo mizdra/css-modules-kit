@@ -1,17 +1,17 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createRoot, createRules } from '../test/ast.js';
+import { fakeRoot, fakeRules } from '../test/ast.js';
 import { parseRule } from './rule-parser.js';
 
 function parseRuleSimply(ruleStr: string): string[] {
-  const [rule] = createRules(createRoot(ruleStr));
+  const [rule] = fakeRules(fakeRoot(ruleStr));
   return parseRule(rule!).classSelectors.map((classSelector) => classSelector.name);
 }
 
 describe('parseRule', () => {
   test('collect local class selectors', () => {
-    const rules = createRules(
-      createRoot(dedent`
+    const rules = fakeRules(
+      fakeRoot(dedent`
         .basic {}
         .cascading {}
         .cascading {}
@@ -366,8 +366,8 @@ describe('parseRule', () => {
       // ]);
     });
     test('reports diagnostics when `:local(...)` or `:global(...)` is nested', () => {
-      const rules = createRules(
-        createRoot(dedent`
+      const rules = fakeRules(
+        fakeRoot(dedent`
           :local(:global(.a)) {}
           :global(:local(.a)) {}
           :local(:local(.a)) {}
@@ -459,8 +459,8 @@ describe('parseRule', () => {
     test('`:local()` and `:global()` is allowed', () => {
       // postcss-modules does not allow it, but css-modules-kit allows it.
       // Because allowing it does not harm users.
-      const rules = createRules(
-        createRoot(dedent`
+      const rules = fakeRules(
+        fakeRoot(dedent`
           :local() {}
           :global() {}
           :local( ) {}
@@ -488,8 +488,8 @@ describe('parseRule', () => {
   describe('`:local` and `:global`', () => {
     // The :local and :global specifications are complex. Therefore, css-modules-kit does not support them.
     test('reports diagnostics when using `:local` or `:global`', () => {
-      const rules = createRules(
-        createRoot(dedent`
+      const rules = fakeRules(
+        fakeRoot(dedent`
           :local .local1 {}
           :global .global1 {}
         `),
@@ -599,8 +599,8 @@ describe('parseRule', () => {
     // });
   });
   test('disallow class names that are not valid JavaScript identifiers', () => {
-    const rules = createRules(
-      createRoot(dedent`
+    const rules = fakeRules(
+      fakeRoot(dedent`
         .a-1 .a_\u0032 {}
       `),
     );

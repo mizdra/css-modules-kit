@@ -1,12 +1,12 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createAtValues, createRoot } from '../test/ast.js';
+import { fakeAtValues, fakeRoot } from '../test/ast.js';
 import { parseAtValue } from './at-value-parser.js';
 
 describe('parseAtValue', () => {
   test('valid', () => {
-    const atValues = createAtValues(
-      createRoot(dedent`
+    const atValues = fakeAtValues(
+      fakeRoot(dedent`
         @value basic: #000;
         @value withoutColon #000;
         @value empty:;
@@ -340,8 +340,8 @@ describe('parseAtValue', () => {
     `);
   });
   test('invalid', () => {
-    const [atValue1, atValue2] = createAtValues(
-      createRoot(dedent`
+    const [atValue1, atValue2] = fakeAtValues(
+      fakeRoot(dedent`
         @value;
         @value a,,b from "test.css";
       `),

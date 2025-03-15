@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
 import { dirname, join } from './path.js';
-import { createCSSModule } from './test/css-module.js';
+import { fakeCSSModule } from './test/css-module.js';
 
 const options: CreateDtsOptions = {
   resolver: (specifier, { request }) => join(dirname(request), specifier),
@@ -14,7 +14,7 @@ function fakeLoc(offset: number) {
 
 describe('createDts', () => {
   test('creates d.ts file if css module file has no tokens', () => {
-    expect(createDts(createCSSModule(), options)).toMatchInlineSnapshot(`
+    expect(createDts(fakeCSSModule(), options)).toMatchInlineSnapshot(`
       {
         "linkedCodeMapping": {
           "generatedLengths": [],
@@ -38,7 +38,7 @@ describe('createDts', () => {
   test('creates d.ts file with local tokens', () => {
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           localTokens: [
             {
               name: 'local1',
@@ -84,7 +84,7 @@ describe('createDts', () => {
   test('creates d.ts file with token importers', () => {
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: './a.module.css', fromLoc: fakeLoc(0) },
             {
@@ -173,7 +173,7 @@ describe('createDts', () => {
   test('creates types in the order of local tokens and token importers', () => {
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
         }),
@@ -215,7 +215,7 @@ describe('createDts', () => {
     const resolver = (specifier: string) => specifier.replace('@', '/src');
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           fileName: '/src/test.module.css',
           tokenImporters: [
             { type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) },
@@ -305,7 +305,7 @@ describe('createDts', () => {
   test('does not create types for external files', () => {
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: 'external.css', fromLoc: fakeLoc(0) },
             {
@@ -350,7 +350,7 @@ describe('createDts', () => {
     const resolver = (_specifier: string) => undefined;
     expect(
       createDts(
-        createCSSModule({
+        fakeCSSModule({
           fileName: '/src/test.module.css',
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
         }),

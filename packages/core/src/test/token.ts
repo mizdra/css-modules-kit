@@ -2,11 +2,11 @@ import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../pars
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
-export function createToken(name: string): Token {
+export function fakeToken(name: string): Token {
   return { name, loc: fakeLoc };
 }
 
-export function createAtImportTokenImporter(from: string): AtImportTokenImporter {
+export function fakeAtImportTokenImporter(from: string): AtImportTokenImporter {
   return {
     type: 'import',
     from,
@@ -14,7 +14,7 @@ export function createAtImportTokenImporter(from: string): AtImportTokenImporter
   };
 }
 
-export function createAtValueTokenImporter(from: string, valueNames: string[]): AtValueTokenImporter {
+export function fakeAtValueTokenImporter(from: string, valueNames: string[]): AtValueTokenImporter {
   return {
     type: 'value',
     from,
