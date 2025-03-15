@@ -11,7 +11,7 @@ export const CMK_DATA_KEY = Symbol('css-modules-kit-data');
 interface CSSModuleVirtualCode extends VirtualCode {
   [CMK_DATA_KEY]: {
     cssModule: CSSModule;
-    diagnostics: SyntacticDiagnostic[];
+    syntacticDiagnostics: SyntacticDiagnostic[];
   };
 }
 
@@ -56,7 +56,7 @@ export function createCSSModuleLanguagePlugin(
         linkedCodeMappings: [{ ...linkedCodeMapping, data: undefined }],
         [CMK_DATA_KEY]: {
           cssModule,
-          diagnostics,
+          syntacticDiagnostics: diagnostics,
         },
       };
     },
