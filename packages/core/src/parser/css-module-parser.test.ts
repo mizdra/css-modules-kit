@@ -426,7 +426,6 @@ describe('parseCSSModule', () => {
               "offset": 0,
             },
             "text": "\`:local\` is not supported. Use \`:local(...)\` instead.",
-            "type": "syntactic",
           },
           {
             "category": "error",
@@ -440,7 +439,6 @@ describe('parseCSSModule', () => {
               "line": 2,
             },
             "text": "\`@value\` is a invalid syntax.",
-            "type": "syntactic",
           },
         ],
       }
@@ -487,7 +485,6 @@ describe('parseCSSModule', () => {
               "line": 1,
             },
             "text": "Unclosed block",
-            "type": "syntactic",
           },
         ],
       }

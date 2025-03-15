@@ -41,7 +41,6 @@ export function checkCSSModule(
 
 function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): SemanticDiagnostic {
   return {
-    type: 'semantic',
     text: `Cannot import module '${tokenImporter.from}'`,
     category: 'error',
     fileName: cssModule.fileName,
@@ -56,7 +55,6 @@ function createModuleHasNoExportedTokenDiagnostic(
   value: AtValueTokenImporterValue,
 ): SemanticDiagnostic {
   return {
-    type: 'semantic',
     text: `Module '${tokenImporter.from}' has no exported token '${value.name}'.`,
     category: 'error',
     fileName: cssModule.fileName,

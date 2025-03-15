@@ -361,7 +361,6 @@ describe('parseAtValue', () => {
               "line": 1,
             },
             "text": "\`@value\` is a invalid syntax.",
-            "type": "syntactic",
           },
         ],
       }
@@ -429,7 +428,6 @@ describe('parseAtValue', () => {
               "line": 2,
             },
             "text": "\`\` is invalid syntax.",
-            "type": "syntactic",
           },
         ],
       }

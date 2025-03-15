@@ -169,7 +169,6 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
         cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
         diagnostics: [
           {
-            type: 'syntactic',
             fileName,
             start,
             ...(e.endLine !== undefined &&

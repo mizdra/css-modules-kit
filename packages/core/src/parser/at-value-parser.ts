@@ -106,7 +106,6 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
           column: start.column + alias.length,
         };
         diagnostics.push({
-          type: 'syntactic',
           fileName: atValue.source!.input.file!,
           start,
           end,
@@ -160,7 +159,6 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
     return { atValue: parsedAtValue, diagnostics };
   }
   diagnostics.push({
-    type: 'syntactic',
     fileName: atValue.source!.input.file!,
     start: {
       line: atValue.source!.start!.line,

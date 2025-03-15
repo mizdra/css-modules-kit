@@ -9,13 +9,12 @@ const cwd = '/app';
 
 describe('formatDiagnostic', () => {
   test('should format diagnostic without filename and start position', () => {
-    const diagnostic: SemanticDiagnostic = { type: 'semantic', category: 'error', text: 'text' };
+    const diagnostic: SemanticDiagnostic = { category: 'error', text: 'text' };
     const result = formatDiagnostic(diagnostic, cwd);
     expect(result).toMatchInlineSnapshot(`"error: text"`);
   });
   test('should format diagnostic with filename and start position', () => {
     const diagnostic: SyntacticDiagnostic = {
-      type: 'syntactic',
       fileName: '/app/path/to/file.ts',
       start: { line: 1, column: 2 },
       category: 'error',
@@ -26,7 +25,6 @@ describe('formatDiagnostic', () => {
   });
   test('should format diagnostic with error category', () => {
     const diagnostic: SemanticDiagnostic = {
-      type: 'semantic',
       category: 'error',
       text: 'error text',
     };
@@ -35,7 +33,6 @@ describe('formatDiagnostic', () => {
   });
   test('should format diagnostic with warning category', () => {
     const diagnostic: SemanticDiagnostic = {
-      type: 'semantic',
       category: 'warning',
       text: 'warning text',
     };

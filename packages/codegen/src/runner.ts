@@ -85,7 +85,6 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
   if (fileNames.length === 0) {
     logger.logDiagnostics([
       {
-        type: 'semantic',
         category: 'warning',
         text: `The file specified in tsconfig.json not found.`,
       },
