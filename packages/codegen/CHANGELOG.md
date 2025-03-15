@@ -1,5 +1,18 @@
 # @css-modules-kit/codegen
 
+## 0.2.0
+
+### Minor Changes
+
+- 2b1f0fe: feat: implement resolver cache
+- 9ce6d25: feat: print error cause of `SystemError`
+
+### Patch Changes
+
+- 3772c14: fix: fix invalid `cause` object of `SystemError`
+- Updated dependencies [2b1f0fe]
+  - @css-modules-kit/core@0.2.0
+
 ## 0.1.4
 
 ### Patch Changes

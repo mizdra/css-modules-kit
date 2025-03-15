@@ -1,5 +1,16 @@
 # @css-modules-kit/ts-plugin
 
+## 0.1.0
+
+### Minor Changes
+
+- 2b1f0fe: feat: implement resolver cache
+
+### Patch Changes
+
+- Updated dependencies [2b1f0fe]
+  - @css-modules-kit/core@0.2.0
+
 ## 0.0.6
 
 ### Patch Changes

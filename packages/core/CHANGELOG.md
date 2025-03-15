@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.2.0
+
+### Minor Changes
+
+- 2b1f0fe: feat: implement resolver cache
+
 ## 0.1.0
 
 ### Minor Changes
