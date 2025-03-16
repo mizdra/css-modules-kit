@@ -1,8 +1,8 @@
 import dedent from 'dedent';
 import selectorParser from 'postcss-selector-parser';
 import { describe, expect, test } from 'vitest';
-import type { DiagnosticPosition } from '../diagnostic.js';
 import { fakeRoot, fakeRules } from '../test/ast.js';
+import type { DiagnosticPosition } from '../type.js';
 import { calcDiagnosticsLocationForSelectorParserNode } from './location.js';
 
 function calcLocations(source: string) {

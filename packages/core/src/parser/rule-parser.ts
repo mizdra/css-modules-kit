@@ -1,6 +1,6 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
-import type { SyntacticDiagnostic } from '../diagnostic.js';
+import type { SyntacticDiagnostic } from '../type.js';
 import { calcDiagnosticsLocationForSelectorParserNode, type Location } from './location.js';
 
 interface CollectResult {

@@ -1,4 +1,3 @@
-import type { SemanticDiagnostic } from './diagnostic.js';
 import type { ExportBuilder } from './export-builder.js';
 import type { MatchesPattern } from './file.js';
 import type {
@@ -8,6 +7,7 @@ import type {
   TokenImporter,
 } from './parser/css-module-parser.js';
 import type { Resolver } from './resolver.js';
+import type { SemanticDiagnostic } from './type.js';
 
 export function checkCSSModule(
   cssModule: CSSModule,

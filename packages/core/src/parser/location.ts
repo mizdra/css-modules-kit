@@ -1,6 +1,6 @@
 import type { Rule } from 'postcss';
 import type selectorParser from 'postcss-selector-parser';
-import type { DiagnosticPosition } from '../diagnostic.js';
+import type { DiagnosticPosition } from '../type.js';
 
 export interface Position {
   /**

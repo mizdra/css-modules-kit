@@ -1,5 +1,5 @@
 import type { AtRule } from 'postcss';
-import type { DiagnosticPosition, SyntacticDiagnostic } from '../diagnostic.js';
+import type { DiagnosticPosition, SyntacticDiagnostic } from '../type.js';
 import type { Location } from './location.js';
 
 interface ValueDeclaration {
