@@ -57,6 +57,7 @@ test('Semantic Diagnostics', async () => {
           "line": 2,
           "offset": 32,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 2,
           "offset": 29,
@@ -70,6 +71,7 @@ test('Semantic Diagnostics', async () => {
           "line": 5,
           "offset": 24,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 5,
           "offset": 10,

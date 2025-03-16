@@ -36,6 +36,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 1,
           "offset": 8,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 1,
           "offset": 1,
@@ -49,6 +50,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 2,
           "offset": 21,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 2,
           "offset": 8,
@@ -62,6 +64,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 3,
           "offset": 7,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 3,
           "offset": 1,
@@ -75,6 +78,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 4,
           "offset": 5,
         },
+        "source": "css-modules-kit",
         "start": {
           "line": 4,
           "offset": 1,
