@@ -1,13 +1,13 @@
-import type { SemanticDiagnostic } from './diagnostic.js';
-import type { ExportBuilder } from './export-builder.js';
-import type { MatchesPattern } from './file.js';
 import type {
   AtValueTokenImporter,
   AtValueTokenImporterValue,
   CSSModule,
+  ExportBuilder,
+  MatchesPattern,
+  Resolver,
+  SemanticDiagnostic,
   TokenImporter,
-} from './parser/css-module-parser.js';
-import type { Resolver } from './resolver.js';
+} from './type.js';
 
 export function checkCSSModule(
   cssModule: CSSModule,

@@ -1,28 +1,28 @@
 export type { CMKConfig } from './config.js';
 export { readConfigFile } from './config.js';
 export { TsConfigFileNotFoundError, SystemError } from './error.js';
+export { parseCSSModule, type ParseCSSModuleOptions, type ParseCSSModuleResult } from './parser/css-module-parser.js';
+export { parseRule } from './parser/rule-parser.js';
 export {
-  parseCSSModule,
-  type ParseCSSModuleOptions,
+  type Location,
+  type Position,
   type CSSModule,
   type Token,
   type AtImportTokenImporter,
   type TokenImporter,
   type AtValueTokenImporter,
   type AtValueTokenImporterValue,
-  type ParseCSSModuleResult,
-} from './parser/css-module-parser.js';
-export { type Location, type Position } from './parser/location.js';
-export { parseRule } from './parser/rule-parser.js';
-export {
+  type Resolver,
+  type MatchesPattern,
+  type ExportBuilder,
   type Diagnostic,
   type SemanticDiagnostic,
   type SyntacticDiagnostic,
   type DiagnosticCategory,
   type DiagnosticPosition,
-} from './diagnostic.js';
+} from './type.js';
 export { type CreateDtsOptions, createDts, STYLES_EXPORT_NAME } from './dts-creator.js';
-export { createResolver, type Resolver } from './resolver.js';
+export { createResolver } from './resolver.js';
 export {
   CSS_MODULE_EXTENSION,
   getCssModuleFileName,
@@ -30,11 +30,10 @@ export {
   isCSSModuleFile,
   findComponentFile,
   findComponentFileSync,
-  type MatchesPattern,
   createMatchesPattern,
   getFileNamesByPattern,
 } from './file.js';
 export { checkCSSModule } from './checker.js';
-export { type ExportBuilder, createExportBuilder } from './export-builder.js';
+export { createExportBuilder } from './export-builder.js';
 export { join, resolve, relative, dirname, basename, parse, matchesGlob, isAbsolute } from './path.js';
 export { findUsedTokenNames } from './util.js';

@@ -1,4 +1,4 @@
-import type { CSSModule } from '../parser/css-module-parser.js';
+import type { CSSModule } from '../type.js';
 
 export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
   return {

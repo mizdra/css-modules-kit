@@ -1,4 +1,4 @@
-import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../parser/css-module-parser.js';
+import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../type.js';
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 

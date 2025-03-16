@@ -2,19 +2,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { CompilerOptions } from 'typescript';
 import ts from 'typescript';
 import { isAbsolute, resolve } from './path.js';
-
-export interface ResolverOptions {
-  /** The file that imports the specifier. It is a absolute path. */
-  request: string;
-}
-
-/**
- * A resolver function that resolves import specifiers.
- * @param specifier The import specifier.
- * @param options The options.
- * @returns The resolved import specifier. It is a absolute path. If the import specifier cannot be resolved, return `undefined`.
- */
-export type Resolver = (specifier: string, options: ResolverOptions) => string | undefined;
+import type { Resolver, ResolverOptions } from './type.js';
 
 export function createResolver(
   compilerOptions: CompilerOptions,

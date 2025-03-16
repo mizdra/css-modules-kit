@@ -1,7 +1,7 @@
 import ts from 'typescript';
-import type { SemanticDiagnostic } from './diagnostic.js';
 import { TsConfigFileNotFoundError } from './error.js';
 import { basename, dirname, join, resolve } from './path.js';
+import type { SemanticDiagnostic } from './type.js';
 
 // https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3006
 const DEFAULT_INCLUDE_SPEC = '**/*';

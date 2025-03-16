@@ -1,7 +1,16 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
-import type { SyntacticDiagnostic } from '../diagnostic.js';
-import { calcDiagnosticsLocationForSelectorParserNode, type Location } from './location.js';
+import type { DiagnosticPosition, Location, SyntacticDiagnostic } from '../type.js';
+
+function calcDiagnosticsLocationForSelectorParserNode(
+  rule: Rule,
+  node: selectorParser.Node,
+): { start: DiagnosticPosition; end: DiagnosticPosition } {
+  const start = rule.positionBy({ index: node.sourceIndex });
+  const end = rule.positionBy({ index: node.sourceIndex + node.toString().length });
+  return { start, end };
+}
+export { calcDiagnosticsLocationForSelectorParserNode as calcDiagnosticsLocationForSelectorParserNodeForTest };
 
 interface CollectResult {
   classNames: selectorParser.ClassName[];
