@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { TsConfigFileNotFoundError } from './error.js';
 import { basename, dirname, join, resolve } from './path.js';
-import type { SemanticDiagnostic } from './type.js';
+import type { Diagnostic } from './type.js';
 
 // https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3006
 const DEFAULT_INCLUDE_SPEC = '**/*';
@@ -60,7 +60,7 @@ export interface CMKConfig {
   configFileName: string;
   compilerOptions: ts.CompilerOptions;
   /** The diagnostics that occurred while reading the config file. */
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 }
 
 /**
@@ -79,7 +79,7 @@ interface UnnormalizedRawConfig {
  */
 interface ParsedRawData {
   config: UnnormalizedRawConfig;
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 }
 
 export function findTsConfigFile(project: string): string | undefined {
@@ -91,7 +91,7 @@ export function findTsConfigFile(project: string): string | undefined {
   return resolve(configFile);
 }
 
-function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
+function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
   const result: ParsedRawData = {
     config: {
       includes: undefined,
@@ -127,8 +127,8 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
       } else {
         result.diagnostics.push({
           category: 'error',
-          text: '`dtsOutDir` must be a string.',
-          fileName: configFileName,
+          text: `\`dtsOutDir\` in ${tsConfigSourceFile.fileName} must be a string.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
         });
       }
     }
@@ -138,8 +138,8 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
       } else {
         result.diagnostics.push({
           category: 'error',
-          text: '`arbitraryExtensions` must be a boolean.',
-          fileName: configFileName,
+          text: `\`arbitraryExtensions\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
         });
       }
     }
@@ -166,7 +166,7 @@ export function readTsConfigFile(project: string): {
   configFileName: string;
   config: UnnormalizedRawConfig;
   compilerOptions: ts.CompilerOptions;
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 } {
   const configFileName = findTsConfigFile(project);
   if (!configFileName) throw new TsConfigFileNotFoundError();
@@ -193,7 +193,7 @@ export function readTsConfigFile(project: string): {
     ],
   );
   // Read options from `parsedCommandLine.raw`
-  let parsedRawData = parseRawData(parsedCommandLine.raw, configFileName);
+  let parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile);
 
   // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
   // So here we read the options from those files and merge them into `parsedRawData`.

@@ -16,8 +16,7 @@ export {
   type MatchesPattern,
   type ExportBuilder,
   type Diagnostic,
-  type SemanticDiagnostic,
-  type SyntacticDiagnostic,
+  type DiagnosticWithLocation,
   type DiagnosticCategory,
   type DiagnosticPosition,
 } from './type.js';
@@ -37,3 +36,4 @@ export { checkCSSModule } from './checker.js';
 export { createExportBuilder } from './export-builder.js';
 export { join, resolve, relative, dirname, basename, parse, matchesGlob, isAbsolute } from './path.js';
 export { findUsedTokenNames } from './util.js';
+export { convertDiagnostic, convertDiagnosticWithLocation } from './diagnostic.js';

@@ -13,7 +13,7 @@ function parseRuleSimply(ruleStr: string): string[] {
 function calcLocations(source: string) {
   const [rule] = fakeRules(fakeRoot(source));
   const root = selectorParser().astSync(rule!);
-  const result: { node: string; type: string; start: DiagnosticPosition; end: DiagnosticPosition }[] = [];
+  const result: { node: string; type: string; start: DiagnosticPosition; length: number }[] = [];
   root.walk((node) => {
     const loc = calcDiagnosticsLocationForSelectorParserNodeForTest(rule!, node);
     result.push({
@@ -31,10 +31,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
     expect(result).toMatchInlineSnapshot(`
       [
         {
-          "end": {
-            "column": 6,
-            "line": 1,
-          },
+          "length": 5,
           "node": ".a .b",
           "start": {
             "column": 1,
@@ -44,10 +41,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "selector",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 1,
-          },
+          "length": 2,
           "node": ".a",
           "start": {
             "column": 1,
@@ -57,10 +51,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "class",
         },
         {
-          "end": {
-            "column": 4,
-            "line": 1,
-          },
+          "length": 1,
           "node": " ",
           "start": {
             "column": 3,
@@ -69,10 +60,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "combinator",
         },
         {
-          "end": {
-            "column": 6,
-            "line": 1,
-          },
+          "length": 2,
           "node": ".b",
           "start": {
             "column": 4,
@@ -92,10 +80,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
     expect(result1).toMatchInlineSnapshot(`
       [
         {
-          "end": {
-            "column": 5,
-            "line": 3,
-          },
+          "length": 10,
           "node": ".a
       .b
         .c",
@@ -107,10 +92,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "selector",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 1,
-          },
+          "length": 2,
           "node": ".a",
           "start": {
             "column": 1,
@@ -120,10 +102,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "class",
         },
         {
-          "end": {
-            "column": 1,
-            "line": 2,
-          },
+          "length": 1,
           "node": "
       ",
           "start": {
@@ -133,10 +112,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "combinator",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 2,
-          },
+          "length": 2,
           "node": ".b",
           "start": {
             "column": 1,
@@ -145,10 +121,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "class",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 3,
-          },
+          "length": 3,
           "node": "
         ",
           "start": {
@@ -158,10 +131,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "combinator",
         },
         {
-          "end": {
-            "column": 5,
-            "line": 3,
-          },
+          "length": 2,
           "node": ".c",
           "start": {
             "column": 3,
@@ -179,10 +149,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
     expect(result2).toMatchInlineSnapshot(`
       [
         {
-          "end": {
-            "column": 5,
-            "line": 3,
-          },
+          "length": 7,
           "node": ".a
         .b",
           "start": {
@@ -193,10 +160,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "selector",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 2,
-          },
+          "length": 2,
           "node": ".a",
           "start": {
             "column": 1,
@@ -206,10 +170,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "class",
         },
         {
-          "end": {
-            "column": 3,
-            "line": 3,
-          },
+          "length": 3,
           "node": "
         ",
           "start": {
@@ -219,10 +180,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "type": "combinator",
         },
         {
-          "end": {
-            "column": 5,
-            "line": 3,
-          },
+          "length": 2,
           "node": ".b",
           "start": {
             "column": 3,
@@ -609,11 +567,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 19,
-                  "line": 1,
-                },
-                "fileName": "/test/test.css",
+                "length": 11,
                 "start": {
                   "column": 8,
                   "line": 1,
@@ -627,11 +581,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 19,
-                  "line": 2,
-                },
-                "fileName": "/test/test.css",
+                "length": 10,
                 "start": {
                   "column": 9,
                   "line": 2,
@@ -645,11 +595,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 18,
-                  "line": 3,
-                },
-                "fileName": "/test/test.css",
+                "length": 10,
                 "start": {
                   "column": 8,
                   "line": 3,
@@ -663,11 +609,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 20,
-                  "line": 4,
-                },
-                "fileName": "/test/test.css",
+                "length": 11,
                 "start": {
                   "column": 9,
                   "line": 4,
@@ -741,11 +683,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 7,
-                  "line": 1,
-                },
-                "fileName": "/test/test.css",
+                "length": 6,
                 "start": {
                   "column": 1,
                   "line": 1,
@@ -776,11 +714,7 @@ describe('parseRule', () => {
             "diagnostics": [
               {
                 "category": "error",
-                "end": {
-                  "column": 8,
-                  "line": 2,
-                },
-                "fileName": "/test/test.css",
+                "length": 7,
                 "start": {
                   "column": 1,
                   "line": 2,
@@ -833,11 +767,7 @@ describe('parseRule', () => {
           "diagnostics": [
             {
               "category": "error",
-              "end": {
-                "column": 5,
-                "line": 1,
-              },
-              "fileName": "/test/test.css",
+              "length": 4,
               "start": {
                 "column": 1,
                 "line": 1,
@@ -847,11 +777,7 @@ describe('parseRule', () => {
             },
             {
               "category": "error",
-              "end": {
-                "column": 15,
-                "line": 1,
-              },
-              "fileName": "/test/test.css",
+              "length": 9,
               "start": {
                 "column": 6,
                 "line": 1,

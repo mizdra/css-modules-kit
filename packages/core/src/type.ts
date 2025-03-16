@@ -149,6 +149,11 @@ export interface ExportBuilder {
 
 export type DiagnosticCategory = 'error' | 'warning';
 
+export interface DiagnosticSourceFile {
+  fileName: string;
+  text: string;
+}
+
 export interface DiagnosticPosition {
   /** The line number in the source file. It is 1-based. */
   line: number;
@@ -156,28 +161,31 @@ export interface DiagnosticPosition {
   column: number;
 }
 
-export type Diagnostic = SemanticDiagnostic | SyntacticDiagnostic;
-interface DiagnosticBase {
+interface DiagnosticWithoutLocation {
   /** Text of diagnostic message. */
   text: string;
   /** The category of the diagnostic message. */
   category: DiagnosticCategory;
 }
 
-export interface SemanticDiagnostic extends DiagnosticBase {
-  /** The filename of the file in which the diagnostic occurred */
-  fileName?: string;
-  /** Starting file position at which text applies. It is inclusive. */
-  start?: DiagnosticPosition;
-  /**  The last file position at which the text applies. It is exclusive. */
-  end?: DiagnosticPosition;
-}
-
-export interface SyntacticDiagnostic extends DiagnosticBase {
-  /** The filename of the file in which the diagnostic occurred */
-  fileName: string;
+export interface DiagnosticWithLocation extends DiagnosticWithoutLocation {
+  /** The file in which the diagnostic occurred */
+  file: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
   start: DiagnosticPosition;
-  /**  The last file position at which the text applies. It is exclusive. */
-  end?: DiagnosticPosition;
+  /** Length of the diagnostic. */
+  length: number;
+}
+
+export type Diagnostic = DiagnosticWithLocation | DiagnosticWithoutLocation;
+
+/**
+ * A diagnostic with location information detached from the source file.
+ * It is an intermediate representation used inside the CSS Module parser.
+ */
+export interface DiagnosticWithDetachedLocation extends DiagnosticWithoutLocation {
+  /** Starting file position at which text applies. It is inclusive. */
+  start: DiagnosticPosition;
+  /** Length of the diagnostic. */
+  length: number;
 }

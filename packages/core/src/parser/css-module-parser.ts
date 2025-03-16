@@ -1,7 +1,13 @@
 import type { AtRule, Node, Root, Rule } from 'postcss';
 import { CssSyntaxError, parse } from 'postcss';
 import safeParser from 'postcss-safe-parser';
-import type { CSSModule, SyntacticDiagnostic, Token, TokenImporter } from '../type.js';
+import type {
+  CSSModule,
+  DiagnosticWithDetachedLocation,
+  DiagnosticWithLocation,
+  Token,
+  TokenImporter,
+} from '../type.js';
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
 import { parseRule } from './rule-parser.js';
@@ -29,7 +35,7 @@ function isRuleNode(node: Node): node is Rule {
  * Collect tokens from the AST.
  */
 function collectTokens(ast: Root) {
-  const allDiagnostics: SyntacticDiagnostic[] = [];
+  const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
   ast.walk((node) => {
@@ -65,11 +71,12 @@ export interface ParseCSSModuleOptions {
 
 export interface ParseCSSModuleResult {
   cssModule: CSSModule;
-  diagnostics: SyntacticDiagnostic[];
+  diagnostics: DiagnosticWithLocation[];
 }
 
 export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleOptions): ParseCSSModuleResult {
   let ast: Root;
+  const diagnosticSourceFile = { fileName, text };
   try {
     const parser = safe ? safeParser : parse;
     ast = parser(text, { from: fileName });
@@ -80,12 +87,10 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
         cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
         diagnostics: [
           {
-            fileName,
+            file: diagnosticSourceFile,
             start,
-            ...(e.endLine !== undefined &&
-              e.endColumn !== undefined && {
-                end: { line: e.endLine, column: e.endColumn },
-              }),
+            // TODO: Assign correct length (e.g. `e.endOffset - e.offset`)
+            length: 1,
             text: e.reason,
             category: 'error',
           },
@@ -101,5 +106,5 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
     localTokens,
     tokenImporters,
   };
-  return { cssModule, diagnostics };
+  return { cssModule, diagnostics: diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticSourceFile })) };
 }

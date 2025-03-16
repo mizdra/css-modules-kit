@@ -1,4 +1,4 @@
-import { type SemanticDiagnostic, type SyntacticDiagnostic, SystemError } from '@css-modules-kit/core';
+import { type Diagnostic, type DiagnosticWithLocation, SystemError } from '@css-modules-kit/core';
 import { describe, expect, test } from 'vitest';
 import { formatDiagnostic, formatSystemError } from './formatter';
 
@@ -9,14 +9,15 @@ const cwd = '/app';
 
 describe('formatDiagnostic', () => {
   test('should format diagnostic without filename and start position', () => {
-    const diagnostic: SemanticDiagnostic = { category: 'error', text: 'text' };
+    const diagnostic: Diagnostic = { category: 'error', text: 'text' };
     const result = formatDiagnostic(diagnostic, cwd);
     expect(result).toMatchInlineSnapshot(`"error: text"`);
   });
   test('should format diagnostic with filename and start position', () => {
-    const diagnostic: SyntacticDiagnostic = {
-      fileName: '/app/path/to/file.ts',
+    const diagnostic: DiagnosticWithLocation = {
+      file: { fileName: '/app/path/to/file.ts', text: 'abcdef' },
       start: { line: 1, column: 2 },
+      length: 1,
       category: 'error',
       text: 'text',
     };
@@ -24,7 +25,7 @@ describe('formatDiagnostic', () => {
     expect(result).toMatchInlineSnapshot(`"path/to/file.ts:1:2 - error: text"`);
   });
   test('should format diagnostic with error category', () => {
-    const diagnostic: SemanticDiagnostic = {
+    const diagnostic: Diagnostic = {
       category: 'error',
       text: 'error text',
     };
@@ -32,7 +33,7 @@ describe('formatDiagnostic', () => {
     expect(result).toMatchInlineSnapshot(`"error: error text"`);
   });
   test('should format diagnostic with warning category', () => {
-    const diagnostic: SemanticDiagnostic = {
+    const diagnostic: Diagnostic = {
       category: 'warning',
       text: 'warning text',
     };

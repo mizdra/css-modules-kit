@@ -1,5 +1,5 @@
 import type { AtRule } from 'postcss';
-import type { DiagnosticPosition, Location, SyntacticDiagnostic } from '../type.js';
+import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
 
 interface ValueDeclaration {
   type: 'valueDeclaration';
@@ -24,7 +24,7 @@ type ParsedAtValue = ValueDeclaration | ValueImportDeclaration;
 
 interface ParseAtValueResult {
   atValue?: ParsedAtValue;
-  diagnostics: SyntacticDiagnostic[];
+  diagnostics: DiagnosticWithDetachedLocation[];
 }
 
 const VALUE_IMPORT_PATTERN = /^(.+?)\s+from\s+("[^"]*"|'[^']*')$/du;
@@ -52,7 +52,7 @@ const IMPORTED_ITEM_PATTERN = /^([\w-]+)(?:\s+as\s+([\w-]+))?/du;
 // MEMO: css-modules-kit does not support `@value` with variable module name (e.g., `@value a from moduleName;`) to simplify the implementation.
 export function parseAtValue(atValue: AtRule): ParseAtValueResult {
   const matchesForValueImport = atValue.params.match(VALUE_IMPORT_PATTERN);
-  const diagnostics: SyntacticDiagnostic[] = [];
+  const diagnostics: DiagnosticWithDetachedLocation[] = [];
   if (matchesForValueImport) {
     const [, importedItems, from] = matchesForValueImport as [string, string, string];
     // The length of the `@value  ` part in `@value  import1 from '...'`
@@ -100,14 +100,9 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
           line: atValue.source!.start!.line,
           column: atValue.source!.start!.column + baseLength + currentItemIndex,
         };
-        const end: DiagnosticPosition = {
-          line: start.line,
-          column: start.column + alias.length,
-        };
         diagnostics.push({
-          fileName: atValue.source!.input.file!,
           start,
-          end,
+          length: alias.length,
           text: `\`${alias}\` is invalid syntax.`,
           category: 'error',
         });
@@ -158,15 +153,11 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
     return { atValue: parsedAtValue, diagnostics };
   }
   diagnostics.push({
-    fileName: atValue.source!.input.file!,
     start: {
       line: atValue.source!.start!.line,
       column: atValue.source!.start!.column,
     },
-    end: {
-      line: atValue.source!.end!.line,
-      column: atValue.source!.end!.column + 1,
-    },
+    length: atValue.source!.end!.offset - atValue.source!.start!.offset,
     text: `\`${atValue.toString()}\` is a invalid syntax.`,
     category: 'error',
   });

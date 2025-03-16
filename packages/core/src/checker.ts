@@ -2,10 +2,10 @@ import type {
   AtValueTokenImporter,
   AtValueTokenImporterValue,
   CSSModule,
+  Diagnostic,
   ExportBuilder,
   MatchesPattern,
   Resolver,
-  SemanticDiagnostic,
   TokenImporter,
 } from './type.js';
 
@@ -15,8 +15,8 @@ export function checkCSSModule(
   matchesPattern: MatchesPattern,
   resolver: Resolver,
   getCSSModule: (path: string) => CSSModule | undefined,
-): SemanticDiagnostic[] {
-  const diagnostics: SemanticDiagnostic[] = [];
+): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
 
   for (const tokenImporter of cssModule.tokenImporters) {
     const from = resolver(tokenImporter.from, { request: cssModule.fileName });
@@ -39,13 +39,13 @@ export function checkCSSModule(
   return diagnostics;
 }
 
-function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): SemanticDiagnostic {
+function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): Diagnostic {
   return {
     text: `Cannot import module '${tokenImporter.from}'`,
     category: 'error',
-    fileName: cssModule.fileName,
+    file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: tokenImporter.fromLoc.start.line, column: tokenImporter.fromLoc.start.column },
-    end: { line: tokenImporter.fromLoc.end.line, column: tokenImporter.fromLoc.end.column },
+    length: tokenImporter.fromLoc.end.offset - tokenImporter.fromLoc.start.offset,
   };
 }
 
@@ -53,12 +53,12 @@ function createModuleHasNoExportedTokenDiagnostic(
   cssModule: CSSModule,
   tokenImporter: AtValueTokenImporter,
   value: AtValueTokenImporterValue,
-): SemanticDiagnostic {
+): Diagnostic {
   return {
     text: `Module '${tokenImporter.from}' has no exported token '${value.name}'.`,
     category: 'error',
-    fileName: cssModule.fileName,
+    file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: value.loc.start.line, column: value.loc.start.column },
-    end: { line: value.loc.end.line, column: value.loc.end.column },
+    length: value.loc.end.offset - value.loc.start.offset,
   };
 }

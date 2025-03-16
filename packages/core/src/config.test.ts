@@ -137,13 +137,11 @@ describe('readTsConfigFile', () => {
       diagnostics: [
         {
           category: 'error',
-          text: '`dtsOutDir` must be a string.',
-          fileName: iff.paths['tsconfig.json'],
+          text: `\`dtsOutDir\` in ${iff.paths['tsconfig.json']} must be a string.`,
         },
         {
           category: 'error',
-          text: '`arbitraryExtensions` must be a boolean.',
-          fileName: iff.paths['tsconfig.json'],
+          text: `\`arbitraryExtensions\` in ${iff.paths['tsconfig.json']} must be a boolean.`,
         },
       ],
     });

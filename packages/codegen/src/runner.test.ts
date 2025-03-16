@@ -10,9 +10,15 @@ import { mockProcessExit, ProcessExitError } from './test/process.js';
 
 function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
   return {
-    ...diagnostic,
     text: diagnostic.text.replace(rootDir, '<rootDir>'),
-    ...(diagnostic.fileName ? { fileName: diagnostic.fileName.replace(rootDir, '<rootDir>') } : {}),
+    category: diagnostic.category,
+    ...('file' in diagnostic ?
+      {
+        fileName: diagnostic.file.fileName.replace(rootDir, '<rootDir>'),
+        start: diagnostic.start,
+        length: diagnostic.length,
+      }
+    : {}),
   };
 }
 function formatDiagnostics(diagnostics: Diagnostic[], rootDir: string) {
@@ -153,8 +159,7 @@ describe('runCMK', () => {
       [
         {
           "category": "error",
-          "fileName": "<rootDir>/tsconfig.json",
-          "text": "\`dtsOutDir\` must be a string.",
+          "text": "\`dtsOutDir\` in <rootDir>/tsconfig.json must be a string.",
         },
       ]
     `);
@@ -177,6 +182,7 @@ describe('runCMK', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/src/a.module.css",
+          "length": 1,
           "start": {
             "column": 1,
             "line": 1,
@@ -185,11 +191,8 @@ describe('runCMK', () => {
         },
         {
           "category": "error",
-          "end": {
-            "column": 8,
-            "line": 1,
-          },
           "fileName": "<rootDir>/src/b.module.css",
+          "length": 7,
           "start": {
             "column": 1,
             "line": 1,
@@ -221,11 +224,8 @@ describe('runCMK', () => {
       [
         {
           "category": "error",
-          "end": {
-            "column": 16,
-            "line": 1,
-          },
           "fileName": "<rootDir>/src/a.module.css",
+          "length": 3,
           "start": {
             "column": 13,
             "line": 1,
@@ -234,11 +234,8 @@ describe('runCMK', () => {
         },
         {
           "category": "error",
-          "end": {
-            "column": 24,
-            "line": 2,
-          },
           "fileName": "<rootDir>/src/b.module.css",
+          "length": 14,
           "start": {
             "column": 10,
             "line": 2,

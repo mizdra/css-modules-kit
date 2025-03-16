@@ -16,8 +16,8 @@ function shouldColorize(): boolean {
 
 export function formatDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   let result = '';
-  if (diagnostic.fileName) {
-    result += `${formatLocation(diagnostic.fileName, diagnostic.start, cwd)} - `;
+  if ('file' in diagnostic) {
+    result += `${formatLocation(diagnostic.file.fileName, diagnostic.start, cwd)} - `;
   }
   result += `${formatCategory(diagnostic.category)}: `;
   result += diagnostic.text;
