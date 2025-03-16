@@ -14,6 +14,7 @@ export {
   type AtValueTokenImporterValue,
   type Resolver,
   type MatchesPattern,
+  type ExportBuilder,
   type Diagnostic,
   type SemanticDiagnostic,
   type SyntacticDiagnostic,
@@ -33,6 +34,6 @@ export {
   getFileNamesByPattern,
 } from './file.js';
 export { checkCSSModule } from './checker.js';
-export { type ExportBuilder, createExportBuilder } from './export-builder.js';
+export { createExportBuilder } from './export-builder.js';
 export { join, resolve, relative, dirname, basename, parse, matchesGlob, isAbsolute } from './path.js';
 export { findUsedTokenNames } from './util.js';

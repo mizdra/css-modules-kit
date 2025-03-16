@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import { checkCSSModule } from './checker.js';
-import type { ExportBuilder } from './export-builder.js';
 import { createResolver } from './resolver.js';
 import { fakeCSSModule } from './test/css-module.js';
 import { fakeAtImportTokenImporter, fakeAtValueTokenImporter } from './test/token.js';
+import type { ExportBuilder } from './type.js';
 
 const resolver = createResolver({}, undefined);
 

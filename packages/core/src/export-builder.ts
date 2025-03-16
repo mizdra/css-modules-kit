@@ -1,22 +1,9 @@
-import type { CSSModule, MatchesPattern, Resolver } from './type.js';
+import type { CSSModule, ExportBuilder, ExportRecord, MatchesPattern, Resolver } from './type.js';
 
 export interface ExportBuilderHost {
   matchesPattern: MatchesPattern;
   getCSSModule: (path: string) => CSSModule | undefined;
   resolver: Resolver;
-}
-
-/**
- * The export token record of a CSS module.
- */
-export interface ExportRecord {
-  /** The all exported tokens of the CSS module. */
-  allTokens: string[];
-}
-
-export interface ExportBuilder {
-  build(cssModule: CSSModule): ExportRecord;
-  clearCache(): void;
 }
 
 /**

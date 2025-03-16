@@ -136,6 +136,17 @@ export type Resolver = (specifier: string, options: ResolverOptions) => string |
  */
 export type MatchesPattern = (fileName: string) => boolean;
 
+/** The export token record of a CSS module. */
+export interface ExportRecord {
+  /** The all exported tokens of the CSS module. */
+  allTokens: string[];
+}
+
+export interface ExportBuilder {
+  build(cssModule: CSSModule): ExportRecord;
+  clearCache(): void;
+}
+
 export type DiagnosticCategory = 'error' | 'warning';
 
 export interface DiagnosticPosition {
