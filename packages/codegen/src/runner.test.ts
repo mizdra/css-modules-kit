@@ -153,8 +153,7 @@ describe('runCMK', () => {
       [
         {
           "category": "error",
-          "fileName": "<rootDir>/tsconfig.json",
-          "text": "\`dtsOutDir\` must be a string.",
+          "text": "\`dtsOutDir\` in <rootDir>/tsconfig.json must be a string.",
         },
       ]
     `);

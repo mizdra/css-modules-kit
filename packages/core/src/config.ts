@@ -127,8 +127,8 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
       } else {
         result.diagnostics.push({
           category: 'error',
-          text: '`dtsOutDir` must be a string.',
-          file: { fileName: tsConfigSourceFile.fileName, text: tsConfigSourceFile.text },
+          text: `\`dtsOutDir\` in ${tsConfigSourceFile.fileName} must be a string.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
         });
       }
     }
@@ -138,8 +138,8 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
       } else {
         result.diagnostics.push({
           category: 'error',
-          text: '`arbitraryExtensions` must be a boolean.',
-          file: { fileName: tsConfigSourceFile.fileName, text: tsConfigSourceFile.text },
+          text: `\`arbitraryExtensions\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
         });
       }
     }
