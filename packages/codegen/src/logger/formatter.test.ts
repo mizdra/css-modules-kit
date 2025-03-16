@@ -17,6 +17,7 @@ describe('formatDiagnostic', () => {
     const diagnostic: SyntacticDiagnostic = {
       file: { fileName: '/app/path/to/file.ts', text: 'abcdef' },
       start: { line: 1, column: 2 },
+      length: 1,
       category: 'error',
       text: 'text',
     };

@@ -415,15 +415,12 @@ describe('parseCSSModule', () => {
         "diagnostics": [
           {
             "category": "error",
-            "end": {
-              "column": 7,
-              "line": 1,
-            },
             "file": {
               "fileName": "/test.module.css",
               "text": ":local .local1 {}
       @value;",
             },
+            "length": 6,
             "start": {
               "column": 1,
               "line": 1,
@@ -433,15 +430,12 @@ describe('parseCSSModule', () => {
           },
           {
             "category": "error",
-            "end": {
-              "column": 8,
-              "line": 2,
-            },
             "file": {
               "fileName": "/test.module.css",
               "text": ":local .local1 {}
       @value;",
             },
+            "length": 7,
             "start": {
               "column": 1,
               "line": 2,
@@ -491,6 +485,7 @@ describe('parseCSSModule', () => {
               "fileName": "/test.module.css",
               "text": ".a {",
             },
+            "length": 1,
             "start": {
               "column": 1,
               "line": 1,

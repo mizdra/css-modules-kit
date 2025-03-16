@@ -28,14 +28,10 @@ export function convertDiagnosticToTSDiagnostic(
     sourceFile && diagnostic.start ?
       ts.getPositionOfLineAndCharacter(sourceFile, diagnostic.start.line - 1, diagnostic.start.column - 1)
     : undefined;
-  const length =
-    sourceFile && start !== undefined && diagnostic.end ?
-      ts.getPositionOfLineAndCharacter(sourceFile, diagnostic.end.line - 1, diagnostic.end.column - 1) - start
-    : undefined;
   return {
     file: sourceFile,
     start,
-    length,
+    length: diagnostic.length,
     category: convertErrorCategory(diagnostic.category),
     messageText: diagnostic.text,
     code: TS_ERROR_CODE_FOR_CMK_ERROR,
@@ -48,14 +44,10 @@ export function convertSyntacticDiagnosticToTSDiagnosticWithLocation(
 ): ts.DiagnosticWithLocation {
   const sourceFile = getSourceFile(diagnostic.file);
   const start = ts.getPositionOfLineAndCharacter(sourceFile, diagnostic.start.line - 1, diagnostic.start.column - 1);
-  const length =
-    diagnostic.end ?
-      ts.getPositionOfLineAndCharacter(sourceFile, diagnostic.end.line - 1, diagnostic.end.column - 1) - start
-    : 1;
   return {
     file: sourceFile,
     start,
-    length,
+    length: diagnostic.length,
     category: convertErrorCategory(diagnostic.category),
     messageText: diagnostic.text,
     code: TS_ERROR_CODE_FOR_CMK_ERROR,

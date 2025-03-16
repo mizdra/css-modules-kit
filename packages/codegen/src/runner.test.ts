@@ -177,6 +177,7 @@ describe('runCMK', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/src/a.module.css",
+          "length": 1,
           "start": {
             "column": 1,
             "line": 1,
@@ -185,11 +186,8 @@ describe('runCMK', () => {
         },
         {
           "category": "error",
-          "end": {
-            "column": 8,
-            "line": 1,
-          },
           "fileName": "<rootDir>/src/b.module.css",
+          "length": 7,
           "start": {
             "column": 1,
             "line": 1,
@@ -221,11 +219,8 @@ describe('runCMK', () => {
       [
         {
           "category": "error",
-          "end": {
-            "column": 16,
-            "line": 1,
-          },
           "fileName": "<rootDir>/src/a.module.css",
+          "length": 3,
           "start": {
             "column": 13,
             "line": 1,
@@ -234,11 +229,8 @@ describe('runCMK', () => {
         },
         {
           "category": "error",
-          "end": {
-            "column": 24,
-            "line": 2,
-          },
           "fileName": "<rootDir>/src/b.module.css",
+          "length": 14,
           "start": {
             "column": 10,
             "line": 2,

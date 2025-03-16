@@ -27,14 +27,11 @@ describe('checkCSSModule', () => {
       [
         {
           "category": "error",
-          "end": {
-            "column": 1,
-            "line": 1,
-          },
           "file": {
             "fileName": "/a.module.css",
             "text": "",
           },
+          "length": 0,
           "start": {
             "column": 1,
             "line": 1,
@@ -43,14 +40,11 @@ describe('checkCSSModule', () => {
         },
         {
           "category": "error",
-          "end": {
-            "column": 1,
-            "line": 1,
-          },
           "file": {
             "fileName": "/a.module.css",
             "text": "",
           },
+          "length": 0,
           "start": {
             "column": 1,
             "line": 1,
@@ -76,14 +70,11 @@ describe('checkCSSModule', () => {
       [
         {
           "category": "error",
-          "end": {
-            "column": 1,
-            "line": 1,
-          },
           "file": {
             "fileName": "/a.module.css",
             "text": "",
           },
+          "length": 0,
           "start": {
             "column": 1,
             "line": 1,

@@ -175,8 +175,8 @@ export interface SemanticDiagnostic extends DiagnosticBase {
   file?: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
   start?: DiagnosticPosition;
-  /**  The last file position at which the text applies. It is exclusive. */
-  end?: DiagnosticPosition;
+  /** Length of the diagnostic. */
+  length?: number;
 }
 
 export interface SyntacticDiagnostic extends DiagnosticBase {
@@ -184,8 +184,8 @@ export interface SyntacticDiagnostic extends DiagnosticBase {
   file: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
   start: DiagnosticPosition;
-  /**  The last file position at which the text applies. It is exclusive. */
-  end?: DiagnosticPosition;
+  /** Length of the diagnostic. */
+  length: number;
 }
 
 /**
@@ -195,6 +195,6 @@ export interface SyntacticDiagnostic extends DiagnosticBase {
 export interface DetachedSyntacticDiagnostic extends DiagnosticBase {
   /** Starting file position at which text applies. It is inclusive. */
   start: DiagnosticPosition;
-  /**  The last file position at which the text applies. It is exclusive. */
-  end?: DiagnosticPosition;
+  /** Length of the diagnostic. */
+  length: number;
 }

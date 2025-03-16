@@ -351,10 +351,7 @@ describe('parseAtValue', () => {
         "diagnostics": [
           {
             "category": "error",
-            "end": {
-              "column": 8,
-              "line": 1,
-            },
+            "length": 7,
             "start": {
               "column": 1,
               "line": 1,
@@ -417,10 +414,7 @@ describe('parseAtValue', () => {
         "diagnostics": [
           {
             "category": "error",
-            "end": {
-              "column": 8,
-              "line": 2,
-            },
+            "length": 0,
             "start": {
               "column": 8,
               "line": 2,

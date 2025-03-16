@@ -45,7 +45,7 @@ function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter:
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: tokenImporter.fromLoc.start.line, column: tokenImporter.fromLoc.start.column },
-    end: { line: tokenImporter.fromLoc.end.line, column: tokenImporter.fromLoc.end.column },
+    length: tokenImporter.fromLoc.end.offset - tokenImporter.fromLoc.start.offset,
   };
 }
 
@@ -59,6 +59,6 @@ function createModuleHasNoExportedTokenDiagnostic(
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: value.loc.start.line, column: value.loc.start.column },
-    end: { line: value.loc.end.line, column: value.loc.end.column },
+    length: value.loc.end.offset - value.loc.start.offset,
   };
 }

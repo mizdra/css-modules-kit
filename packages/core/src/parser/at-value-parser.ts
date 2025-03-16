@@ -100,13 +100,9 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
           line: atValue.source!.start!.line,
           column: atValue.source!.start!.column + baseLength + currentItemIndex,
         };
-        const end: DiagnosticPosition = {
-          line: start.line,
-          column: start.column + alias.length,
-        };
         diagnostics.push({
           start,
-          end,
+          length: alias.length,
           text: `\`${alias}\` is invalid syntax.`,
           category: 'error',
         });
@@ -161,10 +157,7 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
       line: atValue.source!.start!.line,
       column: atValue.source!.start!.column,
     },
-    end: {
-      line: atValue.source!.end!.line,
-      column: atValue.source!.end!.column + 1,
-    },
+    length: atValue.source!.end!.offset - atValue.source!.start!.offset,
     text: `\`${atValue.toString()}\` is a invalid syntax.`,
     category: 'error',
   });

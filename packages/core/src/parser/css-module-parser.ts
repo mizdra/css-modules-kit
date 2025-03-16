@@ -83,10 +83,8 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
           {
             file: diagnosticSourceFile,
             start,
-            ...(e.endLine !== undefined &&
-              e.endColumn !== undefined && {
-                end: { line: e.endLine, column: e.endColumn },
-              }),
+            // TODO: Assign correct length (e.g. `e.endOffset - e.offset`)
+            length: 1,
             text: e.reason,
             category: 'error',
           },

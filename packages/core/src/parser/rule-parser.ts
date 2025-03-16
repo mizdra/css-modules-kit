@@ -5,10 +5,10 @@ import type { DetachedSyntacticDiagnostic, DiagnosticPosition, Location } from '
 function calcDiagnosticsLocationForSelectorParserNode(
   rule: Rule,
   node: selectorParser.Node,
-): { start: DiagnosticPosition; end: DiagnosticPosition } {
+): { start: DiagnosticPosition; length: number } {
   const start = rule.positionBy({ index: node.sourceIndex });
-  const end = rule.positionBy({ index: node.sourceIndex + node.toString().length });
-  return { start, end };
+  const length = node.toString().length;
+  return { start, length };
 }
 export { calcDiagnosticsLocationForSelectorParserNode as calcDiagnosticsLocationForSelectorParserNodeForTest };
 
