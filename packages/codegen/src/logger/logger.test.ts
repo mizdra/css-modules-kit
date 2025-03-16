@@ -11,8 +11,8 @@ describe('createLogger', () => {
   test('logDiagnostics', () => {
     const logger = createLogger(cwd);
     const diagnostics: Diagnostic[] = [
-      { type: 'semantic', text: 'text1', category: 'error' },
-      { type: 'semantic', text: 'text2', category: 'error' },
+      { text: 'text1', category: 'error' },
+      { text: 'text2', category: 'error' },
     ];
     logger.logDiagnostics(diagnostics);
     expect(stderrWriteSpy).toHaveBeenCalledWith('error: text1\n\nerror: text2\n\n');

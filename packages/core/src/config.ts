@@ -126,7 +126,6 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
         result.config.dtsOutDir = raw.cmkOptions.dtsOutDir;
       } else {
         result.diagnostics.push({
-          type: 'semantic',
           category: 'error',
           text: '`dtsOutDir` must be a string.',
           fileName: configFileName,
@@ -138,7 +137,6 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
         result.config.arbitraryExtensions = raw.cmkOptions.arbitraryExtensions;
       } else {
         result.diagnostics.push({
-          type: 'semantic',
           category: 'error',
           text: '`arbitraryExtensions` must be a boolean.',
           fileName: configFileName,

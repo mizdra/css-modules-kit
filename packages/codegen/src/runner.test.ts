@@ -101,7 +101,6 @@ describe('runCMK', () => {
         {
           "category": "warning",
           "text": "The file specified in tsconfig.json not found.",
-          "type": "semantic",
         },
       ]
     `);
@@ -156,7 +155,6 @@ describe('runCMK', () => {
           "category": "error",
           "fileName": "<rootDir>/tsconfig.json",
           "text": "\`dtsOutDir\` must be a string.",
-          "type": "semantic",
         },
       ]
     `);
@@ -184,7 +182,6 @@ describe('runCMK', () => {
             "line": 1,
           },
           "text": "Unclosed block",
-          "type": "syntactic",
         },
         {
           "category": "error",
@@ -198,7 +195,6 @@ describe('runCMK', () => {
             "line": 1,
           },
           "text": "\`@value\` is a invalid syntax.",
-          "type": "syntactic",
         },
       ]
     `);
@@ -235,7 +231,6 @@ describe('runCMK', () => {
             "line": 1,
           },
           "text": "Module './b.module.css' has no exported token 'b_2'.",
-          "type": "semantic",
         },
         {
           "category": "error",
@@ -249,7 +244,6 @@ describe('runCMK', () => {
             "line": 2,
           },
           "text": "Cannot import module './c.module.css'",
-          "type": "semantic",
         },
       ]
     `);

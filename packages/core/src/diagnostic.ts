@@ -17,7 +17,6 @@ interface DiagnosticBase {
 }
 
 export interface SemanticDiagnostic extends DiagnosticBase {
-  type: 'semantic';
   /** The filename of the file in which the diagnostic occurred */
   fileName?: string;
   /** Starting file position at which text applies. It is inclusive. */
@@ -27,7 +26,6 @@ export interface SemanticDiagnostic extends DiagnosticBase {
 }
 
 export interface SyntacticDiagnostic extends DiagnosticBase {
-  type: 'syntactic';
   /** The filename of the file in which the diagnostic occurred */
   fileName: string;
   /** Starting file position at which text applies. It is inclusive. */

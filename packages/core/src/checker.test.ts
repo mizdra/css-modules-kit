@@ -37,7 +37,6 @@ describe('checkCSSModule', () => {
             "line": 1,
           },
           "text": "Cannot import module './b.module.css'",
-          "type": "semantic",
         },
         {
           "category": "error",
@@ -51,7 +50,6 @@ describe('checkCSSModule', () => {
             "line": 1,
           },
           "text": "Cannot import module './c.module.css'",
-          "type": "semantic",
         },
       ]
     `);
@@ -82,7 +80,6 @@ describe('checkCSSModule', () => {
             "line": 1,
           },
           "text": "Module './b.module.css' has no exported token 'b_2'.",
-          "type": "semantic",
         },
       ]
     `);
