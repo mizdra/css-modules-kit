@@ -157,6 +157,7 @@ export interface DiagnosticPosition {
 }
 
 export type Diagnostic = SemanticDiagnostic | SyntacticDiagnostic;
+
 interface DiagnosticBase {
   /** Text of diagnostic message. */
   text: string;
