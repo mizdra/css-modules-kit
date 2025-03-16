@@ -1,7 +1,7 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
-import type { SyntacticDiagnostic } from '../type.js';
-import { calcDiagnosticsLocationForSelectorParserNode, type Location } from './location.js';
+import type { Location, SyntacticDiagnostic } from '../type.js';
+import { calcDiagnosticsLocationForSelectorParserNode } from './location.js';
 
 interface CollectResult {
   classNames: selectorParser.ClassName[];

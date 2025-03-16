@@ -12,9 +12,10 @@ export {
   type AtValueTokenImporterValue,
   type ParseCSSModuleResult,
 } from './parser/css-module-parser.js';
-export { type Location, type Position } from './parser/location.js';
 export { parseRule } from './parser/rule-parser.js';
 export {
+  type Location,
+  type Position,
   type Diagnostic,
   type SemanticDiagnostic,
   type SyntacticDiagnostic,

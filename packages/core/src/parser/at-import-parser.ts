@@ -1,6 +1,6 @@
 import type { AtRule } from 'postcss';
 import postcssValueParser from 'postcss-value-parser';
-import type { Location } from './location.js';
+import type { Location } from '../type.js';
 
 interface ParsedAtImport {
   from: string;
