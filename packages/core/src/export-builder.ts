@@ -1,5 +1,4 @@
-import type { MatchesPattern } from './file.js';
-import type { CSSModule, Resolver } from './type.js';
+import type { CSSModule, MatchesPattern, Resolver } from './type.js';
 
 export interface ExportBuilderHost {
   matchesPattern: MatchesPattern;

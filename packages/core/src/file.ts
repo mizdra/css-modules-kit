@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import { join, parse } from './path.js';
+import type { MatchesPattern } from './type.js';
 
 export const CSS_MODULE_EXTENSION = '.module.css';
 const COMPONENT_EXTENSIONS = ['.tsx', '.jsx'];
@@ -52,8 +53,6 @@ export function findComponentFileSync(
   }
   return undefined;
 }
-
-export type MatchesPattern = (fileName: string) => boolean;
 
 /**
  * Create a function that checks whether the given file name matches the pattern.

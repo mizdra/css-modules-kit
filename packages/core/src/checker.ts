@@ -1,9 +1,9 @@
 import type { ExportBuilder } from './export-builder.js';
-import type { MatchesPattern } from './file.js';
 import type {
   AtValueTokenImporter,
   AtValueTokenImporterValue,
   CSSModule,
+  MatchesPattern,
   Resolver,
   SemanticDiagnostic,
   TokenImporter,

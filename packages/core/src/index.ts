@@ -13,6 +13,7 @@ export {
   type AtValueTokenImporter,
   type AtValueTokenImporterValue,
   type Resolver,
+  type MatchesPattern,
   type Diagnostic,
   type SemanticDiagnostic,
   type SyntacticDiagnostic,
@@ -28,7 +29,6 @@ export {
   isCSSModuleFile,
   findComponentFile,
   findComponentFileSync,
-  type MatchesPattern,
   createMatchesPattern,
   getFileNamesByPattern,
 } from './file.js';

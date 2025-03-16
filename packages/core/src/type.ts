@@ -129,6 +129,13 @@ export interface ResolverOptions {
  */
 export type Resolver = (specifier: string, options: ResolverOptions) => string | undefined;
 
+/**
+ * A function that checks if a file name matches a pattern.
+ * @param fileName The file name. It is an absolute path.
+ * @returns `true` if the file name matches the pattern, otherwise `false`.
+ */
+export type MatchesPattern = (fileName: string) => boolean;
+
 export type DiagnosticCategory = 'error' | 'warning';
 
 export interface DiagnosticPosition {
