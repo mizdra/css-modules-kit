@@ -166,6 +166,7 @@ interface DiagnosticWithoutLocation {
   text: string;
   /** The category of the diagnostic message. */
   category: DiagnosticCategory;
+  // TODO: Add error code
 }
 
 export interface DiagnosticWithLocation extends DiagnosticWithoutLocation {

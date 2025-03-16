@@ -2,9 +2,9 @@ import ts from 'typescript';
 import type { Diagnostic, DiagnosticSourceFile, DiagnosticWithLocation } from './type.js';
 
 /** The error code used by tsserver to display the css-modules-kit error in the editor. */
-// NOTE: Use any other number than 1002 or later, as they are reserved by TypeScript's built-in errors.
-// ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
-const TS_ERROR_CODE_FOR_CMK_ERROR = 0;
+const TS_ERROR_CODE = 0;
+
+const TS_ERROR_SOURCE = 'css-modules-kit';
 
 function convertErrorCategory(category: 'error' | 'warning' | 'suggestion'): ts.DiagnosticCategory {
   switch (category) {
@@ -32,7 +32,8 @@ export function convertDiagnostic(
       length: undefined,
       category: convertErrorCategory(diagnostic.category),
       messageText: diagnostic.text,
-      code: TS_ERROR_CODE_FOR_CMK_ERROR,
+      code: TS_ERROR_CODE,
+      source: TS_ERROR_SOURCE,
     };
   }
 }
@@ -49,6 +50,7 @@ export function convertDiagnosticWithLocation(
     length: diagnostic.length,
     category: convertErrorCategory(diagnostic.category),
     messageText: diagnostic.text,
-    code: TS_ERROR_CODE_FOR_CMK_ERROR,
+    code: TS_ERROR_CODE,
+    source: TS_ERROR_SOURCE,
   };
 }
