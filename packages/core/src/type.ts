@@ -182,3 +182,14 @@ export interface SyntacticDiagnostic extends DiagnosticBase {
   /**  The last file position at which the text applies. It is exclusive. */
   end?: DiagnosticPosition;
 }
+
+/**
+ * A syntactic diagnostic that is not attached to a file.
+ * It is an intermediate representation used inside the CSS Module parser.
+ */
+export interface DetachedSyntacticDiagnostic extends DiagnosticBase {
+  /** Starting file position at which text applies. It is inclusive. */
+  start: DiagnosticPosition;
+  /**  The last file position at which the text applies. It is exclusive. */
+  end?: DiagnosticPosition;
+}

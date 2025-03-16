@@ -1,6 +1,6 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
-import type { DiagnosticPosition, Location, SyntacticDiagnostic } from '../type.js';
+import type { DetachedSyntacticDiagnostic, DiagnosticPosition, Location } from '../type.js';
 
 function calcDiagnosticsLocationForSelectorParserNode(
   rule: Rule,
@@ -14,12 +14,12 @@ export { calcDiagnosticsLocationForSelectorParserNode as calcDiagnosticsLocation
 
 interface CollectResult {
   classNames: selectorParser.ClassName[];
-  diagnostics: SyntacticDiagnostic[];
+  diagnostics: DetachedSyntacticDiagnostic[];
 }
 
 function flatCollectResults(results: CollectResult[]): CollectResult {
   const classNames: selectorParser.ClassName[] = [];
-  const diagnostics: SyntacticDiagnostic[] = [];
+  const diagnostics: DetachedSyntacticDiagnostic[] = [];
   for (const result of results) {
     classNames.push(...result.classNames);
     diagnostics.push(...result.diagnostics);
@@ -34,8 +34,7 @@ function convertClassNameToCollectResult(rule: Rule, node: selectorParser.ClassN
   const name = (node as any).raws?.value ?? node.value;
 
   if (!JS_IDENTIFIER_PATTERN.test(name)) {
-    const diagnostic: SyntacticDiagnostic = {
-      fileName: rule.source!.input.file!,
+    const diagnostic: DetachedSyntacticDiagnostic = {
       ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
       text: `\`${name}\` is not allowed because it is not a valid JavaScript identifier.`,
       category: 'error',
@@ -75,8 +74,7 @@ function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectR
       if (node.nodes.length === 0) {
         // `node` is `:local` or `:global` (without any arguments)
         // We don't support `:local` and `:global` (without any arguments) because they are complex.
-        const diagnostic: SyntacticDiagnostic = {
-          fileName: rule.source!.input.file!,
+        const diagnostic: DetachedSyntacticDiagnostic = {
           ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
           text: `\`${node.value}\` is not supported. Use \`${node.value}(...)\` instead.`,
           category: 'error',
@@ -85,8 +83,7 @@ function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectR
       } else {
         // `node` is `:local(...)` or `:global(...)` (with arguments)
         if (wrappedBy !== undefined) {
-          const diagnostic: SyntacticDiagnostic = {
-            fileName: rule.source!.input.file!,
+          const diagnostic: DetachedSyntacticDiagnostic = {
             ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
             text: `A \`${node.value}(...)\` is not allowed inside of \`${wrappedBy}\`.`,
             category: 'error',
@@ -113,7 +110,7 @@ interface ClassSelector {
 
 interface ParseRuleResult {
   classSelectors: ClassSelector[];
-  diagnostics: SyntacticDiagnostic[];
+  diagnostics: DetachedSyntacticDiagnostic[];
 }
 
 /**
