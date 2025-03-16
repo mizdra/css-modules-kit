@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import type { SystemError } from './error.js';
 import type { Diagnostic, DiagnosticSourceFile, DiagnosticWithLocation } from './type.js';
 
 /** The error code used by tsserver to display the css-modules-kit error in the editor. */
@@ -50,6 +51,26 @@ export function convertDiagnosticWithLocation(
     length: diagnostic.length,
     category: convertErrorCategory(diagnostic.category),
     messageText: diagnostic.text,
+    code: TS_ERROR_CODE,
+    source: TS_ERROR_SOURCE,
+  };
+}
+
+export function convertSystemError(systemError: SystemError): ts.Diagnostic {
+  let messageText = systemError.message;
+  if (systemError.cause) {
+    if (systemError.cause instanceof Error) {
+      messageText += `: ${systemError.cause.message}`;
+    } else {
+      messageText += `: ${JSON.stringify(systemError.cause)}`;
+    }
+  }
+  return {
+    file: undefined,
+    start: undefined,
+    length: undefined,
+    category: ts.DiagnosticCategory.Error,
+    messageText,
     code: TS_ERROR_CODE,
     source: TS_ERROR_SOURCE,
   };
