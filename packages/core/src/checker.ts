@@ -1,8 +1,13 @@
 import type { ExportBuilder } from './export-builder.js';
 import type { MatchesPattern } from './file.js';
-import type { Resolver } from './resolver.js';
-import type { AtValueTokenImporter, AtValueTokenImporterValue, CSSModule, TokenImporter } from './type.js';
-import type { SemanticDiagnostic } from './type.js';
+import type {
+  AtValueTokenImporter,
+  AtValueTokenImporterValue,
+  CSSModule,
+  Resolver,
+  SemanticDiagnostic,
+  TokenImporter,
+} from './type.js';
 
 export function checkCSSModule(
   cssModule: CSSModule,

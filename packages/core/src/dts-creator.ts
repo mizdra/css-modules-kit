@@ -1,6 +1,5 @@
 import type { MatchesPattern } from './file.js';
-import type { Resolver } from './resolver.js';
-import type { CSSModule } from './type.js';
+import type { CSSModule, Resolver } from './type.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
 

@@ -12,6 +12,7 @@ export {
   type TokenImporter,
   type AtValueTokenImporter,
   type AtValueTokenImporterValue,
+  type Resolver,
   type Diagnostic,
   type SemanticDiagnostic,
   type SyntacticDiagnostic,
@@ -19,7 +20,7 @@ export {
   type DiagnosticPosition,
 } from './type.js';
 export { type CreateDtsOptions, createDts, STYLES_EXPORT_NAME } from './dts-creator.js';
-export { createResolver, type Resolver } from './resolver.js';
+export { createResolver } from './resolver.js';
 export {
   CSS_MODULE_EXTENSION,
   getCssModuleFileName,
