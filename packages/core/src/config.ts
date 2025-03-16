@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { TsConfigFileNotFoundError } from './error.js';
 import { basename, dirname, join, resolve } from './path.js';
-import type { SemanticDiagnostic } from './type.js';
+import type { Diagnostic } from './type.js';
 
 // https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3006
 const DEFAULT_INCLUDE_SPEC = '**/*';
@@ -60,7 +60,7 @@ export interface CMKConfig {
   configFileName: string;
   compilerOptions: ts.CompilerOptions;
   /** The diagnostics that occurred while reading the config file. */
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 }
 
 /**
@@ -79,7 +79,7 @@ interface UnnormalizedRawConfig {
  */
 interface ParsedRawData {
   config: UnnormalizedRawConfig;
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 }
 
 export function findTsConfigFile(project: string): string | undefined {
@@ -166,7 +166,7 @@ export function readTsConfigFile(project: string): {
   configFileName: string;
   config: UnnormalizedRawConfig;
   compilerOptions: ts.CompilerOptions;
-  diagnostics: SemanticDiagnostic[];
+  diagnostics: Diagnostic[];
 } {
   const configFileName = findTsConfigFile(project);
   if (!configFileName) throw new TsConfigFileNotFoundError();

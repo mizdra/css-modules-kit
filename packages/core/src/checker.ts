@@ -2,10 +2,10 @@ import type {
   AtValueTokenImporter,
   AtValueTokenImporterValue,
   CSSModule,
+  Diagnostic,
   ExportBuilder,
   MatchesPattern,
   Resolver,
-  SemanticDiagnostic,
   TokenImporter,
 } from './type.js';
 
@@ -15,8 +15,8 @@ export function checkCSSModule(
   matchesPattern: MatchesPattern,
   resolver: Resolver,
   getCSSModule: (path: string) => CSSModule | undefined,
-): SemanticDiagnostic[] {
-  const diagnostics: SemanticDiagnostic[] = [];
+): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
 
   for (const tokenImporter of cssModule.tokenImporters) {
     const from = resolver(tokenImporter.from, { request: cssModule.fileName });
@@ -39,7 +39,7 @@ export function checkCSSModule(
   return diagnostics;
 }
 
-function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): SemanticDiagnostic {
+function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): Diagnostic {
   return {
     text: `Cannot import module '${tokenImporter.from}'`,
     category: 'error',
@@ -53,7 +53,7 @@ function createModuleHasNoExportedTokenDiagnostic(
   cssModule: CSSModule,
   tokenImporter: AtValueTokenImporter,
   value: AtValueTokenImporterValue,
-): SemanticDiagnostic {
+): Diagnostic {
   return {
     text: `Module '${tokenImporter.from}' has no exported token '${value.name}'.`,
     category: 'error',

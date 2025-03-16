@@ -1,5 +1,5 @@
 import type { AtRule } from 'postcss';
-import type { DetachedSyntacticDiagnostic, DiagnosticPosition, Location } from '../type.js';
+import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
 
 interface ValueDeclaration {
   type: 'valueDeclaration';
@@ -24,7 +24,7 @@ type ParsedAtValue = ValueDeclaration | ValueImportDeclaration;
 
 interface ParseAtValueResult {
   atValue?: ParsedAtValue;
-  diagnostics: DetachedSyntacticDiagnostic[];
+  diagnostics: DiagnosticWithDetachedLocation[];
 }
 
 const VALUE_IMPORT_PATTERN = /^(.+?)\s+from\s+("[^"]*"|'[^']*')$/du;
@@ -52,7 +52,7 @@ const IMPORTED_ITEM_PATTERN = /^([\w-]+)(?:\s+as\s+([\w-]+))?/du;
 // MEMO: css-modules-kit does not support `@value` with variable module name (e.g., `@value a from moduleName;`) to simplify the implementation.
 export function parseAtValue(atValue: AtRule): ParseAtValueResult {
   const matchesForValueImport = atValue.params.match(VALUE_IMPORT_PATTERN);
-  const diagnostics: DetachedSyntacticDiagnostic[] = [];
+  const diagnostics: DiagnosticWithDetachedLocation[] = [];
   if (matchesForValueImport) {
     const [, importedItems, from] = matchesForValueImport as [string, string, string];
     // The length of the `@value  ` part in `@value  import1 from '...'`

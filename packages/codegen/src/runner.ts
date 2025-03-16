@@ -2,11 +2,11 @@ import { readFile } from 'node:fs/promises';
 import type {
   CMKConfig,
   CSSModule,
+  Diagnostic,
+  DiagnosticWithLocation,
   MatchesPattern,
   ParseCSSModuleResult,
   Resolver,
-  SemanticDiagnostic,
-  SyntacticDiagnostic,
 } from '@css-modules-kit/core';
 import {
   checkCSSModule,
@@ -79,7 +79,7 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
   const matchesPattern = createMatchesPattern(config);
 
   const cssModuleMap = new Map<string, CSSModule>();
-  const syntacticDiagnostics: SyntacticDiagnostic[] = [];
+  const syntacticDiagnostics: DiagnosticWithLocation[] = [];
 
   const fileNames = getFileNamesByPattern(config);
   if (fileNames.length === 0) {
@@ -105,7 +105,7 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
 
   const getCSSModule = (path: string) => cssModuleMap.get(path);
   const exportBuilder = createExportBuilder({ getCSSModule, matchesPattern, resolver });
-  const semanticDiagnostics: SemanticDiagnostic[] = [];
+  const semanticDiagnostics: Diagnostic[] = [];
   for (const { cssModule } of parseResults) {
     const diagnostics = checkCSSModule(cssModule, exportBuilder, matchesPattern, resolver, getCSSModule);
     semanticDiagnostics.push(...diagnostics);

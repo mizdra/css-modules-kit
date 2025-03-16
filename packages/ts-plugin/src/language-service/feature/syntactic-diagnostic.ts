@@ -1,4 +1,4 @@
-import { convertSyntacticDiagnosticToTSDiagnosticWithLocation } from '@css-modules-kit/core';
+import { convertDiagnosticWithLocation } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
 import type ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../../language-plugin.js';
@@ -15,7 +15,7 @@ export function getSyntacticDiagnostics(
       const diagnostics = virtualCode[CMK_DATA_KEY].syntacticDiagnostics;
       const sourceFile = languageService.getProgram()!.getSourceFile(fileName)!;
       const tsDiagnostics = diagnostics.map((diagnostic) =>
-        convertSyntacticDiagnosticToTSDiagnosticWithLocation(diagnostic, () => sourceFile),
+        convertDiagnosticWithLocation(diagnostic, () => sourceFile),
       );
       prior.push(...tsDiagnostics);
     }

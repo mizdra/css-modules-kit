@@ -161,25 +161,14 @@ export interface DiagnosticPosition {
   column: number;
 }
 
-export type Diagnostic = SemanticDiagnostic | SyntacticDiagnostic;
-
-interface DiagnosticBase {
+interface DiagnosticWithoutLocation {
   /** Text of diagnostic message. */
   text: string;
   /** The category of the diagnostic message. */
   category: DiagnosticCategory;
 }
 
-export interface SemanticDiagnostic extends DiagnosticBase {
-  /** The file in which the diagnostic occurred */
-  file?: DiagnosticSourceFile;
-  /** Starting file position at which text applies. It is inclusive. */
-  start?: DiagnosticPosition;
-  /** Length of the diagnostic. */
-  length?: number;
-}
-
-export interface SyntacticDiagnostic extends DiagnosticBase {
+export interface DiagnosticWithLocation extends DiagnosticWithoutLocation {
   /** The file in which the diagnostic occurred */
   file: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
@@ -188,11 +177,13 @@ export interface SyntacticDiagnostic extends DiagnosticBase {
   length: number;
 }
 
+export type Diagnostic = DiagnosticWithLocation | DiagnosticWithoutLocation;
+
 /**
- * A syntactic diagnostic that is not attached to a file.
+ * A diagnostic with location information detached from the source file.
  * It is an intermediate representation used inside the CSS Module parser.
  */
-export interface DetachedSyntacticDiagnostic extends DiagnosticBase {
+export interface DiagnosticWithDetachedLocation extends DiagnosticWithoutLocation {
   /** Starting file position at which text applies. It is inclusive. */
   start: DiagnosticPosition;
   /** Length of the diagnostic. */

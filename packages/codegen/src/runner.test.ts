@@ -8,11 +8,17 @@ import { createIFF } from './test/fixture.js';
 import { createLoggerSpy } from './test/logger.js';
 import { mockProcessExit, ProcessExitError } from './test/process.js';
 
-function formatDiagnostic({ file, ...diagnostic }: Diagnostic, rootDir: string) {
+function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
   return {
-    ...diagnostic,
     text: diagnostic.text.replace(rootDir, '<rootDir>'),
-    ...(file ? { fileName: file.fileName.replace(rootDir, '<rootDir>') } : {}),
+    category: diagnostic.category,
+    ...('file' in diagnostic ?
+      {
+        fileName: diagnostic.file.fileName.replace(rootDir, '<rootDir>'),
+        start: diagnostic.start,
+        length: diagnostic.length,
+      }
+    : {}),
   };
 }
 function formatDiagnostics(diagnostics: Diagnostic[], rootDir: string) {

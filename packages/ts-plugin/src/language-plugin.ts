@@ -1,4 +1,4 @@
-import type { CSSModule, MatchesPattern, Resolver, SyntacticDiagnostic } from '@css-modules-kit/core';
+import type { CSSModule, DiagnosticWithLocation, MatchesPattern, Resolver } from '@css-modules-kit/core';
 import { createDts, parseCSSModule } from '@css-modules-kit/core';
 import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-core';
 import type {} from '@volar/typescript';
@@ -11,7 +11,7 @@ export const CMK_DATA_KEY = Symbol('css-modules-kit-data');
 interface CSSModuleVirtualCode extends VirtualCode {
   [CMK_DATA_KEY]: {
     cssModule: CSSModule;
-    syntacticDiagnostics: SyntacticDiagnostic[];
+    syntacticDiagnostics: DiagnosticWithLocation[];
   };
 }
 
