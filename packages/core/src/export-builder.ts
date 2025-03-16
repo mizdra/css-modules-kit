@@ -1,6 +1,6 @@
 import type { MatchesPattern } from './file.js';
-import type { CSSModule } from './parser/css-module-parser.js';
 import type { Resolver } from './resolver.js';
+import type { CSSModule } from './type.js';
 
 export interface ExportBuilderHost {
   matchesPattern: MatchesPattern;
