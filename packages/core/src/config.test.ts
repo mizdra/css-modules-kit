@@ -138,12 +138,12 @@ describe('readTsConfigFile', () => {
         {
           category: 'error',
           text: '`dtsOutDir` must be a string.',
-          fileName: iff.paths['tsconfig.json'],
+          file: { fileName: iff.paths['tsconfig.json'], text: expect.any(String) },
         },
         {
           category: 'error',
           text: '`arbitraryExtensions` must be a boolean.',
-          fileName: iff.paths['tsconfig.json'],
+          file: { fileName: iff.paths['tsconfig.json'], text: expect.any(String) },
         },
       ],
     });

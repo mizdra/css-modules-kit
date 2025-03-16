@@ -149,6 +149,11 @@ export interface ExportBuilder {
 
 export type DiagnosticCategory = 'error' | 'warning';
 
+export interface DiagnosticSourceFile {
+  fileName: string;
+  text: string;
+}
+
 export interface DiagnosticPosition {
   /** The line number in the source file. It is 1-based. */
   line: number;
@@ -166,8 +171,8 @@ interface DiagnosticBase {
 }
 
 export interface SemanticDiagnostic extends DiagnosticBase {
-  /** The filename of the file in which the diagnostic occurred */
-  fileName?: string;
+  /** The file in which the diagnostic occurred */
+  file?: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
   start?: DiagnosticPosition;
   /**  The last file position at which the text applies. It is exclusive. */
@@ -175,8 +180,8 @@ export interface SemanticDiagnostic extends DiagnosticBase {
 }
 
 export interface SyntacticDiagnostic extends DiagnosticBase {
-  /** The filename of the file in which the diagnostic occurred */
-  fileName: string;
+  /** The file in which the diagnostic occurred */
+  file: DiagnosticSourceFile;
   /** Starting file position at which text applies. It is inclusive. */
   start: DiagnosticPosition;
   /**  The last file position at which the text applies. It is exclusive. */

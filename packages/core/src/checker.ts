@@ -43,7 +43,7 @@ function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter:
   return {
     text: `Cannot import module '${tokenImporter.from}'`,
     category: 'error',
-    fileName: cssModule.fileName,
+    file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: tokenImporter.fromLoc.start.line, column: tokenImporter.fromLoc.start.column },
     end: { line: tokenImporter.fromLoc.end.line, column: tokenImporter.fromLoc.end.column },
   };
@@ -57,7 +57,7 @@ function createModuleHasNoExportedTokenDiagnostic(
   return {
     text: `Module '${tokenImporter.from}' has no exported token '${value.name}'.`,
     category: 'error',
-    fileName: cssModule.fileName,
+    file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: value.loc.start.line, column: value.loc.start.column },
     end: { line: value.loc.end.line, column: value.loc.end.column },
   };

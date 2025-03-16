@@ -91,7 +91,7 @@ export function findTsConfigFile(project: string): string | undefined {
   return resolve(configFile);
 }
 
-function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
+function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
   const result: ParsedRawData = {
     config: {
       includes: undefined,
@@ -128,7 +128,7 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
         result.diagnostics.push({
           category: 'error',
           text: '`dtsOutDir` must be a string.',
-          fileName: configFileName,
+          file: { fileName: tsConfigSourceFile.fileName, text: tsConfigSourceFile.text },
         });
       }
     }
@@ -139,7 +139,7 @@ function parseRawData(raw: unknown, configFileName: string): ParsedRawData {
         result.diagnostics.push({
           category: 'error',
           text: '`arbitraryExtensions` must be a boolean.',
-          fileName: configFileName,
+          file: { fileName: tsConfigSourceFile.fileName, text: tsConfigSourceFile.text },
         });
       }
     }
@@ -193,7 +193,7 @@ export function readTsConfigFile(project: string): {
     ],
   );
   // Read options from `parsedCommandLine.raw`
-  let parsedRawData = parseRawData(parsedCommandLine.raw, configFileName);
+  let parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile);
 
   // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
   // So here we read the options from those files and merge them into `parsedRawData`.

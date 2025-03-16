@@ -31,7 +31,10 @@ describe('checkCSSModule', () => {
             "column": 1,
             "line": 1,
           },
-          "fileName": "/a.module.css",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
           "start": {
             "column": 1,
             "line": 1,
@@ -44,7 +47,10 @@ describe('checkCSSModule', () => {
             "column": 1,
             "line": 1,
           },
-          "fileName": "/a.module.css",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
           "start": {
             "column": 1,
             "line": 1,
@@ -74,7 +80,10 @@ describe('checkCSSModule', () => {
             "column": 1,
             "line": 1,
           },
-          "fileName": "/a.module.css",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
           "start": {
             "column": 1,
             "line": 1,

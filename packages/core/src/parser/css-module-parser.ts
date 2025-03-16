@@ -70,6 +70,7 @@ export interface ParseCSSModuleResult {
 
 export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleOptions): ParseCSSModuleResult {
   let ast: Root;
+  const diagnosticSourceFile = { fileName, text };
   try {
     const parser = safe ? safeParser : parse;
     ast = parser(text, { from: fileName });
@@ -80,7 +81,7 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
         cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
         diagnostics: [
           {
-            fileName,
+            file: diagnosticSourceFile,
             start,
             ...(e.endLine !== undefined &&
               e.endColumn !== undefined && {
@@ -101,5 +102,5 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
     localTokens,
     tokenImporters,
   };
-  return { cssModule, diagnostics: diagnostics.map((diagnostic) => ({ ...diagnostic, fileName })) };
+  return { cssModule, diagnostics: diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticSourceFile })) };
 }
