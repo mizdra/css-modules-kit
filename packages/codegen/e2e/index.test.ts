@@ -73,6 +73,20 @@ test('generates .d.ts', async () => {
   expect(tsc.status).toBe(0);
 });
 
+test('prints help text', () => {
+  const cmk = spawnSync('node', [binPath, '--help']);
+  expect(cmk.error).toBeUndefined();
+  expect(cmk.stdout.toString()).contain('Usage');
+  expect(cmk.status).toBe(0);
+});
+
+test('prints version number', () => {
+  const cmk = spawnSync('node', [binPath, '--version']);
+  expect(cmk.error).toBeUndefined();
+  expect(cmk.stdout.toString()).toMatch(/\d+\.\d+\.\d+/u);
+  expect(cmk.status).toBe(0);
+});
+
 test('reports system error', async () => {
   const iff = await createIFF({});
   const cmk = spawnSync('node', [binPath], {
