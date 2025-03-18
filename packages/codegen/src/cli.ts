@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util';
 import { resolve } from '@css-modules-kit/core';
 import packageJson from '../package.json';
+import { ParseCLIArgsError } from './error.js';
 
 const helpText = `
 Usage: cmk [options]
@@ -31,22 +32,27 @@ export interface ParsedArgs {
 
 /**
  * Parse command-line arguments.
+ * @throws {ParseCLIArgsError} If failed to parse CLI arguments.
  */
 export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
-  const { values } = parseArgs({
-    args,
-    options: {
-      help: { type: 'boolean', short: 'h', default: false },
-      version: { type: 'boolean', short: 'v', default: false },
-      project: { type: 'string', short: 'p', default: '.' },
-      pretty: { type: 'boolean' },
-    },
-    allowNegative: true,
-  });
-  return {
-    help: values.help,
-    version: values.version,
-    project: resolve(cwd, values.project),
-    pretty: values.pretty,
-  };
+  try {
+    const { values } = parseArgs({
+      args,
+      options: {
+        help: { type: 'boolean', short: 'h', default: false },
+        version: { type: 'boolean', short: 'v', default: false },
+        project: { type: 'string', short: 'p', default: '.' },
+        pretty: { type: 'boolean' },
+      },
+      allowNegative: true,
+    });
+    return {
+      help: values.help,
+      version: values.version,
+      project: resolve(cwd, values.project),
+      pretty: values.pretty,
+    };
+  } catch (cause) {
+    throw new ParseCLIArgsError(cause);
+  }
 }

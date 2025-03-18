@@ -1,6 +1,7 @@
 import { resolve } from '@css-modules-kit/core';
 import { describe, expect, it } from 'vitest';
 import { parseCLIArgs } from './cli.js';
+import { ParseCLIArgsError } from './error.js';
 
 const cwd = '/app';
 
@@ -35,5 +36,7 @@ describe('parseCLIArgs', () => {
     expect(parseCLIArgs(['--pretty'], cwd).pretty).toBe(true);
     expect(parseCLIArgs(['--no-pretty'], cwd).pretty).toBe(false);
   });
-  // TODO: Add tests for invalid options
+  it('should throw ParseCLIArgsError for invalid options', () => {
+    expect(() => parseCLIArgs(['--invalid-option'], cwd)).toThrow(ParseCLIArgsError);
+  });
 });
