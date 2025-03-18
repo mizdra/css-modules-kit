@@ -1,29 +1,24 @@
 import { resolve } from '@css-modules-kit/core';
 import { describe, expect, it } from 'vitest';
 import { parseCLIArgs } from './cli.js';
-import { createLoggerSpy } from './test/logger.js';
-import { mockProcessExit, ProcessExitError } from './test/process.js';
-
-const logger = createLoggerSpy();
-
-mockProcessExit();
 
 const cwd = '/app';
 
 describe('parseCLIArgs', () => {
   it('should return default values when no options are provided', () => {
-    const args = parseCLIArgs([], cwd, logger);
+    const args = parseCLIArgs([], cwd);
     expect(args).toStrictEqual({
+      help: false,
+      version: false,
       project: resolve(cwd),
+      pretty: undefined,
     });
   });
   it('should parse --help option', () => {
-    expect(() => parseCLIArgs(['--help'], cwd, logger)).toThrow(ProcessExitError);
-    expect(logger.logMessage).toHaveBeenCalledWith(expect.stringContaining('Usage:'));
+    expect(parseCLIArgs(['--help'], cwd).help).toBe(true);
   });
   it('should parse --version option', () => {
-    expect(() => parseCLIArgs(['--version'], cwd, logger)).toThrow(ProcessExitError);
-    expect(logger.logMessage).toHaveBeenCalledWith(expect.stringMatching(/^\d+\.\d+\.\d+$/u));
+    expect(parseCLIArgs(['--version'], cwd).version).toBe(true);
   });
   describe('should parse --project option', () => {
     it.each([
@@ -32,8 +27,13 @@ describe('parseCLIArgs', () => {
       [['--project', '.'], resolve(cwd)],
       [['--project', 'src'], resolve(cwd, 'src')],
     ])('%s %s', (argv, expected) => {
-      const args = parseCLIArgs(argv, cwd, logger);
-      expect(args).toStrictEqual({ project: expected });
+      const args = parseCLIArgs(argv, cwd);
+      expect(args.project).toStrictEqual(expected);
     });
   });
+  it('should parse --pretty option', () => {
+    expect(parseCLIArgs(['--pretty'], cwd).pretty).toBe(true);
+    expect(parseCLIArgs(['--no-pretty'], cwd).pretty).toBe(false);
+  });
+  // TODO: Add tests for invalid options
 });

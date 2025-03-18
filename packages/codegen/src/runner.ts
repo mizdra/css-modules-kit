@@ -56,7 +56,6 @@ async function writeDtsByCSSModule(
 /**
  * Run css-modules-kit .d.ts generation.
  * @param project The absolute path to the project directory or the path to `tsconfig.json`.
- * @throws {GlobError} When failed to retrieve files by glob pattern.
  * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
  * @throws {WriteDtsFileError}
  */
