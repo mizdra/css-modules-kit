@@ -31,7 +31,6 @@ export interface ParsedArgs {
 
 /**
  * Parse command-line arguments.
- * If `--help` or `--version` is passed, print the corresponding information and exit the process.
  */
 export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
   const { values } = parseArgs({
