@@ -6,14 +6,12 @@ import {
   relative,
   type SystemError,
 } from '@css-modules-kit/core';
-import { shouldBePretty } from './typescript.js';
 
 function color(color: Parameters<typeof styleText>[0], text: string, pretty: boolean): string {
   return pretty ? styleText(color, text) : text;
 }
 
-export function formatDiagnostic(diagnostic: Diagnostic, cwd: string): string {
-  const pretty = shouldBePretty(undefined);
+export function formatDiagnostic(diagnostic: Diagnostic, cwd: string, pretty: boolean): string {
   let result = '';
   if ('file' in diagnostic) {
     result += `${formatLocation(diagnostic.file.fileName, diagnostic.start, cwd, pretty)} - `;
@@ -24,8 +22,7 @@ export function formatDiagnostic(diagnostic: Diagnostic, cwd: string): string {
   return result;
 }
 
-export function formatSystemError(error: SystemError): string {
-  const pretty = shouldBePretty(undefined);
+export function formatSystemError(error: SystemError, pretty: boolean): string {
   let result = '';
   result += `${formatCategory('error', pretty)}`;
   result += ' ';

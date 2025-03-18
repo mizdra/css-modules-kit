@@ -2,10 +2,9 @@
 /* eslint-disable n/no-process-exit */
 
 import { SystemError } from '@css-modules-kit/core';
-import { createLogger, parseCLIArgs, printHelpText, printVersion, runCMK } from '../dist/index.js';
+import { createLogger, parseCLIArgs, printHelpText, printVersion, runCMK, shouldBePretty } from '../dist/index.js';
 
 const cwd = process.cwd();
-const logger = createLogger(cwd);
 const args = parseCLIArgs(process.argv.slice(2), cwd);
 
 if (args.help) {
@@ -15,6 +14,8 @@ if (args.help) {
   printVersion();
   process.exit(0);
 }
+
+const logger = createLogger(cwd, shouldBePretty(args.pretty));
 
 try {
   await runCMK(args.project, logger);

@@ -39,6 +39,7 @@ Options:
   --help, -h     Show help information
   --version, -v  Show version number
   --project, -p  The path to its configuration file, or to a folder with a 'tsconfig.json'.
+  --pretty       Enable color and formatting in TypeScript's output to make compiler errors easier to read.
 ```
 
 ## Configuration
