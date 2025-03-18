@@ -2,9 +2,6 @@ import { type Diagnostic, type DiagnosticWithLocation, SystemError } from '@css-
 import { describe, expect, test } from 'vitest';
 import { formatDiagnostic, formatSystemError } from './formatter';
 
-// MEMO: Vitest overrides `process.stderr` with dummy stream without `hasColors` method. So, we need to add it.
-process.stderr.hasColors = () => false;
-
 const cwd = '/app';
 
 describe('formatDiagnostic', () => {
