@@ -36,4 +36,9 @@ describe('parseCLIArgs', () => {
       expect(args).toStrictEqual({ project: expected });
     });
   });
+  it('should parse --pretty option', () => {
+    expect(parseCLIArgs([], cwd, logger).pretty).toBe(true);
+    expect(parseCLIArgs(['--pretty'], cwd, logger).pretty).toBe(true);
+    expect(parseCLIArgs(['--no-pretty'], cwd, logger).pretty).toBe(false);
+  });
 });

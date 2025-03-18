@@ -10,10 +10,12 @@ Options:
   --help, -h     Show help information
   --version, -v  Show version number
   --project, -p  The path to its configuration file, or to a folder with a 'tsconfig.json'.
+  --pretty       Enable color and formatting in TypeScript's output to make compiler errors easier to read. (default: true)
 `;
 
 export interface ParsedArgs {
   project: string;
+  pretty: boolean;
 }
 
 /**
@@ -27,7 +29,9 @@ export function parseCLIArgs(args: string[], cwd: string, logger: Logger): Parse
       help: { type: 'boolean', short: 'h' },
       version: { type: 'boolean', short: 'v' },
       project: { type: 'string', short: 'p', default: '.' },
+      pretty: { type: 'boolean', default: true },
     },
+    allowNegative: true,
   });
   if (values.help) {
     logger.logMessage(helpText);
@@ -40,5 +44,6 @@ export function parseCLIArgs(args: string[], cwd: string, logger: Logger): Parse
   }
   return {
     project: resolve(cwd, values.project),
+    pretty: values.pretty,
   };
 }
