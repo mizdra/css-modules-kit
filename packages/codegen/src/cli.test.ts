@@ -11,7 +11,7 @@ describe('parseCLIArgs', () => {
       help: false,
       version: false,
       project: resolve(cwd),
-      pretty: true,
+      pretty: undefined,
     });
   });
   it('should parse --help option', () => {
