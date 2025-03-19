@@ -1,5 +1,29 @@
 # @css-modules-kit/codegen
 
+## 0.2.0
+
+### Minor Changes
+
+- 385bdc3: refactor: change diagnostic interface
+- 2b1f0fe: feat: implement resolver cache
+- 2fde8ec: feat: format diagnostics and system errors by TypeScript Compiler API
+- bf7d0d8: feat: support `--pretty` option
+- 1512c07: feat!: drop support for `NODE_DISABLE_COLORS` and `FORCE_COLOR`
+- 9ce6d25: feat: print error cause of `SystemError`
+
+### Patch Changes
+
+- b8c8198: fix: handle CLI argument parsing errors
+- 2bd2165: refactor: remove unused property of `Diagnostic`
+- 3772c14: fix: fix invalid `cause` object of `SystemError`
+- Updated dependencies [385bdc3]
+- Updated dependencies [2b1f0fe]
+- Updated dependencies [6ecc738]
+- Updated dependencies [2fde8ec]
+- Updated dependencies [819e023]
+- Updated dependencies [2bd2165]
+  - @css-modules-kit/core@0.2.0
+
 ## 0.1.4
 
 ### Patch Changes

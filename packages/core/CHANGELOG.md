@@ -1,5 +1,19 @@
 # @css-modules-kit/core
 
+## 0.2.0
+
+### Minor Changes
+
+- 385bdc3: refactor: change diagnostic interface
+- 2b1f0fe: feat: implement resolver cache
+- 6ecc738: refactor: move types to `type.ts`
+- 2fde8ec: feat: format diagnostics and system errors by TypeScript Compiler API
+- 819e023: feat: show source of diagnostic
+
+### Patch Changes
+
+- 2bd2165: refactor: remove unused property of `Diagnostic`
+
 ## 0.1.0
 
 ### Minor Changes

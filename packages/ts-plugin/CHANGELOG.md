@@ -1,5 +1,23 @@
 # @css-modules-kit/ts-plugin
 
+## 0.1.0
+
+### Minor Changes
+
+- 385bdc3: refactor: change diagnostic interface
+- 2b1f0fe: feat: implement resolver cache
+
+### Patch Changes
+
+- 88c9868: refactor: rename `diagnostics` of `SyntacticDiagnostic` to `syntacticDiagnostics`
+- Updated dependencies [385bdc3]
+- Updated dependencies [2b1f0fe]
+- Updated dependencies [6ecc738]
+- Updated dependencies [2fde8ec]
+- Updated dependencies [819e023]
+- Updated dependencies [2bd2165]
+  - @css-modules-kit/core@0.2.0
+
 ## 0.0.6
 
 ### Patch Changes
