@@ -1,48 +1,68 @@
-import { type Diagnostic, type DiagnosticWithLocation, SystemError } from '@css-modules-kit/core';
-import { describe, expect, test } from 'vitest';
-import { formatDiagnostic, formatSystemError } from './formatter';
+import dedent from 'dedent';
+import ts from 'typescript';
+import { describe, expect, it } from 'vitest';
+import { formatDiagnostics } from './formatter';
 
-const cwd = '/app';
-
-describe('formatDiagnostic', () => {
-  test('should format diagnostic without filename and start position', () => {
-    const diagnostic: Diagnostic = { category: 'error', text: 'text' };
-    const result = formatDiagnostic(diagnostic, cwd, false);
-    expect(result).toMatchInlineSnapshot(`"error: text"`);
-  });
-  test('should format diagnostic with filename and start position', () => {
-    const diagnostic: DiagnosticWithLocation = {
-      file: { fileName: '/app/path/to/file.ts', text: 'abcdef' },
-      start: { line: 1, column: 2 },
-      length: 1,
-      category: 'error',
-      text: 'text',
-    };
-    const result = formatDiagnostic(diagnostic, cwd, false);
-    expect(result).toMatchInlineSnapshot(`"path/to/file.ts:1:2 - error: text"`);
-  });
-  test('should format diagnostic with error category', () => {
-    const diagnostic: Diagnostic = {
-      category: 'error',
-      text: 'error text',
-    };
-    const result = formatDiagnostic(diagnostic, cwd, false);
-    expect(result).toMatchInlineSnapshot(`"error: error text"`);
-  });
-  test('should format diagnostic with warning category', () => {
-    const diagnostic: Diagnostic = {
-      category: 'warning',
-      text: 'warning text',
-    };
-    const result = formatDiagnostic(diagnostic, cwd, false);
-    expect(result).toMatchInlineSnapshot(`"warning: warning text"`);
-  });
-});
-
-test('formatSystemError', () => {
-  expect(formatSystemError(new SystemError('CODE', 'message'), false)).toMatchInlineSnapshot(`"error CODE: message"`);
-  const cause = new Error('msg2');
-  expect(formatSystemError(new SystemError('CODE', 'msg1', cause), false)).toMatch(
-    /error CODE: msg1\n {2}\[cause\]: Error: msg2\n {6}at .*/mu,
+describe('formatDiagnostics', () => {
+  const file = ts.createSourceFile(
+    '/app/test.module.css',
+    dedent`
+      .a_1 { color: red; }
+      .a_2 { color: red; }
+    `,
+    ts.ScriptTarget.JSON,
+    undefined,
+    ts.ScriptKind.Unknown,
   );
+  const host: ts.FormatDiagnosticsHost = {
+    getCurrentDirectory: () => '/app',
+    getCanonicalFileName: (fileName) => fileName,
+    getNewLine: () => '\n',
+  };
+  const diagnostics: ts.Diagnostic[] = [
+    {
+      file,
+      start: 1,
+      length: 3,
+      messageText: '`a_1` is not allowed',
+      category: ts.DiagnosticCategory.Error,
+      code: 0,
+    },
+    {
+      file,
+      start: 22,
+      length: 3,
+      messageText: '`a_2` is not allowed',
+      category: ts.DiagnosticCategory.Error,
+      code: 0,
+    },
+  ];
+
+  it('formats diagnostics with color and context when pretty is true', () => {
+    const result = formatDiagnostics(diagnostics, host, true);
+    expect(result).toMatchInlineSnapshot(`
+      "[96mtest.module.css[0m:[93m1[0m:[93m2[0m - [91merror[0m[90m: [0m\`a_1\` is not allowed
+
+      [7m1[0m .a_1 { color: red; }
+      [7m [0m [91m ~~~[0m
+
+      [96mtest.module.css[0m:[93m2[0m:[93m2[0m - [91merror[0m[90m: [0m\`a_2\` is not allowed
+
+      [7m2[0m .a_2 { color: red; }
+      [7m [0m [91m ~~~[0m
+
+      "
+    `);
+  });
+
+  it('formats diagnostics without color and context when pretty is false', () => {
+    const result = formatDiagnostics(diagnostics, host, false);
+    expect(result).toMatchInlineSnapshot(`
+      "test.module.css(1,2): error: \`a_1\` is not allowed
+
+      test.module.css(2,2): error: \`a_2\` is not allowed
+
+      "
+    `);
+  });
 });

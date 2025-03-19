@@ -94,7 +94,8 @@ test('reports system error', async () => {
   });
   expect(cmk.status).toBe(1);
   expect(cmk.stderr.toString()).toMatchInlineSnapshot(`
-    "error TS_CONFIG_NOT_FOUND: No tsconfig.json found.
+    "error: No tsconfig.json found.
+
     "
   `);
 });
