@@ -39,5 +39,5 @@ For vscode-eslint users, you need to add the following configuration to your `se
 
 ## Rules
 
-- `css-modules-kit/no-unused-class-names`
-- `css-modules-kit/no-missing-component-file`
+- [`css-modules-kit/no-unused-class-names`](https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/docs/rules/no-unused-class-names.md)
+- [`css-modules-kit/no-missing-component-file`](https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/docs/rules/no-missing-component-file.md)

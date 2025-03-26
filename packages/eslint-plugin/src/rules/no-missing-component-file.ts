@@ -9,6 +9,11 @@ export const noMissingComponentFile: Rule.RuleModule = {
     messages: {
       disallow: 'The corresponding component file is not found.',
     },
+    docs: {
+      description: 'Enforce the existence of corresponding component files for CSS module files',
+      recommended: true,
+      url: 'https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/docs/rules/no-missing-component-file.md',
+    },
   },
   create(context) {
     const fileName = context.filename;
