@@ -14,7 +14,7 @@ npm i -D @css-modules-kit/stylelint-plugin
 // stylelint.config.js
 /** @type {import('stylelint').Config} */
 export default {
-  extends: ['@css-modules-kit/stylelint-plugin/config'],
+  extends: ['@css-modules-kit/stylelint-plugin/recommended'],
 };
 ```
 

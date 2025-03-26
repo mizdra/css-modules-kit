@@ -19,10 +19,10 @@
         "default": "./dist/index.js"
       }
     },
-    "./config": {
+    "./recommended": {
       "import": {
-        "types": "./dist/config.d.ts",
-        "default": "./dist/config.js"
+        "types": "./dist/recommended.d.ts",
+        "default": "./dist/recommended.js"
       }
     }
   },
