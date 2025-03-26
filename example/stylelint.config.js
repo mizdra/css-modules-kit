@@ -1,8 +1,8 @@
 /** @type {import('stylelint').Config} */
 export default {
-  plugins: ['@css-modules-kit/stylelint-plugin'],
+  extends: ['@css-modules-kit/stylelint-plugin/config'],
   rules: {
-    'css-modules-kit/no-unused-class-names': true,
-    'css-modules-kit/no-missing-component-file': true,
+    'at-rule-no-unknown': true,
+    'property-no-unknown': true,
   },
 };
