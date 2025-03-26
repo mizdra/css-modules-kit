@@ -1,6 +1,6 @@
 import type { Config } from 'stylelint';
 
-const config: Config = {
+const recommendedConfig: Config = {
   plugins: ['@css-modules-kit/stylelint-plugin'],
   languageOptions: {
     syntax: {
@@ -42,4 +42,4 @@ const config: Config = {
   },
 };
 
-export = config;
+export = recommendedConfig;
