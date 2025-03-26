@@ -43,7 +43,7 @@
     "eslint": "^9.22.0",
     "npm-run-all2": "^7.0.2",
     "prettier": "^3.5.3",
-    "stylelint": "^16.15.0",
+    "stylelint": "^16.17.0",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   }
