@@ -27,7 +27,21 @@ To install codegen, run the following command:
 npm i -D @css-modules-kit/codegen
 ```
 
-By default, `*.module.css.d.ts` files are generated in the `generated` directory.
+Configure npm-script to run `cmk` command before building and type checking. This command generates `*.module.css.d.ts` files in `generated` directory.
+
+```json
+{
+  "scripts": {
+    "gen": "cmk",
+    "build": "run-s -c gen build:*",
+    "build:vite": "vite build",
+    "lint": "run-s -c gen lint:*",
+    "lint:eslint": "eslint .",
+    "lint:tsc": "tsc --noEmit",
+    "lint:prettier": "prettier --check ."
+  }
+}
+```
 
 ## Configure `tsconfig.json`
 
