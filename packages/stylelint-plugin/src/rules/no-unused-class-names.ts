@@ -1,5 +1,5 @@
 import { basename, findComponentFile, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
-import type { Rule } from 'stylelint';
+import type { Rule, RuleMeta } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
 
@@ -12,8 +12,8 @@ const messages = utils.ruleMessages(ruleName, {
     `"${className}" is defined but never used in "${basename(componentFileName)}"`,
 });
 
-const meta = {
-  url: 'https://github.com/mizdra/css-modules-kit/blob/main/packages/stylelint-plugin/docs/rules/no-unused-class-names.md',
+const meta: RuleMeta = {
+  url: 'https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/docs/rules/no-unused-class-names.md',
 };
 
 const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {

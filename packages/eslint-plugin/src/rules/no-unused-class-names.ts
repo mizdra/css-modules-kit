@@ -10,6 +10,11 @@ export const noUnusedClassNames: Rule.RuleModule = {
     messages: {
       disallow: '"{{className}}" is defined but never used in "{{componentFileName}}"',
     },
+    docs: {
+      description: 'Disallow unused class names in CSS module files',
+      recommended: true,
+      url: 'https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/docs/rules/no-unused-class-names.md',
+    },
   },
   create(context) {
     const fileName = context.filename;
