@@ -20,5 +20,4 @@ export default {
 
 ## Rules
 
-- `css-modules-kit/no-unused-class-names`
-- `css-modules-kit/no-missing-component-file`
+The same rules as eslint-plugin are provided. See [the eslint-plugin documentation](https://github.com/mizdra/css-modules-kit/blob/main/packages/eslint-plugin/README.md#rules) for a list of rules.

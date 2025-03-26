@@ -22,3 +22,7 @@ For example, consider the following CSS file:
 ```
 
 In this case, `a_1`, `a_2`, `a_3`, `a_4`, `b_1` and `b_2_alias` are tokens. If `dashedIdents` option is `true`, `--a-5` is also a token.
+
+## Corresponding Component File
+
+It refers to a file with the same name as the CSS Module file but with a `.tsx` or `.jsx` extension. For example, the corresponding component file for `Button.module.css` would be `Button.tsx` or `Button.jsx`.
