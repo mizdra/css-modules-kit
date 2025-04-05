@@ -33,7 +33,7 @@ For vscode-eslint users, you need to add the following configuration to your `se
 ```jsonc
 // .vscode/settings.json
 {
-  "eslint.validate": ["css"],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "css"],
 }
 ```
 

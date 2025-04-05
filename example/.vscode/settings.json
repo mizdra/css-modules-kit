@@ -4,5 +4,5 @@
   "typescript.tsdk": "../node_modules/typescript/lib",
   "git.openRepositoryInParentFolders": "never",
   "css.customData": ["./css-modules.css-data.json"],
-  "eslint.validate": ["css"]
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "css"]
 }
