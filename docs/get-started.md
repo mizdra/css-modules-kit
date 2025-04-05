@@ -14,6 +14,8 @@ To enable CSS Modules language features in your editor, you need to install [`@c
   - Not yet supported
 - For WebStorm:
   - Not yet supported
+- For StackBlitz Codeflow:
+  - Install the [CSS Modules Kit extension](https://open-vsx.org/extension/mizdra/css-modules-kit-vscode)
 
 ## Install codegen
 
