@@ -42,6 +42,7 @@
     "dedent": "^1.5.3",
     "eslint": "^9.22.0",
     "npm-run-all2": "^7.0.2",
+    "ovsx": "^0.10.1",
     "prettier": "^3.5.3",
     "stylelint": "^16.17.0",
     "typescript": "^5.8.2",
