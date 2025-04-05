@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/eslint-plugin",
   "description": "A eslint plugin for CSS Modules",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
