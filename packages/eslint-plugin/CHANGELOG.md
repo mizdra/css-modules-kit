@@ -1,5 +1,11 @@
 # @css-modules-kit/eslint-plugin
 
+## 0.1.1
+
+### Patch Changes
+
+- 2093fb8: docs: update recommended values in `eslint.validate`
+
 ## 0.1.0
 
 ### Minor Changes
