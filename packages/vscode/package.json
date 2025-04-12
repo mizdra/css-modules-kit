@@ -40,6 +40,7 @@
       {
         "name": "@css-modules-kit/ts-plugin",
         "configNamespace": "typescript",
+        "enableForWorkspaceTypeScriptVersions": true,
         "languages": [
           "css"
         ]
