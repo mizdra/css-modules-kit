@@ -1,5 +1,12 @@
 # @css-modules-kit/ts-plugin
 
+## 0.1.1
+
+### Patch Changes
+
+- 2e460bf: Fix className completion entry to support single quotes
+- a91b6fe: Prevent ts-plugin from processing `xxx.css`
+
 ## 0.1.0
 
 ### Minor Changes
