@@ -53,6 +53,7 @@ describe('Completion', async () => {
   test.each([
     {
       name: 'styles',
+      entryName: 'styles',
       file: iff.paths['a.tsx'],
       line: 1,
       offset: 7,
@@ -62,7 +63,8 @@ describe('Completion', async () => {
       ],
     },
     {
-      name: 'className',
+      name: 'className in a.tsx',
+      entryName: 'className',
       file: iff.paths['a.tsx'],
       line: 2,
       offset: 27,
@@ -74,6 +76,15 @@ describe('Completion', async () => {
       line,
       offset,
     });
-    expect(simplifyEntry(res.body?.entries.filter((entry) => entry.name === name) ?? [])).toStrictEqual(expected);
+    expect(
+      simplifyEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? []).sort(compareEntries),
+    ).toStrictEqual(expected.sort(compareEntries));
   });
 });
+
+function compareEntries(
+  a: Partial<ts.server.protocol.CompletionEntry>,
+  b: Partial<ts.server.protocol.CompletionEntry>,
+) {
+  return a.sortText?.localeCompare(b.sortText ?? '') || 0;
+}
