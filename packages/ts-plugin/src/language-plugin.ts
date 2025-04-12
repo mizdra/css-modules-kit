@@ -4,7 +4,7 @@ import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-
 import type {} from '@volar/typescript';
 import ts from 'typescript';
 
-export const LANGUAGE_ID = 'css-module';
+export const LANGUAGE_ID = 'css';
 
 export const CMK_DATA_KEY = Symbol('css-modules-kit-data');
 
@@ -21,17 +21,28 @@ export interface CSSModuleScript extends SourceScript<string> {
   };
 }
 
-export function createCSSModuleLanguagePlugin(
+export function createCSSLanguagePlugin(
   resolver: Resolver,
   matchesPattern: MatchesPattern,
 ): LanguagePlugin<string, VirtualCode> {
   return {
     getLanguageId(scriptId) {
-      if (!matchesPattern(scriptId)) return undefined;
+      if (!scriptId.endsWith('.css')) return undefined;
       return LANGUAGE_ID;
     },
-    createVirtualCode(scriptId, languageId, snapshot): CSSModuleVirtualCode | undefined {
+    createVirtualCode(scriptId, languageId, snapshot): VirtualCode | CSSModuleVirtualCode | undefined {
       if (languageId !== LANGUAGE_ID) return undefined;
+      if (!matchesPattern(scriptId)) {
+        // `scriptId` is CSS, but not a CSS module.
+        // If an empty VirtualCode is not returned for a CSS file, tsserver will treat it as TypeScript code.
+        // ref: https://github.com/mizdra/css-modules-kit/issues/170
+        return {
+          id: 'main',
+          languageId,
+          snapshot,
+          mappings: [],
+        };
+      }
 
       const length = snapshot.getLength();
       const cssModuleCode = snapshot.getText(0, length);
