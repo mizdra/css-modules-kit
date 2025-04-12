@@ -34,10 +34,8 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
       - run: npx -w packages/vscode vsce publish --no-git-tag-version --skip-duplicate
-        if: steps.changesets.outputs.published == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
       - run: npx -w packages/vscode ovsx publish --skip-duplicate
-        if: steps.changesets.outputs.published == 'true'
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
