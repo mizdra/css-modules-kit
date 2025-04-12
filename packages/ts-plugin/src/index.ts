@@ -2,7 +2,7 @@ import type { CMKConfig } from '@css-modules-kit/core';
 import { createMatchesPattern, createResolver, readConfigFile } from '@css-modules-kit/core';
 import { TsConfigFileNotFoundError } from '@css-modules-kit/core';
 import { createLanguageServicePlugin } from '@volar/typescript/lib/quickstart/createLanguageServicePlugin.js';
-import { createCSSModuleLanguagePlugin } from './language-plugin.js';
+import { createCSSLanguagePlugin } from './language-plugin.js';
 import { proxyLanguageService } from './language-service/proxy.js';
 
 const plugin = createLanguageServicePlugin((ts, info) => {
@@ -38,7 +38,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
   const matchesPattern = createMatchesPattern(config);
 
   return {
-    languagePlugins: [createCSSModuleLanguagePlugin(resolver, matchesPattern)],
+    languagePlugins: [createCSSLanguagePlugin(resolver, matchesPattern)],
     setup: (language) => {
       info.languageService = proxyLanguageService(
         language,
