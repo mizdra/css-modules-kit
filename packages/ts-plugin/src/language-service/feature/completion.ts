@@ -42,7 +42,7 @@ function isClassNamePropEntry(entry: ts.CompletionEntry) {
   return (
     entry.name === 'className' &&
     entry.kind === ts.ScriptElementKind.memberVariableElement &&
-    entry.insertText === 'className="$1"' &&
+    (entry.insertText === 'className="$1"' || entry.insertText === "className='$1'") &&
     entry.isSnippet
   );
 }
