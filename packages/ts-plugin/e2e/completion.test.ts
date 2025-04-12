@@ -25,6 +25,10 @@ describe('Completion', async () => {
       styles;
       const jsx = <div className />;
     `,
+    'b.tsx': dedent`
+      import styles from './b.module.css';
+      const jsx = <div className />;
+    `,
     'a.module.css': '',
     'b.module.css': '',
     'tsconfig.json': dedent`
@@ -48,6 +52,7 @@ describe('Completion', async () => {
       includeCompletionsWithSnippetText: true,
       includeCompletionsWithInsertText: true,
       jsxAttributeCompletionStyle: 'auto',
+      quotePreference: 'single',
     },
   });
   test.each([
@@ -63,14 +68,29 @@ describe('Completion', async () => {
       ],
     },
     {
-      name: 'className in a.tsx',
+      name: "className with `quotePreference: 'double'`",
       entryName: 'className',
+      quotePreference: 'double' as const,
       file: iff.paths['a.tsx'],
       line: 2,
       offset: 27,
       expected: [{ name: 'className', insertText: 'className={$1}', sortText: expect.anything() }],
     },
-  ])('Completions for $name', async ({ name, file, line, offset, expected }) => {
+    {
+      name: "className with `quotePreference: 'single'`",
+      entryName: 'className',
+      quotePreference: 'single' as const,
+      file: iff.paths['b.tsx'],
+      line: 2,
+      offset: 27,
+      expected: [{ name: 'className', insertText: 'className={$1}', sortText: expect.anything() }],
+    },
+  ])('Completions for $name', async ({ entryName, quotePreference, file, line, offset, expected }) => {
+    await tsserver.sendConfigure({
+      preferences: {
+        quotePreference: quotePreference ?? 'auto',
+      },
+    });
     const res = await tsserver.sendCompletionInfo({
       file,
       line,
