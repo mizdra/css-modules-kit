@@ -33,9 +33,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-      - run: npx -w packages/vscode vsce publish --no-git-tag-version --skip-duplicate
+      - run: npx vsce publish --no-git-tag-version --skip-duplicate
+        working-directory: packages/vscode
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-      - run: npx -w packages/vscode ovsx publish --skip-duplicate
+      - run: npx ovsx publish --skip-duplicate
+        working-directory: packages/vscode
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
