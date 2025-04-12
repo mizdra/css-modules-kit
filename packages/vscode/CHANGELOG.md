@@ -1,5 +1,14 @@
 # css-modules-kit-vscode
 
+## 0.0.4
+
+### Patch Changes
+
+- 773ed57: Fix ts-plugin not loading when using workspace tsdk
+- Updated dependencies [2e460bf]
+- Updated dependencies [a91b6fe]
+  - @css-modules-kit/ts-plugin@0.1.1
+
 ## 0.0.3
 
 ### Patch Changes
