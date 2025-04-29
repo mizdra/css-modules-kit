@@ -43,11 +43,11 @@ interface LinkedCodeMapping extends CodeMapping {
  * ```ts
  * // @ts-nocheck
  * const styles = {
- *   local1: '' as readonly string,
- *   local2: '' as readonly string,
+ *   'local1': '' as readonly string,
+ *   'local2': '' as readonly string,
  *   ...(await import('./a.module.css')).default,
- *   imported1: (await import('./b.module.css')).default.imported1,
- *   aliasedImported2: (await import('./b.module.css')).default.imported2,
+ *   'imported1': (await import('./b.module.css')).default.['imported1'],
+ *   'aliasedImported2': (await import('./b.module.css')).default['imported2'],
  * };
  * export default styles;
  * ```
@@ -78,11 +78,11 @@ export function createDts(
   let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
   for (const token of localTokens) {
-    text += `  `;
+    text += `  '`;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
     mapping.lengths.push(token.name.length);
-    text += `${token.name}: '' as readonly string,\n`;
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -97,25 +97,25 @@ export function createDts(
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
 
-        text += `  `;
+        text += `  '`;
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
-        text += `${localName}: (await import(`;
+        text += `${localName}': (await import(`;
         if (i === 0) {
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
         }
-        text += `'${tokenImporter.from}')).default.`;
+        text += `'${tokenImporter.from}')).default['`;
         mapping.sourceOffsets.push(value.loc.start.offset);
         mapping.lengths.push(value.name.length);
         mapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
-        text += `${value.name},\n`;
+        text += `${value.name}'],\n`;
       });
     }
   }

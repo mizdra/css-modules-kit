@@ -59,8 +59,8 @@ describe('createDts', () => {
         },
         "mapping": {
           "generatedOffsets": [
-            42,
-            75,
+            43,
+            78,
           ],
           "lengths": [
             6,
@@ -73,8 +73,8 @@ describe('createDts', () => {
         },
         "text": "// @ts-nocheck
       declare const styles = {
-        local1: '' as readonly string,
-        local2: '' as readonly string,
+        'local1': '' as readonly string,
+        'local2': '' as readonly string,
       };
       export default styles;
       ",
@@ -118,27 +118,27 @@ describe('createDts', () => {
             9,
           ],
           "generatedOffsets": [
-            141,
-            213,
+            144,
+            221,
           ],
           "lengths": [
             9,
             16,
           ],
           "sourceOffsets": [
-            89,
-            154,
+            90,
+            160,
           ],
         },
         "mapping": {
           "generatedOffsets": [
             59,
-            89,
-            114,
-            141,
-            154,
-            186,
-            213,
+            90,
+            116,
+            144,
+            160,
+            193,
+            221,
           ],
           "lengths": [
             16,
@@ -162,8 +162,8 @@ describe('createDts', () => {
         "text": "// @ts-nocheck
       declare const styles = {
         ...(await import('./a.module.css')).default,
-        imported1: (await import('./b.module.css')).default.imported1,
-        aliasedImported2: (await import('./c.module.css')).default.imported2,
+        'imported1': (await import('./b.module.css')).default['imported1'],
+        'aliasedImported2': (await import('./c.module.css')).default['imported2'],
       };
       export default styles;
       ",
@@ -189,8 +189,8 @@ describe('createDts', () => {
         },
         "mapping": {
           "generatedOffsets": [
-            42,
-            92,
+            43,
+            94,
           ],
           "lengths": [
             6,
@@ -203,7 +203,7 @@ describe('createDts', () => {
         },
         "text": "// @ts-nocheck
       declare const styles = {
-        local1: '' as readonly string,
+        'local1': '' as readonly string,
         ...(await import('./a.module.css')).default,
       };
       export default styles;
@@ -250,27 +250,27 @@ describe('createDts', () => {
             9,
           ],
           "generatedOffsets": [
-            141,
-            213,
+            144,
+            221,
           ],
           "lengths": [
             9,
             16,
           ],
           "sourceOffsets": [
-            89,
-            154,
+            90,
+            160,
           ],
         },
         "mapping": {
           "generatedOffsets": [
             59,
-            89,
-            114,
-            141,
-            154,
-            186,
-            213,
+            90,
+            116,
+            144,
+            160,
+            193,
+            221,
           ],
           "lengths": [
             16,
@@ -294,8 +294,8 @@ describe('createDts', () => {
         "text": "// @ts-nocheck
       declare const styles = {
         ...(await import('@/a.module.css')).default,
-        imported1: (await import('@/b.module.css')).default.imported1,
-        aliasedImported2: (await import('@/c.module.css')).default.imported2,
+        'imported1': (await import('@/b.module.css')).default['imported1'],
+        'aliasedImported2': (await import('@/c.module.css')).default['imported2'],
       };
       export default styles;
       ",

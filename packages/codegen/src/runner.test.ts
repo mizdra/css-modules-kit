@@ -42,7 +42,7 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        a1: '' as readonly string,
+        'a1': '' as readonly string,
       };
       export default styles;
       "
@@ -50,7 +50,7 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        b1: '' as readonly string,
+        'b1': '' as readonly string,
       };
       export default styles;
       "
@@ -137,7 +137,7 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        a1: '' as readonly string,
+        'a1': '' as readonly string,
       };
       export default styles;
       "
