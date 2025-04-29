@@ -36,7 +36,7 @@
     "dist"
   ],
   "dependencies": {
-    "@volar/language-server": "^2.4.11",
+    "@volar/language-server": "^2.4.13",
     "volar-service-css": "^0.0.62"
   }
 }
