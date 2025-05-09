@@ -80,7 +80,10 @@ export function createDts(
   for (const token of localTokens) {
     // insert JSDoc to provide CSS code hints
     if (token.definition) {
-      const cssLines = token.definition.trim().split('\n');
+      // We replace `*/` with `* + (ZERO WIDTH SPACE) + /` to prevent closing the comment block.
+      // This patch for the string literal like `.a::after { content: '*/'; }`.
+      // (token.definition does not contain comments)
+      const cssLines = token.definition.replace(/\*\//g, '*\u200b/').trim().split('\n');
       text += '  /**\n';
       text += `   * \`\`\`css\n`;
       for (const line of cssLines) {

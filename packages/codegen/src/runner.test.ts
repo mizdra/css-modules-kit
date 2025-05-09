@@ -35,7 +35,7 @@ describe('runCMK', () => {
           "cmkOptions": { "dtsOutDir": "generated" }
         }
       `,
-      'src/a.module.css': '.a1 { /** RED */ color: red; }',
+      'src/a.module.css': '.a1 { /** RED */ color: red; } .a1::after { content: "*/"; }',
       'src/b.module.css': '/** BLUE */ .b1 { color: blue; }',
     });
     await runCMK(iff.rootDir, createLoggerSpy());
@@ -44,7 +44,13 @@ describe('runCMK', () => {
       declare const styles = {
         /**
          * \`\`\`css
-         * .a1 {  color: red; }
+         * .a1 { color: red; }
+         * \`\`\`
+         */
+        a1: '' as readonly string,
+        /**
+         * \`\`\`css
+         * .a1::after { content: "*​/"; }
          * \`\`\`
          */
         a1: '' as readonly string,
