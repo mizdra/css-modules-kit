@@ -106,6 +106,8 @@ interface ClassSelector {
   name: string;
   /** The location of the class selector. */
   loc: Location;
+  /** The style definition of the class selector */
+  definition: string;
 }
 
 interface ParseRuleResult {
@@ -134,9 +136,11 @@ export function parseRule(rule: Rule): ParseRuleResult {
       column: start.column + className.value.length,
       offset: start.offset + className.value.length,
     };
+    const definition = rule.toString().replace(/\/\*.+?\*\//g, ''); // Remove comments
     return {
       name: className.value,
       loc: { start, end },
+      definition,
     };
   });
   return { classSelectors, diagnostics: result.diagnostics };

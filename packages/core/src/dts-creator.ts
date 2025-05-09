@@ -78,6 +78,18 @@ export function createDts(
   let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
   for (const token of localTokens) {
+    // insert JSDoc to provide CSS code hints
+    if (token.definition) {
+      const cssLines = token.definition.trim().split('\n');
+      text += '  /**\n';
+      text += `   * \`\`\`css\n`;
+      for (const line of cssLines) {
+        text += `   * ${line}\n`;
+      }
+      text += `   * \`\`\`\n`;
+      text += `   */\n`;
+    }
+
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
