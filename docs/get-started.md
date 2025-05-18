@@ -11,7 +11,7 @@ To enable CSS Modules language features in your editor, you need to install [`@c
 - For Emacs:
   - Not yet supported
 - For Zed:
-  - Not yet supported
+  - See [crates/zed/README.md](../crates/zed/README.md)
 - For WebStorm:
   - Not yet supported
 - For StackBlitz Codeflow:
