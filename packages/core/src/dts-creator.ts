@@ -5,6 +5,7 @@ export const STYLES_EXPORT_NAME = 'styles';
 export interface CreateDtsOptions {
   resolver: Resolver;
   matchesPattern: MatchesPattern;
+  namedExports: boolean;
 }
 
 interface CodeMapping {
