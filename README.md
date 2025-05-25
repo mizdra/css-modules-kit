@@ -148,6 +148,23 @@ Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts
 }
 ```
 
+### `cmkOptions.namedExports`
+
+Type: `boolean`, Default: `false`
+
+Determines whether to generate named exports in the d.ts file instead of a default export.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "namedExports": true,
+  },
+}
+```
+
 ## Limitations
 
 - Sass/Less are not supported to simplify the implementation

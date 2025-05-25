@@ -15,6 +15,8 @@ export interface CMKConfig {
   excludes: string[];
   dtsOutDir: string;
   arbitraryExtensions: boolean;
+  /** Whether to generate named exports in the d.ts file instead of a default export. */
+  namedExports: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
    * This is an absolute path.
@@ -68,6 +70,7 @@ interface UnnormalizedRawConfig {
   excludes?: string[];
   dtsOutDir?: string;
   arbitraryExtensions?: boolean;
+  namedExports?: boolean;
 }
 
 /**
@@ -134,6 +137,17 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
         });
       }
     }
+    if ('namedExports' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.namedExports === 'boolean') {
+        result.config.namedExports = raw.cmkOptions.namedExports;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`namedExports\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
+        });
+      }
+    }
   }
   return result;
 }
@@ -146,6 +160,7 @@ function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): Pars
   if (overrides.config.dtsOutDir !== undefined) result.config.dtsOutDir = overrides.config.dtsOutDir;
   if (overrides.config.arbitraryExtensions !== undefined)
     result.config.arbitraryExtensions = overrides.config.arbitraryExtensions;
+  if (overrides.config.namedExports !== undefined) result.config.namedExports = overrides.config.namedExports;
   result.diagnostics.push(...overrides.diagnostics);
   return result;
 }
@@ -226,6 +241,7 @@ export function readConfigFile(project: string): CMKConfig {
     excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
     dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
     arbitraryExtensions: config.arbitraryExtensions ?? false,
+    namedExports: config.namedExports ?? false,
     basePath,
     configFileName,
     compilerOptions,

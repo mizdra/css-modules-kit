@@ -6,6 +6,7 @@ import { fakeCSSModule } from './test/css-module.js';
 const options: CreateDtsOptions = {
   resolver: (specifier, { request }) => join(dirname(request), specifier),
   matchesPattern: () => true,
+  namedExports: false,
 };
 
 function fakeLoc(offset: number) {
@@ -373,6 +374,86 @@ describe('createDts', () => {
       declare const styles = {
       };
       export default styles;
+      ",
+      }
+    `);
+  });
+  test('creates d.ts file with named exports', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [
+            { name: 'local1', loc: fakeLoc(0) },
+            { name: 'local2', loc: fakeLoc(1) },
+          ],
+          tokenImporters: [
+            { type: 'import', from: './a.module.css', fromLoc: fakeLoc(2) },
+            {
+              type: 'value',
+              values: [
+                { name: 'imported1', loc: fakeLoc(3) },
+                { name: 'imported2', loc: fakeLoc(4), localName: 'aliasedImported2', localLoc: fakeLoc(5) },
+              ],
+              from: './b.module.css',
+              fromLoc: fakeLoc(6),
+            },
+          ],
+        }),
+        { ...options, namedExports: true },
+      ),
+    ).toMatchInlineSnapshot(`
+      {
+        "linkedCodeMapping": {
+          "generatedLengths": [
+            9,
+          ],
+          "generatedOffsets": [
+            125,
+          ],
+          "lengths": [
+            16,
+          ],
+          "sourceOffsets": [
+            138,
+          ],
+        },
+        "mapping": {
+          "generatedOffsets": [
+            26,
+            53,
+            83,
+            112,
+            125,
+            138,
+            163,
+          ],
+          "lengths": [
+            6,
+            6,
+            16,
+            9,
+            9,
+            16,
+            16,
+          ],
+          "sourceOffsets": [
+            0,
+            1,
+            1,
+            3,
+            4,
+            5,
+            5,
+          ],
+        },
+        "text": "// @ts-nocheck
+      export var local1: string;
+      export var local2: string;
+      export * from './a.module.css';
+      export {
+        imported1,
+        imported2 as aliasedImported2,
+      } from './b.module.css';
       ",
       }
     `);
