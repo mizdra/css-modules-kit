@@ -12,5 +12,8 @@
     "paths": { "@/*": ["./*"] },
     "rootDirs": [".", "generated"],
     "types": [] // Simplify tsserver.log
+  },
+  "cmkOptions": {
+    "namedExports": true
   }
 }
