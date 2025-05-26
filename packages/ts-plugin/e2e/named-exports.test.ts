@@ -3,9 +3,11 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { createIFF } from './test/fixture.js';
 import {
+  compareCompletionEntries,
   formatPath,
   launchTsserver,
   mergeSpanGroups,
+  simplifyCompletionEntry,
   simplifyRefItems,
   simplifySpanGroups,
   sortRefItems,
@@ -35,6 +37,10 @@ describe('supports navigation features', async () => {
       @value c_1: red;
       @value c_2: red;
     `,
+    'completion.ts': dedent`
+      styles;
+      a_1;
+    `,
     'tsconfig.json': dedent`
       {
         "cmkOptions": {
@@ -45,6 +51,15 @@ describe('supports navigation features', async () => {
   });
   await tsserver.sendUpdateOpen({
     openFiles: [{ file: iff.paths['tsconfig.json'] }],
+  });
+  await tsserver.sendConfigure({
+    preferences: {
+      includeCompletionsForModuleExports: true,
+      includeCompletionsWithSnippetText: true,
+      includeCompletionsWithInsertText: true,
+      jsxAttributeCompletionStyle: 'auto',
+      quotePreference: 'single',
+    },
   });
   const a_1_in_index_ts = {
     file: formatPath(iff.paths['index.ts']),
@@ -189,5 +204,38 @@ describe('supports navigation features', async () => {
       offset,
     });
     expect(sortRefItems(simplifyRefItems(res.body?.refs ?? []))).toStrictEqual(sortRefItems(expected));
+  });
+  test.each([
+    {
+      name: 'styles',
+      entryName: 'styles',
+      file: iff.paths['completion.ts'],
+      line: 1,
+      offset: 7,
+      expected: [
+        { name: 'styles', sortText: '0', source: formatPath(iff.paths['a.module.css']) },
+        { name: 'styles', sortText: '16', source: formatPath(iff.paths['b.module.css']) },
+        { name: 'styles', sortText: '16', source: formatPath(iff.paths['c.module.css']) },
+      ],
+    },
+    {
+      name: 'a_1',
+      entryName: 'a_1',
+      file: iff.paths['completion.ts'],
+      line: 2,
+      offset: 4,
+      expected: [],
+    },
+  ])('Completions for $name', async ({ entryName, file, line, offset, expected }) => {
+    const res = await tsserver.sendCompletionInfo({
+      file,
+      line,
+      offset,
+    });
+    expect(
+      simplifyCompletionEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? []).sort(
+        compareCompletionEntries,
+      ),
+    ).toStrictEqual(expected.sort(compareCompletionEntries));
   });
 });
