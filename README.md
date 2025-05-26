@@ -165,6 +165,26 @@ Determines whether to generate named exports in the d.ts file instead of a defau
 }
 ```
 
+### `cmkOptions.prioritizeNamedImports`
+
+Type: `boolean`, Default: `false`
+
+Whether to prioritize named imports over namespace imports when adding import statements. This option only takes effect when `cmkOptions.namedExports` is `true`.
+
+When this option is `true`, `import { button } from '...'` will be added. When this option is `false`, `import button from '...'` will be added.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "namedExports": true,
+    "prioritizeNamedImports": true,
+  },
+}
+```
+
 ## Limitations
 
 - Sass/Less are not supported to simplify the implementation

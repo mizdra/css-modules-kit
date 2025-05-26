@@ -4,7 +4,7 @@ import type { Language } from '@volar/language-core';
 import type ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../language-plugin.js';
 import { getCodeFixesAtPosition } from './feature/code-fix.js';
-import { getCompletionsAtPosition } from './feature/completion.js';
+import { getCompletionEntryDetails, getCompletionsAtPosition } from './feature/completion.js';
 import { getApplicableRefactors, getEditsForRefactor } from './feature/refactor.js';
 import { getSemanticDiagnostics } from './feature/semantic-diagnostic.js';
 import { getSyntacticDiagnostics } from './feature/syntactic-diagnostic.js';
@@ -48,7 +48,8 @@ export function proxyLanguageService(
   proxy.getApplicableRefactors = getApplicableRefactors(languageService, project);
   proxy.getEditsForRefactor = getEditsForRefactor(languageService);
   proxy.getCompletionsAtPosition = getCompletionsAtPosition(languageService, config);
-  proxy.getCodeFixesAtPosition = getCodeFixesAtPosition(language, languageService, project, config);
+  proxy.getCompletionEntryDetails = getCompletionEntryDetails(languageService, resolver, config);
+  proxy.getCodeFixesAtPosition = getCodeFixesAtPosition(language, languageService, project, resolver, config);
 
   return proxy;
 }
