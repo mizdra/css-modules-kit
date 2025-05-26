@@ -100,3 +100,98 @@ export function sortDefinitions(definitions: readonly ts.server.protocol.Definit
     return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
   });
 }
+
+type SimplifiedSpanGroup = {
+  file: string;
+  locs: ts.server.protocol.TextSpan[];
+};
+
+export function simplifySpanGroups(spanGroups: readonly ts.server.protocol.SpanGroup[]): SimplifiedSpanGroup[] {
+  return spanGroups.map((loc) => {
+    return {
+      file: formatPath(loc.file),
+      locs: loc.locs.map((loc) => ({
+        start: loc.start,
+        end: loc.end,
+        ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
+        ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
+      })),
+    };
+  });
+}
+
+export function sortSpanGroups(spanGroups: SimplifiedSpanGroup[]): SimplifiedSpanGroup[] {
+  const sortedLocs = spanGroups.toSorted((a, b) => {
+    return a.file.localeCompare(b.file);
+  });
+  for (const loc of sortedLocs) {
+    loc.locs.sort((a, b) => {
+      return a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
+  }
+  return sortedLocs;
+}
+
+type SimplifiedReferencesResponseItem = {
+  file: string;
+  start: ts.server.protocol.Location;
+  end: ts.server.protocol.Location;
+};
+
+export function simplifyRefItems(
+  refs: readonly ts.server.protocol.ReferencesResponseItem[],
+): SimplifiedReferencesResponseItem[] {
+  return refs.map((ref) => {
+    return {
+      file: formatPath(ref.file),
+      start: ref.start,
+      end: ref.end,
+    };
+  });
+}
+
+export function sortRefItems(refs: readonly SimplifiedReferencesResponseItem[]) {
+  return refs.toSorted((a, b) => {
+    return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+  });
+}
+
+export function mergeSpanGroups(fileSpans: ts.server.protocol.FileSpan[]): SimplifiedSpanGroup[] {
+  const spanGroups: SimplifiedSpanGroup[] = [];
+  for (const fileSpan of fileSpans) {
+    const existingGroup = spanGroups.find((group) => group.file === fileSpan.file);
+    if (existingGroup) {
+      existingGroup.locs.push({ start: fileSpan.start, end: fileSpan.end });
+    } else {
+      spanGroups.push({
+        file: fileSpan.file,
+        locs: [{ start: fileSpan.start, end: fileSpan.end }],
+      });
+    }
+  }
+  return spanGroups;
+}
+
+type SimplifiedCompletionEntry = {
+  name: string;
+  sortText: string;
+  source?: string;
+  insertText?: string;
+};
+
+export function simplifyCompletionEntry(
+  entries: readonly ts.server.protocol.CompletionEntry[],
+): SimplifiedCompletionEntry[] {
+  return entries.map((entry) => {
+    return {
+      name: entry.name,
+      sortText: entry.sortText,
+      ...('source' in entry ? { source: entry.source } : {}),
+      ...('insertText' in entry ? { insertText: entry.insertText } : {}),
+    };
+  });
+}
+
+export function compareCompletionEntries(a: SimplifiedCompletionEntry, b: SimplifiedCompletionEntry) {
+  return a.sortText?.localeCompare(b.sortText ?? '') || 0;
+}

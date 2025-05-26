@@ -22,6 +22,7 @@ describe('normalizeConfig', () => {
     excludes: undefined,
     dtsOutDir: undefined,
     arbitraryExtensions: undefined,
+    namedExports: undefined,
   };
   test('resolves options', () => {
     expect(
@@ -44,6 +45,7 @@ describe('normalizeConfig', () => {
         "includes": [
           "/app/src",
         ],
+        "namedExports": false,
       }
     `);
   });
@@ -60,7 +62,9 @@ describe('readTsConfigFile', () => {
             "module": "esnext"
           },
           "cmkOptions": {
-            "dtsOutDir": "generated/cmk"
+            "dtsOutDir": "generated/cmk",
+            "arbitraryExtensions": false,
+            "namedExports": true
           }
         }
       `,
@@ -71,7 +75,8 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: ['src/test'],
         dtsOutDir: 'generated/cmk',
-        arbitraryExtensions: undefined,
+        arbitraryExtensions: false,
+        namedExports: true,
       },
       compilerOptions: expect.objectContaining({
         module: ts.ModuleKind.ESNext,
@@ -100,6 +105,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: undefined,
       },
       compilerOptions: expect.any(Object),
       diagnostics: [],
@@ -130,6 +136,7 @@ describe('readTsConfigFile', () => {
         excludes: ['src/test'],
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
+        namedExports: undefined,
       },
       compilerOptions: expect.objectContaining({
         module: undefined,
@@ -170,6 +177,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: undefined,
       });
     });
     test('does not merge arrays and objects, but overwrites them', async () => {
@@ -193,6 +201,7 @@ describe('readTsConfigFile', () => {
         excludes: ['exclude2'],
         dtsOutDir: undefined,
         arbitraryExtensions: undefined,
+        namedExports: undefined,
       });
     });
     test('inherits from a file recursively', async () => {
@@ -219,6 +228,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: undefined,
       });
     });
     test('inherits from a package', async () => {
@@ -239,6 +249,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: undefined,
+        namedExports: undefined,
       });
     });
     test('inherits from multiple files', async () => {
@@ -264,6 +275,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: undefined,
       });
     });
     test('ignores un-existing files', async () => {
@@ -286,6 +298,7 @@ describe('readTsConfigFile', () => {
         excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: undefined,
       });
     });
   });

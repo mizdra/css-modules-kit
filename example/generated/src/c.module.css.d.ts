@@ -1,6 +1,3 @@
 // @ts-nocheck
-declare const styles = {
-  c_1: '' as readonly string,
-  c_2: '' as readonly string,
-};
-export default styles;
+export var c_1: string;
+export var c_2: string;

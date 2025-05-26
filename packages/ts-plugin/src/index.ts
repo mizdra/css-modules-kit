@@ -38,7 +38,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
   const matchesPattern = createMatchesPattern(config);
 
   return {
-    languagePlugins: [createCSSLanguagePlugin(resolver, matchesPattern)],
+    languagePlugins: [createCSSLanguagePlugin(resolver, matchesPattern, config)],
     setup: (language) => {
       info.languageService = proxyLanguageService(
         language,
@@ -46,6 +46,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
         info.project,
         resolver,
         matchesPattern,
+        config,
       );
     },
   };
