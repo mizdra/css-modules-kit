@@ -1,11 +1,10 @@
 // @ts-nocheck
-declare const styles = {
-  a_1: '' as readonly string,
-  a_2: '' as readonly string,
-  a_2: '' as readonly string,
-  a_3: '' as readonly string,
-  ...(await import('./b.module.css')).default,
-  c_1: (await import('./c.module.css')).default.c_1,
-  c_alias: (await import('./c.module.css')).default.c_2,
-};
-export default styles;
+export var a_1: string;
+export var a_2: string;
+export var a_2: string;
+export var a_3: string;
+export * from './b.module.css';
+export {
+  c_1,
+  c_2 as c_alias,
+} from './c.module.css';
