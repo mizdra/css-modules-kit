@@ -171,3 +171,27 @@ export function mergeSpanGroups(fileSpans: ts.server.protocol.FileSpan[]): Simpl
   }
   return spanGroups;
 }
+
+type SimplifiedCompletionEntry = {
+  name: string;
+  sortText: string;
+  source?: string;
+  insertText?: string;
+};
+
+export function simplifyCompletionEntry(
+  entries: readonly ts.server.protocol.CompletionEntry[],
+): SimplifiedCompletionEntry[] {
+  return entries.map((entry) => {
+    return {
+      name: entry.name,
+      sortText: entry.sortText,
+      ...('source' in entry ? { source: entry.source } : {}),
+      ...('insertText' in entry ? { insertText: entry.insertText } : {}),
+    };
+  });
+}
+
+export function compareCompletionEntries(a: SimplifiedCompletionEntry, b: SimplifiedCompletionEntry) {
+  return a.sortText?.localeCompare(b.sortText ?? '') || 0;
+}
