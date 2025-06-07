@@ -86,19 +86,24 @@ export function formatPath(path: string) {
   return path.replaceAll('\\', '/');
 }
 
-export function simplifyDefinitions(definitions: readonly ts.server.protocol.DefinitionInfo[]) {
-  return definitions.map((definition) => {
-    return {
-      file: formatPath(definition.file),
-      start: definition.start,
-      end: definition.end,
-    };
-  });
-}
-export function sortDefinitions(definitions: readonly ts.server.protocol.DefinitionInfo[]) {
-  return definitions.toSorted((a, b) => {
-    return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-  });
+type SimplifiedDefinitionInfo = {
+  file: string;
+  start: ts.server.protocol.Location;
+  end: ts.server.protocol.Location;
+};
+
+export function normalizeDefinitions(definitions: readonly SimplifiedDefinitionInfo[]): SimplifiedDefinitionInfo[] {
+  return definitions
+    .map((definition) => {
+      return {
+        file: formatPath(definition.file),
+        start: definition.start,
+        end: definition.end,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
 }
 
 type SimplifiedSpanGroup = {
@@ -106,24 +111,22 @@ type SimplifiedSpanGroup = {
   locs: ts.server.protocol.TextSpan[];
 };
 
-export function simplifySpanGroups(spanGroups: readonly ts.server.protocol.SpanGroup[]): SimplifiedSpanGroup[] {
-  return spanGroups.map((loc) => {
-    return {
-      file: formatPath(loc.file),
-      locs: loc.locs.map((loc) => ({
-        start: loc.start,
-        end: loc.end,
-        ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
-        ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
-      })),
-    };
-  });
-}
-
-export function sortSpanGroups(spanGroups: SimplifiedSpanGroup[]): SimplifiedSpanGroup[] {
-  const sortedLocs = spanGroups.toSorted((a, b) => {
-    return a.file.localeCompare(b.file);
-  });
+export function normalizeSpanGroups(spanGroups: readonly SimplifiedSpanGroup[]): SimplifiedSpanGroup[] {
+  const sortedLocs = spanGroups
+    .map((loc) => {
+      return {
+        file: formatPath(loc.file),
+        locs: loc.locs.map((loc) => ({
+          start: loc.start,
+          end: loc.end,
+          ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
+          ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
+        })),
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file);
+    });
   for (const loc of sortedLocs) {
     loc.locs.sort((a, b) => {
       return a.start.line - b.start.line || a.start.offset - b.start.offset;
@@ -138,22 +141,18 @@ type SimplifiedReferencesResponseItem = {
   end: ts.server.protocol.Location;
 };
 
-export function simplifyRefItems(
-  refs: readonly ts.server.protocol.ReferencesResponseItem[],
-): SimplifiedReferencesResponseItem[] {
-  return refs.map((ref) => {
-    return {
-      file: formatPath(ref.file),
-      start: ref.start,
-      end: ref.end,
-    };
-  });
-}
-
-export function sortRefItems(refs: readonly SimplifiedReferencesResponseItem[]) {
-  return refs.toSorted((a, b) => {
-    return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-  });
+export function normalizeRefItems(refs: readonly SimplifiedReferencesResponseItem[]) {
+  return refs
+    .map((ref) => {
+      return {
+        file: formatPath(ref.file),
+        start: ref.start,
+        end: ref.end,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
 }
 
 export function mergeSpanGroups(fileSpans: ts.server.protocol.FileSpan[]): SimplifiedSpanGroup[] {
@@ -179,25 +178,22 @@ type SimplifiedCompletionEntry = {
   insertText?: string;
 };
 
-export function simplifyCompletionEntry(
-  entries: readonly ts.server.protocol.CompletionEntry[],
-): SimplifiedCompletionEntry[] {
-  return entries.map((entry) => {
-    return {
-      name: entry.name,
-      sortText: entry.sortText,
-      ...('source' in entry ? { source: entry.source } : {}),
-      ...('insertText' in entry ? { insertText: entry.insertText } : {}),
-    };
-  });
-}
-
-export function compareCompletionEntries(a: SimplifiedCompletionEntry, b: SimplifiedCompletionEntry) {
-  return (
-    a.sortText?.localeCompare(b.sortText ?? '') ||
-    a.source?.localeCompare(b.source ?? '') ||
-    a.name.localeCompare(b.name)
-  );
+export function normalizeCompletionEntry(entries: readonly SimplifiedCompletionEntry[]): SimplifiedCompletionEntry[] {
+  return entries
+    .map((entry) => {
+      return {
+        name: entry.name,
+        sortText: entry.sortText,
+        ...('source' in entry ? { source: entry.source } : {}),
+        ...('insertText' in entry ? { insertText: entry.insertText } : {}),
+      };
+    })
+    .toSorted(
+      (a, b) =>
+        a.sortText?.localeCompare(b.sortText ?? '') ||
+        a.source?.localeCompare(b.source ?? '') ||
+        a.name.localeCompare(b.name),
+    );
 }
 
 type SimplifiedCodeFixAction = {
@@ -205,19 +201,15 @@ type SimplifiedCodeFixAction = {
   changes: ts.server.protocol.FileCodeEdits[];
 };
 
-export function simplifyCodeFixActions(
-  actions: readonly ts.server.protocol.CodeFixAction[],
-): SimplifiedCodeFixAction[] {
-  return actions.map((action) => {
-    return {
-      fixName: action.fixName,
-      changes: action.changes,
-    };
-  });
-}
-
-export function sortCodeFixActions(actions: readonly SimplifiedCodeFixAction[]): SimplifiedCodeFixAction[] {
-  return actions.toSorted((a, b) => {
-    return a.fixName.localeCompare(b.fixName);
-  });
+export function normalizeCodeFixActions(actions: readonly SimplifiedCodeFixAction[]): SimplifiedCodeFixAction[] {
+  return actions
+    .map((action) => {
+      return {
+        fixName: action.fixName,
+        changes: action.changes,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.fixName.localeCompare(b.fixName);
+    });
 }

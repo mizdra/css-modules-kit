@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { PROPERTY_DOES_NOT_EXIST_ERROR_CODE } from '../../src/language-service/feature/code-fix.js';
 import { createIFF } from '../test-util/fixture.js';
-import { formatPath, launchTsserver, simplifyCodeFixActions, sortCodeFixActions } from '../test-util/tsserver.js';
+import { formatPath, launchTsserver, normalizeCodeFixActions } from '../test-util/tsserver.js';
 
 describe('Get Code Fixes', async () => {
   const tsserver = launchTsserver();
@@ -75,6 +75,6 @@ describe('Get Code Fixes', async () => {
       endLine: line,
       endOffset: offset,
     });
-    expect(sortCodeFixActions(simplifyCodeFixActions(res.body!))).toStrictEqual(sortCodeFixActions(expected));
+    expect(normalizeCodeFixActions(res.body!)).toStrictEqual(normalizeCodeFixActions(expected));
   });
 });

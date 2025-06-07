@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { createIFF } from '../test-util/fixture.js';
-import { formatPath, launchTsserver, simplifyDefinitions, sortDefinitions } from '../test-util/tsserver.js';
+import { formatPath, launchTsserver, normalizeDefinitions } from '../test-util/tsserver.js';
 
 describe('Go to Definition', async () => {
   const tsserver = launchTsserver();
@@ -210,6 +210,6 @@ describe('Go to Definition', async () => {
       line,
       offset,
     });
-    expect(sortDefinitions(simplifyDefinitions(res.body?.definitions ?? []))).toStrictEqual(sortDefinitions(expected));
+    expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(normalizeDefinitions(expected));
   });
 });
