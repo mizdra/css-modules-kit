@@ -1,5 +1,13 @@
 # @css-modules-kit/eslint-plugin
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [fb0563d]
+- Updated dependencies [9b40191]
+  - @css-modules-kit/core@0.3.0
+
 ## 0.1.1
 
 ### Patch Changes

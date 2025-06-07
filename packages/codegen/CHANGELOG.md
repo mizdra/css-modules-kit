@@ -1,5 +1,17 @@
 # @css-modules-kit/codegen
 
+## 0.3.0
+
+### Minor Changes
+
+- 9b40191: feat: support `namedExports` option
+
+### Patch Changes
+
+- Updated dependencies [fb0563d]
+- Updated dependencies [9b40191]
+  - @css-modules-kit/core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
