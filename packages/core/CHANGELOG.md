@@ -1,5 +1,12 @@
 # @css-modules-kit/core
 
+## 0.3.0
+
+### Minor Changes
+
+- fb0563d: feat: support `prioritizeNamedImports` option
+- 9b40191: feat: support `namedExports` option
+
 ## 0.2.0
 
 ### Minor Changes

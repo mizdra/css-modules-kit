@@ -1,5 +1,19 @@
 # @css-modules-kit/ts-plugin
 
+## 0.2.0
+
+### Minor Changes
+
+- fb0563d: feat: support `prioritizeNamedImports` option
+- 9b40191: feat: support `namedExports` option
+
+### Patch Changes
+
+- 3ec5b22: fix: exclude files in `generated/` from completion candidates
+- Updated dependencies [fb0563d]
+- Updated dependencies [9b40191]
+  - @css-modules-kit/core@0.3.0
+
 ## 0.1.1
 
 ### Patch Changes
