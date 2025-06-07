@@ -26,6 +26,11 @@ describe('Get Code Fixes', async () => {
         color: red;
       }
     `,
+    // Generated files should be excluded from completion candidates.
+    'generated/generated.module.css.d.ts': dedent`
+      const styles: {};
+      export default styles;
+    `,
     'tsconfig.json': dedent`
       {
         "compilerOptions": {},
