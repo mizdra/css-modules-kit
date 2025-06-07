@@ -212,12 +212,60 @@ describe('supports completions', async () => {
       .a_1 { color: red; }
     `,
   });
-  describe('prioritize named imports by default', async () => {
+  describe('prioritize namespace imports by default', async () => {
     const iff = await baseIff.fork({
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
             "namedExports": true
+          }
+        }
+      `,
+    });
+    const tsserver = launchTsserver();
+    await tsserver.sendUpdateOpen({
+      openFiles: [{ file: iff.paths['tsconfig.json'] }],
+    });
+    await tsserver.sendConfigure({
+      preferences: {
+        includeCompletionsForModuleExports: true,
+      },
+    });
+    test.each([
+      {
+        name: 'styles',
+        entryName: 'styles',
+        file: iff.paths['index.ts'],
+        line: 1,
+        offset: 7,
+        expected: [{ name: 'styles', sortText: '16', source: formatPath(iff.paths['a.module.css']) }],
+      },
+      {
+        name: 'a_1',
+        entryName: 'a_1',
+        file: iff.paths['index.ts'],
+        line: 2,
+        offset: 4,
+        expected: [],
+      },
+    ])('Completions for $name', async ({ entryName, file, line, offset, expected }) => {
+      const res = await tsserver.sendCompletionInfo({
+        file,
+        line,
+        offset,
+      });
+      expect(
+        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? []),
+      ).toStrictEqual(normalizeCompletionEntry(expected));
+    });
+  });
+  describe('prioritize named imports if prioritizeNamedImports is true', async () => {
+    const iff = await baseIff.fork({
+      'tsconfig.json': dedent`
+        {
+          "cmkOptions": {
+            "namedExports": true,
+            "prioritizeNamedImports": true
           }
         }
       `,
@@ -271,12 +319,74 @@ describe('supports code fixes', async () => {
       .a_1 { color: red; }
     `,
   });
-  describe('prioritize named imports by default', async () => {
+  describe('prioritize namespace imports by default', async () => {
     const iff = await baseIff.fork({
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
             "namedExports": true
+          }
+        }
+    `,
+    });
+    const tsserver = launchTsserver();
+    await tsserver.sendUpdateOpen({
+      openFiles: [{ file: iff.paths['tsconfig.json'] }],
+    });
+    test.each([
+      {
+        name: 'styles',
+        file: iff.paths['index.ts'],
+        startLine: 1,
+        startOffset: 1,
+        endLine: 1,
+        endOffset: 7,
+        expected: [
+          {
+            fixName: 'import',
+            changes: [
+              {
+                fileName: formatPath(iff.paths['index.ts']),
+                textChanges: [
+                  {
+                    start: { line: 1, offset: 1 },
+                    end: { line: 1, offset: 1 },
+                    newText: `import * as styles from "./a.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        name: 'a_1',
+        file: iff.paths['index.ts'],
+        startLine: 2,
+        startOffset: 1,
+        endLine: 2,
+        endOffset: 4,
+        expected: [],
+      },
+    ])('$name', async ({ file, startLine, startOffset, endLine, endOffset, expected }) => {
+      const res = await tsserver.sendGetCodeFixes({
+        errorCodes: [2304],
+        file,
+        startLine,
+        startOffset,
+        endLine,
+        endOffset,
+      });
+      expect(normalizeCodeFixActions(res.body!)).toStrictEqual(normalizeCodeFixActions(expected));
+    });
+  });
+  describe('prioritize named imports if prioritizeNamedImports is true', async () => {
+    const iff = await baseIff.fork({
+      'tsconfig.json': dedent`
+        {
+          "cmkOptions": {
+            "namedExports": true,
+            "prioritizeNamedImports": true
           }
         }
       `,

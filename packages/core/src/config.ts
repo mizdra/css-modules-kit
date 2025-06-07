@@ -15,8 +15,8 @@ export interface CMKConfig {
   excludes: string[];
   dtsOutDir: string;
   arbitraryExtensions: boolean;
-  /** Whether to generate named exports in the d.ts file instead of a default export. */
   namedExports: boolean;
+  prioritizeNamedImports: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
    * This is an absolute path.
@@ -71,6 +71,7 @@ interface UnnormalizedRawConfig {
   dtsOutDir?: string;
   arbitraryExtensions?: boolean;
   namedExports?: boolean;
+  prioritizeNamedImports?: boolean;
 }
 
 /**
@@ -144,6 +145,17 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
         result.diagnostics.push({
           category: 'error',
           text: `\`namedExports\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
+        });
+      }
+    }
+    if ('prioritizeNamedImports' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.prioritizeNamedImports === 'boolean') {
+        result.config.prioritizeNamedImports = raw.cmkOptions.prioritizeNamedImports;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`prioritizeNamedImports\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
           // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
         });
       }
@@ -242,6 +254,7 @@ export function readConfigFile(project: string): CMKConfig {
     dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
     arbitraryExtensions: config.arbitraryExtensions ?? false,
     namedExports: config.namedExports ?? false,
+    prioritizeNamedImports: config.prioritizeNamedImports ?? false,
     basePath,
     configFileName,
     compilerOptions,
