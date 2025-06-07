@@ -1,3 +1,4 @@
+import type { CMKConfig } from '@css-modules-kit/core';
 import ts from 'typescript';
 
 /** The error code used by tsserver to display the css-modules-kit error in the editor. */
@@ -16,4 +17,13 @@ export function convertErrorCategory(category: 'error' | 'warning' | 'suggestion
     default:
       throw new Error(`Unknown category: ${String(category)}`);
   }
+}
+
+export function createPreferencesForCompletion<T extends ts.UserPreferences>(preferences: T, config: CMKConfig): T {
+  // By default, files in `generated/` are included in the completion candidates.
+  // To exclude them, we add the `dtsOutDir` to the `autoImportFileExcludePatterns`.
+  return {
+    ...preferences,
+    autoImportFileExcludePatterns: [...(preferences.autoImportFileExcludePatterns ?? []), config.dtsOutDir],
+  };
 }

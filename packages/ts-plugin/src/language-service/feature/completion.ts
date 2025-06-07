@@ -1,13 +1,23 @@
+import type { CMKConfig } from '@css-modules-kit/core';
 import { getCssModuleFileName, isComponentFileName, STYLES_EXPORT_NAME } from '@css-modules-kit/core';
 import ts from 'typescript';
+import { createPreferencesForCompletion } from '../../util.js';
 
 export function getCompletionsAtPosition(
   languageService: ts.LanguageService,
+  config: CMKConfig,
 ): ts.LanguageService['getCompletionsAtPosition'] {
   return (fileName, position, options, formattingSettings) => {
-    const prior = languageService.getCompletionsAtPosition(fileName, position, options, formattingSettings);
+    const prior = languageService.getCompletionsAtPosition(
+      fileName,
+      position,
+      createPreferencesForCompletion(options ?? {}, config),
+      formattingSettings,
+    );
 
-    if (isComponentFileName(fileName) && prior) {
+    if (!prior) return;
+
+    if (isComponentFileName(fileName)) {
       const cssModuleFileName = getCssModuleFileName(fileName);
       for (const entry of prior.entries) {
         if (isStylesEntryForCSSModuleFile(entry, cssModuleFileName)) {

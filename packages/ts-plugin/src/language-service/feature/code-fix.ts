@@ -1,7 +1,9 @@
+import type { CMKConfig } from '@css-modules-kit/core';
 import { isComponentFileName } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
 import ts from 'typescript';
 import { isCSSModuleScript } from '../../language-plugin.js';
+import { createPreferencesForCompletion } from '../../util.js';
 
 // ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
 export const CANNOT_FIND_NAME_ERROR_CODE = 2304;
@@ -11,11 +13,19 @@ export function getCodeFixesAtPosition(
   language: Language<string>,
   languageService: ts.LanguageService,
   project: ts.server.Project,
+  config: CMKConfig,
 ): ts.LanguageService['getCodeFixesAtPosition'] {
   // eslint-disable-next-line max-params
   return (fileName, start, end, errorCodes, formatOptions, preferences) => {
     const prior = Array.from(
-      languageService.getCodeFixesAtPosition(fileName, start, end, errorCodes, formatOptions, preferences) ?? [],
+      languageService.getCodeFixesAtPosition(
+        fileName,
+        start,
+        end,
+        errorCodes,
+        formatOptions,
+        createPreferencesForCompletion(preferences, config),
+      ),
     );
 
     if (isComponentFileName(fileName)) {
