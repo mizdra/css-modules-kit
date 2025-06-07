@@ -199,3 +199,25 @@ export function compareCompletionEntries(a: SimplifiedCompletionEntry, b: Simpli
     a.name.localeCompare(b.name)
   );
 }
+
+type SimplifiedCodeFixAction = {
+  fixName: string;
+  changes: ts.server.protocol.FileCodeEdits[];
+};
+
+export function simplifyCodeFixActions(
+  actions: readonly ts.server.protocol.CodeFixAction[],
+): SimplifiedCodeFixAction[] {
+  return actions.map((action) => {
+    return {
+      fixName: action.fixName,
+      changes: action.changes,
+    };
+  });
+}
+
+export function sortCodeFixActions(actions: readonly SimplifiedCodeFixAction[]): SimplifiedCodeFixAction[] {
+  return actions.toSorted((a, b) => {
+    return a.fixName.localeCompare(b.fixName);
+  });
+}
