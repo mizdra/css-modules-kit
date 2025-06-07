@@ -34,6 +34,8 @@ export interface Token {
   name: string;
   /** The location of the token in the source file. */
   loc: Location;
+  /** The style definition of the class selector */
+  definition?: string;
 }
 
 /**
