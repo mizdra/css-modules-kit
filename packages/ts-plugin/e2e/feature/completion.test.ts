@@ -1,8 +1,13 @@
 import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { compareCompletionEntries, formatPath, launchTsserver, simplifyCompletionEntry } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import {
+  compareCompletionEntries,
+  formatPath,
+  launchTsserver,
+  simplifyCompletionEntry,
+} from '../test-util/tsserver.js';
 
 // eslint-disable-next-line n/no-extraneous-require
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');

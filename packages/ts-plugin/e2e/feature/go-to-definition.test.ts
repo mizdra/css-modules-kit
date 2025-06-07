@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver, simplifyDefinitions, sortDefinitions } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver, simplifyDefinitions, sortDefinitions } from '../test-util/tsserver.js';
 
 describe('Go to Definition', async () => {
   const tsserver = launchTsserver();

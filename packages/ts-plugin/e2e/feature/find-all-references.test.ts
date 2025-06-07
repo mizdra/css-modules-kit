@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver, simplifyRefItems, sortRefItems } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver, simplifyRefItems, sortRefItems } from '../test-util/tsserver.js';
 
 describe('Find All References', async () => {
   const tsserver = launchTsserver();

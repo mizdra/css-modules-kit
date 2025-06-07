@@ -1,8 +1,8 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { PROPERTY_DOES_NOT_EXIST_ERROR_CODE } from '../src/language-service/feature/code-fix.js';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver } from './test/tsserver.js';
+import { PROPERTY_DOES_NOT_EXIST_ERROR_CODE } from '../../src/language-service/feature/code-fix.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver } from '../test-util/tsserver.js';
 
 describe('Get Code Fixes', async () => {
   const tsserver = launchTsserver();
