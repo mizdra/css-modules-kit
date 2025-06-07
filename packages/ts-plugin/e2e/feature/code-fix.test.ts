@@ -1,6 +1,10 @@
 import dedent from 'dedent';
+import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { PROPERTY_DOES_NOT_EXIST_ERROR_CODE } from '../../src/language-service/feature/code-fix.js';
+import {
+  CANNOT_FIND_NAME_ERROR_CODE,
+  PROPERTY_DOES_NOT_EXIST_ERROR_CODE,
+} from '../../src/language-service/feature/code-fix.js';
 import { createIFF } from '../test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeCodeFixActions } from '../test-util/tsserver.js';
 
@@ -12,6 +16,9 @@ describe('Get Code Fixes', async () => {
       import bStyles from './b.module.css';
       styles.a_1;
       bStyles.b_2;
+    `,
+    'b.tsx': dedent`
+      styles;
     `,
     'a.module.css': '',
     'b.module.css': dedent`
@@ -33,10 +40,50 @@ describe('Get Code Fixes', async () => {
   });
   test.each([
     {
+      name: 'styles',
+      file: iff.paths['b.tsx'],
+      line: 1,
+      offset: 1,
+      errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
+      expected: [
+        {
+          fixName: 'import',
+          changes: [
+            {
+              fileName: formatPath(iff.paths['b.tsx']),
+              textChanges: [
+                {
+                  start: { line: 1, offset: 1 },
+                  end: { line: 1, offset: 1 },
+                  newText: `import styles from "./a.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          fixName: 'import',
+          changes: [
+            {
+              fileName: formatPath(iff.paths['b.tsx']),
+              textChanges: [
+                {
+                  start: { line: 1, offset: 1 },
+                  end: { line: 1, offset: 1 },
+                  newText: `import styles from "./b.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'styles.a_1',
       file: iff.paths['a.tsx'],
       line: 3,
       offset: 11,
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODE],
       expected: [
         {
           fixName: 'fixMissingCSSRule',
@@ -54,6 +101,7 @@ describe('Get Code Fixes', async () => {
       file: iff.paths['a.tsx'],
       line: 4,
       offset: 12,
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODE],
       expected: [
         {
           fixName: 'fixMissingCSSRule',
@@ -66,9 +114,9 @@ describe('Get Code Fixes', async () => {
         },
       ],
     },
-  ])('$name', async ({ file, line, offset, expected }) => {
+  ])('$name', async ({ file, line, offset, errorCodes, expected }) => {
     const res = await tsserver.sendGetCodeFixes({
-      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODE],
+      errorCodes,
       file,
       startLine: line,
       startOffset: offset,
