@@ -46,6 +46,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
         info.project,
         resolver,
         matchesPattern,
+        config,
       );
     },
   };

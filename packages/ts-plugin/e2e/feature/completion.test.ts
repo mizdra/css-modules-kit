@@ -20,6 +20,11 @@ describe('Completion', async () => {
     `,
     'a.module.css': '',
     'b.module.css': '',
+    // Generated files should be excluded from import statement suggestions
+    'generated/generated.module.css.d.ts': dedent`
+      const styles: {};
+      export default styles;
+    `,
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
