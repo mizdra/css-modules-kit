@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { expect, test } from 'vitest';
-import { createIFF } from '../test/fixture.js';
-import { launchTsserver } from '../test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { launchTsserver } from '../test-util/tsserver.js';
 
 test('ts-plugin does not process pure css files', async () => {
   // ref: https://github.com/mizdra/css-modules-kit/issues/170
