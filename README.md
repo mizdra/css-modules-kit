@@ -116,7 +116,9 @@ In TypeScript, the `include`/`exclude` properties specify which `*.ts` files to 
 
 ### `cmkOptions.dtsOutDir`
 
-Specifies the directory where `*.d.ts` files are output. The default is `"generated"`.
+Type: `string`, Default: `"generated"`
+
+Specifies the directory where `*.d.ts` files are output.
 
 ```jsonc
 {
@@ -131,7 +133,9 @@ Specifies the directory where `*.d.ts` files are output. The default is `"genera
 
 ### `cmkOptions.arbitraryExtensions`
 
-Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts`. The default is `false`.
+Type: `boolean`, Default: `false`
+
+Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts`.
 
 ```jsonc
 {
@@ -140,6 +144,23 @@ Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts
   },
   "cmkOptions": {
     "arbitraryExtensions": true,
+  },
+}
+```
+
+### `cmkOptions.namedExports`
+
+Type: `boolean`, Default: `false`
+
+Determines whether to generate named exports in the d.ts file instead of a default export.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "namedExports": true,
   },
 }
 ```

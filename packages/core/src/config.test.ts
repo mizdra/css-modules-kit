@@ -27,7 +27,9 @@ describe('readTsConfigFile', () => {
             "module": "esnext"
           },
           "cmkOptions": {
-            "dtsOutDir": "generated/cmk"
+            "dtsOutDir": "generated/cmk",
+            "arbitraryExtensions": false,
+            "namedExports": true
           }
         }
       `,
@@ -38,6 +40,8 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: ['src/test'],
         dtsOutDir: 'generated/cmk',
+        arbitraryExtensions: false,
+        namedExports: true,
       },
       compilerOptions: expect.objectContaining({
         module: ts.ModuleKind.ESNext,
