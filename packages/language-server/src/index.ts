@@ -23,14 +23,15 @@ connection.onInitialize((params) => {
     },
   });
 
-  // Disable rename provider due to conflict with ts-plugin
-  // TODO: Allow rename operations that do not conflict with ts-plugin
-  // TODO: Do not disable provider in CSS files that are not CSS Modules
+  // CSS Service's renameProvider conflicts with ts-plugin, causing #121.
+  // Therefore, we disable that provider.
   delete cssService.capabilities.renameProvider;
-  // Disable references provider due to conflict with ts-plugin
-  // TODO: Allow references operations that do not conflict with ts-plugin
-  // TODO: Do not disable provider in CSS files that are not CSS Modules
+  // CSS Service's renameProvider conflicts with ts-plugin, causing duplicate entries in find all references.
+  // Therefore, we disable that provider.
   delete cssService.capabilities.referencesProvider;
+  // CSS Service's documentLinkProvider conflicts with ts-plugin, causing #133 and #138.
+  // Therefore, we disable that provider.
+  delete cssService.capabilities.documentLinkProvider;
 
   return server.initialize(params, createSimpleProject([]), [cssService]);
 });
