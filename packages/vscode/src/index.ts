@@ -68,33 +68,39 @@ export async function activate(context: vscode.ExtensionContext) {
       },
     });
     context.subscriptions.push(
-      vscode.languages.registerRenameProvider(['css'], {
-        provideRenameEdits(document, position, newName, _token) {
-          // NOTE: Executing `executeDocumentRenameProvider` on a virtual text document causes a runtime error. This is probably a bug in vscode.
-          return vscode.commands.executeCommand<vscode.WorkspaceEdit>(
-            'vscode.executeDocumentRenameProvider',
-            vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
-            position,
-            newName,
-          );
+      vscode.languages.registerRenameProvider(
+        { language: 'css' },
+        {
+          provideRenameEdits(document, position, newName, _token) {
+            // NOTE: Executing `executeDocumentRenameProvider` on a virtual text document causes a runtime error. This is probably a bug in vscode.
+            return vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+              'vscode.executeDocumentRenameProvider',
+              vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
+              position,
+              newName,
+            );
+          },
+          prepareRename(document, position, _token) {
+            return vscode.commands.executeCommand<RangeOrRangeWithPlaceholder>(
+              'vscode.prepareRename',
+              vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
+              position,
+            );
+          },
         },
-        prepareRename(document, position, _token) {
-          return vscode.commands.executeCommand<RangeOrRangeWithPlaceholder>(
-            'vscode.prepareRename',
-            vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
-            position,
-          );
+      ),
+      vscode.languages.registerDocumentLinkProvider(
+        { language: 'css' },
+        {
+          async provideDocumentLinks(document, _token) {
+            // NOTE: Executing `executeDocumentLinkProvider` on a virtual text document, an empty array is always returned. This is probably a bug in vscode.
+            return vscode.commands.executeCommand<vscode.Location[]>(
+              'vscode.executeLinkProvider',
+              vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
+            );
+          },
         },
-      }),
-      vscode.languages.registerDocumentLinkProvider(['css'], {
-        async provideDocumentLinks(document, _token) {
-          // NOTE: Executing `executeDocumentLinkProvider` on a virtual text document, an empty array is always returned. This is probably a bug in vscode.
-          return vscode.commands.executeCommand<vscode.Location[]>(
-            'vscode.executeLinkProvider',
-            vscode.Uri.parse(`${ORIGINAL_SCHEME}://${document.fileName}.ts`),
-          );
-        },
-      }),
+      ),
     );
   } else {
     // If vscode.css-language-features extension is disabled, start the customized language server for *.css, *.scss, and *.less.
