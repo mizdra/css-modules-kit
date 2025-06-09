@@ -1,5 +1,21 @@
 # css-modules-kit-vscode
 
+## 0.1.0
+
+### Minor Changes
+
+- a1d3b1b: feat!: require VS Code ^1.100.0
+
+### Patch Changes
+
+- 21a1881: fix: avoid LSP request conflicts with Request Forwarding
+- Updated dependencies [3ec5b22]
+- Updated dependencies [91c21eb]
+- Updated dependencies [fb0563d]
+- Updated dependencies [9b40191]
+  - @css-modules-kit/ts-plugin@0.2.0
+  - @css-modules-kit/language-server@0.1.0
+
 ## 0.0.4
 
 ### Patch Changes

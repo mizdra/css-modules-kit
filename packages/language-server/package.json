@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/language-server",
   "description": "Language Server for CSS Modules",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
