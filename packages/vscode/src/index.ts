@@ -57,7 +57,7 @@ export async function activate(context: vscode.ExtensionContext) {
     //
     // - https://code.visualstudio.com/api/language-extensions/embedded-languages#request-forwarding
     //
-    // Using Request Forwarding, "rename" and "documentLink" now work as expected.
+    // Using Request Forwarding solves the problem of "rename" and "references" requests.
     vscode.workspace.registerTextDocumentContentProvider(ORIGINAL_SCHEME, {
       async provideTextDocumentContent(uri) {
         // `uri.fsPath` is in the format `/path/to/file.module.css.ts`.
