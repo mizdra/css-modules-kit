@@ -1,3 +1,5 @@
+/* eslint-disable no-irregular-whitespace */
+
 import { describe, expect, test } from 'vitest';
 import type { CreateDtsHost } from './dts-creator.js';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
@@ -41,17 +43,7 @@ describe('createDts', () => {
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        /**
-         * \`\`\`css
-         * .local1 {}
-         * \`\`\`
-         */
         local1: '' as readonly string,
-        /**
-         * \`\`\`css
-         * .local2 {}
-         * \`\`\`
-         */
         local2: '' as readonly string,
       };
       export default styles;
@@ -112,11 +104,6 @@ describe('createDts', () => {
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        /**
-         * \`\`\`css
-         * .local1 {}
-         * \`\`\`
-         */
         local1: '' as readonly string,
         ...(await import('./a.module.css')).default,
       };
@@ -241,17 +228,7 @@ describe('createDts', () => {
       ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
-      /**
-       * \`\`\`css
-       * .local1 {}
-       * \`\`\`
-       */
       export var local1: string;
-      /**
-       * \`\`\`css
-       * .local2 {}
-       * \`\`\`
-       */
       export var local2: string;
       export * from './a.module.css';
       export {
@@ -269,6 +246,65 @@ describe('createDts', () => {
         }),
         host,
         { ...options, namedExports: true, forTsPlugin: true, prioritizeNamedImports: false },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      /**
+       * \`\`\`css
+       * .local1 {}
+       * \`\`\`
+       */
+      export var local1: string;
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+  test('generates JSDoc for local tokens when `forTsPlugin` is true', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [
+            fakeToken('local1', fakeLoc(0), '.local1 {}'),
+            fakeToken('local2', fakeLoc(1), '.local2 { /* comment */ }'),
+            fakeToken('local2', fakeLoc(1), '.local2 { content: "*/" }'),
+          ],
+        }),
+        host,
+        { ...options, forTsPlugin: true },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        /**
+         * \`\`\`css
+         * .local1 {}
+         * \`\`\`
+         */
+        local1: '' as readonly string,
+        /**
+         * \`\`\`css
+         * .local2 { /* comment *​/ }
+         * \`\`\`
+         */
+        local2: '' as readonly string,
+        /**
+         * \`\`\`css
+         * .local2 { content: "*​/" }
+         * \`\`\`
+         */
+        local2: '' as readonly string,
+      };
+      export default styles;
+      "
+    `);
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [fakeToken('local1', fakeLoc(0), '.local1 {}')],
+        }),
+        host,
+        { ...options, namedExports: true, forTsPlugin: true },
       ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck

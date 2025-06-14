@@ -35,24 +35,13 @@ describe('runCMK', () => {
           "cmkOptions": { "dtsOutDir": "generated" }
         }
       `,
-      'src/a.module.css': '.a1 { /** RED */ color: red; } .a1::after { content: "*/"; }',
-      'src/b.module.css': '/** BLUE */ .b1 { color: blue; }',
+      'src/a.module.css': '.a1 { color: red; }',
+      'src/b.module.css': '.b1 { color: blue; }',
     });
     await runCMK(iff.rootDir, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        /**
-         * \`\`\`css
-         * .a1 { /** RED *​/ color: red; }
-         * \`\`\`
-         */
-        a1: '' as readonly string,
-        /**
-         * \`\`\`css
-         * .a1::after { content: "*​/"; }
-         * \`\`\`
-         */
         a1: '' as readonly string,
       };
       export default styles;
@@ -61,11 +50,6 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        /**
-         * \`\`\`css
-         * .b1 { color: blue; }
-         * \`\`\`
-         */
         b1: '' as readonly string,
       };
       export default styles;
@@ -153,11 +137,6 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        /**
-         * \`\`\`css
-         * .a1 { color: red; }
-         * \`\`\`
-         */
         a1: '' as readonly string,
       };
       export default styles;

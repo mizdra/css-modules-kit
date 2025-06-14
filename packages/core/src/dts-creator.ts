@@ -54,7 +54,7 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
   if (options.namedExports) {
     return createNamedExportsDts(cssModules.localTokens, tokenImporters, options);
   } else {
-    return createDefaultExportDts(cssModules.localTokens, tokenImporters);
+    return createDefaultExportDts(cssModules.localTokens, tokenImporters, options);
   }
 }
 
@@ -101,7 +101,7 @@ function createNamedExportsDts(
   let text = `// @ts-nocheck\n`;
 
   for (const token of localTokens) {
-    text += generateTokenJSDoc(token, 0);
+    if (options.forTsPlugin) text += generateTokenJSDoc(token, 0);
     text += `export var `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -182,6 +182,7 @@ function createNamedExportsDts(
 function createDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  options: CreateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
@@ -199,7 +200,7 @@ function createDefaultExportDts(
   let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
   for (const token of localTokens) {
-    text += generateTokenJSDoc(token, 2);
+    if (options.forTsPlugin) text += generateTokenJSDoc(token, 2);
 
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
