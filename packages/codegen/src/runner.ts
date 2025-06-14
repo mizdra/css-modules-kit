@@ -41,11 +41,15 @@ async function parseCSSModuleByFileName(fileName: string): Promise<ParseCSSModul
  */
 async function writeDtsByCSSModule(
   cssModule: CSSModule,
-  { dtsOutDir, basePath, arbitraryExtensions, namedExports }: CMKConfig,
+  { dtsOutDir, basePath, arbitraryExtensions, namedExports, prioritizeNamedImports }: CMKConfig,
   resolver: Resolver,
   matchesPattern: MatchesPattern,
 ): Promise<void> {
-  const dts = createDts(cssModule, { resolver, matchesPattern }, { namedExports });
+  const dts = createDts(
+    cssModule,
+    { resolver, matchesPattern },
+    { namedExports, prioritizeNamedImports, forTsPlugin: false },
+  );
   await writeDtsFile(dts.text, cssModule.fileName, {
     outDir: dtsOutDir,
     basePath,

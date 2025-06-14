@@ -57,12 +57,8 @@ export function createCSSLanguagePlugin(
       let { text, mapping, linkedCodeMapping } = createDts(
         cssModule,
         { resolver, matchesPattern },
-        { namedExports: config.namedExports },
+        { ...config, forTsPlugin: true },
       );
-      if (config.namedExports && !config.prioritizeNamedImports) {
-        // Export `styles` to appear in code completion suggestions
-        text += 'declare const styles: {};\nexport default styles;\n';
-      }
       return {
         id: 'main',
         languageId: LANGUAGE_ID,

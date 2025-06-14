@@ -9,6 +9,9 @@ export interface CreateDtsHost {
 
 export interface CreateDtsOptions {
   namedExports: boolean;
+  prioritizeNamedImports: boolean;
+  /** Generate .d.ts for ts-plugin */
+  forTsPlugin: boolean;
 }
 
 interface CodeMapping {
@@ -49,7 +52,7 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
     return resolved !== undefined && host.matchesPattern(resolved);
   });
   if (options.namedExports) {
-    return createNamedExportsDts(cssModules.localTokens, tokenImporters);
+    return createNamedExportsDts(cssModules.localTokens, tokenImporters, options);
   } else {
     return createDefaultExportDts(cssModules.localTokens, tokenImporters);
   }
@@ -80,6 +83,7 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
 function createNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  options: CreateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
@@ -143,6 +147,10 @@ function createNamedExportsDts(
       mapping.generatedOffsets.push(text.length);
       text += `'${tokenImporter.from}';\n`;
     }
+  }
+  if (options.forTsPlugin && !options.prioritizeNamedImports) {
+    // Export `styles` to appear in code completion suggestions
+    text += 'declare const styles: {};\nexport default styles;\n';
   }
   return { text, mapping, linkedCodeMapping };
 }

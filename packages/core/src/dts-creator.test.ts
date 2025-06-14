@@ -10,6 +10,8 @@ const host: CreateDtsHost = {
 };
 const options: CreateDtsOptions = {
   namedExports: false,
+  prioritizeNamedImports: false,
+  forTsPlugin: false,
 };
 
 function fakeLoc(offset: number) {
