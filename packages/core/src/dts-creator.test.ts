@@ -1,12 +1,17 @@
 import { describe, expect, test } from 'vitest';
+import type { CreateDtsHost } from './dts-creator.js';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
-import { dirname, join } from './path.js';
 import { fakeCSSModule } from './test/css-module.js';
+import { fakeMatchesPattern, fakeResolver } from './test/faker.js';
 
+const host: CreateDtsHost = {
+  resolver: fakeResolver(),
+  matchesPattern: fakeMatchesPattern(),
+};
 const options: CreateDtsOptions = {
-  resolver: (specifier, { request }) => join(dirname(request), specifier),
-  matchesPattern: () => true,
   namedExports: false,
+  prioritizeNamedImports: false,
+  forTsPlugin: false,
 };
 
 function fakeLoc(offset: number) {
@@ -15,25 +20,12 @@ function fakeLoc(offset: number) {
 
 describe('createDts', () => {
   test('creates d.ts file if css module file has no tokens', () => {
-    expect(createDts(fakeCSSModule(), options)).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [],
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "mapping": {
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "text": "// @ts-nocheck
+    expect(createDts(fakeCSSModule(), host, options).text).toMatchInlineSnapshot(`
+      "// @ts-nocheck
       declare const styles = {
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('creates d.ts file with local tokens', () => {
@@ -48,38 +40,17 @@ describe('createDts', () => {
             { name: 'local2', loc: fakeLoc(1) },
           ],
         }),
+        host,
         options,
-      ),
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [],
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "mapping": {
-          "generatedOffsets": [
-            42,
-            75,
-          ],
-          "lengths": [
-            6,
-            6,
-          ],
-          "sourceOffsets": [
-            0,
-            1,
-          ],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
         local1: '' as readonly string,
         local2: '' as readonly string,
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('creates d.ts file with token importers', () => {
@@ -109,66 +80,18 @@ describe('createDts', () => {
             },
           ],
         }),
+        host,
         options,
-      ),
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [
-            9,
-            9,
-          ],
-          "generatedOffsets": [
-            141,
-            213,
-          ],
-          "lengths": [
-            9,
-            16,
-          ],
-          "sourceOffsets": [
-            89,
-            154,
-          ],
-        },
-        "mapping": {
-          "generatedOffsets": [
-            59,
-            89,
-            114,
-            141,
-            154,
-            186,
-            213,
-          ],
-          "lengths": [
-            16,
-            9,
-            16,
-            9,
-            16,
-            16,
-            9,
-          ],
-          "sourceOffsets": [
-            -1,
-            1,
-            1,
-            1,
-            3,
-            4,
-            4,
-          ],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
         ...(await import('./a.module.css')).default,
         imported1: (await import('./b.module.css')).default.imported1,
         aliasedImported2: (await import('./c.module.css')).default.imported2,
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('creates types in the order of local tokens and token importers', () => {
@@ -178,38 +101,17 @@ describe('createDts', () => {
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
         }),
+        host,
         options,
-      ),
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [],
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "mapping": {
-          "generatedOffsets": [
-            42,
-            92,
-          ],
-          "lengths": [
-            6,
-            16,
-          ],
-          "sourceOffsets": [
-            0,
-            0,
-          ],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
         local1: '' as readonly string,
         ...(await import('./a.module.css')).default,
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('resolves specifiers', () => {
@@ -241,66 +143,18 @@ describe('createDts', () => {
             },
           ],
         }),
-        { ...options, resolver },
-      ),
+        { ...host, resolver },
+        options,
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [
-            9,
-            9,
-          ],
-          "generatedOffsets": [
-            141,
-            213,
-          ],
-          "lengths": [
-            9,
-            16,
-          ],
-          "sourceOffsets": [
-            89,
-            154,
-          ],
-        },
-        "mapping": {
-          "generatedOffsets": [
-            59,
-            89,
-            114,
-            141,
-            154,
-            186,
-            213,
-          ],
-          "lengths": [
-            16,
-            9,
-            16,
-            9,
-            16,
-            16,
-            9,
-          ],
-          "sourceOffsets": [
-            -1,
-            1,
-            1,
-            1,
-            3,
-            4,
-            4,
-          ],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
         ...(await import('@/a.module.css')).default,
         imported1: (await import('@/b.module.css')).default.imported1,
         aliasedImported2: (await import('@/c.module.css')).default.imported2,
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('does not create types for external files', () => {
@@ -324,27 +178,15 @@ describe('createDts', () => {
             },
           ],
         }),
-        { ...options, matchesPattern: () => false },
-      ),
+        { ...host, matchesPattern: () => false },
+        options,
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [],
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "mapping": {
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('does not create types for unresolved files', () => {
@@ -355,27 +197,15 @@ describe('createDts', () => {
           fileName: '/src/test.module.css',
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
         }),
-        { ...options, resolver },
-      ),
+        { ...host, resolver },
+        options,
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [],
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "mapping": {
-          "generatedOffsets": [],
-          "lengths": [],
-          "sourceOffsets": [],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       declare const styles = {
       };
       export default styles;
-      ",
-      }
+      "
     `);
   });
   test('creates d.ts file with named exports', () => {
@@ -399,54 +229,11 @@ describe('createDts', () => {
             },
           ],
         }),
+        host,
         { ...options, namedExports: true },
-      ),
+      ).text,
     ).toMatchInlineSnapshot(`
-      {
-        "linkedCodeMapping": {
-          "generatedLengths": [
-            9,
-          ],
-          "generatedOffsets": [
-            125,
-          ],
-          "lengths": [
-            16,
-          ],
-          "sourceOffsets": [
-            138,
-          ],
-        },
-        "mapping": {
-          "generatedOffsets": [
-            26,
-            53,
-            83,
-            112,
-            125,
-            138,
-            163,
-          ],
-          "lengths": [
-            6,
-            6,
-            16,
-            9,
-            9,
-            16,
-            16,
-          ],
-          "sourceOffsets": [
-            0,
-            1,
-            1,
-            3,
-            4,
-            5,
-            5,
-          ],
-        },
-        "text": "// @ts-nocheck
+      "// @ts-nocheck
       export var local1: string;
       export var local2: string;
       export * from './a.module.css';
@@ -454,8 +241,24 @@ describe('createDts', () => {
         imported1,
         imported2 as aliasedImported2,
       } from './b.module.css';
-      ",
-      }
+      "
+    `);
+  });
+  test('exports styles as default when `namedExports` and `forTsPlugin` are true, but `prioritizeNamedImports` is false', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
+        }),
+        host,
+        { ...options, namedExports: true, forTsPlugin: true, prioritizeNamedImports: false },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      export var local1: string;
+      declare const styles: {};
+      export default styles;
+      "
     `);
   });
 });

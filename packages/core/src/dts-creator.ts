@@ -2,10 +2,16 @@ import type { CSSModule, MatchesPattern, Resolver, Token, TokenImporter } from '
 
 export const STYLES_EXPORT_NAME = 'styles';
 
-export interface CreateDtsOptions {
+export interface CreateDtsHost {
   resolver: Resolver;
   matchesPattern: MatchesPattern;
+}
+
+export interface CreateDtsOptions {
   namedExports: boolean;
+  prioritizeNamedImports: boolean;
+  /** Generate .d.ts for ts-plugin */
+  forTsPlugin: boolean;
 }
 
 interface CodeMapping {
@@ -39,14 +45,14 @@ interface CreateDtsResult {
 /**
  * Create a d.ts file.
  */
-export function createDts(cssModules: CSSModule, options: CreateDtsOptions): CreateDtsResult {
+export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: CreateDtsOptions): CreateDtsResult {
   // Filter external files
   const tokenImporters = cssModules.tokenImporters.filter((tokenImporter) => {
-    const resolved = options.resolver(tokenImporter.from, { request: cssModules.fileName });
-    return resolved !== undefined && options.matchesPattern(resolved);
+    const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
+    return resolved !== undefined && host.matchesPattern(resolved);
   });
   if (options.namedExports) {
-    return createNamedExportsDts(cssModules.localTokens, tokenImporters);
+    return createNamedExportsDts(cssModules.localTokens, tokenImporters, options);
   } else {
     return createDefaultExportDts(cssModules.localTokens, tokenImporters);
   }
@@ -77,6 +83,7 @@ export function createDts(cssModules: CSSModule, options: CreateDtsOptions): Cre
 function createNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  options: CreateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
@@ -140,6 +147,10 @@ function createNamedExportsDts(
       mapping.generatedOffsets.push(text.length);
       text += `'${tokenImporter.from}';\n`;
     }
+  }
+  if (options.forTsPlugin && !options.prioritizeNamedImports) {
+    // Export `styles` to appear in code completion suggestions
+    text += 'declare const styles: {};\nexport default styles;\n';
   }
   return { text, mapping, linkedCodeMapping };
 }

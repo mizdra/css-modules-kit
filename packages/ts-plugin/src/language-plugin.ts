@@ -54,15 +54,11 @@ export function createCSSLanguagePlugin(
         safe: true,
       });
       // eslint-disable-next-line prefer-const
-      let { text, mapping, linkedCodeMapping } = createDts(cssModule, {
-        resolver,
-        matchesPattern,
-        namedExports: config.namedExports,
-      });
-      if (config.namedExports && !config.prioritizeNamedImports) {
-        // Export `styles` to appear in code completion suggestions
-        text += 'declare const styles: {};\nexport default styles;\n';
-      }
+      let { text, mapping, linkedCodeMapping } = createDts(
+        cssModule,
+        { resolver, matchesPattern },
+        { ...config, forTsPlugin: true },
+      );
       return {
         id: 'main',
         languageId: LANGUAGE_ID,
