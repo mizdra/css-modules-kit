@@ -33,6 +33,7 @@ describe('parseCSSModule', () => {
           "fileName": "/test.module.css",
           "localTokens": [
             {
+              "definition": ".basic {}",
               "loc": {
                 "end": {
                   "column": 7,
@@ -48,6 +49,7 @@ describe('parseCSSModule', () => {
               "name": "basic",
             },
             {
+              "definition": ".cascading {}",
               "loc": {
                 "end": {
                   "column": 11,
@@ -63,6 +65,7 @@ describe('parseCSSModule', () => {
               "name": "cascading",
             },
             {
+              "definition": ".cascading {}",
               "loc": {
                 "end": {
                   "column": 11,
@@ -78,6 +81,7 @@ describe('parseCSSModule', () => {
               "name": "cascading",
             },
             {
+              "definition": ".pseudo_class_1 {}",
               "loc": {
                 "end": {
                   "column": 16,
@@ -93,6 +97,7 @@ describe('parseCSSModule', () => {
               "name": "pseudo_class_1",
             },
             {
+              "definition": ".pseudo_class_2:hover {}",
               "loc": {
                 "end": {
                   "column": 16,
@@ -108,6 +113,7 @@ describe('parseCSSModule', () => {
               "name": "pseudo_class_2",
             },
             {
+              "definition": ":not(.pseudo_class_3) {}",
               "loc": {
                 "end": {
                   "column": 21,
@@ -123,6 +129,7 @@ describe('parseCSSModule', () => {
               "name": "pseudo_class_3",
             },
             {
+              "definition": ".multiple_selector_1.multiple_selector_2 {}",
               "loc": {
                 "end": {
                   "column": 21,
@@ -138,6 +145,7 @@ describe('parseCSSModule', () => {
               "name": "multiple_selector_1",
             },
             {
+              "definition": ".multiple_selector_1.multiple_selector_2 {}",
               "loc": {
                 "end": {
                   "column": 41,
@@ -153,6 +161,7 @@ describe('parseCSSModule', () => {
               "name": "multiple_selector_2",
             },
             {
+              "definition": ".combinator_1 + .combinator_2 {}",
               "loc": {
                 "end": {
                   "column": 14,
@@ -168,6 +177,7 @@ describe('parseCSSModule', () => {
               "name": "combinator_1",
             },
             {
+              "definition": ".combinator_1 + .combinator_2 {}",
               "loc": {
                 "end": {
                   "column": 30,
@@ -183,6 +193,7 @@ describe('parseCSSModule', () => {
               "name": "combinator_2",
             },
             {
+              "definition": ".at_rule {}",
               "loc": {
                 "end": {
                   "column": 13,
@@ -198,6 +209,7 @@ describe('parseCSSModule', () => {
               "name": "at_rule",
             },
             {
+              "definition": ".selector_list_1, .selector_list_2 {}",
               "loc": {
                 "end": {
                   "column": 17,
@@ -213,6 +225,7 @@ describe('parseCSSModule', () => {
               "name": "selector_list_1",
             },
             {
+              "definition": ".selector_list_1, .selector_list_2 {}",
               "loc": {
                 "end": {
                   "column": 35,
@@ -228,6 +241,7 @@ describe('parseCSSModule', () => {
               "name": "selector_list_2",
             },
             {
+              "definition": ":local(.local_1) {}",
               "loc": {
                 "end": {
                   "column": 16,
@@ -393,6 +407,7 @@ describe('parseCSSModule', () => {
           "fileName": "/test.module.css",
           "localTokens": [
             {
+              "definition": ":local .local1 {}",
               "loc": {
                 "end": {
                   "column": 15,
@@ -509,6 +524,7 @@ describe('parseCSSModule', () => {
           "fileName": "/test.module.css",
           "localTokens": [
             {
+              "definition": ".a {}",
               "loc": {
                 "end": {
                   "column": 3,

@@ -54,7 +54,7 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
   if (options.namedExports) {
     return createNamedExportsDts(cssModules.localTokens, tokenImporters, options);
   } else {
-    return createDefaultExportDts(cssModules.localTokens, tokenImporters);
+    return createDefaultExportDts(cssModules.localTokens, tokenImporters, options);
   }
 }
 
@@ -101,6 +101,7 @@ function createNamedExportsDts(
   let text = `// @ts-nocheck\n`;
 
   for (const token of localTokens) {
+    if (options.forTsPlugin) text += generateTokenJSDoc(token, 0);
     text += `export var `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -181,6 +182,7 @@ function createNamedExportsDts(
 function createDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  options: CreateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
@@ -198,6 +200,8 @@ function createDefaultExportDts(
   let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
   for (const token of localTokens) {
+    if (options.forTsPlugin) text += generateTokenJSDoc(token, 2);
+
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -241,4 +245,21 @@ function createDefaultExportDts(
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
   return { text, mapping, linkedCodeMapping };
+}
+
+/** Generate JSDoc to provide CSS code hints */
+function generateTokenJSDoc(token: Token, indentSize: number): string {
+  if (!token.definition) return '';
+
+  const indent = ' '.repeat(indentSize);
+  // We replace `*/` with `* + (ZERO WIDTH SPACE) + /` to prevent closing the comment block.
+  // This patch for the string literal like `.a::after { content: '*/'; }`.
+  // (token.definition does not contain comments)
+  const cssLines = token.definition.replace(/\*\//gu, '*\u200b/').trim().split('\n');
+  let text = `${indent}/**\n${indent} * \`\`\`css\n`;
+  for (const line of cssLines) {
+    text += `${indent} * ${line}\n`;
+  }
+  text += `${indent} * \`\`\`\n${indent} */\n`;
+  return text;
 }
