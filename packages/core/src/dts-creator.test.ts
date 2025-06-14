@@ -1,11 +1,14 @@
 import { describe, expect, test } from 'vitest';
+import type { CreateDtsHost } from './dts-creator.js';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
-import { dirname, join } from './path.js';
 import { fakeCSSModule } from './test/css-module.js';
+import { fakeMatchesPattern, fakeResolver } from './test/faker.js';
 
+const host: CreateDtsHost = {
+  resolver: fakeResolver(),
+  matchesPattern: fakeMatchesPattern(),
+};
 const options: CreateDtsOptions = {
-  resolver: (specifier, { request }) => join(dirname(request), specifier),
-  matchesPattern: () => true,
   namedExports: false,
 };
 
@@ -15,7 +18,7 @@ function fakeLoc(offset: number) {
 
 describe('createDts', () => {
   test('creates d.ts file if css module file has no tokens', () => {
-    expect(createDts(fakeCSSModule(), options)).toMatchInlineSnapshot(`
+    expect(createDts(fakeCSSModule(), host, options)).toMatchInlineSnapshot(`
       {
         "linkedCodeMapping": {
           "generatedLengths": [],
@@ -48,6 +51,7 @@ describe('createDts', () => {
             { name: 'local2', loc: fakeLoc(1) },
           ],
         }),
+        host,
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -109,6 +113,7 @@ describe('createDts', () => {
             },
           ],
         }),
+        host,
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -178,6 +183,7 @@ describe('createDts', () => {
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
         }),
+        host,
         options,
       ),
     ).toMatchInlineSnapshot(`
@@ -241,7 +247,8 @@ describe('createDts', () => {
             },
           ],
         }),
-        { ...options, resolver },
+        { ...host, resolver },
+        options,
       ),
     ).toMatchInlineSnapshot(`
       {
@@ -324,7 +331,8 @@ describe('createDts', () => {
             },
           ],
         }),
-        { ...options, matchesPattern: () => false },
+        { ...host, matchesPattern: () => false },
+        options,
       ),
     ).toMatchInlineSnapshot(`
       {
@@ -355,7 +363,8 @@ describe('createDts', () => {
           fileName: '/src/test.module.css',
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
         }),
-        { ...options, resolver },
+        { ...host, resolver },
+        options,
       ),
     ).toMatchInlineSnapshot(`
       {
@@ -399,6 +408,7 @@ describe('createDts', () => {
             },
           ],
         }),
+        host,
         { ...options, namedExports: true },
       ),
     ).toMatchInlineSnapshot(`

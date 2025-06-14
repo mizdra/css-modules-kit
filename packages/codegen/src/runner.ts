@@ -45,7 +45,7 @@ async function writeDtsByCSSModule(
   resolver: Resolver,
   matchesPattern: MatchesPattern,
 ): Promise<void> {
-  const dts = createDts(cssModule, { resolver, matchesPattern, namedExports });
+  const dts = createDts(cssModule, { resolver, matchesPattern }, { namedExports });
   await writeDtsFile(dts.text, cssModule.fileName, {
     outDir: dtsOutDir,
     basePath,

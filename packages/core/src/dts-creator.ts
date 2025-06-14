@@ -2,9 +2,12 @@ import type { CSSModule, MatchesPattern, Resolver, Token, TokenImporter } from '
 
 export const STYLES_EXPORT_NAME = 'styles';
 
-export interface CreateDtsOptions {
+export interface CreateDtsHost {
   resolver: Resolver;
   matchesPattern: MatchesPattern;
+}
+
+export interface CreateDtsOptions {
   namedExports: boolean;
 }
 
@@ -39,11 +42,11 @@ interface CreateDtsResult {
 /**
  * Create a d.ts file.
  */
-export function createDts(cssModules: CSSModule, options: CreateDtsOptions): CreateDtsResult {
+export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: CreateDtsOptions): CreateDtsResult {
   // Filter external files
   const tokenImporters = cssModules.tokenImporters.filter((tokenImporter) => {
-    const resolved = options.resolver(tokenImporter.from, { request: cssModules.fileName });
-    return resolved !== undefined && options.matchesPattern(resolved);
+    const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
+    return resolved !== undefined && host.matchesPattern(resolved);
   });
   if (options.namedExports) {
     return createNamedExportsDts(cssModules.localTokens, tokenImporters);
