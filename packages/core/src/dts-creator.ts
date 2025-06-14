@@ -94,6 +94,7 @@ function createNamedExportsDts(
   let text = `// @ts-nocheck\n`;
 
   for (const token of localTokens) {
+    text += generateTokenJSDoc(token, 0);
     text += `export var `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -187,20 +188,7 @@ function createDefaultExportDts(
   let text = `// @ts-nocheck\ndeclare const ${STYLES_EXPORT_NAME} = {\n`;
 
   for (const token of localTokens) {
-    // insert JSDoc to provide CSS code hints
-    if (token.definition) {
-      // We replace `*/` with `* + (ZERO WIDTH SPACE) + /` to prevent closing the comment block.
-      // This patch for the string literal like `.a::after { content: '*/'; }`.
-      // (token.definition does not contain comments)
-      const cssLines = token.definition.replace(/\*\//g, '*\u200b/').trim().split('\n');
-      text += '  /**\n';
-      text += `   * \`\`\`css\n`;
-      for (const line of cssLines) {
-        text += `   * ${line}\n`;
-      }
-      text += `   * \`\`\`\n`;
-      text += `   */\n`;
-    }
+    text += generateTokenJSDoc(token, 2);
 
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
@@ -245,4 +233,21 @@ function createDefaultExportDts(
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
   return { text, mapping, linkedCodeMapping };
+}
+
+/** Generate JSDoc to provide CSS code hints */
+function generateTokenJSDoc(token: Token, indentSize: number): string {
+  if (!token.definition) return '';
+
+  const indent = ' '.repeat(indentSize);
+  // We replace `*/` with `* + (ZERO WIDTH SPACE) + /` to prevent closing the comment block.
+  // This patch for the string literal like `.a::after { content: '*/'; }`.
+  // (token.definition does not contain comments)
+  const cssLines = token.definition.replace(/\*\//gu, '*\u200b/').trim().split('\n');
+  let text = `${indent}/**\n   * \`\`\`css\n`;
+  for (const line of cssLines) {
+    text += `${indent} * ${line}\n`;
+  }
+  text += `${indent} * \`\`\`\n   */\n`;
+  return text;
 }
