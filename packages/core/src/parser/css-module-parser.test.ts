@@ -257,7 +257,6 @@ describe('parseCSSModule', () => {
               "name": "local_1",
             },
             {
-              "definition": "@value value: #BF4040",
               "loc": {
                 "end": {
                   "column": 13,
