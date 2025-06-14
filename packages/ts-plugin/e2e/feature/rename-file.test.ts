@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver } from '../test-util/tsserver.js';
 
 describe('Rename File', async () => {
   const tsserver = launchTsserver();

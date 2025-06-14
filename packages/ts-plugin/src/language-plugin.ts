@@ -1,4 +1,4 @@
-import type { CSSModule, DiagnosticWithLocation, MatchesPattern, Resolver } from '@css-modules-kit/core';
+import type { CMKConfig, CSSModule, DiagnosticWithLocation, MatchesPattern, Resolver } from '@css-modules-kit/core';
 import { createDts, parseCSSModule } from '@css-modules-kit/core';
 import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-core';
 import type {} from '@volar/typescript';
@@ -24,6 +24,7 @@ export interface CSSModuleScript extends SourceScript<string> {
 export function createCSSLanguagePlugin(
   resolver: Resolver,
   matchesPattern: MatchesPattern,
+  config: CMKConfig,
 ): LanguagePlugin<string, VirtualCode> {
   return {
     getLanguageId(scriptId) {
@@ -52,7 +53,16 @@ export function createCSSLanguagePlugin(
         // So, ts-plugin uses a fault-tolerant Parser to parse CSS.
         safe: true,
       });
-      const { text, mapping, linkedCodeMapping } = createDts(cssModule, { resolver, matchesPattern });
+      // eslint-disable-next-line prefer-const
+      let { text, mapping, linkedCodeMapping } = createDts(cssModule, {
+        resolver,
+        matchesPattern,
+        namedExports: config.namedExports,
+      });
+      if (config.namedExports && !config.prioritizeNamedImports) {
+        // Export `styles` to appear in code completion suggestions
+        text += 'declare const styles: {};\nexport default styles;\n';
+      }
       return {
         id: 'main',
         languageId: LANGUAGE_ID,

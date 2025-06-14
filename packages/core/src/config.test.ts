@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { findTsConfigFile, normalizeConfig, readTsConfigFile } from './config.js';
+import { findTsConfigFile, readTsConfigFile } from './config.js';
 import { TsConfigFileNotFoundError } from './error.js';
 import { createIFF } from './test/fixture.js';
 
@@ -16,39 +16,6 @@ test('findTsConfigFile', async () => {
   expect(findTsConfigFile(iff.paths['sub'])).toEqual(iff.paths['sub/tsconfig.json']);
 });
 
-describe('normalizeConfig', () => {
-  const defaultConfig = {
-    includes: undefined,
-    excludes: undefined,
-    dtsOutDir: undefined,
-    arbitraryExtensions: undefined,
-  };
-  test('resolves options', () => {
-    expect(
-      normalizeConfig(
-        {
-          ...defaultConfig,
-          includes: ['src'],
-          excludes: ['src/test'],
-          dtsOutDir: 'generated',
-        },
-        '/app',
-      ),
-    ).toMatchInlineSnapshot(`
-      {
-        "arbitraryExtensions": false,
-        "dtsOutDir": "/app/generated",
-        "excludes": [
-          "/app/src/test",
-        ],
-        "includes": [
-          "/app/src",
-        ],
-      }
-    `);
-  });
-});
-
 describe('readTsConfigFile', () => {
   test('returns a config object', async () => {
     const iff = await createIFF({
@@ -60,7 +27,10 @@ describe('readTsConfigFile', () => {
             "module": "esnext"
           },
           "cmkOptions": {
-            "dtsOutDir": "generated/cmk"
+            "dtsOutDir": "generated/cmk",
+            "arbitraryExtensions": false,
+            "namedExports": true,
+            "prioritizeNamedImports": true
           }
         }
       `,
@@ -71,7 +41,9 @@ describe('readTsConfigFile', () => {
         includes: ['src'],
         excludes: ['src/test'],
         dtsOutDir: 'generated/cmk',
-        arbitraryExtensions: undefined,
+        arbitraryExtensions: false,
+        namedExports: true,
+        prioritizeNamedImports: true,
       },
       compilerOptions: expect.objectContaining({
         module: ts.ModuleKind.ESNext,
@@ -97,7 +69,6 @@ describe('readTsConfigFile', () => {
       configFileName: iff.paths['tsconfig.json'],
       config: {
         includes: ['src'],
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       },
@@ -128,8 +99,6 @@ describe('readTsConfigFile', () => {
       config: {
         includes: ['src'],
         excludes: ['src/test'],
-        dtsOutDir: undefined,
-        arbitraryExtensions: undefined,
       },
       compilerOptions: expect.objectContaining({
         module: undefined,
@@ -166,8 +135,6 @@ describe('readTsConfigFile', () => {
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: undefined,
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -191,8 +158,6 @@ describe('readTsConfigFile', () => {
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
         includes: ['include2'],
         excludes: ['exclude2'],
-        dtsOutDir: undefined,
-        arbitraryExtensions: undefined,
       });
     });
     test('inherits from a file recursively', async () => {
@@ -215,8 +180,6 @@ describe('readTsConfigFile', () => {
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: undefined,
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -235,10 +198,7 @@ describe('readTsConfigFile', () => {
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: undefined,
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
-        arbitraryExtensions: undefined,
       });
     });
     test('inherits from multiple files', async () => {
@@ -260,8 +220,6 @@ describe('readTsConfigFile', () => {
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: undefined,
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
@@ -282,8 +240,6 @@ describe('readTsConfigFile', () => {
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: undefined,
-        excludes: undefined,
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });

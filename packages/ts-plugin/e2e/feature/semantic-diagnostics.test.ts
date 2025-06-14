@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { launchTsserver } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { launchTsserver } from '../test-util/tsserver.js';
 
 test('Semantic Diagnostics', async () => {
   const tsserver = launchTsserver();

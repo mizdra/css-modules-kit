@@ -1,24 +1,13 @@
 import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
-import type ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver, normalizeCompletionEntry } from '../test-util/tsserver.js';
 
 // eslint-disable-next-line n/no-extraneous-require
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 
 describe('Completion', async () => {
-  function simplifyEntry(entries: readonly ts.server.protocol.CompletionEntry[]) {
-    return entries.map((entry) => {
-      return {
-        name: entry.name,
-        sortText: entry.sortText,
-        ...('source' in entry ? { source: entry.source } : {}),
-        ...('insertText' in entry ? { insertText: entry.insertText } : {}),
-      };
-    });
-  }
   const tsserver = launchTsserver();
   const iff = await createIFF({
     'a.tsx': dedent`
@@ -31,6 +20,11 @@ describe('Completion', async () => {
     `,
     'a.module.css': '',
     'b.module.css': '',
+    // Generated files should be excluded from import statement suggestions
+    'generated/generated.module.css.d.ts': dedent`
+      const styles: {};
+      export default styles;
+    `,
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
@@ -96,15 +90,8 @@ describe('Completion', async () => {
       line,
       offset,
     });
-    expect(
-      simplifyEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? []).sort(compareEntries),
-    ).toStrictEqual(expected.sort(compareEntries));
+    expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? [])).toStrictEqual(
+      normalizeCompletionEntry(expected),
+    );
   });
 });
-
-function compareEntries(
-  a: Partial<ts.server.protocol.CompletionEntry>,
-  b: Partial<ts.server.protocol.CompletionEntry>,
-) {
-  return a.sortText?.localeCompare(b.sortText ?? '') || 0;
-}

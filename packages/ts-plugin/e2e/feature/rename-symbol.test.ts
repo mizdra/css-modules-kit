@@ -1,33 +1,7 @@
 import dedent from 'dedent';
-import type ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver } from './test/tsserver.js';
-
-function simplifyLocs(locs: ts.server.protocol.RenameResponseBody['locs']) {
-  return locs.map((loc) => {
-    return {
-      file: formatPath(loc.file),
-      locs: loc.locs.map((loc) => ({
-        start: loc.start,
-        end: loc.end,
-        ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
-        ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
-      })),
-    };
-  });
-}
-function sortLocs(locs: { file: string; locs: Pick<ts.server.protocol.RenameTextSpan, 'start' | 'end'>[] }[]) {
-  const sortedLocs = locs.toSorted((a, b) => {
-    return a.file.localeCompare(b.file);
-  });
-  for (const loc of sortedLocs) {
-    loc.locs.sort((a, b) => {
-      return a.start.line - b.start.line || a.start.offset - b.start.offset;
-    });
-  }
-  return sortedLocs;
-}
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver, normalizeSpanGroups } from '../test-util/tsserver.js';
 
 describe('Rename Symbol', async () => {
   const tsserver = launchTsserver();
@@ -417,6 +391,6 @@ describe('Rename Symbol', async () => {
       line,
       offset,
     });
-    expect(sortLocs(simplifyLocs(res.body?.locs ?? []))).toStrictEqual(sortLocs(expected));
+    expect(normalizeSpanGroups(res.body?.locs ?? [])).toStrictEqual(normalizeSpanGroups(expected));
   });
 });

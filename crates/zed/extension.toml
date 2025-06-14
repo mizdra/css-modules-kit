@@ -1,0 +1,11 @@
+id = "css-modules-kit"
+name = "CSS Modules Kit"
+version = "0.0.1"
+schema_version = 1
+authors = ["mizdra <pp.mizdra@gmail.com>"]
+description = "The Zed extension for CSS Modules Kit"
+repository = "https://github.com/mizdra/css-modules-kit"
+
+[language_servers.css-modules-kit-language-server]
+name = "CSS Modules Kit Language Server"
+languages = ["TypeScript", "TSX", "JavaScript", "CSS"]

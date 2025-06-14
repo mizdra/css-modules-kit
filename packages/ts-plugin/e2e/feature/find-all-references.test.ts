@@ -1,26 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import dedent from 'dedent';
-import type ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { createIFF } from './test/fixture.js';
-import { formatPath, launchTsserver } from './test/tsserver.js';
+import { createIFF } from '../test-util/fixture.js';
+import { formatPath, launchTsserver, normalizeRefItems } from '../test-util/tsserver.js';
 
 describe('Find All References', async () => {
-  function simplifyRefs(refs: readonly ts.server.protocol.ReferencesResponseItem[]) {
-    return refs.map((ref) => {
-      return {
-        file: formatPath(ref.file),
-        start: ref.start,
-        end: ref.end,
-      };
-    });
-  }
-  function sortRefs(refs: readonly Pick<ts.server.protocol.ReferencesResponseItem, 'file' | 'start'>[]) {
-    return refs.toSorted((a, b) => {
-      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-    });
-  }
-
   const tsserver = launchTsserver();
   const iff = await createIFF({
     'index.ts': dedent`
@@ -238,6 +222,6 @@ describe('Find All References', async () => {
       line,
       offset,
     });
-    expect(sortRefs(simplifyRefs(res.body?.refs ?? []))).toStrictEqual(sortRefs(expected));
+    expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(normalizeRefItems(expected));
   });
 });

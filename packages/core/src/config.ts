@@ -6,10 +6,6 @@ import type { Diagnostic } from './type.js';
 // https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3006
 const DEFAULT_INCLUDE_SPEC = '**/*';
 
-type RemoveUndefined<T> = {
-  [K in keyof T]: Exclude<T[K], undefined>;
-};
-
 /**
  * The config used by css-modules-kit.
  * This is normalized. Paths are resolved from relative to absolute, and default values are set for missing options.
@@ -19,6 +15,8 @@ export interface CMKConfig {
   excludes: string[];
   dtsOutDir: string;
   arbitraryExtensions: boolean;
+  namedExports: boolean;
+  prioritizeNamedImports: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
    * This is an absolute path.
@@ -68,10 +66,12 @@ export interface CMKConfig {
  * This is unnormalized. Paths are relative, and some options may be omitted.
  */
 interface UnnormalizedRawConfig {
-  includes: string[] | undefined;
-  excludes: string[] | undefined;
-  dtsOutDir: string | undefined;
-  arbitraryExtensions: boolean | undefined;
+  includes?: string[];
+  excludes?: string[];
+  dtsOutDir?: string;
+  arbitraryExtensions?: boolean;
+  namedExports?: boolean;
+  prioritizeNamedImports?: boolean;
 }
 
 /**
@@ -93,12 +93,7 @@ export function findTsConfigFile(project: string): string | undefined {
 
 function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
   const result: ParsedRawData = {
-    config: {
-      includes: undefined,
-      excludes: undefined,
-      dtsOutDir: undefined,
-      arbitraryExtensions: undefined,
-    },
+    config: {},
     diagnostics: [],
   };
   if (typeof raw !== 'object' || raw === null) return result;
@@ -143,6 +138,28 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
         });
       }
     }
+    if ('namedExports' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.namedExports === 'boolean') {
+        result.config.namedExports = raw.cmkOptions.namedExports;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`namedExports\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
+        });
+      }
+    }
+    if ('prioritizeNamedImports' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.prioritizeNamedImports === 'boolean') {
+        result.config.prioritizeNamedImports = raw.cmkOptions.prioritizeNamedImports;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`prioritizeNamedImports\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+          // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
+        });
+      }
+    }
   }
   return result;
 }
@@ -155,6 +172,7 @@ function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): Pars
   if (overrides.config.dtsOutDir !== undefined) result.config.dtsOutDir = overrides.config.dtsOutDir;
   if (overrides.config.arbitraryExtensions !== undefined)
     result.config.arbitraryExtensions = overrides.config.arbitraryExtensions;
+  if (overrides.config.namedExports !== undefined) result.config.namedExports = overrides.config.namedExports;
   result.diagnostics.push(...overrides.diagnostics);
   return result;
 }
@@ -218,24 +236,6 @@ export function readTsConfigFile(project: string): {
 }
 
 /**
- * Normalize `UnnormalizedRawConfig`. Resolve relative paths to absolute paths, and set default values for missing options.
- * @param basePath A root directory to resolve relative path entries in the config file to.
- */
-export function normalizeConfig(
-  config: UnnormalizedRawConfig,
-  basePath: string,
-): RemoveUndefined<UnnormalizedRawConfig> {
-  return {
-    // If `include` is not specified, fallback to the default include spec.
-    // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
-    includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
-    excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
-    dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
-    arbitraryExtensions: config.arbitraryExtensions ?? false,
-  };
-}
-
-/**
  * Reads the `tsconfig.json` file and returns the normalized config.
  * Even if the `tsconfig.json` file contains syntax or semantic errors,
  * this function attempts to parse as much as possible and still returns a valid config.
@@ -247,7 +247,14 @@ export function readConfigFile(project: string): CMKConfig {
   const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
   const basePath = dirname(configFileName);
   return {
-    ...normalizeConfig(config, basePath),
+    // If `include` is not specified, fallback to the default include spec.
+    // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
+    includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
+    excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
+    dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
+    arbitraryExtensions: config.arbitraryExtensions ?? false,
+    namedExports: config.namedExports ?? false,
+    prioritizeNamedImports: config.prioritizeNamedImports ?? false,
     basePath,
     configFileName,
     compilerOptions,

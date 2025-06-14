@@ -1,8 +1,8 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { createCssModuleFileRefactor } from '../src/language-service/feature/refactor.js';
-import { createIFF } from './test/fixture.js';
-import { launchTsserver } from './test/tsserver.js';
+import { createCssModuleFileRefactor } from '../../src/language-service/feature/refactor.js';
+import { createIFF } from '../test-util/fixture.js';
+import { launchTsserver } from '../test-util/tsserver.js';
 
 describe('Refactor', async () => {
   const tsserver = launchTsserver();

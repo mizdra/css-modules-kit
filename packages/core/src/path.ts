@@ -33,8 +33,5 @@ export function parse(path: string): ParsedPath {
   return { root: slash(root), dir: slash(dir), base, name, ext };
 }
 
-// eslint-disable-next-line n/no-unsupported-features/node-builtins, @typescript-eslint/unbound-method
-export const matchesGlob = nodePath.matchesGlob;
-
 // eslint-disable-next-line @typescript-eslint/unbound-method
 export const isAbsolute = nodePath.isAbsolute;

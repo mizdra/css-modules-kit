@@ -28,7 +28,7 @@ interface Tsserver {
   sendCompletionInfo(
     args: server.protocol.CompletionsRequest['arguments'],
   ): Promise<server.protocol.CompletionInfoResponse>;
-  sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<server.protocol.GetCodeFixesResponse>;
+  sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<server.protocol.CodeFixResponse>;
 }
 
 export function launchTsserver(): Tsserver {
@@ -86,17 +86,130 @@ export function formatPath(path: string) {
   return path.replaceAll('\\', '/');
 }
 
-export function simplifyDefinitions(definitions: readonly ts.server.protocol.DefinitionInfo[]) {
-  return definitions.map((definition) => {
-    return {
-      file: formatPath(definition.file),
-      start: definition.start,
-      end: definition.end,
-    };
-  });
+type SimplifiedDefinitionInfo = {
+  file: string;
+  start: ts.server.protocol.Location;
+  end: ts.server.protocol.Location;
+};
+
+export function normalizeDefinitions(definitions: readonly SimplifiedDefinitionInfo[]): SimplifiedDefinitionInfo[] {
+  return definitions
+    .map((definition) => {
+      return {
+        file: formatPath(definition.file),
+        start: definition.start,
+        end: definition.end,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
 }
-export function sortDefinitions(definitions: readonly ts.server.protocol.DefinitionInfo[]) {
-  return definitions.toSorted((a, b) => {
-    return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-  });
+
+type SimplifiedSpanGroup = {
+  file: string;
+  locs: ts.server.protocol.TextSpan[];
+};
+
+export function normalizeSpanGroups(spanGroups: readonly SimplifiedSpanGroup[]): SimplifiedSpanGroup[] {
+  const sortedLocs = spanGroups
+    .map((loc) => {
+      return {
+        file: formatPath(loc.file),
+        locs: loc.locs.map((loc) => ({
+          start: loc.start,
+          end: loc.end,
+          ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
+          ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
+        })),
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file);
+    });
+  for (const loc of sortedLocs) {
+    loc.locs.sort((a, b) => {
+      return a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
+  }
+  return sortedLocs;
+}
+
+type SimplifiedReferencesResponseItem = {
+  file: string;
+  start: ts.server.protocol.Location;
+  end: ts.server.protocol.Location;
+};
+
+export function normalizeRefItems(refs: readonly SimplifiedReferencesResponseItem[]) {
+  return refs
+    .map((ref) => {
+      return {
+        file: formatPath(ref.file),
+        start: ref.start,
+        end: ref.end,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+    });
+}
+
+export function mergeSpanGroups(fileSpans: ts.server.protocol.FileSpan[]): SimplifiedSpanGroup[] {
+  const spanGroups: SimplifiedSpanGroup[] = [];
+  for (const fileSpan of fileSpans) {
+    const existingGroup = spanGroups.find((group) => group.file === fileSpan.file);
+    if (existingGroup) {
+      existingGroup.locs.push({ start: fileSpan.start, end: fileSpan.end });
+    } else {
+      spanGroups.push({
+        file: fileSpan.file,
+        locs: [{ start: fileSpan.start, end: fileSpan.end }],
+      });
+    }
+  }
+  return spanGroups;
+}
+
+type SimplifiedCompletionEntry = {
+  name: string;
+  sortText: string;
+  source?: string;
+  insertText?: string;
+};
+
+export function normalizeCompletionEntry(entries: readonly SimplifiedCompletionEntry[]): SimplifiedCompletionEntry[] {
+  return entries
+    .map((entry) => {
+      return {
+        name: entry.name,
+        sortText: entry.sortText,
+        ...('source' in entry ? { source: entry.source } : {}),
+        ...('insertText' in entry ? { insertText: entry.insertText } : {}),
+      };
+    })
+    .toSorted(
+      (a, b) =>
+        a.sortText?.localeCompare(b.sortText ?? '') ||
+        a.source?.localeCompare(b.source ?? '') ||
+        a.name.localeCompare(b.name),
+    );
+}
+
+type SimplifiedCodeFixAction = {
+  fixName: string;
+  changes: ts.server.protocol.FileCodeEdits[];
+};
+
+export function normalizeCodeFixActions(actions: readonly SimplifiedCodeFixAction[]): SimplifiedCodeFixAction[] {
+  return actions
+    .map((action) => {
+      return {
+        fixName: action.fixName,
+        changes: action.changes,
+      };
+    })
+    .toSorted((a, b) => {
+      return a.fixName.localeCompare(b.fixName);
+    });
 }

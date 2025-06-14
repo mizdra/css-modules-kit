@@ -1,21 +1,38 @@
-import { isComponentFileName } from '@css-modules-kit/core';
+import type { CMKConfig, Resolver } from '@css-modules-kit/core';
+import { isComponentFileName, isCSSModuleFile } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
 import ts from 'typescript';
 import { isCSSModuleScript } from '../../language-plugin.js';
+import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
 
-// ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json#L2051-L2054
+// ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
+export const CANNOT_FIND_NAME_ERROR_CODE = 2304;
 export const PROPERTY_DOES_NOT_EXIST_ERROR_CODE = 2339;
 
 export function getCodeFixesAtPosition(
   language: Language<string>,
   languageService: ts.LanguageService,
   project: ts.server.Project,
+  resolver: Resolver,
+  config: CMKConfig,
 ): ts.LanguageService['getCodeFixesAtPosition'] {
   // eslint-disable-next-line max-params
   return (fileName, start, end, errorCodes, formatOptions, preferences) => {
     const prior = Array.from(
-      languageService.getCodeFixesAtPosition(fileName, start, end, errorCodes, formatOptions, preferences) ?? [],
+      languageService.getCodeFixesAtPosition(
+        fileName,
+        start,
+        end,
+        errorCodes,
+        formatOptions,
+        createPreferencesForCompletion(preferences, config),
+      ),
     );
+
+    if (config.namedExports && !config.prioritizeNamedImports) {
+      convertDefaultImportsToNamespaceImports(prior, fileName, resolver);
+      excludeNamedImports(prior, fileName, resolver);
+    }
 
     if (isComponentFileName(fileName)) {
       // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
@@ -31,8 +48,27 @@ export function getCodeFixesAtPosition(
       }
     }
 
-    return prior;
+    return prior.filter((codeFix) => codeFix.changes.length > 0);
   };
+}
+
+/**
+ * Exclude code fixes that add named imports (e.g. `import { foo } from './a.module.css'`)
+ */
+function excludeNamedImports(codeFixes: ts.CodeFixAction[], fileName: string, resolver: Resolver): void {
+  for (const codeFix of codeFixes) {
+    if (codeFix.fixName !== 'import') continue;
+    const match = codeFix.description.match(/^Add import from "(.*)"$/u);
+    if (!match) continue;
+    const specifier = match[1]!;
+    const resolved = resolver(specifier, { request: fileName });
+    if (!resolved || !isCSSModuleFile(resolved)) continue;
+
+    for (const change of codeFix.changes) {
+      change.textChanges = change.textChanges.filter((textChange) => !textChange.newText.startsWith(`import {`));
+    }
+    codeFix.changes = codeFix.changes.filter((change) => change.textChanges.length > 0);
+  }
 }
 
 interface TokenConsumer {
