@@ -244,4 +244,21 @@ describe('createDts', () => {
       "
     `);
   });
+  test('exports styles as default when `namedExports` and `forTsPlugin` are true, but `prioritizeNamedImports` is false', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
+        }),
+        host,
+        { ...options, namedExports: true, forTsPlugin: true, prioritizeNamedImports: false },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      export var local1: string;
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
 });
