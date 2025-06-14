@@ -49,7 +49,7 @@ function collectTokens(ast: Root) {
       allDiagnostics.push(...diagnostics);
       if (atValue === undefined) return;
       if (atValue.type === 'valueDeclaration') {
-        localTokens.push({ name: atValue.name, loc: atValue.loc });
+        localTokens.push({ name: atValue.name, loc: atValue.loc, definition: atValue.definition });
       } else if (atValue.type === 'valueImportDeclaration') {
         tokenImporters.push({ ...atValue, type: 'value' });
       }

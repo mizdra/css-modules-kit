@@ -24,6 +24,7 @@ describe('parseAtValue', () => {
       [
         {
           "atValue": {
+            "definition": "@value basic: #000",
             "loc": {
               "end": {
                 "column": 13,
@@ -43,6 +44,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "definition": "@value withoutColon #000",
             "loc": {
               "end": {
                 "column": 20,
@@ -62,6 +64,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "definition": "@value empty:",
             "loc": {
               "end": {
                 "column": 13,
@@ -81,6 +84,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "definition": "@value comment:/* comment */",
             "loc": {
               "end": {
                 "column": 15,
@@ -100,6 +104,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "definition": "@value complex: (max-width: 599px)",
             "loc": {
               "end": {
                 "column": 15,
@@ -255,6 +260,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "definition": "@value  withSpace1 : #000 ",
             "loc": {
               "end": {
                 "column": 20,

@@ -6,6 +6,7 @@ interface ValueDeclaration {
   name: string;
   // value: string; // unused
   loc: Location;
+  definition: string;
 }
 
 interface ValueImportDeclaration {
@@ -149,7 +150,12 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
       column: start.column + name.length,
       offset: start.offset + name.length,
     };
-    const parsedAtValue = { type: 'valueDeclaration', name, loc: { start, end } } as const;
+    const parsedAtValue = {
+      type: 'valueDeclaration',
+      name,
+      loc: { start, end },
+      definition: atValue.toString(),
+    } as const;
     return { atValue: parsedAtValue, diagnostics };
   }
   diagnostics.push({
