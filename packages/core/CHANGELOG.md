@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.3.1
+
+### Patch Changes
+
+- 90ddb64: chore!: change `createDts` interface
+
 ## 0.3.0
 
 ### Minor Changes
