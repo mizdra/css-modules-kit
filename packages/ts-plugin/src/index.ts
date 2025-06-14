@@ -33,6 +33,19 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     }
   }
 
+  // tsserver should report a “Cannot find module” error for import statements in CSS Modules that
+  // do not exist. However, if `dtsOutDir` is included in `rootDirs` and old .d.ts files remain
+  // in `dtsOutDir`, the error will not be reported. Therefore, remove `dtsOutDir` from `rootDirs`.
+  const getCompilationSettings = info.languageServiceHost.getCompilationSettings.bind(info.languageServiceHost);
+  info.languageServiceHost.getCompilationSettings = () => {
+    const settings = { ...getCompilationSettings() };
+    if (settings.rootDirs) {
+      // TODO: If the `dtsOutDir` is not in `rootDirs`, warn the user.
+      settings.rootDirs = settings.rootDirs.filter((dir) => dir !== config.dtsOutDir);
+    }
+    return settings;
+  };
+
   const moduleResolutionCache = info.languageServiceHost.getModuleResolutionCache?.();
   const resolver = createResolver(config.compilerOptions, moduleResolutionCache);
   const matchesPattern = createMatchesPattern(config);
