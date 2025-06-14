@@ -255,10 +255,10 @@ function generateTokenJSDoc(token: Token, indentSize: number): string {
   // This patch for the string literal like `.a::after { content: '*/'; }`.
   // (token.definition does not contain comments)
   const cssLines = token.definition.replace(/\*\//gu, '*\u200b/').trim().split('\n');
-  let text = `${indent}/**\n   * \`\`\`css\n`;
+  let text = `${indent}/**\n${indent} * \`\`\`css\n`;
   for (const line of cssLines) {
     text += `${indent} * ${line}\n`;
   }
-  text += `${indent} * \`\`\`\n   */\n`;
+  text += `${indent} * \`\`\`\n${indent} */\n`;
   return text;
 }
