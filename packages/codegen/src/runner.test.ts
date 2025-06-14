@@ -44,7 +44,7 @@ describe('runCMK', () => {
       declare const styles = {
         /**
          * \`\`\`css
-         * .a1 { color: red; }
+         * .a1 { /** RED *​/ color: red; }
          * \`\`\`
          */
         a1: '' as readonly string,

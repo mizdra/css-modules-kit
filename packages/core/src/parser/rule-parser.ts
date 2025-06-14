@@ -136,19 +136,6 @@ export function parseRule(rule: Rule): ParseRuleResult {
       column: start.column + className.value.length,
       offset: start.offset + className.value.length,
     };
-
-    // `definition` will be used to JSDoc.
-    // So we remove all comments from the rule to prevent closing the JSDoc comment.
-    // e.g.
-    // /**
-    //  * ```css
-    //  * .a1 { /* CLOSING JSDOC COMMENT HERE ->*/ color: red; }
-    //  * ```
-    //  */
-    rule.walkComments((comment) => {
-      comment.remove();
-    });
-
     return {
       name: className.value,
       loc: { start, end },
