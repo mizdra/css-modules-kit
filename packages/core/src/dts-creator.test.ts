@@ -3,6 +3,7 @@ import type { CreateDtsHost } from './dts-creator.js';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
 import { fakeCSSModule } from './test/css-module.js';
 import { fakeMatchesPattern, fakeResolver } from './test/faker.js';
+import { fakeToken } from './test/token.js';
 
 const host: CreateDtsHost = {
   resolver: fakeResolver(),
@@ -32,13 +33,7 @@ describe('createDts', () => {
     expect(
       createDts(
         fakeCSSModule({
-          localTokens: [
-            {
-              name: 'local1',
-              loc: fakeLoc(0),
-            },
-            { name: 'local2', loc: fakeLoc(1) },
-          ],
+          localTokens: [fakeToken('local1', fakeLoc(0)), fakeToken('local2', fakeLoc(1))],
         }),
         host,
         options,
@@ -98,7 +93,7 @@ describe('createDts', () => {
     expect(
       createDts(
         fakeCSSModule({
-          localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
+          localTokens: [fakeToken('local1', fakeLoc(0))],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
         }),
         host,
@@ -212,10 +207,7 @@ describe('createDts', () => {
     expect(
       createDts(
         fakeCSSModule({
-          localTokens: [
-            { name: 'local1', loc: fakeLoc(0) },
-            { name: 'local2', loc: fakeLoc(1) },
-          ],
+          localTokens: [fakeToken('local1', fakeLoc(0)), fakeToken('local2', fakeLoc(1))],
           tokenImporters: [
             { type: 'import', from: './a.module.css', fromLoc: fakeLoc(2) },
             {
@@ -248,7 +240,7 @@ describe('createDts', () => {
     expect(
       createDts(
         fakeCSSModule({
-          localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
+          localTokens: [fakeToken('local1', fakeLoc(0))],
         }),
         host,
         { ...options, namedExports: true, forTsPlugin: true, prioritizeNamedImports: false },

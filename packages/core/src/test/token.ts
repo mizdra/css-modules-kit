@@ -1,9 +1,9 @@
-import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../type.js';
+import type { AtImportTokenImporter, AtValueTokenImporter, Location, Token } from '../type.js';
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
-export function fakeToken(name: string): Token {
-  return { name, loc: fakeLoc };
+export function fakeToken(name: string, loc: Location = fakeLoc): Token {
+  return { name, loc, definition: `.${name} {}` };
 }
 
 export function fakeAtImportTokenImporter(from: string): AtImportTokenImporter {
