@@ -41,7 +41,17 @@ describe('createDts', () => {
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
+        /**
+         * \`\`\`css
+         * .local1 {}
+         * \`\`\`
+         */
         local1: '' as readonly string,
+        /**
+         * \`\`\`css
+         * .local2 {}
+         * \`\`\`
+         */
         local2: '' as readonly string,
       };
       export default styles;
@@ -102,6 +112,11 @@ describe('createDts', () => {
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
+        /**
+         * \`\`\`css
+         * .local1 {}
+         * \`\`\`
+         */
         local1: '' as readonly string,
         ...(await import('./a.module.css')).default,
       };
@@ -226,7 +241,17 @@ describe('createDts', () => {
       ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
+      /**
+       * \`\`\`css
+       * .local1 {}
+       * \`\`\`
+       */
       export var local1: string;
+      /**
+       * \`\`\`css
+       * .local2 {}
+       * \`\`\`
+       */
       export var local2: string;
       export * from './a.module.css';
       export {
@@ -247,6 +272,11 @@ describe('createDts', () => {
       ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
+      /**
+       * \`\`\`css
+       * .local1 {}
+       * \`\`\`
+       */
       export var local1: string;
       declare const styles: {};
       export default styles;
