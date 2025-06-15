@@ -99,7 +99,7 @@ test('reports CSS syntax error', async () => {
     "src/a.module.css:1:1 - error: Unknown word badword
 
     1 badword
-      ~
+      ~~~~~~~
 
     "
   `);

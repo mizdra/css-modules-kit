@@ -510,7 +510,7 @@ describe('parseCSSModule', () => {
               "fileName": "/test.module.css",
               "text": "badword",
             },
-            "length": 1,
+            "length": 7,
             "start": {
               "column": 1,
               "line": 1,
