@@ -37,6 +37,8 @@ describe('handle invalid syntax CSS without crashing', async () => {
         file: formatPath(iff.paths['a.module.css']),
         start: { line: 1, offset: 2 },
         end: { line: 1, offset: 5 },
+        contextStart: { line: 1, offset: 1 },
+        contextEnd: { line: 1, offset: 21 },
       },
     ];
     expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(normalizeDefinitions(expected));
