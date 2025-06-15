@@ -90,6 +90,8 @@ type SimplifiedDefinitionInfo = {
   file: string;
   start: ts.server.protocol.Location;
   end: ts.server.protocol.Location;
+  contextStart?: ts.server.protocol.Location;
+  contextEnd?: ts.server.protocol.Location;
 };
 
 export function normalizeDefinitions(definitions: readonly SimplifiedDefinitionInfo[]): SimplifiedDefinitionInfo[] {
@@ -99,6 +101,8 @@ export function normalizeDefinitions(definitions: readonly SimplifiedDefinitionI
         file: formatPath(definition.file),
         start: definition.start,
         end: definition.end,
+        ...('contextStart' in definition ? { contextStart: definition.contextStart } : {}),
+        ...('contextEnd' in definition ? { contextEnd: definition.contextEnd } : {}),
       };
     })
     .toSorted((a, b) => {

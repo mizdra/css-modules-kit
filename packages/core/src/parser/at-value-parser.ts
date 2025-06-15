@@ -6,6 +6,11 @@ interface ValueDeclaration {
   name: string;
   // value: string; // unused
   loc: Location;
+  /**
+   * NOTE: The `declarationLoc` for value declaration does not include the trailing semicolon.
+   * @example `@value white: #fff` has `declarationLoc` as `{ start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 19, offset: 18 } }`.
+   */
+  declarationLoc: Location;
 }
 
 interface ValueImportDeclaration {
@@ -149,7 +154,15 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
       column: start.column + name.length,
       offset: start.offset + name.length,
     };
-    const parsedAtValue = { type: 'valueDeclaration', name, loc: { start, end } } as const;
+    const parsedAtValue: ValueDeclaration = {
+      type: 'valueDeclaration',
+      name,
+      loc: { start, end },
+      declarationLoc: {
+        start: atValue.source!.start!,
+        end: atValue.positionBy({ index: atValue.toString().length }),
+      },
+    } as const;
     return { atValue: parsedAtValue, diagnostics };
   }
   diagnostics.push({

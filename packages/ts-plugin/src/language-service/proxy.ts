@@ -5,6 +5,7 @@ import type ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../language-plugin.js';
 import { getCodeFixesAtPosition } from './feature/code-fix.js';
 import { getCompletionEntryDetails, getCompletionsAtPosition } from './feature/completion.js';
+import { getDefinitionAndBoundSpan } from './feature/definition-and-bound-span.js';
 import { getApplicableRefactors, getEditsForRefactor } from './feature/refactor.js';
 import { getSemanticDiagnostics } from './feature/semantic-diagnostic.js';
 import { getSyntacticDiagnostics } from './feature/syntactic-diagnostic.js';
@@ -50,6 +51,7 @@ export function proxyLanguageService(
   proxy.getCompletionsAtPosition = getCompletionsAtPosition(languageService, config);
   proxy.getCompletionEntryDetails = getCompletionEntryDetails(languageService, resolver, config);
   proxy.getCodeFixesAtPosition = getCodeFixesAtPosition(language, languageService, project, resolver, config);
+  proxy.getDefinitionAndBoundSpan = getDefinitionAndBoundSpan(language, languageService);
 
   return proxy;
 }

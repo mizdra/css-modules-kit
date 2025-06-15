@@ -231,6 +231,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 10,
+                  "line": 1,
+                  "offset": 9,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 1,
+                  "offset": 0,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 7,
@@ -251,6 +263,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 14,
+                  "line": 2,
+                  "offset": 23,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 2,
+                  "offset": 10,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 11,
@@ -271,6 +295,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 14,
+                  "line": 3,
+                  "offset": 37,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 3,
+                  "offset": 24,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 11,
@@ -291,6 +327,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 19,
+                  "line": 4,
+                  "offset": 56,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 4,
+                  "offset": 38,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 16,
@@ -311,6 +359,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 25,
+                  "line": 5,
+                  "offset": 81,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 5,
+                  "offset": 57,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 16,
@@ -331,6 +391,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 25,
+                  "line": 6,
+                  "offset": 106,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 6,
+                  "offset": 82,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 21,
@@ -351,6 +423,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 44,
+                  "line": 7,
+                  "offset": 150,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 7,
+                  "offset": 107,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 21,
@@ -366,6 +450,18 @@ describe('parseRule', () => {
               "name": "multiple_selector_1",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 44,
+                  "line": 7,
+                  "offset": 150,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 7,
+                  "offset": 107,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 41,
@@ -386,6 +482,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 33,
+                  "line": 8,
+                  "offset": 183,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 8,
+                  "offset": 151,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 14,
@@ -401,6 +509,18 @@ describe('parseRule', () => {
               "name": "combinator_1",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 33,
+                  "line": 8,
+                  "offset": 183,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 8,
+                  "offset": 151,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 30,
@@ -421,6 +541,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 16,
+                  "line": 11,
+                  "offset": 268,
+                },
+                "start": {
+                  "column": 5,
+                  "line": 11,
+                  "offset": 257,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 13,
@@ -441,6 +573,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 38,
+                  "line": 14,
+                  "offset": 312,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 14,
+                  "offset": 275,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 17,
@@ -456,6 +600,18 @@ describe('parseRule', () => {
               "name": "selector_list_1",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 38,
+                  "line": 14,
+                  "offset": 312,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 14,
+                  "offset": 275,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 35,
@@ -476,6 +632,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 31,
+                  "line": 15,
+                  "offset": 343,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 15,
+                  "offset": 313,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 27,
@@ -496,6 +664,18 @@ describe('parseRule', () => {
         {
           "classSelectors": [
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 24,
+                  "line": 18,
+                  "offset": 400,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 16,
+                  "offset": 344,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 16,
@@ -511,6 +691,18 @@ describe('parseRule', () => {
               "name": "with_newline_1",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 24,
+                  "line": 18,
+                  "offset": 400,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 16,
+                  "offset": 344,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 16,
@@ -526,6 +718,18 @@ describe('parseRule', () => {
               "name": "with_newline_2",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 24,
+                  "line": 18,
+                  "offset": 400,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 16,
+                  "offset": 344,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 20,
@@ -677,6 +881,18 @@ describe('parseRule', () => {
           {
             "classSelectors": [
               {
+                "declarationLoc": {
+                  "end": {
+                    "column": 18,
+                    "line": 1,
+                    "offset": 17,
+                  },
+                  "start": {
+                    "column": 1,
+                    "line": 1,
+                    "offset": 0,
+                  },
+                },
                 "loc": {
                   "end": {
                     "column": 15,
@@ -708,6 +924,18 @@ describe('parseRule', () => {
           {
             "classSelectors": [
               {
+                "declarationLoc": {
+                  "end": {
+                    "column": 20,
+                    "line": 2,
+                    "offset": 37,
+                  },
+                  "start": {
+                    "column": 1,
+                    "line": 2,
+                    "offset": 18,
+                  },
+                },
                 "loc": {
                   "end": {
                     "column": 17,

@@ -40,6 +40,15 @@ https://github.com/user-attachments/assets/df1e2feb-2a1a-4bf5-ae70-1cac36d90409
 </details>
 
 <details>
+<summary>Definition Preview by Hover</summary>
+
+You can preview the definition with <kbd>Command</kbd> + <kbd>Hover</kbd> on macOS and VS Code (key bindings may vary depending on your OS and editor).
+
+https://github.com/user-attachments/assets/8d42acb8-2822-4fe6-89ce-8472c7065b8b
+
+</details>
+
+<details>
 <summary>Automatically update import statements when moving `*.module.css`</summary>
 
 https://github.com/user-attachments/assets/4af168fa-357d-44e1-b010-3053802bf1a2

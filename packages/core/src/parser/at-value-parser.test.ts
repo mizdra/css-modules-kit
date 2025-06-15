@@ -24,6 +24,18 @@ describe('parseAtValue', () => {
       [
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 19,
+                "line": 1,
+                "offset": 18,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
             "loc": {
               "end": {
                 "column": 13,
@@ -43,6 +55,18 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 25,
+                "line": 2,
+                "offset": 44,
+              },
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 20,
+              },
+            },
             "loc": {
               "end": {
                 "column": 20,
@@ -62,6 +86,18 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 14,
+                "line": 3,
+                "offset": 59,
+              },
+              "start": {
+                "column": 1,
+                "line": 3,
+                "offset": 46,
+              },
+            },
             "loc": {
               "end": {
                 "column": 13,
@@ -81,6 +117,18 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 29,
+                "line": 4,
+                "offset": 89,
+              },
+              "start": {
+                "column": 1,
+                "line": 4,
+                "offset": 61,
+              },
+            },
             "loc": {
               "end": {
                 "column": 15,
@@ -100,6 +148,18 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 35,
+                "line": 5,
+                "offset": 125,
+              },
+              "start": {
+                "column": 1,
+                "line": 5,
+                "offset": 91,
+              },
+            },
             "loc": {
               "end": {
                 "column": 15,
@@ -255,6 +315,18 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 28,
+                "line": 9,
+                "offset": 268,
+              },
+              "start": {
+                "column": 2,
+                "line": 9,
+                "offset": 242,
+              },
+            },
             "loc": {
               "end": {
                 "column": 20,
