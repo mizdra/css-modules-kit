@@ -104,8 +104,16 @@ function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectR
 interface ClassSelector {
   /** The class name. It does not include the leading dot. */
   name: string;
-  /** The location of the class selector. */
+  /**
+   * The location of the class selector.
+   * @example `.a {}` has `loc` as `{ start: { line: 1, column: 2, offset: 1 }, end: { line: 1, column: 3, offset: 2 } }`.
+   */
   loc: Location;
+  /**
+   * The location of the declaration of the token in the source file.
+   * @example `.a {}` has `declarationLoc` as `{ start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 6, offset: 5 } }`.
+   */
+  declarationLoc: Location;
 }
 
 interface ParseRuleResult {
@@ -119,7 +127,7 @@ interface ParseRuleResult {
 export function parseRule(rule: Rule): ParseRuleResult {
   const root = selectorParser().astSync(rule);
   const result = collectLocalClassNames(rule, root);
-  const classSelectors = result.classNames.map((className) => {
+  const classSelectors: ClassSelector[] = result.classNames.map((className) => {
     // If `rule` is `.a, .b { color: red; }` and `className` is `.b`,
     // `rule.source` is `{ start: { line: 1, column: 1 }, end: { line: 1, column: 22 } }`
     // And `className.source` is `{ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }`.
@@ -137,6 +145,7 @@ export function parseRule(rule: Rule): ParseRuleResult {
     return {
       name: className.value,
       loc: { start, end },
+      declarationLoc: { start: rule.source!.start!, end: rule.positionBy({ index: rule.toString().length }) },
     };
   });
   return { classSelectors, diagnostics: result.diagnostics };
