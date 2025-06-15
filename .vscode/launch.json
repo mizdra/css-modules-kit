@@ -18,6 +18,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
+        "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/example",
         "${workspaceFolder}/example/src/index.tsx"
