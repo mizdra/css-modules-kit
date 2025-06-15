@@ -411,6 +411,18 @@ describe('parseCSSModule', () => {
               "name": "local_1",
             },
             {
+              "declarationLoc": {
+                "end": {
+                  "column": 22,
+                  "line": 16,
+                  "offset": 354,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 16,
+                  "offset": 333,
+                },
+              },
               "loc": {
                 "end": {
                   "column": 13,
