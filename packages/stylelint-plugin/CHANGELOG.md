@@ -1,5 +1,14 @@
 # @css-modules-kit/stylelint-plugin
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [15209ea]
+- Updated dependencies [5a8adb7]
+- Updated dependencies [90ddb64]
+  - @css-modules-kit/core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes

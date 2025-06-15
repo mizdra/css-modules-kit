@@ -2,7 +2,7 @@
   "name": "css-modules-kit-vscode",
   "displayName": "CSS Modules Kit",
   "description": "The VS Code extension for CSS Modules",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "commonjs",
   "repository": {
     "type": "git",
@@ -61,7 +61,7 @@
   },
   "dependencies": {
     "@css-modules-kit/language-server": "^0.1.0",
-    "@css-modules-kit/ts-plugin": "^0.2.0",
+    "@css-modules-kit/ts-plugin": "^0.3.0",
     "vscode-languageclient": "^9.0.1"
   }
 }
