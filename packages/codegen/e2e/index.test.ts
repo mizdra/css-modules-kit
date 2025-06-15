@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { stripVTControlCharacters } from 'node:util';
 import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import { expect, test } from 'vitest';
@@ -85,6 +86,23 @@ test('prints version number', () => {
   expect(cmk.error).toBeUndefined();
   expect(cmk.stdout.toString()).toMatch(/\d+\.\d+\.\d+/u);
   expect(cmk.status).toBe(0);
+});
+
+test('reports CSS syntax error', async () => {
+  const iff = await createIFF({
+    'src/a.module.css': `badword`,
+    'tsconfig.json': '{}',
+  });
+  const cmk = spawnSync('node', [binPath, '--pretty'], { cwd: iff.rootDir });
+  expect(cmk.status).toBe(1);
+  expect(stripVTControlCharacters(cmk.stderr.toString())).toMatchInlineSnapshot(`
+    "src/a.module.css:1:1 - error: Unknown word badword
+
+    1 badword
+      ~~~~~~~
+
+    "
+  `);
 });
 
 test('reports system error', async () => {

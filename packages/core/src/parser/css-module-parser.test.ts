@@ -495,6 +495,31 @@ describe('parseCSSModule', () => {
         ],
       }
     `);
+    expect(parseCSSModule('badword', options)).toMatchInlineSnapshot(`
+      {
+        "cssModule": {
+          "fileName": "/test.module.css",
+          "localTokens": [],
+          "text": "badword",
+          "tokenImporters": [],
+        },
+        "diagnostics": [
+          {
+            "category": "error",
+            "file": {
+              "fileName": "/test.module.css",
+              "text": "badword",
+            },
+            "length": 7,
+            "start": {
+              "column": 1,
+              "line": 1,
+            },
+            "text": "Unknown word badword",
+          },
+        ],
+      }
+    `);
   });
   test('parses CSS in a fault-tolerant manner if safe is true', () => {
     const parsed = parseCSSModule(

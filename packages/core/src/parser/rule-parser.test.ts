@@ -56,6 +56,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 1,
+            "offset": 2,
           },
           "type": "combinator",
         },
@@ -65,6 +66,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 4,
             "line": 1,
+            "offset": 3,
           },
           "type": "class",
         },
@@ -108,6 +110,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 1,
+            "offset": 2,
           },
           "type": "combinator",
         },
@@ -117,6 +120,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 1,
             "line": 2,
+            "offset": 3,
           },
           "type": "class",
         },
@@ -127,6 +131,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 2,
+            "offset": 5,
           },
           "type": "combinator",
         },
@@ -136,6 +141,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 3,
+            "offset": 8,
           },
           "type": "class",
         },
@@ -176,6 +182,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 2,
+            "offset": 24,
           },
           "type": "combinator",
         },
@@ -185,6 +192,7 @@ describe('calcDiagnosticsLocationForSelectorParserNode', () => {
           "start": {
             "column": 3,
             "line": 3,
+            "offset": 27,
           },
           "type": "class",
         },
@@ -571,6 +579,7 @@ describe('parseRule', () => {
                 "start": {
                   "column": 8,
                   "line": 1,
+                  "offset": 7,
                 },
                 "text": "A \`:global(...)\` is not allowed inside of \`:local(...)\`.",
               },
@@ -585,6 +594,7 @@ describe('parseRule', () => {
                 "start": {
                   "column": 9,
                   "line": 2,
+                  "offset": 31,
                 },
                 "text": "A \`:local(...)\` is not allowed inside of \`:global(...)\`.",
               },
@@ -599,6 +609,7 @@ describe('parseRule', () => {
                 "start": {
                   "column": 8,
                   "line": 3,
+                  "offset": 53,
                 },
                 "text": "A \`:local(...)\` is not allowed inside of \`:local(...)\`.",
               },
@@ -613,6 +624,7 @@ describe('parseRule', () => {
                 "start": {
                   "column": 9,
                   "line": 4,
+                  "offset": 76,
                 },
                 "text": "A \`:global(...)\` is not allowed inside of \`:global(...)\`.",
               },
@@ -781,6 +793,7 @@ describe('parseRule', () => {
               "start": {
                 "column": 6,
                 "line": 1,
+                "offset": 5,
               },
               "text": "\`a_\\u0032\` is not allowed because it is not a valid JavaScript identifier.",
             },

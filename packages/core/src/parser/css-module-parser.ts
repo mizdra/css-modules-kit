@@ -82,15 +82,14 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
     ast = parser(text, { from: fileName });
   } catch (e) {
     if (e instanceof CssSyntaxError) {
-      const start = { line: e.line ?? 1, column: e.column ?? 1 };
+      const { line, column, endColumn } = e.input!;
       return {
         cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
         diagnostics: [
           {
             file: diagnosticSourceFile,
-            start,
-            // TODO: Assign correct length (e.g. `e.endOffset - e.offset`)
-            length: 1,
+            start: { line, column },
+            length: endColumn !== undefined ? endColumn - column : 1,
             text: e.reason,
             category: 'error',
           },
