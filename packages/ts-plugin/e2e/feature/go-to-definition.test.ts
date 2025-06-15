@@ -147,7 +147,13 @@ describe('Go to Definition', async () => {
       line: 4,
       offset: 8,
       expected: [
-        { file: formatPath(iff.paths['a.module.css']), start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } },
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          start: { line: 6, offset: 8 },
+          end: { line: 6, offset: 11 },
+          contextStart: { line: 6, offset: 1 },
+          contextEnd: { line: 6, offset: 16 },
+        },
       ],
     },
     {
@@ -182,7 +188,13 @@ describe('Go to Definition', async () => {
           contextStart: { line: 2, offset: 8 },
           contextEnd: { line: 2, offset: 11 },
         },
-        { file: formatPath(iff.paths['c.module.css']), start: { line: 1, offset: 8 }, end: { line: 1, offset: 11 } },
+        {
+          file: formatPath(iff.paths['c.module.css']),
+          start: { line: 1, offset: 8 },
+          end: { line: 1, offset: 11 },
+          contextStart: { line: 1, offset: 1 },
+          contextEnd: { line: 1, offset: 16 },
+        },
       ],
     },
     {
@@ -202,7 +214,13 @@ describe('Go to Definition', async () => {
           contextStart: { line: 2, offset: 8 },
           contextEnd: { line: 2, offset: 11 },
         },
-        { file: formatPath(iff.paths['c.module.css']), start: { line: 1, offset: 8 }, end: { line: 1, offset: 11 } },
+        {
+          file: formatPath(iff.paths['c.module.css']),
+          start: { line: 1, offset: 8 },
+          end: { line: 1, offset: 11 },
+          contextStart: { line: 1, offset: 1 },
+          contextEnd: { line: 1, offset: 16 },
+        },
       ],
     },
     {
@@ -222,7 +240,13 @@ describe('Go to Definition', async () => {
           contextStart: { line: 2, offset: 20 },
           contextEnd: { line: 2, offset: 16 },
         },
-        { file: formatPath(iff.paths['c.module.css']), start: { line: 2, offset: 8 }, end: { line: 2, offset: 11 } },
+        {
+          file: formatPath(iff.paths['c.module.css']),
+          start: { line: 2, offset: 8 },
+          end: { line: 2, offset: 11 },
+          contextStart: { line: 2, offset: 1 },
+          contextEnd: { line: 2, offset: 16 },
+        },
       ],
     },
     {
@@ -242,7 +266,13 @@ describe('Go to Definition', async () => {
           contextStart: { line: 2, offset: 20 },
           contextEnd: { line: 2, offset: 16 },
         },
-        { file: formatPath(iff.paths['c.module.css']), start: { line: 2, offset: 8 }, end: { line: 2, offset: 11 } },
+        {
+          file: formatPath(iff.paths['c.module.css']),
+          start: { line: 2, offset: 8 },
+          end: { line: 2, offset: 11 },
+          contextStart: { line: 2, offset: 1 },
+          contextEnd: { line: 2, offset: 16 },
+        },
       ],
     },
     {
@@ -251,7 +281,13 @@ describe('Go to Definition', async () => {
       line: 2,
       offset: 13,
       expected: [
-        { file: formatPath(iff.paths['c.module.css']), start: { line: 2, offset: 8 }, end: { line: 2, offset: 11 } },
+        {
+          file: formatPath(iff.paths['c.module.css']),
+          start: { line: 2, offset: 8 },
+          end: { line: 2, offset: 11 },
+          contextStart: { line: 2, offset: 1 },
+          contextEnd: { line: 2, offset: 16 },
+        },
       ],
     },
     {
