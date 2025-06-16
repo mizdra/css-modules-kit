@@ -19,7 +19,7 @@ try {
     process.exit(0);
   }
 
-  await runCMK(args.project, logger);
+  await runCMK(args.project, args.clean, logger);
 } catch (e) {
   if (e instanceof SystemError) {
     logger.logSystemError(e);

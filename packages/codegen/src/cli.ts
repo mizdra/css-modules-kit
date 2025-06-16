@@ -11,6 +11,7 @@ Options:
   --version, -v  Show version number
   --project, -p  The path to its configuration file, or to a folder with a 'tsconfig.json'.
   --pretty       Enable color and formatting in output to make errors easier to read.
+  --clean        Remove the output directory before generating files.                       [default: false]
 `;
 
 export function printHelpText(): void {
@@ -28,6 +29,7 @@ export interface ParsedArgs {
   version: boolean;
   project: string;
   pretty: boolean | undefined;
+  clean: boolean;
 }
 
 /**
@@ -43,6 +45,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
         version: { type: 'boolean', short: 'v', default: false },
         project: { type: 'string', short: 'p', default: '.' },
         pretty: { type: 'boolean' },
+        clean: { type: 'boolean', default: false },
       },
       allowNegative: true,
     });
@@ -51,6 +54,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
       version: values.version,
       project: resolve(cwd, values.project),
       pretty: values.pretty,
+      clean: values.clean,
     };
   } catch (cause) {
     throw new ParseCLIArgsError(cause);
