@@ -15,6 +15,7 @@
     "packages/eslint-plugin"
   ],
   "scripts": {
+    "version": "changeset version && npm i",
     "build": "tsc -b tsconfig.build.json",
     "lint": "run-s -c lint:*",
     "lint:tsc": "tsc -b",

@@ -31,11 +31,16 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run build
+      - name: set release variables
+        run: echo "date=$(date -u +'%Y-%m-%dT%H:%MZ')" >> $GITHUB_ENV
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: changesets/action@v1
+        uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e # v1.5.2
         with:
+          version: npm run version
           publish: npx @changesets/cli publish
+          createGithubReleases: aggregate
+          githubReleaseName: Release ${{ env.date }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
