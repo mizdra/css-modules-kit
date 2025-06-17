@@ -1,5 +1,15 @@
 # css-modules-kit-vscode
 
+## 0.1.1
+
+### Patch Changes
+
+- 2cd6e3e: chore: revert "Avoid LSP request conflicts with Request Forwarding"
+- Updated dependencies [15209ea]
+- Updated dependencies [bf01bee]
+- Updated dependencies [90ddb64]
+  - @css-modules-kit/ts-plugin@0.3.0
+
 ## 0.1.0
 
 ### Minor Changes

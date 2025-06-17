@@ -1,5 +1,16 @@
 # @css-modules-kit/core
 
+## 0.4.0
+
+### Minor Changes
+
+- 15209ea: feat: support "Definition Preview for Hover"
+
+### Patch Changes
+
+- 5a8adb7: fix: calculate the correct range of CSS syntax errors
+- 90ddb64: chore!: change `createDts` interface
+
 ## 0.3.0
 
 ### Minor Changes

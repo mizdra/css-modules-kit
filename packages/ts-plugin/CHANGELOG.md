@@ -1,5 +1,20 @@
 # @css-modules-kit/ts-plugin
 
+## 0.3.0
+
+### Minor Changes
+
+- 15209ea: feat: support "Definition Preview for Hover"
+
+### Patch Changes
+
+- bf01bee: fix: make ts-plugin report the import of files where .d.ts exists but .module.css does not exist
+- 90ddb64: chore!: change `createDts` interface
+- Updated dependencies [15209ea]
+- Updated dependencies [5a8adb7]
+- Updated dependencies [90ddb64]
+  - @css-modules-kit/core@0.4.0
+
 ## 0.2.0
 
 ### Minor Changes
