@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, rmdir } from 'node:fs/promises';
 import type {
   CMKConfig,
   CSSModule,
@@ -63,7 +63,7 @@ async function writeDtsByCSSModule(
  * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
  * @throws {WriteDtsFileError}
  */
-export async function runCMK(project: string, logger: Logger): Promise<void> {
+export async function runCMK(project: string, clean: boolean, logger: Logger): Promise<void> {
   const config = readConfigFile(project);
   if (config.diagnostics.length > 0) {
     logger.logDiagnostics(config.diagnostics);
@@ -120,6 +120,9 @@ export async function runCMK(project: string, logger: Logger): Promise<void> {
     process.exit(1);
   }
 
+  if (clean) {
+    await rmdir(config.dtsOutDir, { recursive: true });
+  }
   await Promise.all(
     parseResults.map(async (parseResult) =>
       writeDtsByCSSModule(parseResult.cssModule, config, resolver, matchesPattern),

@@ -40,6 +40,7 @@ Options:
   --version, -v  Show version number
   --project, -p  The path to its configuration file, or to a folder with a 'tsconfig.json'.
   --pretty       Enable color and formatting in output to make errors easier to read.
+  --clean        Remove the output directory before generating files.                       [default: false]
 ```
 
 ## Configuration

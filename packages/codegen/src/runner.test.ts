@@ -8,6 +8,8 @@ import { createIFF } from './test/fixture.js';
 import { createLoggerSpy } from './test/logger.js';
 import { mockProcessExit, ProcessExitError } from './test/process.js';
 
+const clean = false;
+
 function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
   return {
     text: diagnostic.text.replace(rootDir, '<rootDir>'),
@@ -38,7 +40,7 @@ describe('runCMK', () => {
       'src/a.module.css': '.a1 { color: red; }',
       'src/b.module.css': '.b1 { color: blue; }',
     });
-    await runCMK(iff.rootDir, createLoggerSpy());
+    await runCMK(iff.rootDir, clean, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
@@ -66,7 +68,7 @@ describe('runCMK', () => {
       'src/a.module.css': '.a1 { color: red; }',
       'src/b.css': '.b1 { color: red; }',
     });
-    await runCMK(iff.rootDir, createLoggerSpy());
+    await runCMK(iff.rootDir, clean, createLoggerSpy());
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
   });
@@ -81,7 +83,7 @@ describe('runCMK', () => {
       'src/b.module.css': '.b1 { color: blue; }',
       'src/c.css': '.c1 { color: red; }',
     });
-    await runCMK(iff.rootDir, createLoggerSpy());
+    await runCMK(iff.rootDir, clean, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
@@ -100,7 +102,7 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await runCMK(iff.rootDir, loggerSpy);
+    await runCMK(iff.rootDir, clean, loggerSpy);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -121,7 +123,7 @@ describe('runCMK', () => {
       'src/a.module.css': '.a1 { color: red; }',
     });
     await chmod(iff.paths['src/a.module.css'], 0o200); // Remove read permission
-    await expect(runCMK(iff.rootDir, createLoggerSpy())).rejects.toThrow(ReadCSSModuleFileError);
+    await expect(runCMK(iff.rootDir, clean, createLoggerSpy())).rejects.toThrow(ReadCSSModuleFileError);
   });
   test('support ./ in `pattern`', async () => {
     const iff = await createIFF({
@@ -133,7 +135,7 @@ describe('runCMK', () => {
       'src/a.module.css': `@import './b.css'; .a1 { color: red; }`,
       'src/b.css': '.b1 { color: red; }',
     });
-    await runCMK(iff.rootDir, createLoggerSpy());
+    await runCMK(iff.rootDir, clean, createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
@@ -153,7 +155,7 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(iff.rootDir, loggerSpy)).rejects.toThrow(ProcessExitError);
+    await expect(runCMK(iff.rootDir, clean, loggerSpy)).rejects.toThrow(ProcessExitError);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -175,7 +177,7 @@ describe('runCMK', () => {
       'src/b.module.css': '@value;',
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(iff.rootDir, loggerSpy)).rejects.toThrow(ProcessExitError);
+    await expect(runCMK(iff.rootDir, clean, loggerSpy)).rejects.toThrow(ProcessExitError);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -218,7 +220,7 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(iff.rootDir, loggerSpy)).rejects.toThrow(ProcessExitError);
+    await expect(runCMK(iff.rootDir, clean, loggerSpy)).rejects.toThrow(ProcessExitError);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -245,4 +247,19 @@ describe('runCMK', () => {
       ]
     `);
   });
+});
+
+test('removes output directory before generating files when `clean` is true', async () => {
+  const iff = await createIFF({
+    'tsconfig.json': dedent`
+      {
+        "cmkOptions": { "dtsOutDir": "generated" }
+      }
+    `,
+    'src/a.module.css': '.a1 { color: red; }',
+    'generated/src/old.module.css.d.ts': '',
+  });
+  await runCMK(iff.rootDir, true, createLoggerSpy());
+  await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
+  await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
 });

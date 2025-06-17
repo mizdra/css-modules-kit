@@ -13,6 +13,7 @@ describe('parseCLIArgs', () => {
       version: false,
       project: resolve(cwd),
       pretty: undefined,
+      clean: false,
     });
   });
   it('should parse --help option', () => {
@@ -35,6 +36,10 @@ describe('parseCLIArgs', () => {
   it('should parse --pretty option', () => {
     expect(parseCLIArgs(['--pretty'], cwd).pretty).toBe(true);
     expect(parseCLIArgs(['--no-pretty'], cwd).pretty).toBe(false);
+  });
+  it('should parse --clean option', () => {
+    expect(parseCLIArgs(['--clean'], cwd).clean).toBe(true);
+    expect(parseCLIArgs(['--no-clean'], cwd).clean).toBe(false);
   });
   it('should throw ParseCLIArgsError for invalid options', () => {
     expect(() => parseCLIArgs(['--invalid-option'], cwd)).toThrow(ParseCLIArgsError);
