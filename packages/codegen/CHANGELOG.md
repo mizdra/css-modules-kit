@@ -1,5 +1,20 @@
 # @css-modules-kit/codegen
 
+## 0.4.0
+
+### Minor Changes
+
+- 7e0ea4b: feat: support `--clean` option
+
+### Patch Changes
+
+- 5a8adb7: fix: calculate the correct range of CSS syntax errors
+- 90ddb64: chore!: change `createDts` interface
+- Updated dependencies [15209ea]
+- Updated dependencies [5a8adb7]
+- Updated dependencies [90ddb64]
+  - @css-modules-kit/core@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
