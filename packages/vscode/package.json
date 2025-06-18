@@ -21,7 +21,7 @@
     "vscode:prepublish:npm-install": "npm i --no-package-lock --omit=dev"
   },
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.84.0"
   },
   "keywords": [
     "css-modules",
