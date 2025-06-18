@@ -121,7 +121,7 @@ export async function runCMK(project: string, clean: boolean, logger: Logger): P
   }
 
   if (clean) {
-    await rm(config.dtsOutDir, { recursive: true });
+    await rm(config.dtsOutDir, { recursive: true, force: true });
   }
   await Promise.all(
     parseResults.map(async (parseResult) =>
