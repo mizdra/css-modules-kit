@@ -3,7 +3,7 @@ import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 import {
   CANNOT_FIND_NAME_ERROR_CODE,
-  PROPERTY_DOES_NOT_EXIST_ERROR_CODE,
+  PROPERTY_DOES_NOT_EXIST_ERROR_CODES,
 } from '../../src/language-service/feature/code-fix.js';
 import { createIFF } from '../test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeCodeFixActions } from '../test-util/tsserver.js';
@@ -88,7 +88,25 @@ describe('Get Code Fixes', async () => {
       file: iff.paths['a.tsx'],
       line: 3,
       offset: 11,
-      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODE],
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
+      expected: [
+        {
+          fixName: 'fixMissingCSSRule',
+          changes: [
+            {
+              fileName: formatPath(iff.paths['a.module.css']),
+              textChanges: [{ start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 }, newText: '\n.a_1 {\n  \n}' }],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'styles.a_1',
+      file: iff.paths['a.tsx'],
+      line: 3,
+      offset: 11,
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[1]],
       expected: [
         {
           fixName: 'fixMissingCSSRule',
@@ -106,7 +124,7 @@ describe('Get Code Fixes', async () => {
       file: iff.paths['a.tsx'],
       line: 4,
       offset: 12,
-      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODE],
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
       expected: [
         {
           fixName: 'fixMissingCSSRule',

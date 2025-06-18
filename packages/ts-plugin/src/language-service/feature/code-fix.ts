@@ -7,7 +7,7 @@ import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion
 
 // ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
 export const CANNOT_FIND_NAME_ERROR_CODE = 2304;
-export const PROPERTY_DOES_NOT_EXIST_ERROR_CODE = 2339;
+export const PROPERTY_DOES_NOT_EXIST_ERROR_CODES: [number, number] = [2339, 2551];
 
 export function getCodeFixesAtPosition(
   language: Language<string>,
@@ -36,7 +36,7 @@ export function getCodeFixesAtPosition(
 
     if (isComponentFileName(fileName)) {
       // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
-      if (errorCodes.includes(PROPERTY_DOES_NOT_EXIST_ERROR_CODE)) {
+      if (errorCodes.some((errorCode) => PROPERTY_DOES_NOT_EXIST_ERROR_CODES.includes(errorCode))) {
         const tokenConsumer = getTokenConsumerAtPosition(fileName, start, language, languageService, project);
         if (tokenConsumer) {
           prior.push({
