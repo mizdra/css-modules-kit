@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/codegen",
   "description": "A tool for generating `*.d.ts` files for `*.module.css`.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
