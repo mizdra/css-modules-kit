@@ -2,6 +2,7 @@
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
+import { PROPERTY_DOES_NOT_EXIST_ERROR_CODES } from '../src/language-service/feature/code-fix.js';
 import { createIFF } from './test-util/fixture.js';
 import {
   formatPath,
@@ -441,5 +442,52 @@ describe('supports code fixes', async () => {
       });
       expect(normalizeCodeFixActions(res.body!)).toStrictEqual(normalizeCodeFixActions(expected));
     });
+  });
+  test('supports adding missing CSS rules', async () => {
+    const iff = await createIFF({
+      'a.tsx': dedent`
+        import * as styles from './a.module.css';
+        styles.a_1;
+      `,
+      'a.module.css': '',
+      'tsconfig.json': dedent`
+        {
+          "cmkOptions": {
+            "namedExports": true
+          }
+        }
+    `,
+    });
+    const tsserver = launchTsserver();
+    await tsserver.sendUpdateOpen({
+      openFiles: [{ file: iff.paths['tsconfig.json'] }],
+    });
+    const res = await tsserver.sendGetCodeFixes({
+      errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
+      file: iff.paths['a.tsx'],
+      startLine: 2,
+      startOffset: 8,
+      endLine: 2,
+      endOffset: 11,
+    });
+    expect(normalizeCodeFixActions(res.body!)).toStrictEqual(
+      normalizeCodeFixActions([
+        {
+          fixName: 'fixMissingCSSRule',
+          changes: [
+            {
+              fileName: formatPath(iff.paths['a.module.css']),
+              textChanges: [
+                {
+                  start: { line: 1, offset: 1 },
+                  end: { line: 1, offset: 1 },
+                  newText: '\n.a_1 {\n  \n}',
+                },
+              ],
+            },
+          ],
+        },
+      ]),
+    );
   });
 });

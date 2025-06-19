@@ -1,13 +1,12 @@
 import type { CMKConfig, Resolver } from '@css-modules-kit/core';
-import { isComponentFileName, isCSSModuleFile } from '@css-modules-kit/core';
+import { isCSSModuleFile } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
 import ts from 'typescript';
-import { isCSSModuleScript } from '../../language-plugin.js';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
 
 // ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
 export const CANNOT_FIND_NAME_ERROR_CODE = 2304;
-export const PROPERTY_DOES_NOT_EXIST_ERROR_CODE = 2339;
+export const PROPERTY_DOES_NOT_EXIST_ERROR_CODES: [number, number] = [2339, 2551];
 
 export function getCodeFixesAtPosition(
   language: Language<string>,
@@ -34,17 +33,15 @@ export function getCodeFixesAtPosition(
       excludeNamedImports(prior, fileName, resolver);
     }
 
-    if (isComponentFileName(fileName)) {
-      // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
-      if (errorCodes.includes(PROPERTY_DOES_NOT_EXIST_ERROR_CODE)) {
-        const tokenConsumer = getTokenConsumerAtPosition(fileName, start, language, languageService, project);
-        if (tokenConsumer) {
-          prior.push({
-            fixName: 'fixMissingCSSRule',
-            description: `Add missing CSS rule '.${tokenConsumer.tokenName}'`,
-            changes: [createInsertRuleFileChange(tokenConsumer.from, tokenConsumer.tokenName, language)],
-          });
-        }
+    // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
+    if (errorCodes.some((errorCode) => PROPERTY_DOES_NOT_EXIST_ERROR_CODES.includes(errorCode))) {
+      const tokenConsumer = getTokenConsumerAtPosition(fileName, start, languageService, project, config);
+      if (tokenConsumer) {
+        prior.push({
+          fixName: 'fixMissingCSSRule',
+          description: `Add missing CSS rule '.${tokenConsumer.tokenName}'`,
+          changes: [createInsertRuleFileChange(tokenConsumer.from, tokenConsumer.tokenName, language)],
+        });
       }
     }
 
@@ -85,9 +82,9 @@ interface TokenConsumer {
 function getTokenConsumerAtPosition(
   fileName: string,
   position: number,
-  language: Language<string>,
   languageService: ts.LanguageService,
   project: ts.server.Project,
+  config: CMKConfig,
 ): TokenConsumer | undefined {
   const sourceFile = project.getSourceFile(project.projectService.toPath(fileName));
   if (!sourceFile) return undefined;
@@ -99,11 +96,19 @@ function getTokenConsumerAtPosition(
   // `expression` is the expression of the property access expression (e.g. `styles` in `styles.foo`).
   const expression = propertyAccessExpression.expression;
 
-  const definitions = languageService.getDefinitionAtPosition(fileName, expression.getStart());
-  if (definitions && definitions[0]) {
-    const script = language.scripts.get(definitions[0].fileName);
-    if (isCSSModuleScript(script)) {
-      return { tokenName: propertyAccessExpression.name.text, from: definitions[0].fileName };
+  let [definition] = languageService.getDefinitionAtPosition(fileName, expression.getStart()) ?? [];
+  if (!definition) return undefined;
+
+  // `definition` is may be `styles` definition in CSS Modules file.
+  if (isCSSModuleFile(definition.fileName)) {
+    return { tokenName: propertyAccessExpression.name.text, from: definition.fileName };
+  } else if (config.namedExports) {
+    // If namespaced import is used, it may be a definition in a component file
+    // (e.g. the `styles` of `import * as styles from './a.module.css'`).
+    // In that case, we need to call `getDefinitionAtPosition` again to get the definition in CSS module file.
+    [definition] = languageService.getDefinitionAtPosition(definition.fileName, definition.textSpan.start) ?? [];
+    if (definition && isCSSModuleFile(definition.fileName)) {
+      return { tokenName: propertyAccessExpression.name.text, from: definition.fileName };
     }
   }
   return undefined;
