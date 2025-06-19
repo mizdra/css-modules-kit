@@ -1,5 +1,5 @@
 import type { CMKConfig, Resolver } from '@css-modules-kit/core';
-import { isComponentFileName, isCSSModuleFile } from '@css-modules-kit/core';
+import { isCSSModuleFile } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
 import ts from 'typescript';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
@@ -33,17 +33,15 @@ export function getCodeFixesAtPosition(
       excludeNamedImports(prior, fileName, resolver);
     }
 
-    if (isComponentFileName(fileName)) {
-      // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
-      if (errorCodes.some((errorCode) => PROPERTY_DOES_NOT_EXIST_ERROR_CODES.includes(errorCode))) {
-        const tokenConsumer = getTokenConsumerAtPosition(fileName, start, languageService, project, config);
-        if (tokenConsumer) {
-          prior.push({
-            fixName: 'fixMissingCSSRule',
-            description: `Add missing CSS rule '.${tokenConsumer.tokenName}'`,
-            changes: [createInsertRuleFileChange(tokenConsumer.from, tokenConsumer.tokenName, language)],
-          });
-        }
+    // If a user is trying to use a non-existent token (e.g. `styles.nonExistToken`), provide a code fix to add the token.
+    if (errorCodes.some((errorCode) => PROPERTY_DOES_NOT_EXIST_ERROR_CODES.includes(errorCode))) {
+      const tokenConsumer = getTokenConsumerAtPosition(fileName, start, languageService, project, config);
+      if (tokenConsumer) {
+        prior.push({
+          fixName: 'fixMissingCSSRule',
+          description: `Add missing CSS rule '.${tokenConsumer.tokenName}'`,
+          changes: [createInsertRuleFileChange(tokenConsumer.from, tokenConsumer.tokenName, language)],
+        });
       }
     }
 
