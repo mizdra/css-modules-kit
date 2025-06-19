@@ -1,5 +1,18 @@
 # css-modules-kit-vscode
 
+## 0.2.0
+
+### Minor Changes
+
+- b59e64d: feat: downgrade the required vscode version to 1.84.0
+
+### Patch Changes
+
+- Updated dependencies [20858d7]
+- Updated dependencies [20858d7]
+- Updated dependencies [20858d7]
+  - @css-modules-kit/ts-plugin@0.4.0
+
 ## 0.1.1
 
 ### Patch Changes
