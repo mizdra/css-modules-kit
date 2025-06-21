@@ -11,6 +11,11 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     return { languagePlugins: [] };
   }
 
+  if (!info.session) {
+    info.project.projectService.logger.info('[@css-modules-kit/ts-plugin] info: Session is not available');
+    return { languagePlugins: [] };
+  }
+
   let config: CMKConfig;
   try {
     config = readConfigFile(info.project.getProjectName());
@@ -49,6 +54,17 @@ const plugin = createLanguageServicePlugin((ts, info) => {
   const moduleResolutionCache = info.languageServiceHost.getModuleResolutionCache?.();
   const resolver = createResolver(config.compilerOptions, moduleResolutionCache);
   const matchesPattern = createMatchesPattern(config);
+
+  info.session.addProtocolHandler('_css-modules-kit:rename', (request) => {
+    const { fileName, position } = request.arguments;
+    const result = info.languageService.findRenameLocations(fileName, position, false, false, {});
+    return { response: { result } };
+  });
+  info.session.addProtocolHandler('_css-modules-kit:renameInfo', (request) => {
+    const { fileName, position } = request.arguments;
+    const result = info.languageService.getRenameInfo(fileName, position, {});
+    return { response: { result } };
+  });
 
   return {
     languagePlugins: [createCSSLanguagePlugin(resolver, matchesPattern, config)],
