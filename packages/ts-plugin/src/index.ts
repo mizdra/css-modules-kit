@@ -2,14 +2,21 @@ import type { CMKConfig } from '@css-modules-kit/core';
 import { createMatchesPattern, createResolver, readConfigFile } from '@css-modules-kit/core';
 import { TsConfigFileNotFoundError } from '@css-modules-kit/core';
 import { createLanguageServicePlugin } from '@volar/typescript/lib/quickstart/createLanguageServicePlugin.js';
-import { createCSSLanguagePlugin } from './language-plugin.js';
+import { CMK_DATA_KEY, createCSSLanguagePlugin, isCSSModuleScript } from './language-plugin.js';
 import { proxyLanguageService } from './language-service/proxy.js';
+import type { DocumentLink } from './type.js';
 
 const plugin = createLanguageServicePlugin((ts, info) => {
   if (info.project.projectKind !== ts.server.ProjectKind.Configured) {
     info.project.projectService.logger.info(`[@css-modules-kit/ts-plugin] info: Project is not configured`);
     return { languagePlugins: [] };
   }
+
+  if (!info.session) {
+    info.project.projectService.logger.info('[@css-modules-kit/ts-plugin] info: Session is not available');
+    return { languagePlugins: [] };
+  }
+  const session = info.session;
 
   let config: CMKConfig;
   try {
@@ -61,6 +68,33 @@ const plugin = createLanguageServicePlugin((ts, info) => {
         matchesPattern,
         config,
       );
+      session.addProtocolHandler('_css-modules-kit:rename', (request) => {
+        const { fileName, position } = request.arguments;
+        const result = info.languageService.findRenameLocations(fileName, position, false, false, {});
+        return { response: { result } };
+      });
+      session.addProtocolHandler('_css-modules-kit:renameInfo', (request) => {
+        const { fileName, position } = request.arguments;
+        const result = info.languageService.getRenameInfo(fileName, position, {});
+        return { response: { result } };
+      });
+      session.addProtocolHandler('_css-modules-kit:documentLink', (request) => {
+        const { fileName } = request.arguments;
+        const script = language.scripts.get(fileName);
+        const links: DocumentLink[] = [];
+        if (isCSSModuleScript(script)) {
+          const { tokenImporters } = script.generated.root[CMK_DATA_KEY].cssModule;
+          for (const { from, fromLoc } of tokenImporters) {
+            const resolved = resolver(from, { request: fileName });
+            if (!resolved) continue;
+            links.push({
+              fileName: resolved,
+              textSpan: { start: fromLoc.start.offset, length: fromLoc.end.offset - fromLoc.start.offset },
+            });
+          }
+        }
+        return { response: { result: links } };
+      });
     },
   };
 });

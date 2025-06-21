@@ -23,6 +23,16 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./type": {
+      "types": "./dist/type.d.ts",
+      "default": "./dist/type.js"
+    }
+  },
   "keywords": [
     "css-modules",
     "typescript",
