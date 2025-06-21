@@ -30,6 +30,26 @@ export interface CSSModulesKitRenameInfoResponse extends ts.server.protocol.Resp
   readonly body: CSSModulesKitRenameInfoHandlerResponse['response'];
 }
 
+export interface DocumentLink {
+  fileName: string;
+  textSpan: ts.TextSpan;
+}
+export interface CSSModulesKitDocumentLinkRequest extends ts.server.protocol.Request {
+  command: '_css-modules-kit:documentLink';
+  arguments: {
+    fileName: string;
+  };
+}
+export interface CSSModulesKitDocumentLinkHandlerResponse extends ts.server.HandlerResponse {
+  response: {
+    result: DocumentLink[];
+  };
+}
+export interface CSSModulesKitDocumentLinkResponse extends ts.server.protocol.Response {
+  command: '_css-modules-kit:documentLink';
+  readonly body: CSSModulesKitDocumentLinkHandlerResponse['response'];
+}
+
 declare module 'typescript' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace server {
@@ -41,6 +61,10 @@ declare module 'typescript' {
       addProtocolHandler(
         command: '_css-modules-kit:renameInfo',
         handler: (request: CSSModulesKitRenameInfoRequest) => CSSModulesKitRenameInfoHandlerResponse,
+      ): void;
+      addProtocolHandler(
+        command: '_css-modules-kit:documentLink',
+        handler: (request: CSSModulesKitDocumentLinkRequest) => CSSModulesKitDocumentLinkHandlerResponse,
       ): void;
     }
   }

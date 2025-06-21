@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 
 import type {
+  CSSModulesKitDocumentLinkRequest,
+  CSSModulesKitDocumentLinkResponse,
   CSSModulesKitRenameInfoRequest,
   CSSModulesKitRenameInfoResponse,
   CSSModulesKitRenameRequest,
@@ -63,9 +65,24 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDocumentLinkProvider(
       { scheme: 'file', language: 'css' },
       {
-        provideDocumentLinks(document, _token) {
-          // TODO
-          return [];
+        async provideDocumentLinks(document, _token) {
+          const res = await vscode.commands.executeCommand<CSSModulesKitDocumentLinkResponse>(
+            'typescript.tsserverRequest',
+            '_css-modules-kit:documentLink',
+            {
+              fileName: document.fileName,
+            } satisfies CSSModulesKitDocumentLinkRequest['arguments'],
+          );
+          if (!res.success || !res.body.result) return [];
+          return res.body.result.map((link) => {
+            return new vscode.DocumentLink(
+              new vscode.Range(
+                document.positionAt(link.textSpan.start),
+                document.positionAt(link.textSpan.start + link.textSpan.length),
+              ),
+              vscode.Uri.file(link.fileName),
+            );
+          });
         },
       },
     ),
