@@ -1,5 +1,5 @@
 {
-  "include": ["src/a.tsx", "src/a.module.css"],
+  "include": ["src/dir-1"],
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "es2015", // Simplify tsserver.log
@@ -11,6 +11,8 @@
     "noEmit": true,
     "incremental": false,
     "rootDirs": [".", "generated"],
-    "types": [] // Simplify tsserver.log
+    "types": [], // Simplify tsserver.log
+
+    "paths": { "@/*": ["./*"] }
   }
 }
