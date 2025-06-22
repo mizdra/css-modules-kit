@@ -9,7 +9,6 @@
     "packages/core",
     "packages/codegen",
     "packages/ts-plugin",
-    "packages/language-server",
     "packages/vscode",
     "packages/stylelint-plugin",
     "packages/eslint-plugin"
