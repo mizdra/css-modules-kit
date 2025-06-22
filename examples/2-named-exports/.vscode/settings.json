@@ -1,0 +1,4 @@
+{
+  "typescript.tsserver.log": "verbose",
+  "git.openRepositoryInParentFolders": "never"
+}

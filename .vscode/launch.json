@@ -132,7 +132,7 @@
         "--profile-temp",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/4-multiple-tsconfig",
-        "${workspaceFolder}/examples/4-multiple-tsconfig/src/a.tsx"
+        "${workspaceFolder}/examples/4-multiple-tsconfig/src/dir-1/a.tsx"
       ],
       "preLaunchTask": "npm: build - packages/vscode",
       "env": {
