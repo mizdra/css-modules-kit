@@ -73,7 +73,6 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
-        "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/1-basic",
         "${workspaceFolder}/examples/1-basic/src/a.tsx"
@@ -93,7 +92,6 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
-        "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/2-named-exports",
         "${workspaceFolder}/examples/2-named-exports/src/a.tsx"
@@ -113,7 +111,6 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
-        "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/3-import-alias",
         "${workspaceFolder}/examples/3-import-alias/src/a.tsx"
@@ -133,7 +130,6 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
-        "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/4-multiple-tsconfig",
         "${workspaceFolder}/examples/4-multiple-tsconfig/src/a.tsx"

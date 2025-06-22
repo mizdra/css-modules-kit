@@ -13,5 +13,5 @@
     "sourceMap": true,
     "declarationMap": true
   },
-  "references": [{ "path": "../ts-plugin/tsconfig.build.json" }, { "path": "../language-server/tsconfig.build.json" }]
+  "references": [{ "path": "../ts-plugin/tsconfig.build.json" }]
 }
