@@ -2,31 +2,57 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "codegen: debug",
+      "name": "codegen (1-basic)",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/1-basic",
-      "runtimeExecutable": "node",
-      "runtimeArgs": ["../../packages/codegen/bin/cmk.mjs"],
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
       "console": "integratedTerminal",
-      "preLaunchTask": "npm: build - packages/codegen"
+      "preLaunchTask": "npm: build - packages/codegen",
+      "presentation": {
+        "group": "codegen"
+      }
     },
     {
-      "name": "vscode: debug",
+      "name": "stylelint-plugin (1-basic)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/1-basic",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["stylelint", "src/**/*.css"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/stylelint-plugin",
+      "presentation": {
+        "group": "stylelint-plugin"
+      }
+    },
+    {
+      "name": "eslint-plugin (1-basic)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/1-basic",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["eslint", "src/**/*.css"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/eslint-plugin",
+      "presentation": {
+        "group": "eslint-plugin"
+      }
+    },
+    {
+      "name": "vscode (1-basic) - extensionHost",
       "type": "extensionHost",
       "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
         "--profile-temp",
         "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
         "--folder-uri=${workspaceFolder}/examples/1-basic",
-        "${workspaceFolder}/examples/1-basic/src/index.tsx"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/packages/vscode/dist/**/*.js",
-        "${workspaceFolder}/packages/vscode/dist/**/*.cjs",
-        "${workspaceFolder}/packages/vscode/dist/**/*.mjs"
+        "${workspaceFolder}/examples/1-basic/src/a.tsx"
       ],
       "preLaunchTask": "npm: build - packages/vscode",
       "env": {
@@ -38,34 +64,20 @@
       "type": "node",
       "request": "attach",
       "port": 5859,
-      "sourceMaps": true
-    },
-    {
-      "name": "stylelint-plugin: debug",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/examples/1-basic",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["stylelint", "src/**/*.css"],
-      "console": "integratedTerminal",
-      "preLaunchTask": "npm: build - packages/stylelint-plugin"
-    },
-    {
-      "name": "eslint-plugin: debug",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/examples/1-basic",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["eslint", "src/**/*.css"],
-      "console": "integratedTerminal",
-      "preLaunchTask": "npm: build - packages/eslint-plugin"
+      "sourceMaps": true,
+      "presentation": {
+        "hidden": true
+      }
     }
   ],
   "compounds": [
     {
-      "name": "vscode: debug + Attach debugger to tsserver",
-      "configurations": ["vscode: debug", "Attach debugger to tsserver"],
-      "stopAll": true
+      "name": "vscode (1-basic)",
+      "configurations": ["vscode (1-basic) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
     }
   ]
 }
