@@ -9,7 +9,6 @@
 
     "noEmit": true,
     "incremental": false,
-    "paths": { "@/*": ["./*"] },
     "rootDirs": [".", "generated"],
     "types": [] // Simplify tsserver.log
   }
