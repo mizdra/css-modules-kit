@@ -5,9 +5,9 @@
       "name": "codegen: debug",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/example",
+      "cwd": "${workspaceFolder}/examples/1-basic",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["../packages/codegen/bin/cmk.mjs"],
+      "runtimeArgs": ["../../packages/codegen/bin/cmk.mjs"],
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/codegen"
     },
@@ -20,8 +20,8 @@
         "--profile-temp",
         "--disable-extension=vscode.css-language-features",
         "--skip-welcome",
-        "--folder-uri=${workspaceFolder}/example",
-        "${workspaceFolder}/example/src/index.tsx"
+        "--folder-uri=${workspaceFolder}/examples/1-basic",
+        "${workspaceFolder}/examples/1-basic/src/index.tsx"
       ],
       "outFiles": [
         "${workspaceFolder}/packages/vscode/dist/**/*.js",
@@ -44,7 +44,7 @@
       "name": "stylelint-plugin: debug",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/example",
+      "cwd": "${workspaceFolder}/examples/1-basic",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["stylelint", "src/**/*.css"],
       "console": "integratedTerminal",
@@ -54,7 +54,7 @@
       "name": "eslint-plugin: debug",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/example",
+      "cwd": "${workspaceFolder}/examples/1-basic",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["eslint", "src/**/*.css"],
       "console": "integratedTerminal",

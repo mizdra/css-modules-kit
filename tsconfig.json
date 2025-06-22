@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
-  "exclude": ["node_modules", "**/dist", "example"],
+  "exclude": ["node_modules", "**/dist", "examples"],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ESNext"],
