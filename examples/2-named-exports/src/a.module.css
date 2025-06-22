@@ -1,0 +1,7 @@
+.a_1 { color: red; }
+.a_2 { color: red; }
+.a_2 { color: red; }
+@value a_3: red;
+
+@import './b.module.css';
+@value c_1, c_2 as c_alias from './c.module.css';
