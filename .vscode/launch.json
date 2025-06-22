@@ -14,6 +14,30 @@
       }
     },
     {
+      "name": "codegen (2-named-exports)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/2-named-exports",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/codegen",
+      "presentation": {
+        "group": "codegen"
+      }
+    },
+    {
+      "name": "codegen (3-import-alias)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/3-import-alias",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/codegen",
+      "presentation": {
+        "group": "codegen"
+      }
+    },
+    {
       "name": "stylelint-plugin (1-basic)",
       "type": "node",
       "request": "launch",
@@ -60,6 +84,66 @@
       }
     },
     {
+      "name": "vscode (2-named-exports) - extensionHost",
+      "type": "extensionHost",
+      "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--profile-temp",
+        "--disable-extension=vscode.css-language-features",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/2-named-exports",
+        "${workspaceFolder}/examples/2-named-exports/src/a.tsx"
+      ],
+      "preLaunchTask": "npm: build - packages/vscode",
+      "env": {
+        "TSS_DEBUG": "5859"
+      }
+    },
+    {
+      "name": "vscode (3-import-alias) - extensionHost",
+      "type": "extensionHost",
+      "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--profile-temp",
+        "--disable-extension=vscode.css-language-features",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/3-import-alias",
+        "${workspaceFolder}/examples/3-import-alias/src/a.tsx"
+      ],
+      "preLaunchTask": "npm: build - packages/vscode",
+      "env": {
+        "TSS_DEBUG": "5859"
+      }
+    },
+    {
+      "name": "vscode (4-multiple-tsconfig) - extensionHost",
+      "type": "extensionHost",
+      "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--profile-temp",
+        "--disable-extension=vscode.css-language-features",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/4-multiple-tsconfig",
+        "${workspaceFolder}/examples/4-multiple-tsconfig/src/a.tsx"
+      ],
+      "preLaunchTask": "npm: build - packages/vscode",
+      "env": {
+        "TSS_DEBUG": "5859"
+      }
+    },
+    {
       "name": "Attach debugger to tsserver",
       "type": "node",
       "request": "attach",
@@ -74,6 +158,30 @@
     {
       "name": "vscode (1-basic)",
       "configurations": ["vscode (1-basic) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
+    },
+    {
+      "name": "vscode (2-named-exports)",
+      "configurations": ["vscode (2-named-exports) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
+    },
+    {
+      "name": "vscode (3-import-alias)",
+      "configurations": ["vscode (3-import-alias) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
+    },
+    {
+      "name": "vscode (4-multiple-tsconfig)",
+      "configurations": ["vscode (4-multiple-tsconfig) - extensionHost", "Attach debugger to tsserver"],
       "stopAll": true,
       "presentation": {
         "group": "vscode"

@@ -1,0 +1,16 @@
+{
+  "include": ["src/b.tsx", "src/b.module.css"],
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2015", // Simplify tsserver.log
+    "lib": ["ES2015"], // Simplify tsserver.log
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+
+    "noEmit": true,
+    "incremental": false,
+    "rootDirs": [".", "generated"],
+    "types": [] // Simplify tsserver.log
+  }
+}
