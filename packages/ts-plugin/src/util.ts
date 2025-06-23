@@ -56,3 +56,12 @@ export function convertDefaultImportsToNamespaceImports(
     }
   }
 }
+
+export function getConfiguredProjectForFile(
+  projectService: ts.server.ProjectService,
+  fileName: string,
+): ts.server.ConfiguredProject | undefined {
+  const project = projectService.getDefaultProjectForFile(ts.server.toNormalizedPath(fileName), false);
+  if (!project || project.projectKind !== ts.server.ProjectKind.Configured) return;
+  return project as ts.server.ConfiguredProject;
+}
