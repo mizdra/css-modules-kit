@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES5", // Simplify tsserver.log
+    "lib": ["ES5"], // Simplify tsserver.log
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+
+    "noEmit": true,
+    "incremental": false,
+    "rootDirs": [".", "generated"],
+    "types": [] // Simplify tsserver.log
+  }
+}
