@@ -199,8 +199,6 @@ When this option is `true`, `import { button } from '...'` will be added. When t
 - Sass/Less are not supported to simplify the implementation
 - `:local .foo {...}` (without any arguments) is not supported to simplify the implementation
 - `:global .foo {...}` (without any arguments) is not supported to simplify the implementation
-- Some editors do not allow rename from `*.module.css`
-  - See [#121](https://github.com/mizdra/css-modules-kit/issues/121) for more details.
 - css-modules-kit does not work on VS Code for Web
   - This is to simplify implementation.
 
