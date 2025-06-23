@@ -1,5 +1,18 @@
 # @css-modules-kit/ts-plugin
 
+## 0.4.0
+
+### Minor Changes
+
+- 20858d7: feat: allow to add missing rules from non-component files
+
+### Patch Changes
+
+- 93cf8d1: fix: fix the issue that renaming classes from .css does not work in VS Code
+- 20858d7: fix: fix failure to add missing rule for named exports
+- 20858d7: fix: include similar class names in the missing rule addition target
+- 93cf8d1: fix: fix the issue that Go to Definition for specifiers fails using import alias in VS Code
+
 ## 0.3.0
 
 ### Minor Changes

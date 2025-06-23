@@ -1,5 +1,11 @@
 # @css-modules-kit/codegen
 
+## 0.4.1
+
+### Patch Changes
+
+- 1489b9c: fix: fix the error that occurs when the output directory does not exist
+
 ## 0.4.0
 
 ### Minor Changes

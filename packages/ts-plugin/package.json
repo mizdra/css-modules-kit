@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/ts-plugin",
   "description": "A TypeScript Language Service Plugin for CSS Modules",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
