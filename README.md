@@ -103,7 +103,7 @@ Please read the [Get Started](docs/get-started.md) guide.
 
 1. Open this repository with VS Code
 2. Open `Run and Debug` menu
-3. Select `vscode: debug` configuration and start debugging
+3. Select `vscode (1-basic)` configuration and start debugging
 
 ## Configuration
 
