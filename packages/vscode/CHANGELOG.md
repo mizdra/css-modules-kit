@@ -1,5 +1,23 @@
 # css-modules-kit-vscode
 
+## 0.2.0
+
+### Minor Changes
+
+- b59e64d: feat: downgrade the required vscode version to 1.84.0
+- c41f4b0: feat!: remove alternative CSS language server hack
+
+### Patch Changes
+
+- 93cf8d1: fix: fix the issue that renaming classes from .css does not work in VS Code
+- 93cf8d1: fix: fix the issue that Go to Definition for specifiers fails using import alias in VS Code
+- Updated dependencies [93cf8d1]
+- Updated dependencies [20858d7]
+- Updated dependencies [20858d7]
+- Updated dependencies [20858d7]
+- Updated dependencies [93cf8d1]
+  - @css-modules-kit/ts-plugin@0.4.0
+
 ## 0.1.1
 
 ### Patch Changes
