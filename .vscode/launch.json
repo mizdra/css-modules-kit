@@ -140,6 +140,44 @@
       }
     },
     {
+      "name": "vscode (5-normal-css) - extensionHost",
+      "type": "extensionHost",
+      "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--profile-temp",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/5-normal-css",
+        "${workspaceFolder}/examples/5-normal-css/src/a.tsx"
+      ],
+      "preLaunchTask": "npm: build - packages/vscode",
+      "env": {
+        "TSS_DEBUG": "5859"
+      }
+    },
+    {
+      "name": "vscode (6-project-external-file) - extensionHost",
+      "type": "extensionHost",
+      "request": "launch",
+      "presentation": {
+        "hidden": true
+      },
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--profile-temp",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/6-project-external-file",
+        "${workspaceFolder}/examples/6-project-external-file/src/a.tsx"
+      ],
+      "preLaunchTask": "npm: build - packages/vscode",
+      "env": {
+        "TSS_DEBUG": "5859"
+      }
+    },
+    {
       "name": "Attach debugger to tsserver",
       "type": "node",
       "request": "attach",
@@ -178,6 +216,22 @@
     {
       "name": "vscode (4-multiple-tsconfig)",
       "configurations": ["vscode (4-multiple-tsconfig) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
+    },
+    {
+      "name": "vscode (5-normal-css)",
+      "configurations": ["vscode (5-normal-css) - extensionHost", "Attach debugger to tsserver"],
+      "stopAll": true,
+      "presentation": {
+        "group": "vscode"
+      }
+    },
+    {
+      "name": "vscode (6-project-external-file)",
+      "configurations": ["vscode (6-project-external-file) - extensionHost", "Attach debugger to tsserver"],
       "stopAll": true,
       "presentation": {
         "group": "vscode"
