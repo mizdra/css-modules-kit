@@ -28,6 +28,9 @@ interface Tsserver {
   sendCompletionInfo(
     args: server.protocol.CompletionsRequest['arguments'],
   ): Promise<server.protocol.CompletionInfoResponse>;
+  sendCompletionDetails(
+    args: server.protocol.CompletionDetailsRequest['arguments'],
+  ): Promise<server.protocol.CompletionDetailsResponse>;
   sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<server.protocol.CodeFixResponse>;
 }
 
@@ -77,6 +80,7 @@ export function launchTsserver(): Tsserver {
       sendRequest(ts.server.protocol.CommandTypes.GetApplicableRefactors, args),
     sendGetEditsForRefactor: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetEditsForRefactor, args),
     sendCompletionInfo: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionInfo, args),
+    sendCompletionDetails: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionDetails, args),
     sendGetCodeFixes: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetCodeFixes, args),
   };
 }
@@ -198,6 +202,30 @@ export function normalizeCompletionEntry(entries: readonly SimplifiedCompletionE
         a.source?.localeCompare(b.source ?? '') ||
         a.name.localeCompare(b.name),
     );
+}
+
+type SimplifiedCodeAction = {
+  changes: ts.server.protocol.FileCodeEdits[];
+};
+
+type SimplifiedCompletionDetails = {
+  codeActions?: SimplifiedCodeAction[];
+};
+
+export function normalizeCompletionDetails(
+  entries: readonly SimplifiedCompletionDetails[],
+): SimplifiedCompletionDetails[] {
+  return entries.map((entry) => {
+    return {
+      ...(entry.codeActions ?
+        {
+          codeActions: entry.codeActions.map((action) => {
+            return { changes: action.changes };
+          }),
+        }
+      : {}),
+    };
+  });
 }
 
 type SimplifiedCodeFixAction = {
