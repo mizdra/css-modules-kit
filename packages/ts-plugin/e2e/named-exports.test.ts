@@ -9,6 +9,7 @@ import {
   launchTsserver,
   mergeSpanGroups,
   normalizeCodeFixActions,
+  normalizeCompletionDetails,
   normalizeCompletionEntry,
   normalizeRefItems,
   normalizeSpanGroups,
@@ -258,6 +259,44 @@ describe('supports completions', async () => {
       expect(
         normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === entryName) ?? []),
       ).toStrictEqual(normalizeCompletionEntry(expected));
+    });
+    test('if the user completes `styles`, auto-import the namespace import', async () => {
+      const res = await tsserver.sendCompletionDetails({
+        file: iff.paths['index.ts'],
+        line: 1,
+        offset: 7,
+        entryNames: [
+          {
+            name: 'styles',
+            source: './a.module.css',
+            data: {
+              exportName: ts.InternalSymbolName.Default,
+              fileName: iff.paths['a.module.css'],
+              moduleSpecifier: './a.module.css',
+            } satisfies ts.CompletionEntryData,
+          },
+        ],
+      });
+      expect(normalizeCompletionDetails(res.body!)).toStrictEqual([
+        {
+          codeActions: [
+            {
+              changes: [
+                {
+                  fileName: formatPath(iff.paths['index.ts']),
+                  textChanges: [
+                    {
+                      start: { line: 1, offset: 1 },
+                      end: { line: 1, offset: 1 },
+                      newText: `import * as styles from "./a.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
     });
   });
   describe('prioritize named imports if prioritizeNamedImports is true', async () => {
