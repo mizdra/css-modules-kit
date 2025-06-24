@@ -61,7 +61,7 @@ export function createCSSLanguagePlugin(
       );
       return {
         id: 'main',
-        languageId: LANGUAGE_ID,
+        languageId: 'typescript',
         snapshot: {
           getText: (start, end) => text.slice(start, end),
           getLength: () => text.length,
