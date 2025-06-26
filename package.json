@@ -20,10 +20,11 @@
     "lint:tsc": "tsc -b",
     "lint:eslint": "eslint --cache --cache-strategy content .",
     "lint:prettier": "prettier --cache --check .",
-    "test": "vitest --project unit",
-    "e2e": "run-s -c e2e:build e2e:vitest",
+    "test": "vitest --run --project unit",
+    "e2e": "run-s -c e2e:build e2e:vitest e2e:vscode",
     "e2e:build": "npm run build",
-    "e2e:vitest": "vitest --project e2e"
+    "e2e:vitest": "vitest --run --project e2e",
+    "e2e:vscode": "vscode-test"
   },
   "prettier": "@mizdra/prettier-config-mizdra",
   "devDependencies": {
@@ -47,6 +48,7 @@
     "ovsx": "^0.10.1",
     "prettier": "^3.5.3",
     "stylelint": "^16.17.0",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.8"
   }

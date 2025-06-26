@@ -77,4 +77,8 @@ jobs:
           key: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}-${{ github.sha }}
           restore-keys: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}
       - run: npm install
+
+      - run: xvfb-run -a npm run e2e
+        if: runner.os == 'Linux'
       - run: npm run e2e
+        if: runner.os != 'Linux'

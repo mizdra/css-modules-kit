@@ -1,0 +1,28 @@
+const { defineConfig } = require('@vscode/test-cli');
+
+const baseConfig = /** @type {const} */ ({
+  extensionDevelopmentPath: 'packages/vscode',
+  workspaceFolder: 'examples/1-basic',
+  mocha: {
+    timeout: 10000,
+    require: ['tsx/cjs'],
+  },
+});
+
+module.exports = defineConfig([
+  {
+    ...baseConfig,
+    files: 'packages/vscode/e2e/open-css-file.test.ts',
+    workspaceFolder: 'examples/1-basic',
+  },
+  {
+    ...baseConfig,
+    files: 'packages/vscode/e2e/open-ts-file.test.ts',
+    workspaceFolder: 'examples/1-basic',
+  },
+  {
+    ...baseConfig,
+    files: 'packages/vscode/e2e/request-forwarding-to-tsserver.test.ts',
+    workspaceFolder: 'examples/4-multiple-tsconfig',
+  },
+]);
