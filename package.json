@@ -38,6 +38,8 @@
     "@types/react": "^19.0.10",
     "@types/vscode": "^1.98.0",
     "@typescript/server-harness": "^0.3.5",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.2.2",
     "dedent": "^1.5.3",
     "eslint": "^9.22.0",
