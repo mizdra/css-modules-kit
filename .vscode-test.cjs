@@ -3,6 +3,7 @@ const { defineConfig } = require('@vscode/test-cli');
 const baseConfig = /** @type {const} */ ({
   extensionDevelopmentPath: 'packages/vscode',
   workspaceFolder: 'examples/1-basic',
+  version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
     timeout: 10000,
     require: ['tsx/cjs'],
