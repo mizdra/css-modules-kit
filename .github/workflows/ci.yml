@@ -76,7 +76,8 @@ jobs:
         with:
           path: |
             node_modules/.vite/vitest
-            packages/*/{dist,tsconfig.build.tsbuildinfo}
+            packages/*/dist
+            packages/*/tsconfig.build.tsbuildinfo
           key: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}-${{ github.sha }}
           restore-keys: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}
       - uses: actions/cache@v4
