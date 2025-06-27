@@ -18,6 +18,7 @@ export default defineWorkspace([
     test: {
       name: 'e2e',
       include: ['packages/*/e2e/**/*.test.ts'],
+      exclude: ['packages/vscode/e2e/**'],
     },
   }),
 ]);
