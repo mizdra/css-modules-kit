@@ -2,6 +2,8 @@ export function isPosixRelativePath(path: string): boolean {
   return path.startsWith(`./`) || path.startsWith(`../`);
 }
 
+export const JS_IDENTIFIER_PATTERN = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
+
 /**
  * The syntax pattern for consuming tokens imported from CSS Module.
  * @example `styles.foo`

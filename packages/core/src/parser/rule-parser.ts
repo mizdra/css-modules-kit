@@ -1,6 +1,7 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
+import { JS_IDENTIFIER_PATTERN } from '../util.js';
 
 function calcDiagnosticsLocationForSelectorParserNode(
   rule: Rule,
@@ -26,8 +27,6 @@ function flatCollectResults(results: CollectResult[]): CollectResult {
   }
   return { classNames, diagnostics };
 }
-
-const JS_IDENTIFIER_PATTERN = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
 
 function convertClassNameToCollectResult(rule: Rule, node: selectorParser.ClassName): CollectResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- `raws` property is defined if `node` has escaped characters.
