@@ -35,7 +35,7 @@ function convertClassNameToCollectResult(rule: Rule, node: selectorParser.ClassN
   if (!JS_IDENTIFIER_PATTERN.test(name)) {
     const diagnostic: DiagnosticWithDetachedLocation = {
       ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
-      text: `\`${name}\` is not allowed because it is not a valid JavaScript identifier.`,
+      text: `css-modules-kit does not support non-JavaScript identifier as class names.`,
       category: 'error',
     };
     return { classNames: [], diagnostics: [diagnostic] };
@@ -75,7 +75,7 @@ function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectR
         // We don't support `:local` and `:global` (without any arguments) because they are complex.
         const diagnostic: DiagnosticWithDetachedLocation = {
           ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
-          text: `\`${node.value}\` is not supported. Use \`${node.value}(...)\` instead.`,
+          text: `css-modules-kit does not support \`${node.value}\`. Use \`${node.value}(...)\` instead.`,
           category: 'error',
         };
         return { classNames: [], diagnostics: [diagnostic] };

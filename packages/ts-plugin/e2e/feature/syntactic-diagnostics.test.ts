@@ -69,7 +69,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 3,
           "offset": 1,
         },
-        "text": "\`:local\` is not supported. Use \`:local(...)\` instead.",
+        "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
       },
       {
         "category": "error",
@@ -83,7 +83,7 @@ test('Syntactic Diagnostics', async () => {
           "line": 4,
           "offset": 1,
         },
-        "text": "\`a-3\` is not allowed because it is not a valid JavaScript identifier.",
+        "text": "css-modules-kit does not support non-JavaScript identifier as class names.",
       },
     ]
   `);

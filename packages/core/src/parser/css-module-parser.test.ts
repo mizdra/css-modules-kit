@@ -647,7 +647,7 @@ describe('parseCSSModule', () => {
               "line": 1,
               "offset": 0,
             },
-            "text": "\`:local\` is not supported. Use \`:local(...)\` instead.",
+            "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
           },
           {
             "category": "error",
