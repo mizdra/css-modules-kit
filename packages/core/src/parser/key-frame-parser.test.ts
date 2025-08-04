@@ -156,7 +156,7 @@ describe('parseAtKeyframes', () => {
                 "line": 4,
                 "offset": 140,
               },
-              "text": "css-modules-kit does not support non-JavaScript identifier keyframe names.",
+              "text": "css-modules-kit does not support non-JavaScript identifier as keyframe names.",
             },
           ],
         },

@@ -67,7 +67,7 @@ export function parseAtKeyframes(atKeyframes: AtRule): ParseAtKeyframesResult {
         {
           start: keyframeNameLoc.start,
           length: keyframeName.length,
-          text: `css-modules-kit does not support non-JavaScript identifier keyframe names.`,
+          text: `css-modules-kit does not support non-JavaScript identifier as keyframe names.`,
           category: 'error',
         },
       ],
