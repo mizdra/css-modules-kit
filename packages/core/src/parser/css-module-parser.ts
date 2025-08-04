@@ -10,10 +10,12 @@ import type {
 } from '../type.js';
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
+import { parseAtKeyframes } from './key-frame-parser.js';
 import { parseRule } from './rule-parser.js';
 
 type AtImport = AtRule & { name: 'import' };
 type AtValue = AtRule & { name: 'value' };
+type AtKeyframes = AtRule & { name: 'keyframes' };
 
 function isAtRuleNode(node: Node): node is AtRule {
   return node.type === 'atrule';
@@ -25,6 +27,10 @@ function isAtImportNode(node: Node): node is AtImport {
 
 function isAtValueNode(node: Node): node is AtValue {
   return isAtRuleNode(node) && node.name === 'value';
+}
+
+function isAtKeyframesNode(node: Node): node is AtKeyframes {
+  return isAtRuleNode(node) && node.name === 'keyframes';
 }
 
 function isRuleNode(node: Node): node is Rule {
@@ -52,6 +58,12 @@ function collectTokens(ast: Root) {
         localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
       } else if (atValue.type === 'valueImportDeclaration') {
         tokenImporters.push({ ...atValue, type: 'value' });
+      }
+    } else if (isAtKeyframesNode(node)) {
+      const { keyframe, diagnostics } = parseAtKeyframes(node);
+      allDiagnostics.push(...diagnostics);
+      if (keyframe) {
+        localTokens.push({ name: keyframe.name, loc: keyframe.loc, declarationLoc: keyframe.declarationLoc });
       }
     } else if (isRuleNode(node)) {
       const { classSelectors, diagnostics } = parseRule(node);
