@@ -44,3 +44,11 @@ export function fakeClassSelectors(root: Root): { rule: Rule; classSelector: Cla
   });
   return results;
 }
+
+export function fakeAtKeyframes(root: Root): AtRule[] {
+  const results: AtRule[] = [];
+  root.walkAtRules('keyframes', (atKeyframes) => {
+    results.push(atKeyframes);
+  });
+  return results;
+}

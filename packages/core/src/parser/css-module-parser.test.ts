@@ -24,6 +24,7 @@ describe('parseCSSModule', () => {
         .selector_list_1, .selector_list_2 {}
         :local(.local_1) {}
         @value value: #BF4040;
+        @keyframes keyframe {}
       `,
       options,
     );
@@ -437,6 +438,33 @@ describe('parseCSSModule', () => {
               },
               "name": "value",
             },
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 23,
+                  "line": 17,
+                  "offset": 378,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 17,
+                  "offset": 356,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 20,
+                  "line": 17,
+                  "offset": 375,
+                },
+                "start": {
+                  "column": 12,
+                  "line": 17,
+                  "offset": 367,
+                },
+              },
+              "name": "keyframe",
+            },
           ],
           "text": ".basic {}
       .cascading {}
@@ -453,7 +481,8 @@ describe('parseCSSModule', () => {
       }
       .selector_list_1, .selector_list_2 {}
       :local(.local_1) {}
-      @value value: #BF4040;",
+      @value value: #BF4040;
+      @keyframes keyframe {}",
           "tokenImporters": [],
         },
         "diagnostics": [],
