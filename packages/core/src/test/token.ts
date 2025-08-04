@@ -2,8 +2,8 @@ import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../type
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
-export function fakeToken(name: string): Token {
-  return { name, loc: fakeLoc };
+export function fakeToken(args?: Partial<Token>): Token {
+  return { name: 'name', loc: fakeLoc, ...args };
 }
 
 export function fakeAtImportTokenImporter(from: string): AtImportTokenImporter {

@@ -16,7 +16,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -32,12 +32,12 @@ describe('ExportBuilder', () => {
         if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
           });
         } else if (path === resolve('/c.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/c.module.css'),
-            localTokens: [fakeToken('c_1'), fakeToken('c_2')],
+            localTokens: [fakeToken({ name: 'c_1' }), fakeToken({ name: 'c_2' })],
           });
         } else {
           return undefined;
@@ -52,7 +52,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [
         fakeAtImportTokenImporter('./b.module.css'),
         fakeAtValueTokenImporter('./c.module.css', ['c_1']),
@@ -74,13 +74,13 @@ describe('ExportBuilder', () => {
         if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
             tokenImporters: [fakeAtImportTokenImporter('./c.module.css')],
           });
         } else if (path === resolve('/c.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/c.module.css'),
-            localTokens: [fakeToken('c_1')],
+            localTokens: [fakeToken({ name: 'c_1' })],
           });
         } else {
           return undefined;
@@ -95,7 +95,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
@@ -165,7 +165,7 @@ describe('ExportBuilder', () => {
         if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
           });
         }
         return undefined;
@@ -175,7 +175,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
 
@@ -212,7 +212,7 @@ describe('ExportBuilder', () => {
         if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
           });
         }
         return undefined;
@@ -222,7 +222,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
 
@@ -246,7 +246,7 @@ describe('ExportBuilder', () => {
         if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
           });
         }
         return undefined;
@@ -256,12 +256,12 @@ describe('ExportBuilder', () => {
     });
     const moduleA = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
     const moduleC = fakeCSSModule({
       fileName: resolve('/c.module.css'),
-      localTokens: [fakeToken('c_1')],
+      localTokens: [fakeToken({ name: 'c_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
 
@@ -284,13 +284,13 @@ describe('ExportBuilder', () => {
         if (path === resolve('/a.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/a.module.css'),
-            localTokens: [fakeToken('a_1')],
+            localTokens: [fakeToken({ name: 'a_1' })],
             tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
           });
         } else if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
-            localTokens: [fakeToken('b_1')],
+            localTokens: [fakeToken({ name: 'b_1' })],
             tokenImporters: [fakeAtImportTokenImporter('./a.module.css')],
           });
         }
@@ -301,7 +301,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      localTokens: [fakeToken('a_1')],
+      localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
     });
 
