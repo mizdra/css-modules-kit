@@ -54,7 +54,7 @@ describe('ExportBuilder', () => {
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [
-        fakeAtImportTokenImporter('./b.module.css'),
+        fakeAtImportTokenImporter({ from: './b.module.css' }),
         fakeAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
     });
@@ -75,7 +75,7 @@ describe('ExportBuilder', () => {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [fakeToken({ name: 'b_1' })],
-            tokenImporters: [fakeAtImportTokenImporter('./c.module.css')],
+            tokenImporters: [fakeAtImportTokenImporter({ from: './c.module.css' })],
           });
         } else if (path === resolve('/c.module.css')) {
           return fakeCSSModule({
@@ -96,7 +96,7 @@ describe('ExportBuilder', () => {
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -116,7 +116,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      tokenImporters: [fakeAtImportTokenImporter('./unresolvable.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './unresolvable.module.css' })],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -132,7 +132,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -148,7 +148,7 @@ describe('ExportBuilder', () => {
     });
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
-      tokenImporters: [fakeAtImportTokenImporter('./non-existing.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './non-existing.module.css' })],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -176,7 +176,7 @@ describe('ExportBuilder', () => {
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
 
     // First build should call getCSSModule
@@ -223,7 +223,7 @@ describe('ExportBuilder', () => {
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
 
     // First build
@@ -257,12 +257,12 @@ describe('ExportBuilder', () => {
     const moduleA = fakeCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
     const moduleC = fakeCSSModule({
       fileName: resolve('/c.module.css'),
       localTokens: [fakeToken({ name: 'c_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
 
     // Build moduleA
@@ -285,13 +285,13 @@ describe('ExportBuilder', () => {
           return fakeCSSModule({
             fileName: resolve('/a.module.css'),
             localTokens: [fakeToken({ name: 'a_1' })],
-            tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+            tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
           });
         } else if (path === resolve('/b.module.css')) {
           return fakeCSSModule({
             fileName: resolve('/b.module.css'),
             localTokens: [fakeToken({ name: 'b_1' })],
-            tokenImporters: [fakeAtImportTokenImporter('./a.module.css')],
+            tokenImporters: [fakeAtImportTokenImporter({ from: './a.module.css' })],
           });
         }
         return undefined;
@@ -302,7 +302,7 @@ describe('ExportBuilder', () => {
     const cssModule = fakeCSSModule({
       fileName: resolve('/a.module.css'),
       localTokens: [fakeToken({ name: 'a_1' })],
-      tokenImporters: [fakeAtImportTokenImporter('./b.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './b.module.css' })],
     });
 
     // Should not cause infinite recursion

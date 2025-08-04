@@ -12,7 +12,7 @@ describe('checkCSSModule', () => {
     const cssModule = fakeCSSModule({
       fileName: '/a.module.css',
       tokenImporters: [
-        fakeAtImportTokenImporter('./b.module.css'),
+        fakeAtImportTokenImporter({ from: './b.module.css' }),
         fakeAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
     });
@@ -87,7 +87,7 @@ describe('checkCSSModule', () => {
   test('ignore token importers for unresolvable modules', () => {
     const cssModule = fakeCSSModule({
       fileName: '/a.module.css',
-      tokenImporters: [fakeAtImportTokenImporter('./unresolvable.module.css')],
+      tokenImporters: [fakeAtImportTokenImporter({ from: './unresolvable.module.css' })],
     });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: [] }),
@@ -103,7 +103,7 @@ describe('checkCSSModule', () => {
     const cssModule = fakeCSSModule({
       fileName: '/a.module.css',
       tokenImporters: [
-        fakeAtImportTokenImporter('./b.module.css'),
+        fakeAtImportTokenImporter({ from: './b.module.css' }),
         fakeAtValueTokenImporter('./c.module.css', ['c_1']),
       ],
     });

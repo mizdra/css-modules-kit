@@ -6,11 +6,12 @@ export function fakeToken(args?: Partial<Token>): Token {
   return { name: 'name', loc: fakeLoc, ...args };
 }
 
-export function fakeAtImportTokenImporter(from: string): AtImportTokenImporter {
+export function fakeAtImportTokenImporter(args?: Omit<Partial<AtImportTokenImporter>, 'type'>): AtImportTokenImporter {
   return {
     type: 'import',
-    from,
+    from: '/test.module.css',
     fromLoc: fakeLoc,
+    ...args,
   };
 }
 
