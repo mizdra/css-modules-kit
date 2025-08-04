@@ -10,7 +10,7 @@ import {
   fakeAtValueTokenImporterValue,
   fakeToken,
 } from './test/token.js';
-import type { CSSModule } from './type.js';
+import type { CSSModule, Location } from './type.js';
 
 const resolver = createResolver({}, undefined);
 
@@ -25,16 +25,24 @@ function prepareCheckerArgs<const T extends CSSModule[]>(cssModules: T) {
   return { cssModules, exportBuilder, matchesPattern, resolver, getCSSModule };
 }
 
+function fakeLoc({ column }: { column: number }): Location {
+  return {
+    start: { line: 1, column, offset: column - 1 },
+    end: { line: 1, column, offset: column - 1 },
+  };
+}
+
 describe('checkCSSModule', () => {
   test('report diagnostics for non-existing module', () => {
     const args = prepareCheckerArgs([
       fakeCSSModule({
         fileName: '/a.module.css',
         tokenImporters: [
-          fakeAtImportTokenImporter({ from: './b.module.css' }),
+          fakeAtImportTokenImporter({ from: './b.module.css', fromLoc: fakeLoc({ column: 1 }) }),
           fakeAtValueTokenImporter({
             from: './c.module.css',
-            values: [fakeAtValueTokenImporterValue({ name: 'c_1' })],
+            fromLoc: fakeLoc({ column: 2 }),
+            values: [fakeAtValueTokenImporterValue({ name: 'c_1', loc: fakeLoc({ column: 3 }) })],
           }),
         ],
       }),
@@ -69,7 +77,7 @@ describe('checkCSSModule', () => {
           },
           "length": 0,
           "start": {
-            "column": 1,
+            "column": 2,
             "line": 1,
           },
           "text": "Cannot import module './c.module.css'",
@@ -84,7 +92,11 @@ describe('checkCSSModule', () => {
         tokenImporters: [
           fakeAtValueTokenImporter({
             from: './b.module.css',
-            values: [fakeAtValueTokenImporterValue({ name: 'b_1' }), fakeAtValueTokenImporterValue({ name: 'b_2' })],
+            fromLoc: fakeLoc({ column: 1 }),
+            values: [
+              fakeAtValueTokenImporterValue({ name: 'b_1', loc: fakeLoc({ column: 2 }) }),
+              fakeAtValueTokenImporterValue({ name: 'b_2', loc: fakeLoc({ column: 3 }) }),
+            ],
           }),
         ],
       }),
@@ -110,7 +122,7 @@ describe('checkCSSModule', () => {
           },
           "length": 0,
           "start": {
-            "column": 1,
+            "column": 3,
             "line": 1,
           },
           "text": "Module './b.module.css' has no exported token 'b_2'.",
