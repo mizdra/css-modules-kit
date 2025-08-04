@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { checkCSSModule } from './checker.js';
 import { createResolver } from './resolver.js';
 import { fakeCSSModule } from './test/css-module.js';
-import { fakeAtImportTokenImporter, fakeAtValueTokenImporter } from './test/token.js';
+import { fakeAtImportTokenImporter, fakeAtValueTokenImporter, fakeAtValueTokenImporterValue } from './test/token.js';
 import type { ExportBuilder } from './type.js';
 
 const resolver = createResolver({}, undefined);
@@ -13,7 +13,7 @@ describe('checkCSSModule', () => {
       fileName: '/a.module.css',
       tokenImporters: [
         fakeAtImportTokenImporter({ from: './b.module.css' }),
-        fakeAtValueTokenImporter('./c.module.css', ['c_1']),
+        fakeAtValueTokenImporter({ from: './c.module.css', values: [fakeAtValueTokenImporterValue({ name: 'c_1' })] }),
       ],
     });
     const exportBuilder: ExportBuilder = {
@@ -57,7 +57,12 @@ describe('checkCSSModule', () => {
   test('report diagnostics for non-exported token', () => {
     const cssModule = fakeCSSModule({
       fileName: '/a.module.css',
-      tokenImporters: [fakeAtValueTokenImporter('./b.module.css', ['b_1', 'b_2'])],
+      tokenImporters: [
+        fakeAtValueTokenImporter({
+          from: './b.module.css',
+          values: [fakeAtValueTokenImporterValue({ name: 'b_1' }), fakeAtValueTokenImporterValue({ name: 'b_2' })],
+        }),
+      ],
     });
     const exportBuilder: ExportBuilder = {
       build: () => ({ allTokens: ['b_1'] }),
@@ -104,7 +109,7 @@ describe('checkCSSModule', () => {
       fileName: '/a.module.css',
       tokenImporters: [
         fakeAtImportTokenImporter({ from: './b.module.css' }),
-        fakeAtValueTokenImporter('./c.module.css', ['c_1']),
+        fakeAtValueTokenImporter({ from: './c.module.css', values: [fakeAtValueTokenImporterValue({ name: 'c_1' })] }),
       ],
     });
     const exportBuilder: ExportBuilder = {

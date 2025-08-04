@@ -1,4 +1,4 @@
-import type { AtImportTokenImporter, AtValueTokenImporter, Token } from '../type.js';
+import type { AtImportTokenImporter, AtValueTokenImporter, AtValueTokenImporterValue, Token } from '../type.js';
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
@@ -15,11 +15,20 @@ export function fakeAtImportTokenImporter(args?: Omit<Partial<AtImportTokenImpor
   };
 }
 
-export function fakeAtValueTokenImporter(from: string, valueNames: string[]): AtValueTokenImporter {
+export function fakeAtValueTokenImporter(args?: Omit<Partial<AtValueTokenImporter>, 'type'>): AtValueTokenImporter {
   return {
     type: 'value',
-    from,
-    values: valueNames.map((name) => ({ name, loc: fakeLoc })),
+    from: '/test.module.css',
+    values: [],
     fromLoc: fakeLoc,
+    ...args,
+  };
+}
+
+export function fakeAtValueTokenImporterValue(args?: Partial<AtValueTokenImporterValue>): AtValueTokenImporterValue {
+  return {
+    name: 'name',
+    loc: fakeLoc,
+    ...args,
   };
 }

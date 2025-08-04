@@ -3,7 +3,12 @@ import { createExportBuilder } from './export-builder.js';
 import { resolve } from './path.js';
 import { createResolver } from './resolver.js';
 import { fakeCSSModule } from './test/css-module.js';
-import { fakeAtImportTokenImporter, fakeAtValueTokenImporter, fakeToken } from './test/token.js';
+import {
+  fakeAtImportTokenImporter,
+  fakeAtValueTokenImporter,
+  fakeAtValueTokenImporterValue,
+  fakeToken,
+} from './test/token.js';
 
 const resolver = createResolver({}, undefined);
 
@@ -55,7 +60,7 @@ describe('ExportBuilder', () => {
       localTokens: [fakeToken({ name: 'a_1' })],
       tokenImporters: [
         fakeAtImportTokenImporter({ from: './b.module.css' }),
-        fakeAtValueTokenImporter('./c.module.css', ['c_1']),
+        fakeAtValueTokenImporter({ from: './c.module.css', values: [fakeAtValueTokenImporterValue({ name: 'c_1' })] }),
       ],
     });
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
