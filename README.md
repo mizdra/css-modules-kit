@@ -26,7 +26,7 @@ https://github.com/user-attachments/assets/bdeb2c8a-d615-4223-bae4-e7446f62d353
 </details>
 
 <details>
-<summary>Rename class names or `@value`</summary>
+<summary>Rename Symbol</summary>
 
 https://github.com/user-attachments/assets/db39a95e-2fc8-42a6-a64d-02f2822afbfe
 
@@ -196,14 +196,24 @@ When this option is `true`, `import { button } from '...'` will be added. When t
 
 ## Limitations
 
-- Sass/Less are not supported to simplify the implementation
-- `:local .foo {...}` (without any arguments) is not supported to simplify the implementation
-- `:global .foo {...}` (without any arguments) is not supported to simplify the implementation
-- css-modules-kit does not work on VS Code for Web
-  - This is to simplify implementation.
+To simplify the implementation, some features are not supported.
+
+- Sass/Less are not supported.
+  - If you want to use Sass/Less, please use [happy-css-modules](https://github.com/mizdra/happy-css-modules). Although it does not offer as rich language features as css-modules-kit, it provides basic features such as code completion and Go to Definition.
+- The name of classes, @value, and @keyframes must be valid JavaScript identifiers.
+  - For example, `.fooBar` and `.foo_bar` are supported, but `.foo-bar` is not supported.
+  - See [#176](https://github.com/mizdra/css-modules-kit/issues/176) for more details.
+- `:local .foo {...}` is not supported.
+  - Use `:local(.foo) {...}` instead.
+- `:global .foo {...}` is not supported.
+  - Use `:global(.foo) {...}` instead.
+- `@keyframes :local(foo) {...}` is not supported.
+  - Use `@keyframes foo {...}` instead.
+  - Meanwhile, `@keyframes :global(foo) { ... }` is supported.
+- css-modules-kit does not work on VS Code for Web.
 
 ## History of this project
 
-This project was created as a next-generation tool to replace [happy-css-modules](https://github.com/mizdra/happy-css-modules)
+This project was created as a next-generation tool to replace [happy-css-modules](https://github.com/mizdra/happy-css-modules).
 
 happy-css-modules was also a tool that provided language functionality for `*.module.css`. However, the tool was limited in the type of language features it could provide. To solve this limitation, css-modules-kit was created.
