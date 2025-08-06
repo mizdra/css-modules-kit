@@ -1,6 +1,5 @@
 import type { AtRule } from 'postcss';
 import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
-import { JS_IDENTIFIER_PATTERN } from '../util.js';
 
 interface ValueDeclaration {
   type: 'valueDeclaration';
@@ -84,17 +83,6 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
           column: start.column + name.length,
           offset: start.offset + name.length,
         };
-
-        if (!JS_IDENTIFIER_PATTERN.test(name)) {
-          diagnostics.push({
-            start: { line: start.line, column: start.column },
-            length: name.length,
-            text: `css-modules-kit does not support non-JavaScript identifier as value names.`,
-            category: 'error',
-          });
-          continue;
-        }
-
         const result = { name, loc: { start, end } };
         if (localName === undefined) {
           values.push(result);
@@ -110,17 +98,6 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
             column: start.column + localName.length,
             offset: start.offset + localName.length,
           };
-
-          if (!JS_IDENTIFIER_PATTERN.test(localName)) {
-            diagnostics.push({
-              start: { line: start.line, column: start.column },
-              length: localName.length,
-              text: `css-modules-kit does not support non-JavaScript identifier as value names.`,
-              category: 'error',
-            });
-            continue;
-          }
-
           values.push({ ...result, localName, localLoc: { start, end } });
         }
       } else {
@@ -177,17 +154,6 @@ export function parseAtValue(atValue: AtRule): ParseAtValueResult {
       column: start.column + name.length,
       offset: start.offset + name.length,
     };
-
-    if (!JS_IDENTIFIER_PATTERN.test(name)) {
-      diagnostics.push({
-        start: { line: start.line, column: start.column },
-        length: name.length,
-        text: `css-modules-kit does not support non-JavaScript identifier as value names.`,
-        category: 'error',
-      });
-      return { diagnostics };
-    }
-
     const parsedAtValue: ValueDeclaration = {
       type: 'valueDeclaration',
       name,

@@ -993,41 +993,4 @@ describe('parseRule', () => {
     //   expect(parseRuleSimply(':is(:global .global1, .global2) {}')).toStrictEqual([]);
     // });
   });
-  test('disallow class names that are not valid JavaScript identifiers', () => {
-    const rules = fakeRules(
-      fakeRoot(dedent`
-        .a-1 .a_\u0032 {}
-      `),
-    );
-    const result = rules.map(parseRule);
-    expect(result).toMatchInlineSnapshot(`
-      [
-        {
-          "classSelectors": [],
-          "diagnostics": [
-            {
-              "category": "error",
-              "length": 4,
-              "start": {
-                "column": 1,
-                "line": 1,
-                "offset": 0,
-              },
-              "text": "css-modules-kit does not support non-JavaScript identifier as class names.",
-            },
-            {
-              "category": "error",
-              "length": 9,
-              "start": {
-                "column": 6,
-                "line": 1,
-                "offset": 5,
-              },
-              "text": "css-modules-kit does not support non-JavaScript identifier as class names.",
-            },
-          ],
-        },
-      ]
-    `);
-  });
 });
