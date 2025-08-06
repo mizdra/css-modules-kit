@@ -10,7 +10,6 @@ test('Syntactic Diagnostics', async () => {
       @value;
       :local(:global(.a_1)) { color: red; }
       :local .a_2 { color: red; }
-      .a-3 { color: red; }
     `,
     'tsconfig.json': dedent`
       {
@@ -70,20 +69,6 @@ test('Syntactic Diagnostics', async () => {
           "offset": 1,
         },
         "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
-      },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 4,
-          "offset": 5,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 4,
-          "offset": 1,
-        },
-        "text": "css-modules-kit does not support non-JavaScript identifier as class names.",
       },
     ]
   `);

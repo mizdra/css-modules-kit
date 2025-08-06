@@ -19,6 +19,7 @@ test('Semantic Diagnostics', async () => {
       .a_1 { color: red; }
       @value a_2: red;
       @import './d.module.css';
+      .a-3 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -50,6 +51,20 @@ test('Semantic Diagnostics', async () => {
   });
   expect(res2.body).toMatchInlineSnapshot(`
     [
+      {
+        "category": "error",
+        "code": 0,
+        "end": {
+          "line": 6,
+          "offset": 5,
+        },
+        "source": "css-modules-kit",
+        "start": {
+          "line": 6,
+          "offset": 2,
+        },
+        "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+      },
       {
         "category": "error",
         "code": 0,
