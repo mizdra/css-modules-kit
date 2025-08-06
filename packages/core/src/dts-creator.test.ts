@@ -241,6 +241,53 @@ describe('createDts', () => {
       "
     `);
   });
+  test('does not create types for `__proto__`', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [fakeToken({ name: '__proto__', loc: fakeLoc(0) })],
+        }),
+        host,
+        options,
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+      };
+      export default styles;
+      "
+    `);
+  });
+  test('does not create types for `default` when `namedExports` is true', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [fakeToken({ name: 'default', loc: fakeLoc(0) })],
+        }),
+        host,
+        { ...options, namedExports: true },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      "
+    `);
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [fakeToken({ name: 'default', loc: fakeLoc(0) })],
+        }),
+        host,
+        { ...options, namedExports: false },
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        default: '' as readonly string,
+      };
+      export default styles;
+      "
+    `);
+  });
   test('creates d.ts file with named exports', () => {
     expect(
       createDts(

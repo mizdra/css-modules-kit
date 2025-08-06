@@ -110,7 +110,7 @@ export async function runCMK(project: string, clean: boolean, logger: Logger): P
   const exportBuilder = createExportBuilder({ getCSSModule, matchesPattern, resolver });
   const semanticDiagnostics: Diagnostic[] = [];
   for (const { cssModule } of parseResults) {
-    const diagnostics = checkCSSModule(cssModule, exportBuilder, matchesPattern, resolver, getCSSModule);
+    const diagnostics = checkCSSModule(cssModule, config, exportBuilder, matchesPattern, resolver, getCSSModule);
     semanticDiagnostics.push(...diagnostics);
   }
 
