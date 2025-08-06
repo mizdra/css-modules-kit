@@ -3,6 +3,7 @@ import type { CreateDtsHost } from './dts-creator.js';
 import { createDts, type CreateDtsOptions } from './dts-creator.js';
 import { fakeCSSModule } from './test/css-module.js';
 import { fakeMatchesPattern, fakeResolver } from './test/faker.js';
+import { fakeAtValueTokenImporter, fakeAtValueTokenImporterValue, fakeToken } from './test/token.js';
 
 const host: CreateDtsHost = {
   resolver: fakeResolver(),
@@ -198,6 +199,38 @@ describe('createDts', () => {
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
         }),
         { ...host, resolver },
+        options,
+      ).text,
+    ).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+      };
+      export default styles;
+      "
+    `);
+  });
+  test('does not create types for invalid name as JS identifier', () => {
+    expect(
+      createDts(
+        fakeCSSModule({
+          localTokens: [fakeToken({ name: 'a-1', loc: fakeLoc(0) })],
+          tokenImporters: [
+            fakeAtValueTokenImporter({
+              from: './b.module.css',
+              fromLoc: fakeLoc(1),
+              values: [
+                fakeAtValueTokenImporterValue({ name: 'b-1', loc: fakeLoc(2) }),
+                fakeAtValueTokenImporterValue({
+                  name: 'b_2',
+                  loc: fakeLoc(3),
+                  localName: 'a-2',
+                  localLoc: fakeLoc(4),
+                }),
+              ],
+            }),
+          ],
+        }),
+        host,
         options,
       ).text,
     ).toMatchInlineSnapshot(`

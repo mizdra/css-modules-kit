@@ -412,12 +412,10 @@ describe('parseAtValue', () => {
     `);
   });
   test('invalid', () => {
-    const [atValue1, atValue2, atValue3, atValue4] = fakeAtValues(
+    const [atValue1, atValue2] = fakeAtValues(
       fakeRoot(dedent`
         @value;
         @value a,,b from "test.css";
-        @value non-js-ident-1: #000;
-        @value non-js-ident-1, non-js-ident-2 as alias_1, a as non-js-ident-3 from "test.css";
       `),
     );
     expect(parseAtValue(atValue1!)).toMatchInlineSnapshot(`
@@ -494,71 +492,6 @@ describe('parseAtValue', () => {
               "line": 2,
             },
             "text": "\`\` is invalid syntax.",
-          },
-        ],
-      }
-    `);
-    expect(parseAtValue(atValue3!)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [
-          {
-            "category": "error",
-            "length": 14,
-            "start": {
-              "column": 8,
-              "line": 3,
-            },
-            "text": "css-modules-kit does not support non-JavaScript identifier as value names.",
-          },
-        ],
-      }
-    `);
-    expect(parseAtValue(atValue4!)).toMatchInlineSnapshot(`
-      {
-        "atValue": {
-          "from": "test.css",
-          "fromLoc": {
-            "end": {
-              "column": 85,
-              "line": 4,
-              "offset": 150,
-            },
-            "start": {
-              "column": 77,
-              "line": 4,
-              "offset": 142,
-            },
-          },
-          "type": "valueImportDeclaration",
-          "values": [],
-        },
-        "diagnostics": [
-          {
-            "category": "error",
-            "length": 14,
-            "start": {
-              "column": 8,
-              "line": 4,
-            },
-            "text": "css-modules-kit does not support non-JavaScript identifier as value names.",
-          },
-          {
-            "category": "error",
-            "length": 14,
-            "start": {
-              "column": 24,
-              "line": 4,
-            },
-            "text": "css-modules-kit does not support non-JavaScript identifier as value names.",
-          },
-          {
-            "category": "error",
-            "length": 14,
-            "start": {
-              "column": 56,
-              "line": 4,
-            },
-            "text": "css-modules-kit does not support non-JavaScript identifier as value names.",
           },
         ],
       }

@@ -1,7 +1,6 @@
 import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
-import { JS_IDENTIFIER_PATTERN } from '../util.js';
 
 function calcDiagnosticsLocationForSelectorParserNode(
   rule: Rule,
@@ -28,21 +27,6 @@ function flatCollectResults(results: CollectResult[]): CollectResult {
   return { classNames, diagnostics };
 }
 
-function convertClassNameToCollectResult(rule: Rule, node: selectorParser.ClassName): CollectResult {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- `raws` property is defined if `node` has escaped characters.
-  const name = (node as any).raws?.value ?? node.value;
-
-  if (!JS_IDENTIFIER_PATTERN.test(name)) {
-    const diagnostic: DiagnosticWithDetachedLocation = {
-      ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
-      text: `css-modules-kit does not support non-JavaScript identifier as class names.`,
-      category: 'error',
-    };
-    return { classNames: [], diagnostics: [diagnostic] };
-  }
-  return { classNames: [node], diagnostics: [] };
-}
-
 /**
  * Collect local class names from the AST.
  * This function is based on the behavior of postcss-modules-local-by-default.
@@ -60,14 +44,14 @@ function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectR
         // If the class name is wrapped by `:local(...)` or `:global(...)`,
         // the scope is determined by the wrapper.
         case ':local(...)':
-          return convertClassNameToCollectResult(rule, node);
+          return { classNames: [node], diagnostics: [] };
         case ':global(...)':
           return { classNames: [], diagnostics: [] };
         // If the class name is not wrapped by `:local(...)` or `:global(...)`,
         // the scope is determined by the mode.
         default:
           // Mode is customizable in css-loader, but we don't support it for simplicity. We fix the mode to 'local'.
-          return convertClassNameToCollectResult(rule, node);
+          return { classNames: [node], diagnostics: [] };
       }
     } else if (selectorParser.isPseudo(node) && (node.value === ':local' || node.value === ':global')) {
       if (node.nodes.length === 0) {

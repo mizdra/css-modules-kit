@@ -125,8 +125,6 @@ describe('parseAtKeyframes', () => {
       fakeRoot(dedent`
         /* :local() wrappers are disallowed */
         @keyframes :local(local) {}
-        /* Non-JavaScript identifier keyframe names are disallowed */
-        @keyframes non-js-identifier {}
       `),
     );
     const result = atKeyframes.map(parseAtKeyframes);
@@ -143,20 +141,6 @@ describe('parseAtKeyframes', () => {
                 "offset": 50,
               },
               "text": "css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes :local(local) {...}\` instead.",
-            },
-          ],
-        },
-        {
-          "diagnostics": [
-            {
-              "category": "error",
-              "length": 17,
-              "start": {
-                "column": 12,
-                "line": 4,
-                "offset": 140,
-              },
-              "text": "css-modules-kit does not support non-JavaScript identifier as keyframe names.",
             },
           ],
         },

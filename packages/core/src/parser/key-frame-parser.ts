@@ -1,6 +1,5 @@
 import type { AtRule } from 'postcss';
 import type { DiagnosticWithDetachedLocation, Location } from '../type.js';
-import { JS_IDENTIFIER_PATTERN } from '../util.js';
 
 interface KeyframeDeclaration {
   name: string;
@@ -58,20 +57,6 @@ export function parseAtKeyframes(atKeyframes: AtRule): ParseAtKeyframesResult {
   } else if (keyframeName.startsWith(':global(') && keyframeName.endsWith(')')) {
     // Ignore keyframes wrapped in :global()
     return { diagnostics: [] };
-  }
-
-  // Validate the keyframe name
-  if (!JS_IDENTIFIER_PATTERN.test(keyframeName)) {
-    return {
-      diagnostics: [
-        {
-          start: keyframeNameLoc.start,
-          length: keyframeName.length,
-          text: `css-modules-kit does not support non-JavaScript identifier as keyframe names.`,
-          category: 'error',
-        },
-      ],
-    };
   }
 
   return {

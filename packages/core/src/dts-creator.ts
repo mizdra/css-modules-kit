@@ -1,4 +1,5 @@
 import type { CSSModule, MatchesPattern, Resolver, Token, TokenImporter } from './type.js';
+import { isValidAsJSIdentifier } from './util.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
 
@@ -46,15 +47,34 @@ interface CreateDtsResult {
  * Create a d.ts file.
  */
 export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: CreateDtsOptions): CreateDtsResult {
-  // Filter external files
-  const tokenImporters = cssModules.tokenImporters.filter((tokenImporter) => {
-    const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
-    return resolved !== undefined && host.matchesPattern(resolved);
-  });
+  // Exclude tokens that are not valid as JS identifiers
+  const localTokens = cssModules.localTokens.filter((token) => isValidAsJSIdentifier(token.name));
+  const tokenImporters = cssModules.tokenImporters
+    // Exclude imported tokens that are not valid as JS identifiers
+    .map((tokenImporter) => {
+      if (tokenImporter.type === 'value') {
+        return {
+          ...tokenImporter,
+          values: tokenImporter.values.filter(
+            (value) =>
+              isValidAsJSIdentifier(value.name) &&
+              (value.localName === undefined || isValidAsJSIdentifier(value.localName)),
+          ),
+        };
+      } else {
+        return tokenImporter;
+      }
+    })
+    // Exclude token importers for external files
+    .filter((tokenImporter) => {
+      const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
+      return resolved !== undefined && host.matchesPattern(resolved);
+    });
+
   if (options.namedExports) {
-    return createNamedExportsDts(cssModules.localTokens, tokenImporters, options);
+    return createNamedExportsDts(localTokens, tokenImporters, options);
   } else {
-    return createDefaultExportDts(cssModules.localTokens, tokenImporters);
+    return createDefaultExportDts(localTokens, tokenImporters);
   }
 }
 
