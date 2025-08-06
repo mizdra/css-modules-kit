@@ -4,10 +4,12 @@ import type {
   CSSModule,
   Diagnostic,
   ExportBuilder,
+  Location,
   MatchesPattern,
   Resolver,
   TokenImporter,
 } from './type.js';
+import { isValidAsJSIdentifier } from './util.js';
 
 export function checkCSSModule(
   cssModule: CSSModule,
@@ -17,6 +19,12 @@ export function checkCSSModule(
   getCSSModule: (path: string) => CSSModule | undefined,
 ): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
+
+  for (const token of cssModule.localTokens) {
+    if (!isValidAsJSIdentifier(token.name)) {
+      diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, token.loc));
+    }
+  }
 
   for (const tokenImporter of cssModule.tokenImporters) {
     const from = resolver(tokenImporter.from, { request: cssModule.fileName });
@@ -32,6 +40,12 @@ export function checkCSSModule(
       for (const value of tokenImporter.values) {
         if (!exportRecord.allTokens.includes(value.name)) {
           diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, value));
+        }
+        if (!isValidAsJSIdentifier(value.name)) {
+          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.loc));
+        }
+        if (value.localName && !isValidAsJSIdentifier(value.localName)) {
+          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.localLoc!));
         }
       }
     }
@@ -60,5 +74,15 @@ function createModuleHasNoExportedTokenDiagnostic(
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: value.loc.start.line, column: value.loc.start.column },
     length: value.loc.end.offset - value.loc.start.offset,
+  };
+}
+
+function createInvalidNameAsJSIdentifiersDiagnostic(cssModule: CSSModule, loc: Location): Diagnostic {
+  return {
+    text: `css-modules-kit does not support invalid names as JavaScript identifiers.`,
+    category: 'error',
+    file: { fileName: cssModule.fileName, text: cssModule.text },
+    start: { line: loc.start.line, column: loc.start.column },
+    length: loc.end.offset - loc.start.offset,
   };
 }

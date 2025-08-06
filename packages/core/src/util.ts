@@ -2,7 +2,11 @@ export function isPosixRelativePath(path: string): boolean {
   return path.startsWith(`./`) || path.startsWith(`../`);
 }
 
-export const JS_IDENTIFIER_PATTERN = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
+const JS_IDENTIFIER_PATTERN = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u;
+
+export function isValidAsJSIdentifier(name: string): boolean {
+  return JS_IDENTIFIER_PATTERN.test(name);
+}
 
 /**
  * The syntax pattern for consuming tokens imported from CSS Module.

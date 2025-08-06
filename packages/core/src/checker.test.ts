@@ -33,6 +33,96 @@ function fakeLoc({ column }: { column: number }): Location {
 }
 
 describe('checkCSSModule', () => {
+  test('report diagnostics for invalid name as js identifier', () => {
+    const args = prepareCheckerArgs([
+      fakeCSSModule({
+        fileName: '/a.module.css',
+        localTokens: [fakeToken({ name: 'a-1', loc: fakeLoc({ column: 1 }) })],
+        tokenImporters: [
+          fakeAtValueTokenImporter({
+            from: './b.module.css',
+            fromLoc: fakeLoc({ column: 2 }),
+            values: [
+              fakeAtValueTokenImporterValue({ name: 'b-1', loc: fakeLoc({ column: 3 }) }),
+              fakeAtValueTokenImporterValue({
+                name: 'b-2',
+                loc: fakeLoc({ column: 4 }),
+                localName: 'a-2',
+                localLoc: fakeLoc({ column: 5 }),
+              }),
+            ],
+          }),
+        ],
+      }),
+      fakeCSSModule({
+        fileName: '/b.module.css',
+        localTokens: [fakeToken({ name: 'b-1' }), fakeToken({ name: 'b-2' })],
+      }),
+    ]);
+    const diagnostics = checkCSSModule(
+      args.cssModules[0],
+      args.exportBuilder,
+      args.matchesPattern,
+      args.resolver,
+      args.getCSSModule,
+    );
+    expect(diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
+          "length": 0,
+          "start": {
+            "column": 1,
+            "line": 1,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
+          "length": 0,
+          "start": {
+            "column": 3,
+            "line": 1,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
+          "length": 0,
+          "start": {
+            "column": 4,
+            "line": 1,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/a.module.css",
+            "text": "",
+          },
+          "length": 0,
+          "start": {
+            "column": 5,
+            "line": 1,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+      ]
+    `);
+  });
   test('report diagnostics for non-existing module', () => {
     const args = prepareCheckerArgs([
       fakeCSSModule({
