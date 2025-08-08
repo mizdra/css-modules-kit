@@ -1,5 +1,19 @@
 # @css-modules-kit/core
 
+## 0.5.0
+
+### Minor Changes
+
+- 9c20f15: fix: `default` is not allowed as names when `namedExports` is `true`
+- 9c20f15: fix: `__proto__` is not allowed as names
+- 61e053d: feat: improve non-JS identifier error message
+- 15dcba8: feat: improve non-JS identifier error message
+- 69095b7: feat: support `@keyframes`
+
+### Patch Changes
+
+- d0a6685: fix: disallow non-JavaScript identifier `@value`
+
 ## 0.4.0
 
 ### Minor Changes

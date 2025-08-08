@@ -1,5 +1,22 @@
 # @css-modules-kit/codegen
 
+## 0.5.0
+
+### Minor Changes
+
+- 9c20f15: fix: `default` is not allowed as names when `namedExports` is `true`
+- 9c20f15: fix: `__proto__` is not allowed as names
+
+### Patch Changes
+
+- Updated dependencies [9c20f15]
+- Updated dependencies [9c20f15]
+- Updated dependencies [61e053d]
+- Updated dependencies [15dcba8]
+- Updated dependencies [69095b7]
+- Updated dependencies [d0a6685]
+  - @css-modules-kit/core@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes
