@@ -14,10 +14,9 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-          cache: 'npm'
       - uses: actions/cache@v4
         with:
           path: |
@@ -27,17 +26,14 @@ jobs:
             .eslintcache
           key: toolcache-lint-${{ runner.os }}-${{ github.sha }}
           restore-keys: toolcache-lint-${{ runner.os }}
-      - run: npm install
       - run: npm run lint
   build:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-          cache: 'npm'
-      - run: npm install
       - run: npm run build
   test:
     strategy:
@@ -48,16 +44,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
       - uses: actions/cache@v4
         with:
           path: node_modules/.vite/vitest
           key: toolcache-test-${{ runner.os }}-node${{ matrix.node }}-${{ github.sha }}
           restore-keys: toolcache-test-${{ runner.os }}-node${{ matrix.node }}
-      - run: npm install
       - run: npm run test
   e2e:
     strategy:
@@ -68,10 +62,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: ${{ matrix.node }}
-          cache: 'npm'
       - uses: actions/cache@v4
         with:
           path: |
@@ -84,7 +77,6 @@ jobs:
         with:
           path: .vscode-test
           key: ${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
-      - run: npm install
 
       - run: xvfb-run -a npm run e2e
         if: runner.os == 'Linux'
