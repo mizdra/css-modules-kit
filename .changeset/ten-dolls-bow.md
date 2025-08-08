@@ -2,4 +2,4 @@
 '@css-modules-kit/core': minor
 ---
 
-feat: support @keyframes
+feat: support `@keyframes`
