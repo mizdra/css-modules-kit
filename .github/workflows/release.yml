@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write # Required for provenance
+  id-token: write # Required for npm trusted publishing with OIDC
   contents: write # Required for changesets/action
   pull-requests: write # Required for changesets/action
 
@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: 'npm'
       - run: npm install
       - run: npm run build
@@ -37,7 +37,6 @@ jobs:
           githubReleaseName: Release ${{ env.date }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
       - run: npx vsce publish --no-git-tag-version --skip-duplicate
         if: steps.changesets.outputs.hasChangesets == 'false'
