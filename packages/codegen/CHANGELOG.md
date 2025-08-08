@@ -13,7 +13,7 @@
 - Updated dependencies [9c20f15]
 - Updated dependencies [61e053d]
 - Updated dependencies [15dcba8]
-- Updated dependencies [69095b7]
+- Updated dependencies [b38f9d3]
 - Updated dependencies [d0a6685]
   - @css-modules-kit/core@0.5.0
 
