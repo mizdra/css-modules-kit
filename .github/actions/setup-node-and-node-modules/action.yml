@@ -20,6 +20,7 @@ runs:
       with:
         path: node_modules
         key: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-npm-
     - run: npm install
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       shell: sh
