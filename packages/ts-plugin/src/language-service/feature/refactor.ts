@@ -11,8 +11,9 @@ export function getApplicableRefactors(
   languageService: ts.LanguageService,
   project: ts.server.Project,
 ): ts.LanguageService['getApplicableRefactors'] {
-  return (fileName, positionOrRange, preferences) => {
-    const prior = languageService.getApplicableRefactors(fileName, positionOrRange, preferences) ?? [];
+  return (...args) => {
+    const [fileName] = args;
+    const prior = languageService.getApplicableRefactors(...args);
     if (isComponentFileName(fileName)) {
       // If the CSS Module file does not exist, provide a refactor to create it.
       if (!project.fileExists(getCssModuleFileName(fileName))) {
