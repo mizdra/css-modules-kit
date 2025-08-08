@@ -15,8 +15,8 @@ export function getCodeFixesAtPosition(
   resolver: Resolver,
   config: CMKConfig,
 ): ts.LanguageService['getCodeFixesAtPosition'] {
-  // eslint-disable-next-line max-params
-  return (fileName, start, end, errorCodes, formatOptions, preferences) => {
+  return (...args) => {
+    const [fileName, start, end, errorCodes, formatOptions, preferences, ...rest] = args;
     const prior = Array.from(
       languageService.getCodeFixesAtPosition(
         fileName,
@@ -25,6 +25,7 @@ export function getCodeFixesAtPosition(
         errorCodes,
         formatOptions,
         createPreferencesForCompletion(preferences, config),
+        ...rest,
       ),
     );
 

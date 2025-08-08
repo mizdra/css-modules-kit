@@ -14,8 +14,9 @@ export function getSemanticDiagnostics(
   getCSSModule: (path: string) => CSSModule | undefined,
   config: CMKConfig,
 ): ts.LanguageService['getSemanticDiagnostics'] {
-  return (fileName: string) => {
-    const prior = languageService.getSemanticDiagnostics(fileName);
+  return (...args) => {
+    const [fileName] = args;
+    const prior = languageService.getSemanticDiagnostics(...args);
     const script = language.scripts.get(fileName);
     if (isCSSModuleScript(script)) {
       const virtualCode = script.generated.root;

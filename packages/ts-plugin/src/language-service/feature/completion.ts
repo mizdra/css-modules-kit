@@ -7,12 +7,13 @@ export function getCompletionsAtPosition(
   languageService: ts.LanguageService,
   config: CMKConfig,
 ): ts.LanguageService['getCompletionsAtPosition'] {
-  return (fileName, position, options, formattingSettings) => {
+  return (...args) => {
+    const [fileName, position, options, ...rest] = args;
     const prior = languageService.getCompletionsAtPosition(
       fileName,
       position,
       createPreferencesForCompletion(options ?? {}, config),
-      formattingSettings,
+      ...rest,
     );
 
     if (!prior) return;
@@ -93,17 +94,9 @@ export function getCompletionEntryDetails(
   resolver: Resolver,
   config: CMKConfig,
 ): ts.LanguageService['getCompletionEntryDetails'] {
-  // eslint-disable-next-line max-params
-  return (fileName, position, entryName, formatOptions, source, preferences, data) => {
-    const details = languageService.getCompletionEntryDetails(
-      fileName,
-      position,
-      entryName,
-      formatOptions,
-      source,
-      preferences,
-      data,
-    );
+  return (...args) => {
+    const [fileName] = args;
+    const details = languageService.getCompletionEntryDetails(...args);
     if (!details) return undefined;
 
     if (config.namedExports && !config.prioritizeNamedImports && details.codeActions) {

@@ -7,8 +7,9 @@ export function getSyntacticDiagnostics(
   language: Language<string>,
   languageService: ts.LanguageService,
 ): ts.LanguageService['getSyntacticDiagnostics'] {
-  return (fileName: string) => {
-    const prior = languageService.getSyntacticDiagnostics(fileName);
+  return (...args) => {
+    const [fileName] = args;
+    const prior = languageService.getSyntacticDiagnostics(...args);
     const script = language.scripts.get(fileName);
     if (isCSSModuleScript(script)) {
       const virtualCode = script.generated.root;
