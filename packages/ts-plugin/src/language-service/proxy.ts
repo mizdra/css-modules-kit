@@ -45,6 +45,7 @@ export function proxyLanguageService(
     resolver,
     matchesPattern,
     getCSSModule,
+    config,
   );
   proxy.getApplicableRefactors = getApplicableRefactors(languageService, project);
   proxy.getEditsForRefactor = getEditsForRefactor(languageService);

@@ -47,18 +47,18 @@ interface CreateDtsResult {
  * Create a d.ts file.
  */
 export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: CreateDtsOptions): CreateDtsResult {
-  // Exclude tokens that are not valid as JS identifiers
-  const localTokens = cssModules.localTokens.filter((token) => isValidAsJSIdentifier(token.name));
+  // Exclude invalid tokens
+  const localTokens = cssModules.localTokens.filter((token) => isValidName(token.name, options));
   const tokenImporters = cssModules.tokenImporters
-    // Exclude imported tokens that are not valid as JS identifiers
+    // Exclude invalid imported tokens
     .map((tokenImporter) => {
       if (tokenImporter.type === 'value') {
         return {
           ...tokenImporter,
           values: tokenImporter.values.filter(
             (value) =>
-              isValidAsJSIdentifier(value.name) &&
-              (value.localName === undefined || isValidAsJSIdentifier(value.localName)),
+              isValidName(value.name, options) &&
+              (value.localName === undefined || isValidName(value.localName, options)),
           ),
         };
       } else {
@@ -261,4 +261,11 @@ function createDefaultExportDts(
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
   return { text, mapping, linkedCodeMapping };
+}
+
+function isValidName(name: string, options: CreateDtsOptions): boolean {
+  if (!isValidAsJSIdentifier(name)) return false;
+  if (name === '__proto__') return false;
+  if (options.namedExports && name === 'default') return false;
+  return true;
 }
