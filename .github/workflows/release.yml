@@ -5,12 +5,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      force_publish_extensions:
-        description: 'Force publish editor extensions even if no changesets are present'
-        type: boolean
-        required: true
-        default: false
 
 permissions:
   id-token: write # Required for provenance
@@ -46,12 +40,12 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
       - run: npx vsce publish --no-git-tag-version --skip-duplicate
-        if: steps.changesets.outputs.published == 'true' || github.event.inputs.force_publish_extensions == 'true'
+        if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
       - run: npx ovsx publish --skip-duplicate
-        if: steps.changesets.outputs.published == 'true' || github.event.inputs.force_publish_extensions == 'true'
+        if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
