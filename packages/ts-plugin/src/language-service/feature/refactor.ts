@@ -25,16 +25,9 @@ export function getApplicableRefactors(
 }
 
 export function getEditsForRefactor(languageService: ts.LanguageService): ts.LanguageService['getEditsForRefactor'] {
-  // eslint-disable-next-line max-params
-  return (fileName, formatOptions, positionOrRange, refactorName, actionName, preferences) => {
-    const prior = languageService.getEditsForRefactor(
-      fileName,
-      formatOptions,
-      positionOrRange,
-      refactorName,
-      actionName,
-      preferences,
-    ) ?? { edits: [] };
+  return (...args) => {
+    const [fileName, , , refactorName] = args;
+    const prior = languageService.getEditsForRefactor(...args) ?? { edits: [] };
     if (isComponentFileName(fileName)) {
       if (refactorName === createCssModuleFileRefactor.name) {
         prior.edits.push(createNewCssModuleFileChange(getCssModuleFileName(fileName)));
