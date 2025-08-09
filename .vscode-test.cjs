@@ -1,4 +1,7 @@
 const { defineConfig } = require('@vscode/test-cli');
+const { execSync } = require('node:child_process');
+
+execSync('npm run build', { stdio: 'inherit' });
 
 const baseConfig = /** @type {const} */ ({
   extensionDevelopmentPath: 'packages/vscode',
