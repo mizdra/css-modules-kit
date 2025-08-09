@@ -38,7 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-      - run: npx vsce publish --no-git-tag-version --skip-duplicate
+      - run: npx @vscode/vsce publish --no-git-tag-version --skip-duplicate
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:

@@ -5,6 +5,7 @@ declare module 'typescript' {
     readonly files: readonly string[];
     readonly directories: readonly string[];
   }
+  // eslint-disable-next-line max-params
   export function matchFiles(
     path: string,
     extensions: readonly string[] | undefined,
