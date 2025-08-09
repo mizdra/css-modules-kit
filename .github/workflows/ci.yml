@@ -24,7 +24,6 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-            .eslintcache
           key: toolcache-lint-${{ runner.os }}-${{ github.sha }}
           restore-keys: toolcache-lint-${{ runner.os }}
       - run: npm run lint

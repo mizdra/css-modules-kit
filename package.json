@@ -18,7 +18,7 @@
     "build": "tsc -b tsconfig.build.json",
     "lint": "run-s -c lint:*",
     "lint:tsc": "tsc -b",
-    "lint:eslint": "eslint --cache --cache-strategy content .",
+    "lint:eslint": "eslint .",
     "lint:prettier": "prettier --cache --check .",
     "test": "vitest --run --project unit",
     "e2e": "run-s -c e2e:build e2e:vitest e2e:vscode",
