@@ -24,8 +24,8 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-          key: toolcache-lint-${{ runner.os }}-${{ github.sha }}
-          restore-keys: toolcache-lint-${{ runner.os }}
+          key: lint-tools-${{ runner.arch }}-${{ runner.os }}-${{ github.sha }}
+          restore-keys: lint-tools-${{ runner.arch }}-${{ runner.os }}
       - run: npm run lint
   build:
     runs-on: ubuntu-24.04-arm
@@ -50,8 +50,8 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: node_modules/.vite/vitest
-          key: toolcache-test-${{ runner.os }}-node${{ matrix.node }}-${{ github.sha }}
-          restore-keys: toolcache-test-${{ runner.os }}-node${{ matrix.node }}
+          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
+          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - run: npm run test
   e2e:
     strategy:
@@ -72,12 +72,12 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-          key: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}-${{ github.sha }}
-          restore-keys: toolcache-e2e-${{ runner.os }}-node${{ matrix.node }}
+          key: e2e-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
+          restore-keys: e2e-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - uses: actions/cache@v4
         with:
           path: .vscode-test
-          key: ${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
+          key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
 
       - run: xvfb-run -a npm run e2e
         if: runner.os == 'Linux'
