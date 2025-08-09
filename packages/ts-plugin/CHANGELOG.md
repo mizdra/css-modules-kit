@@ -1,5 +1,11 @@
 # @css-modules-kit/ts-plugin
 
+## 0.5.1
+
+### Patch Changes
+
+- e0ebb5b: fix: fix missing quick fix actions
+
 ## 0.5.0
 
 ### Minor Changes
