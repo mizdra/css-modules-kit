@@ -178,6 +178,17 @@
       }
     },
     {
+      "name": "vscode:test",
+      "type": "extensionHost",
+      "request": "launch",
+      "testConfiguration": "${workspaceFolder}/.vscode-test.cjs",
+      "args": ["--profile-temp"],
+      "outFiles": ["${workspaceFolder}/packages/vscode/dist/**/*"],
+      "presentation": {
+        "group": "vscode:test"
+      }
+    },
+    {
       "name": "Attach debugger to tsserver",
       "type": "node",
       "request": "attach",

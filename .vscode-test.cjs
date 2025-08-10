@@ -1,14 +1,11 @@
 const { defineConfig } = require('@vscode/test-cli');
-const { execSync } = require('node:child_process');
-
-execSync('npm run build', { stdio: 'inherit' });
 
 const baseConfig = /** @type {const} */ ({
   extensionDevelopmentPath: 'packages/vscode',
   version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
     timeout: 10000,
-    require: ['tsx/cjs'],
+    require: ['tsx/cjs', './scripts/vscode-test-setup.ts'],
   },
 });
 
