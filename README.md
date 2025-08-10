@@ -6,15 +6,17 @@ A toolkit for making CSS Modules useful.
 
 By default, CSS Modules have limited language features in editors. For example:
 
-- Clicking on `styles.button` does not jump to its definition in `Button.module.css`.
-- When renaming `styles.button`, the corresponding `.button {...}` in `Button.module.css` is not renamed.
-- Performing "Find All References" on `styles.button` does not find its definition in `Button.module.css`.
+- Clicking on `styles.button` does not go to its definition in `Button.module.css`.
+- Renaming `styles.button` does not rename the corresponding `.button {...}` in `Button.module.css`.
+- Find all references of `styles.button` does not include its definition in `Button.module.css`.
 
-It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not handle CSS files. Since tsserver does not hold information about CSS files, it cannot calculate jump destinations or determine which code should be renamed.
+It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not handle CSS files. Since tsserver does not load CSS files, it cannot determine which definitions to go to or which code to rename.
 
-css-modules-kit addresses this by using a TypeScript Language Service Plugin. With this plugin, css-modules-kit extends tsserver to handle `*.module.css` files. As a result, many language features like code navigation and rename refactoring become available.
+css-modules-kit solves this problem by using the [TypeScript Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin). With this plugin, css-modules-kit extends tsserver to handle `*.module.css` files. As a result, rich language features like code navigation and rename refactoring become available.
 
-Additionally, css-modules-kit provides various development tools for CSS Modules, such as a stylelint plugin and a utility for generating `*.d.ts` files.
+Another method that provides rich language features is to use the VS Code Extension API (see: https://github.com/Viijay-Kr/react-ts-css). However, it only supports VS Code. On the other hand, css-modules-kit is based on the TypeScript Language Service Plugin, so it supports other editors as well.
+
+Additionally, css-modules-kit provides various development tools for CSS Modules. For example, stylelint plugins and the tool that generates `*.d.ts` files.
 
 ## Supported Language Features
 
@@ -56,7 +58,7 @@ https://github.com/user-attachments/assets/4af168fa-357d-44e1-b010-3053802bf1a2
 </details>
 
 <details>
-<summary>Create CSS Module file for current file.</summary>
+<summary>Create CSS Module file for current file</summary>
 
 If there is no CSS Module file corresponding to `xxx.tsx`, create one.
 
@@ -194,13 +196,21 @@ When this option is `true`, `import { button } from '...'` will be added. When t
 }
 ```
 
+## Supported CSS Modules features
+
+- `:local(...)` and `:global(...)`
+- `@keyframes <name> { ... }`
+- `@value <name>: <value>;`
+- `@value <name>[, <value>]+ from <module-specifier>;`
+- `@import <module-specifier>;`
+
 ## Limitations
 
 To simplify the implementation, some features are not supported.
 
-- Sass/Less are not supported.
-  - If you want to use Sass/Less, please use [happy-css-modules](https://github.com/mizdra/happy-css-modules). Although it does not offer as rich language features as css-modules-kit, it provides basic features such as code completion and Go to Definition.
-- The name of classes, @value, and @keyframes must be valid JavaScript identifiers.
+- Sass and Less are not supported.
+  - If you want to use Sass and Less, please use [happy-css-modules](https://github.com/mizdra/happy-css-modules). Although it does not offer as rich language features as css-modules-kit, it provides basic features such as code completion and Go to Definition.
+- The name of classes, `@value`, and `@keyframes` must be valid JavaScript identifiers.
   - For example, `.fooBar` and `.foo_bar` are supported, but `.foo-bar` is not supported.
   - See [#176](https://github.com/mizdra/css-modules-kit/issues/176) for more details.
 - `:local .foo {...}` is not supported.
@@ -210,10 +220,4 @@ To simplify the implementation, some features are not supported.
 - `@keyframes :local(foo) {...}` is not supported.
   - Use `@keyframes foo {...}` instead.
   - Meanwhile, `@keyframes :global(foo) { ... }` is supported.
-- css-modules-kit does not work on VS Code for Web.
-
-## History of this project
-
-This project was created as a next-generation tool to replace [happy-css-modules](https://github.com/mizdra/happy-css-modules).
-
-happy-css-modules was also a tool that provided language functionality for `*.module.css`. However, the tool was limited in the type of language features it could provide. To solve this limitation, css-modules-kit was created.
+- VS Code for Web is not supported.
