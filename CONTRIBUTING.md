@@ -39,6 +39,21 @@ Good to know:
 - In VS Code, you can view the Extension Host log with `F1 > Output: Show Output Channels... > Extension Host`.
   - If the extension fails to load, the log will be output there.
 
+### Zed Extension
+
+Debugging Zed Extension is a bit tricky.
+
+1. Run `npm run build`
+1. Start `CMK_LOAD_LOCAL_TS_PLUGIN=0 zed examples/1-basic`
+
+Good to know:
+
+- If `CMK_LOAD_LOCAL_TS_PLUGIN` is set to `1`, the `ts-plugin` built with `npm run build` will be loaded.
+  - When it is not `1`, the `ts-plugin` downloaded from npmjs.com is loaded.
+- In Zed, you can view the tsserver log with `F1 > dev: Open language server logs > vtsls (1-basic)`.
+- When you start zed with the `--foreground` option, you can view the stdout of the Extension.
+  - e.g. `CMK_LOAD_LOCAL_TS_PLUGIN=0 zed --foreground examples/1-basic`
+
 ## Pull Request Guidelines
 
 1. Write your code
