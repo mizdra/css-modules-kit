@@ -20,11 +20,9 @@
     "lint:tsc": "tsc -b",
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --cache --check .",
-    "test": "vitest --run --project unit",
-    "e2e": "run-s -c e2e:build e2e:vitest e2e:vscode",
-    "e2e:build": "npm run build",
-    "e2e:vitest": "vitest --run --project e2e",
-    "e2e:vscode": "vscode-test"
+    "test": "run-s -c test:*",
+    "test:vitest": "vitest --run",
+    "test:vscode": "vscode-test"
   },
   "prettier": "@mizdra/prettier-config-mizdra",
   "devDependencies": {

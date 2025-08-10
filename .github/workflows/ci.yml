@@ -35,25 +35,7 @@ jobs:
         with:
           node-version: 22
       - run: npm run build
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [20, 22]
-        os: [ubuntu-24.04-arm, windows-11-arm]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node-and-node-modules
-        with:
-          node-version: ${{ matrix.node }}
-      - uses: actions/cache@v4
-        with:
-          path: node_modules/.vite/vitest
-          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: npm run test
-  e2e:
+  test-vitest:
     strategy:
       fail-fast: false
       matrix:
@@ -72,14 +54,35 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-          key: e2e-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: e2e-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
+          key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
+          restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
+      - run: npm run test:vitest
+  test-vscode:
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
+        os: [ubuntu-24.04-arm, windows-11-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/tsconfig.build.tsbuildinfo
+            tsconfig.tsbuildinfo
+          key: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
+          restore-keys: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - uses: actions/cache@v4
         with:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
 
-      - run: xvfb-run -a npm run e2e
+      - run: xvfb-run -a npm run test:vscode
         if: runner.os == 'Linux'
-      - run: npm run e2e
+      - run: npm run test:vscode
         if: runner.os != 'Linux'

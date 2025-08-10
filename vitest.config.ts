@@ -19,8 +19,8 @@ export default defineConfig({
       {
         test: {
           name: 'e2e',
-          include: ['packages/*/e2e/**/*.test.ts'],
-          exclude: ['packages/vscode/e2e/**'],
+          include: ['packages/*/e2e-test/**/*.test.ts'],
+          globalSetup: ['./scripts/vitest-e2e-test-setup.ts'],
         },
       },
     ],
