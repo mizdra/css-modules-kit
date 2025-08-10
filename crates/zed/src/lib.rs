@@ -1,61 +1,51 @@
-use std::collections::HashMap;
 use std::env;
 
-use serde::Deserialize;
 use zed_extension_api::{self as zed, Result, serde_json};
 
 const TS_PLUGIN_PACKAGE_NAME: &str = "@css-modules-kit/ts-plugin";
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct PackageJson {
-    #[serde(default)]
-    dependencies: HashMap<String, String>,
-    #[serde(default)]
-    dev_dependencies: HashMap<String, String>,
+/// Install ts-plugin in "{extension_work_dir}/node_modules"
+fn install_ts_plugin_if_needed() -> Result<()> {
+    let installed_plugin_version = zed::npm_package_installed_version(TS_PLUGIN_PACKAGE_NAME)?;
+    let latest_plugin_version = zed::npm_package_latest_version(TS_PLUGIN_PACKAGE_NAME)?;
+
+    if installed_plugin_version.as_ref() != Some(&latest_plugin_version) {
+        println!("installing {TS_PLUGIN_PACKAGE_NAME}@{latest_plugin_version}");
+        zed::npm_install_package(TS_PLUGIN_PACKAGE_NAME, &latest_plugin_version)?;
+    } else {
+        println!("ts-plugin already installed");
+    }
+    Ok(())
+}
+
+fn get_ts_plugin_search_location(worktree: &zed::Worktree) -> String {
+    // If `CMK_LOAD_LOCAL_TS_PLUGIN` is "1", use the local ts-plugin.
+    // This feature is for debugging purposes and is not meant for general users.
+    let load_local_ts_plugin = worktree
+        .shell_env()
+        .into_iter()
+        .find(|(key, _)| key == "CMK_LOAD_LOCAL_TS_PLUGIN")
+        .map(|(_, value)| value);
+
+    if load_local_ts_plugin == Some("1".to_string()) {
+        println!("Using local installation of {TS_PLUGIN_PACKAGE_NAME}");
+        return worktree.root_path();
+    }
+
+    if let Err(_) = install_ts_plugin_if_needed() {
+        return worktree.root_path();
+    }
+
+    // The cwd for the extension is "~/Library/Application Support/Zed/extensions/work/css-modules-kit" on macOS.
+    // ref: https://github.com/zed-industries/zed/blob/2d9cd2ac8888a144ef41e59c9820ffbecee66ed1/crates/extension_host/src/wasm_host.rs#L679
+    let extension_work_dir = env::current_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .unwrap_or_else(|_| worktree.root_path());
+    println!("Using global installation of {TS_PLUGIN_PACKAGE_NAME}");
+    extension_work_dir
 }
 
 struct CSSModulesKitExtension {}
-
-impl CSSModulesKitExtension {
-    fn install_ts_plugin_if_needed(&self) -> Result<()> {
-        let installed_plugin_version = zed::npm_package_installed_version(TS_PLUGIN_PACKAGE_NAME)?;
-        let latest_plugin_version = zed::npm_package_latest_version(TS_PLUGIN_PACKAGE_NAME)?;
-
-        if installed_plugin_version.as_ref() != Some(&latest_plugin_version) {
-            println!("installing {TS_PLUGIN_PACKAGE_NAME}@{latest_plugin_version}");
-            zed::npm_install_package(TS_PLUGIN_PACKAGE_NAME, &latest_plugin_version)?;
-        } else {
-            println!("ts-plugin already installed");
-        }
-        Ok(())
-    }
-
-    fn get_ts_plugin_root_path(&self, worktree: &zed::Worktree) -> Result<Option<String>> {
-        let package_json = worktree.read_text_file("package.json")?;
-        let package_json: PackageJson = serde_json::from_str(&package_json)
-            .map_err(|err| format!("failed to parse package.json: {err}"))?;
-
-        let has_local_plugin = package_json
-            .dev_dependencies
-            .contains_key(TS_PLUGIN_PACKAGE_NAME)
-            || package_json
-                .dependencies
-                .contains_key(TS_PLUGIN_PACKAGE_NAME);
-
-        if has_local_plugin {
-            println!("Using local installation of {TS_PLUGIN_PACKAGE_NAME}");
-            return Ok(None);
-        }
-
-        self.install_ts_plugin_if_needed()?;
-
-        println!("Using global installation of {TS_PLUGIN_PACKAGE_NAME}");
-        Ok(Some(
-            env::current_dir().unwrap().to_string_lossy().to_string(),
-        ))
-    }
-}
 
 impl zed::Extension for CSSModulesKitExtension {
     fn new() -> Self {
@@ -87,7 +77,7 @@ impl zed::Extension for CSSModulesKitExtension {
             "typescript-language-server" => Ok(Some(serde_json::json!({
                 "plugins": [{
                     "name": TS_PLUGIN_PACKAGE_NAME,
-                    "location": self.get_ts_plugin_root_path(worktree)?.unwrap_or_else(|| worktree.root_path()),
+                    "location": get_ts_plugin_search_location(worktree),
                     "languages": ["css"]
                 }],
             }))),
@@ -107,7 +97,7 @@ impl zed::Extension for CSSModulesKitExtension {
                     "tsserver": {
                         "globalPlugins": [{
                             "name": TS_PLUGIN_PACKAGE_NAME,
-                            "location": self.get_ts_plugin_root_path(worktree)?.unwrap_or_else(|| worktree.root_path()),
+                            "location": get_ts_plugin_search_location(worktree),
                             "enableForWorkspaceTypeScriptVersions": true,
                             "languages": ["css"]
                         }]
