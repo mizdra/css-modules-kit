@@ -28,7 +28,7 @@
     "typescript"
   ],
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
   "activationEvents": [
     "onLanguage:css"
