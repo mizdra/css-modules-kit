@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.5.1
+
+### Patch Changes
+
+- d6566f3: deps: update dependencies
+
 ## 0.5.0
 
 ### Minor Changes

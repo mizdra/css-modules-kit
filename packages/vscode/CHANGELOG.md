@@ -1,5 +1,16 @@
 # css-modules-kit-vscode
 
+## 0.2.2
+
+### Patch Changes
+
+- 6533c2b: chore: change categories
+- 6533c2b: chore: remove unused settings
+- 48818ca: chore: add logo for vscode extension
+- Updated dependencies [e0ebb5b]
+- Updated dependencies [d6566f3]
+  - @css-modules-kit/ts-plugin@0.5.1
+
 ## 0.2.1
 
 ### Patch Changes
