@@ -28,12 +28,10 @@
     "typescript"
   ],
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage:css",
-    "onLanguage:less",
-    "onLanguage:scss"
+    "onLanguage:css"
   ],
   "contributes": {
     "typescriptServerPlugins": [

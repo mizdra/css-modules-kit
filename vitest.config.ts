@@ -4,6 +4,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
+    // On GitHub Actions, the Windows runner is slow and tests may fail with the default timeout.
+    // Therefore, we set the timeout to 10 seconds.
+    testTimeout: 10_000,
     projects: [
       {
         test: {
