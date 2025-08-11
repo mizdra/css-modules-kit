@@ -2,6 +2,10 @@
 
 A toolkit for making CSS Modules useful.
 
+<p align="center">
+  <img alt="Logo" width="256" height="256" src="./docs/logo.png" />
+</p>
+
 ## Intro
 
 By default, CSS Modules have limited language features in editors. For example:

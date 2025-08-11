@@ -23,6 +23,7 @@
   "engines": {
     "vscode": "^1.84.0"
   },
+  "icon": "./image/logo.png",
   "keywords": [
     "css-modules",
     "typescript"
