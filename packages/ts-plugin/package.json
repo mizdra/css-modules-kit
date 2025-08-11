@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/ts-plugin",
   "description": "A TypeScript Language Service Plugin for CSS Modules",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
@@ -49,7 +49,7 @@
   "dependencies": {
     "@volar/language-core": "^2.4.23",
     "@volar/typescript": "^2.4.23",
-    "@css-modules-kit/core": "^0.5.0"
+    "@css-modules-kit/core": "^0.5.1"
   },
   "peerDependencies": {
     "typescript": ">=5.6.3"
