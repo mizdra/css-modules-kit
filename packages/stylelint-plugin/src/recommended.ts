@@ -32,7 +32,7 @@ const recommendedConfig: Config = {
         // - `composes: global(a) from './test.module.css';`
         //
         // ref: https://github.com/css-modules/postcss-modules-extract-imports/blob/16f9c570e517cf3558b88cf96dcadf794230965a/src/index.js
-        composes: '[ [ <custom-ident> | global(<custom-ident>) ] ,? ]+ [ from <string> ]?',
+        composes: '[ [ <custom-ident> | global(<custom-ident>) ] ]# [ from <string> ]?',
       },
     },
   },
