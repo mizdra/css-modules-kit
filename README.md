@@ -16,11 +16,9 @@ By default, CSS Modules have limited language features in editors. For example:
 
 It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not handle CSS files. Since tsserver does not load CSS files, it cannot determine which definitions to go to or which code to rename.
 
-css-modules-kit solves this problem by using the [TypeScript Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin). With this plugin, css-modules-kit extends tsserver to handle `*.module.css` files. As a result, rich language features like code navigation and rename refactoring become available.
+css-modules-kit solves this problem by using the [TypeScript Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin). css-modules-kit extends tsserver to handle `*.module.css` files using it. As a result, rich language features like code navigation and rename refactoring become available. Moreover, it works with various editors.
 
-Another method that provides rich language features is to use the VS Code Extension API (see: https://github.com/Viijay-Kr/react-ts-css). However, it only supports VS Code. On the other hand, css-modules-kit is based on the TypeScript Language Service Plugin, so it supports other editors as well.
-
-Additionally, css-modules-kit provides various development tools for CSS Modules. For example, stylelint plugins and the tool that generates `*.d.ts` files.
+css-modules-kit also provides various development tools for CSS Modules. For example, stylelint plugins and the tool that generates `*.d.ts` files.
 
 ## Supported Language Features
 
@@ -225,3 +223,21 @@ To simplify the implementation, some features are not supported.
   - Use `@keyframes foo {...}` instead.
   - Meanwhile, `@keyframes :global(foo) { ... }` is supported.
 - VS Code for Web is not supported.
+
+## Comparison
+
+### [Viijay-Kr/react-ts-css](https://github.com/Viijay-Kr/react-ts-css)
+
+Viijay-Kr/react-ts-css also provides rich language features for CSS Modules. However, it is implemented using the VS Code Extension API. Therefore, it only supports VS Code.
+
+On the other hand, css-modules-kit is implemented using the TypeScript Language Service Plugin. It is a technology that does not depend on the editor. css-modules-kit supports editors other than VS Code.
+
+### [mrmckeb/typescript-plugin-css-modules](https://github.com/mrmckeb/typescript-plugin-css-modules)
+
+mrmckeb/typescript-plugin-css-modules is also implemented using the TypeScript Language Service Plugin. However, it only supports basic language features such as completion, typed `styles`, and Go to Definition. Cross-file language features between `*.tsx` and `.module.css`—such as Rename and Find All References—are not supported.
+
+This is because mrmckeb/typescript-plugin-css-modules does not extend tsserver to handle `*.module.css` files. Due to the lack of information about `*.module.css` files, tsserver cannot provide cross-file language features between `*.tsx` and `.module.css`.
+
+On the other hand, css-modules-kit extends tsserver to handle `*.module.css` files. The extension is realized by [Volar.js](https://volarjs.dev/). Please read the following slides for details (in Japanese).
+
+- https://speakerdeck.com/mizdra/css-modules-kit
