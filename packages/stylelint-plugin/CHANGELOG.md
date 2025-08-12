@@ -1,5 +1,11 @@
 # @css-modules-kit/stylelint-plugin
 
+## 0.3.3
+
+### Patch Changes
+
+- f81c8a8: refactor: refactor the syntax definition of `composes` property in stylelint-plugin
+
 ## 0.3.2
 
 ### Patch Changes

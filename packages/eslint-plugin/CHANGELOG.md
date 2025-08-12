@@ -1,5 +1,11 @@
 # @css-modules-kit/eslint-plugin
 
+## 0.2.3
+
+### Patch Changes
+
+- f81c8a8: fix: fix eslint crashing due to `composes` property
+
 ## 0.2.2
 
 ### Patch Changes
