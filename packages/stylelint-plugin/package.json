@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/stylelint-plugin",
   "description": "A stylelint plugin for CSS Modules",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
