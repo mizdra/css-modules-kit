@@ -1,6 +1,6 @@
 const { defineConfig } = require('@vscode/test-cli');
 
-const baseConfig = /** @type {const} */ ({
+const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   extensionDevelopmentPath: 'packages/vscode',
   version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
