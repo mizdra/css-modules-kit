@@ -19,6 +19,7 @@ import {
   readConfigFile,
 } from '@css-modules-kit/core';
 import ts from 'typescript';
+import type { ParsedArgs } from './cli.js';
 import { writeDtsFile } from './dts-writer.js';
 import { ReadCSSModuleFileError } from './error.js';
 import type { Logger } from './logger/logger.js';
@@ -63,8 +64,8 @@ async function writeDtsByCSSModule(
  * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
  * @throws {WriteDtsFileError}
  */
-export async function runCMK(project: string, clean: boolean, logger: Logger): Promise<void> {
-  const config = readConfigFile(project);
+export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
+  const config = readConfigFile(args.project);
   if (config.diagnostics.length > 0) {
     logger.logDiagnostics(config.diagnostics);
     // eslint-disable-next-line n/no-process-exit
@@ -120,7 +121,7 @@ export async function runCMK(project: string, clean: boolean, logger: Logger): P
     process.exit(1);
   }
 
-  if (clean) {
+  if (args.clean) {
     await rm(config.dtsOutDir, { recursive: true, force: true });
   }
   await Promise.all(
