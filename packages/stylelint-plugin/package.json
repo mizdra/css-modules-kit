@@ -14,16 +14,12 @@
   "private": false,
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./recommended": {
-      "import": {
-        "types": "./dist/recommended.d.ts",
-        "default": "./dist/recommended.js"
-      }
+      "types": "./dist/recommended.d.ts",
+      "default": "./dist/recommended.js"
     }
   },
   "scripts": {
