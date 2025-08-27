@@ -12,7 +12,14 @@
   "author": "mizdra <pp.mizdra@gmail.com>",
   "license": "MIT",
   "private": false,
-  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
   "scripts": {
     "build": "tsc -b tsconfig.build.json"
   },
