@@ -7,6 +7,9 @@ const baseConfig = /** @type {const} */ ({
     timeout: 10000,
     require: ['tsx/cjs', './scripts/vscode-test-setup.ts'],
   },
+  download: {
+    timeout: 60_000,
+  },
 });
 
 module.exports = defineConfig([
