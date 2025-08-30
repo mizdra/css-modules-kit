@@ -50,6 +50,7 @@ describe('readTsConfigFile', () => {
       compilerOptions: expect.objectContaining({
         module: ts.ModuleKind.ESNext,
       }),
+      wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
       diagnostics: [],
     });
   });
@@ -75,6 +76,7 @@ describe('readTsConfigFile', () => {
         arbitraryExtensions: true,
       },
       compilerOptions: expect.any(Object),
+      wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
       diagnostics: [],
     });
   });
@@ -105,6 +107,7 @@ describe('readTsConfigFile', () => {
       compilerOptions: expect.objectContaining({
         module: undefined,
       }),
+      wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
       diagnostics: [
         {
           category: 'error',
@@ -258,6 +261,28 @@ describe('readTsConfigFile', () => {
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
       });
+    });
+  });
+  describe('wildcardDirectories', () => {
+    test('set root directory if "include" is missing', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{}',
+      });
+      expect(readTsConfigFile(iff.rootDir).wildcardDirectories).toEqual([{ fileName: iff.rootDir, recursive: true }]);
+    });
+    test('non-recursive "include" pattern has `recursive === false`', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': dedent`
+          {
+            "include": ["src1", "src2/**/*", "src3/*"]
+          }
+        `,
+      });
+      expect(readTsConfigFile(iff.rootDir).wildcardDirectories).toEqual([
+        { fileName: iff.join('src1'), recursive: true },
+        { fileName: iff.join('src2'), recursive: true },
+        { fileName: iff.join('src3'), recursive: false },
+      ]);
     });
   });
 });
