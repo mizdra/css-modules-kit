@@ -4,7 +4,7 @@ import type { MatchesPattern, Resolver } from '../type.js';
 
 export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
   return {
-    includes: [],
+    includes: ['/app/**/*'],
     excludes: [],
     dtsOutDir: 'generated',
     arbitraryExtensions: false,
@@ -14,6 +14,7 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
     basePath: '/app',
     configFileName: '/app/tsconfig.json',
     compilerOptions: {},
+    wildcardDirectories: [{ fileName: '/app', recursive: true }],
     diagnostics: [],
     ...args,
   };

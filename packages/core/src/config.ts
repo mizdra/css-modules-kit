@@ -58,6 +58,8 @@ export interface CMKConfig {
   basePath: string;
   configFileName: string;
   compilerOptions: ts.CompilerOptions;
+  /** The directories to watch when watch mode is enabled. */
+  wildcardDirectories: { fileName: string; recursive: boolean }[];
   /** The diagnostics that occurred while reading the config file. */
   diagnostics: Diagnostic[];
 }
@@ -184,6 +186,7 @@ export function readTsConfigFile(project: string): {
   configFileName: string;
   config: UnnormalizedRawConfig;
   compilerOptions: ts.CompilerOptions;
+  wildcardDirectories: { fileName: string; recursive: boolean }[];
   diagnostics: Diagnostic[];
 } {
   const configFileName = findTsConfigFile(project);
@@ -234,6 +237,10 @@ export function readTsConfigFile(project: string): {
   return {
     configFileName,
     compilerOptions: parsedCommandLine.options,
+    wildcardDirectories: Object.entries(parsedCommandLine.wildcardDirectories ?? {}).map(([fileName, flags]) => ({
+      fileName,
+      recursive: (flags & ts.WatchDirectoryFlags.Recursive) !== 0,
+    })),
     ...parsedRawData,
   };
 }
@@ -247,7 +254,7 @@ export function readTsConfigFile(project: string): {
  * @throws {TsConfigFileNotFoundError}
  */
 export function readConfigFile(project: string): CMKConfig {
-  const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
+  const { configFileName, config, compilerOptions, wildcardDirectories, diagnostics } = readTsConfigFile(project);
   const basePath = dirname(configFileName);
   return {
     // If `include` is not specified, fallback to the default include spec。
@@ -262,6 +269,7 @@ export function readConfigFile(project: string): CMKConfig {
     basePath,
     configFileName,
     compilerOptions,
+    wildcardDirectories,
     diagnostics,
   };
 }
