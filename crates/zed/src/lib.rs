@@ -5,7 +5,7 @@ use zed_extension_api::{self as zed, Result, serde_json};
 const TS_PLUGIN_PACKAGE_NAME: &str = "@css-modules-kit/ts-plugin";
 
 /// Install ts-plugin in "{extension_work_dir}/node_modules"
-fn install_ts_plugin_if_needed() -> Result<()> {
+fn install_or_update_ts_plugin_if_needed() -> Result<()> {
     let installed_plugin_version = zed::npm_package_installed_version(TS_PLUGIN_PACKAGE_NAME)?;
     let latest_plugin_version = zed::npm_package_latest_version(TS_PLUGIN_PACKAGE_NAME)?;
 
@@ -32,8 +32,8 @@ fn get_ts_plugin_search_location(worktree: &zed::Worktree) -> String {
         return worktree.root_path();
     }
 
-    if let Err(_) = install_ts_plugin_if_needed() {
-        return worktree.root_path();
+    if let Err(_) = install_or_update_ts_plugin_if_needed() {
+        println!("Failed to install or update ts-plugin. Please try again later.")
     }
 
     // The cwd for the extension is "~/Library/Application Support/Zed/extensions/work/css-modules-kit" on macOS.
