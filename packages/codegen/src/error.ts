@@ -17,3 +17,9 @@ export class ReadCSSModuleFileError extends SystemError {
     super('READ_CSS_MODULE_FILE_ERROR', `Failed to read CSS Module file ${fileName}.`, cause);
   }
 }
+
+export class CreateProjectError extends SystemError {
+  constructor() {
+    super('CREATE_PROJECT_ERROR', `Failed to create project.`);
+  }
+}
