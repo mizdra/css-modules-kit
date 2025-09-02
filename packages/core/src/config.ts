@@ -17,6 +17,7 @@ export interface CMKConfig {
   arbitraryExtensions: boolean;
   namedExports: boolean;
   prioritizeNamedImports: boolean;
+  keyframes: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
    * This is an absolute path.
@@ -72,6 +73,7 @@ interface UnnormalizedRawConfig {
   arbitraryExtensions?: boolean;
   namedExports?: boolean;
   prioritizeNamedImports?: boolean;
+  keyframes?: boolean;
 }
 
 /**
@@ -135,6 +137,16 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
           category: 'error',
           text: `\`arbitraryExtensions\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
           // MEMO: Location information can be obtained from `tsConfigSourceFile.statements`, but this is complicated and will be omitted.
+        });
+      }
+    }
+    if ('keyframes' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.keyframes === 'boolean') {
+        result.config.keyframes = raw.cmkOptions.keyframes;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`keyframes\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
         });
       }
     }
@@ -238,7 +250,7 @@ export function readConfigFile(project: string): CMKConfig {
   const { configFileName, config, compilerOptions, diagnostics } = readTsConfigFile(project);
   const basePath = dirname(configFileName);
   return {
-    // If `include` is not specified, fallback to the default include spec.
+    // If `include` is not specified, fallback to the default include spec。
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
     includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
     excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
@@ -246,6 +258,7 @@ export function readConfigFile(project: string): CMKConfig {
     arbitraryExtensions: config.arbitraryExtensions ?? false,
     namedExports: config.namedExports ?? false,
     prioritizeNamedImports: config.prioritizeNamedImports ?? false,
+    keyframes: config.keyframes ?? true,
     basePath,
     configFileName,
     compilerOptions,

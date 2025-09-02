@@ -40,7 +40,7 @@ function isRuleNode(node: Node): node is Rule {
 /**
  * Collect tokens from the AST.
  */
-function collectTokens(ast: Root) {
+function collectTokens(ast: Root, keyframes: boolean) {
   const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
@@ -59,7 +59,7 @@ function collectTokens(ast: Root) {
       } else if (atValue.type === 'valueImportDeclaration') {
         tokenImporters.push({ ...atValue, type: 'value' });
       }
-    } else if (isAtKeyframesNode(node)) {
+    } else if (keyframes && isAtKeyframesNode(node)) {
       const { keyframe, diagnostics } = parseAtKeyframes(node);
       allDiagnostics.push(...diagnostics);
       if (keyframe) {
@@ -79,6 +79,7 @@ function collectTokens(ast: Root) {
 export interface ParseCSSModuleOptions {
   fileName: string;
   safe: boolean;
+  keyframes: boolean;
 }
 
 export interface ParseCSSModuleResult {
@@ -86,7 +87,10 @@ export interface ParseCSSModuleResult {
   diagnostics: DiagnosticWithLocation[];
 }
 
-export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleOptions): ParseCSSModuleResult {
+export function parseCSSModule(
+  text: string,
+  { fileName, safe, keyframes }: ParseCSSModuleOptions,
+): ParseCSSModuleResult {
   let ast: Root;
   const diagnosticSourceFile = { fileName, text };
   try {
@@ -110,7 +114,7 @@ export function parseCSSModule(text: string, { fileName, safe }: ParseCSSModuleO
     }
     throw e;
   }
-  const { localTokens, tokenImporters, diagnostics } = collectTokens(ast);
+  const { localTokens, tokenImporters, diagnostics } = collectTokens(ast, keyframes);
   const cssModule = {
     fileName,
     text,

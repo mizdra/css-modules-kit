@@ -30,7 +30,8 @@ describe('readTsConfigFile', () => {
             "dtsOutDir": "generated/cmk",
             "arbitraryExtensions": false,
             "namedExports": true,
-            "prioritizeNamedImports": true
+            "prioritizeNamedImports": true,
+            "keyframes": false
           }
         }
       `,
@@ -44,6 +45,7 @@ describe('readTsConfigFile', () => {
         arbitraryExtensions: false,
         namedExports: true,
         prioritizeNamedImports: true,
+        keyframes: false,
       },
       compilerOptions: expect.objectContaining({
         module: ts.ModuleKind.ESNext,
