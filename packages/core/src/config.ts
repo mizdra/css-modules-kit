@@ -165,18 +165,6 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
 }
 export { parseRawData as parseRawDataForTest };
 
-function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): ParsedRawData {
-  const result: ParsedRawData = { config: { ...base.config }, diagnostics: [...base.diagnostics] };
-  if (overrides.config.includes !== undefined) result.config.includes = overrides.config.includes;
-  if (overrides.config.excludes !== undefined) result.config.excludes = overrides.config.excludes;
-  if (overrides.config.dtsOutDir !== undefined) result.config.dtsOutDir = overrides.config.dtsOutDir;
-  if (overrides.config.arbitraryExtensions !== undefined)
-    result.config.arbitraryExtensions = overrides.config.arbitraryExtensions;
-  if (overrides.config.namedExports !== undefined) result.config.namedExports = overrides.config.namedExports;
-  result.diagnostics.push(...overrides.diagnostics);
-  return result;
-}
-
 /**
  * @throws {TsConfigFileNotFoundError}
  */
@@ -224,7 +212,10 @@ export function readTsConfigFile(project: string): {
         if (error instanceof TsConfigFileNotFoundError) continue;
         throw error;
       }
-      parsedRawData = mergeParsedRawData(base, parsedRawData);
+      parsedRawData = {
+        config: { ...base.config, ...parsedRawData.config },
+        diagnostics: [...base.diagnostics, ...parsedRawData.diagnostics],
+      };
     }
   }
 

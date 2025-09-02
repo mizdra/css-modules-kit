@@ -124,40 +124,53 @@ describe('readTsConfigFile', () => {
       const iff = await createIFF({
         'tsconfig.base.json': dedent`
           {
-            "cmkOptions": { "dtsOutDir": "generated/cmk" }
+            "include": ["src"],
+            "exclude": ["src/test"],
+            "cmkOptions": {
+              "dtsOutDir": "generated/cmk",
+              "arbitraryExtensions": true,
+              "namedExports": true,
+              "prioritizeNamedImports": true
+            }
           }
         `,
         'tsconfig.json': dedent`
           {
             "extends": "./tsconfig.base.json",
-            "cmkOptions": { "arbitraryExtensions": true }
           }
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
+        includes: ['src'],
+        excludes: ['src/test'],
         dtsOutDir: 'generated/cmk',
         arbitraryExtensions: true,
+        namedExports: true,
+        prioritizeNamedImports: true,
       });
     });
-    test('does not merge arrays and objects, but overwrites them', async () => {
+    test('merges root config with base config', async () => {
       const iff = await createIFF({
         'tsconfig.base.json': dedent`
           {
-            "include": ["include1"],
-            "exclude": ["exclude1"]
+            "include": ["src1"],
+            "exclude": ["src1/test"],
+            "cmkOptions": { "dtsOutDir": "generated1/cmk" }
           }
         `,
         'tsconfig.json': dedent`
           {
             "extends": "./tsconfig.base.json",
-            "include": ["include2"],
-            "exclude": ["exclude2"]
+            "include": ["src2"],
+            "exclude": ["src2/test"],
+            "cmkOptions": { "dtsOutDir": "generated2/cmk" }
           }
         `,
       });
       expect(readTsConfigFile(iff.rootDir).config).toStrictEqual({
-        includes: ['include2'],
-        excludes: ['exclude2'],
+        includes: ['src2'],
+        excludes: ['src2/test'],
+        dtsOutDir: 'generated2/cmk',
       });
     });
     test('inherits from a file recursively', async () => {
