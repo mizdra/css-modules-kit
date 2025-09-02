@@ -173,6 +173,8 @@ function mergeParsedRawData(base: ParsedRawData, overrides: ParsedRawData): Pars
   if (overrides.config.arbitraryExtensions !== undefined)
     result.config.arbitraryExtensions = overrides.config.arbitraryExtensions;
   if (overrides.config.namedExports !== undefined) result.config.namedExports = overrides.config.namedExports;
+  if (overrides.config.prioritizeNamedImports !== undefined)
+    result.config.prioritizeNamedImports = overrides.config.prioritizeNamedImports;
   result.diagnostics.push(...overrides.diagnostics);
   return result;
 }
