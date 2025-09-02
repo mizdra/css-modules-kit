@@ -1,5 +1,17 @@
 # @css-modules-kit/ts-plugin
 
+## 0.6.0
+
+### Minor Changes
+
+- 1f44d73: feat: add `cmkOptions.keyframes` option
+
+### Patch Changes
+
+- Updated dependencies [b167f2c]
+- Updated dependencies [1f44d73]
+  - @css-modules-kit/core@0.6.0
+
 ## 0.5.1
 
 ### Patch Changes

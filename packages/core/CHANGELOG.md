@@ -1,5 +1,15 @@
 # @css-modules-kit/core
 
+## 0.6.0
+
+### Minor Changes
+
+- 1f44d73: feat: add `cmkOptions.keyframes` option
+
+### Patch Changes
+
+- b167f2c: fix: fix an issue where `prioritizeNamedImports` is ignored when used with `extends` of `tsconfig.json`
+
 ## 0.5.1
 
 ### Patch Changes

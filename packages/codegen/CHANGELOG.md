@@ -1,5 +1,18 @@
 # @css-modules-kit/codegen
 
+## 0.6.0
+
+### Minor Changes
+
+- f559992: chore!: make codegen internal API private
+- 1f44d73: feat: add `cmkOptions.keyframes` option
+
+### Patch Changes
+
+- Updated dependencies [b167f2c]
+- Updated dependencies [1f44d73]
+  - @css-modules-kit/core@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
