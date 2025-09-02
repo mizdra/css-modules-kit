@@ -198,6 +198,23 @@ When this option is `true`, `import { button } from '...'` will be added. When t
 }
 ```
 
+### `cmkOptions.keyframes`
+
+Type: `boolean`, Default: `true`
+
+Determines whether to generate the [token](docs/glossary.md#token) of keyframes in the d.ts file.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "keyframes": false,
+  },
+}
+```
+
 ## Supported CSS Modules features
 
 - `:local(...)` and `:global(...)`

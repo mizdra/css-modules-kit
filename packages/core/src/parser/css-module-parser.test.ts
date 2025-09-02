@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.js';
 
-const options: ParseCSSModuleOptions = { fileName: '/test.module.css', safe: false };
+const options: ParseCSSModuleOptions = { fileName: '/test.module.css', safe: false, keyframes: true };
 
 describe('parseCSSModule', () => {
   test('collects local tokens', () => {
@@ -788,5 +788,9 @@ describe('parseCSSModule', () => {
         "diagnostics": [],
       }
     `);
+  });
+  test('does not include the token of keyframes if keyframes is false', () => {
+    const parsed = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
+    expect(parsed.cssModule.localTokens).toMatchInlineSnapshot(`[]`);
   });
 });

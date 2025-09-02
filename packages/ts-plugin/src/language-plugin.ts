@@ -52,6 +52,7 @@ export function createCSSLanguagePlugin(
         // The CSS in the process of being written in an editor often contains invalid syntax.
         // So, ts-plugin uses a fault-tolerant Parser to parse CSS.
         safe: true,
+        keyframes: config.keyframes,
       });
       // eslint-disable-next-line prefer-const
       let { text, mapping, linkedCodeMapping } = createDts(
