@@ -1,5 +1,18 @@
 # @css-modules-kit/stylelint-plugin
 
+## 0.4.0
+
+### Minor Changes
+
+- 66ea122: feat: allow `require('@css-modules-kit/stylelint-plugin')`
+
+### Patch Changes
+
+- f81c8a8: refactor: refactor the syntax definition of `composes` property in stylelint-plugin
+- Updated dependencies [b167f2c]
+- Updated dependencies [1f44d73]
+  - @css-modules-kit/core@0.6.0
+
 ## 0.3.2
 
 ### Patch Changes

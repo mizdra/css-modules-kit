@@ -1,5 +1,18 @@
 # @css-modules-kit/eslint-plugin
 
+## 0.3.0
+
+### Minor Changes
+
+- 2df5729: chore!: make eslint-plugin internal API private
+
+### Patch Changes
+
+- f81c8a8: fix: fix eslint crashing due to `composes` property
+- Updated dependencies [b167f2c]
+- Updated dependencies [1f44d73]
+  - @css-modules-kit/core@0.6.0
+
 ## 0.2.2
 
 ### Patch Changes
