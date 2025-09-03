@@ -1,5 +1,11 @@
 # css-modules-kit-vscode
 
+## 0.3.0
+
+### Minor Changes
+
+- e669052: deps: update bundled ts-plugin version
+
 ## 0.2.3
 
 ### Patch Changes
