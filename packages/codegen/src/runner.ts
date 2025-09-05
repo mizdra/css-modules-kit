@@ -58,6 +58,74 @@ async function writeDtsByCSSModule(
   });
 }
 
+function tryReadConfigFile(args: ParsedArgs, logger: Logger): CMKConfig {
+  const config = readConfigFile(args.project);
+  if (config.diagnostics.length > 0) {
+    logger.logDiagnostics(config.diagnostics);
+    // eslint-disable-next-line n/no-process-exit
+    if (!args.watch) process.exit(1);
+  }
+  return config;
+}
+
+interface Watcher {
+  close: () => void;
+}
+
+/**
+ * Run css-modules-kit .d.ts generation.
+ * @param project The absolute path to the project directory or the path to `tsconfig.json`.
+ * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
+ * @throws {WriteDtsFileError}
+ */
+export function runCMKForWatchMode(args: ParsedArgs, logger: Logger): Watcher {
+  const watchFile = ts.sys.watchFile?.bind(ts.sys);
+  const watchDirectory = ts.sys.watchDirectory?.bind(ts.sys);
+  if (!watchFile || !watchDirectory) {
+    // TODO: Handle errors
+    throw new Error('The current environment does not support file watching.');
+  }
+  let config = tryReadConfigFile(args, logger);
+  let matchesPattern = createMatchesPattern(config);
+  let fileNames = getFileNamesByPattern(config);
+  let watchers: ts.FileWatcher[] = [];
+
+  function onTSConfigChange() {
+    watchers.forEach((watcher) => watcher.close());
+    watchers = [];
+    config = tryReadConfigFile(args, logger);
+    matchesPattern = createMatchesPattern(config);
+    fileNames = getFileNamesByPattern(config);
+    watchProject();
+  }
+  function onFileCreateOrRemove(fileName: string) {
+    if (matchesPattern(fileName) && fileNames.includes(fileName)) {
+      fileNames.push(fileName);
+      watchers.push(watchFile!(fileName, onProjectFileChange));
+    }
+  }
+  function onProjectFileChange(fileName: string) {
+    processChangedFiles(fileNames, fileName);
+  }
+  function watchProject() {
+    // TODO: Watch extended config files
+    watchers.push(watchFile!(args.project, onTSConfigChange));
+    for (const { fileName, recursive } of config.wildcardDirectories) {
+      watchers.push(watchDirectory!(fileName, onFileCreateOrRemove, recursive));
+    }
+    for (const fileName of fileNames) {
+      watchers.push(watchFile!(fileName, onProjectFileChange));
+    }
+  }
+  logger.logMessage('Starting cmk in watch mode...');
+  watchProject();
+  return {
+    close: () => {
+      watchers.forEach((watcher) => watcher.close());
+    },
+  };
+}
+
 /**
  * Run css-modules-kit .d.ts generation.
  * @param project The absolute path to the project directory or the path to `tsconfig.json`.
