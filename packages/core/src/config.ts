@@ -86,13 +86,17 @@ interface ParsedRawData {
   diagnostics: Diagnostic[];
 }
 
-export function findTsConfigFile(project: string): string | undefined {
+function findTsConfigFile(project: string): string | undefined {
   const configFile =
     ts.sys.directoryExists(project) ?
       ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
     : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
   if (!configFile) return undefined;
   return resolve(configFile);
+}
+
+function isTsConfigFileExists(fileName: string): boolean {
+  return ts.findConfigFile(dirname(fileName), ts.sys.fileExists.bind(ts.sys), basename(fileName)) !== undefined;
 }
 
 function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
@@ -177,22 +181,9 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
   }
   return result;
 }
-export { parseRawData as parseRawDataForTest };
 
-/**
- * @throws {TsConfigFileNotFoundError}
- */
-export function readTsConfigFile(project: string): {
-  configFileName: string;
-  config: UnnormalizedRawConfig;
-  compilerOptions: ts.CompilerOptions;
-  wildcardDirectories: { fileName: string; recursive: boolean }[];
-  diagnostics: Diagnostic[];
-} {
-  const configFileName = findTsConfigFile(project);
-  if (!configFileName) throw new TsConfigFileNotFoundError();
-
-  const tsConfigSourceFile = ts.readJsonConfigFile(configFileName, ts.sys.readFile.bind(ts.sys));
+function parseTsConfigFile(fileName: string) {
+  const tsConfigSourceFile = ts.readJsonConfigFile(fileName, ts.sys.readFile.bind(ts.sys));
   // MEMO: `tsConfigSourceFile.parseDiagnostics` (Internal API) contains a syntax error for `tsconfig.json`.
   // However, it is ignored so that ts-plugin will work even if `tsconfig.json` is somewhat broken.
   // Also, this error is reported to the user by `tsc` or `tsserver`.
@@ -201,9 +192,9 @@ export function readTsConfigFile(project: string): {
   const parsedCommandLine = ts.parseJsonSourceFileConfigFileContent(
     tsConfigSourceFile,
     ts.sys,
-    dirname(configFileName),
+    dirname(fileName),
     undefined,
-    configFileName,
+    fileName,
     undefined,
     [
       {
@@ -214,28 +205,10 @@ export function readTsConfigFile(project: string): {
     ],
   );
   // Read options from `parsedCommandLine.raw`
-  let parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile);
-
-  // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
-  // So here we read the options from those files and merge them into `parsedRawData`.
-  if (tsConfigSourceFile.extendedSourceFiles) {
-    for (const extendedSourceFile of tsConfigSourceFile.extendedSourceFiles) {
-      let base: ParsedRawData;
-      try {
-        base = readTsConfigFile(extendedSourceFile);
-      } catch (error) {
-        if (error instanceof TsConfigFileNotFoundError) continue;
-        throw error;
-      }
-      parsedRawData = {
-        config: { ...base.config, ...parsedRawData.config },
-        diagnostics: [...base.diagnostics, ...parsedRawData.diagnostics],
-      };
-    }
-  }
+  const parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile);
 
   return {
-    configFileName,
+    extendedSourceFiles: tsConfigSourceFile.extendedSourceFiles,
     compilerOptions: parsedCommandLine.options,
     wildcardDirectories: Object.entries(parsedCommandLine.wildcardDirectories ?? {}).map(([fileName, flags]) => ({
       fileName,
@@ -254,22 +227,38 @@ export function readTsConfigFile(project: string): {
  * @throws {TsConfigFileNotFoundError}
  */
 export function readConfigFile(project: string): CMKConfig {
-  const { configFileName, config, compilerOptions, wildcardDirectories, diagnostics } = readTsConfigFile(project);
+  const configFileName = findTsConfigFile(project);
+  if (!configFileName) throw new TsConfigFileNotFoundError();
+
+  const parsedTsConfig = parseTsConfigFile(configFileName);
+
+  // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
+  // So here we read the options from those files and merge them into `parsedRawData`.
+  if (parsedTsConfig.extendedSourceFiles) {
+    for (const extendedSourceFile of parsedTsConfig.extendedSourceFiles) {
+      if (isTsConfigFileExists(extendedSourceFile)) {
+        const base = parseTsConfigFile(extendedSourceFile);
+        parsedTsConfig.config = { ...base.config, ...parsedTsConfig.config };
+        parsedTsConfig.diagnostics = [...base.diagnostics, ...parsedTsConfig.diagnostics];
+      }
+    }
+  }
+
   const basePath = dirname(configFileName);
   return {
     // If `include` is not specified, fallback to the default include spec。
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
-    includes: (config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
-    excludes: (config.excludes ?? []).map((e) => join(basePath, e)),
-    dtsOutDir: join(basePath, config.dtsOutDir ?? 'generated'),
-    arbitraryExtensions: config.arbitraryExtensions ?? false,
-    namedExports: config.namedExports ?? false,
-    prioritizeNamedImports: config.prioritizeNamedImports ?? false,
-    keyframes: config.keyframes ?? true,
+    includes: (parsedTsConfig.config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
+    excludes: (parsedTsConfig.config.excludes ?? []).map((e) => join(basePath, e)),
+    dtsOutDir: join(basePath, parsedTsConfig.config.dtsOutDir ?? 'generated'),
+    arbitraryExtensions: parsedTsConfig.config.arbitraryExtensions ?? false,
+    namedExports: parsedTsConfig.config.namedExports ?? false,
+    prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
+    keyframes: parsedTsConfig.config.keyframes ?? true,
     basePath,
     configFileName,
-    compilerOptions,
-    wildcardDirectories,
-    diagnostics,
+    compilerOptions: parsedTsConfig.compilerOptions,
+    wildcardDirectories: parsedTsConfig.wildcardDirectories,
+    diagnostics: parsedTsConfig.diagnostics,
   };
 }
