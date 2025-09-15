@@ -246,7 +246,7 @@ export function readConfigFile(project: string): CMKConfig {
 
   const basePath = dirname(configFileName);
   return {
-    // If `include` is not specified, fallback to the default include spec。
+    // If `include` is not specified, fallback to the default include spec.
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
     includes: (parsedTsConfig.config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
     excludes: (parsedTsConfig.config.excludes ?? []).map((e) => join(basePath, e)),
