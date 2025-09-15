@@ -60,6 +60,8 @@ export interface CMKConfig {
   compilerOptions: ts.CompilerOptions;
   /** The directories to watch when watch mode is enabled. */
   wildcardDirectories: { fileName: string; recursive: boolean }[];
+  /** The tsconfig files inherited by `configFileName`. */
+  extendedSourceFiles: string[];
   /** The diagnostics that occurred while reading the config file. */
   diagnostics: Diagnostic[];
 }
@@ -259,6 +261,7 @@ export function readConfigFile(project: string): CMKConfig {
     configFileName,
     compilerOptions: parsedTsConfig.compilerOptions,
     wildcardDirectories: parsedTsConfig.wildcardDirectories,
+    extendedSourceFiles: parsedTsConfig.extendedSourceFiles ?? [],
     diagnostics: parsedTsConfig.diagnostics,
   };
 }
