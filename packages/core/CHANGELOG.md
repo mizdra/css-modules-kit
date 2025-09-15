@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.7.0
+
+### Minor Changes
+
+- 4d661a1: feat: add `wildcardDirectories` in `CMKConfig`
+
 ## 0.6.0
 
 ### Minor Changes
