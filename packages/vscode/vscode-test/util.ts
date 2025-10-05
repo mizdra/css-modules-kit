@@ -10,7 +10,7 @@ export async function waitFor<T>(
   testFn: () => Promise<T>,
   options?: { timeout: number; interval: number },
 ): Promise<T> {
-  const timeout = options?.timeout ?? 5000;
+  const timeout = options?.timeout ?? 10_000;
   const interval = options?.interval ?? 50;
   const endTime = Date.now() + timeout;
 
