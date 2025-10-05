@@ -1,9 +1,11 @@
+import { realpathSync } from 'node:fs';
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 import type { CMKConfig } from './config.js';
 import { readConfigFile } from './config.js';
 import { TsConfigFileNotFoundError } from './error.js';
+import { slash } from './path.js';
 import { createIFF } from './test/fixture.js';
 
 describe('readConfigFile', () => {
@@ -18,19 +20,21 @@ describe('readConfigFile', () => {
   });
   test('returns the default options even if tsconfig is empty', async () => {
     const iff = await createIFF({ 'tsconfig.json': '{}' });
-    expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>(
-      expect.objectContaining({
-        includes: [iff.join('**/*')],
-        excludes: [],
-        dtsOutDir: iff.join('generated'),
-        arbitraryExtensions: false,
-        namedExports: false,
-        prioritizeNamedImports: false,
-        keyframes: true,
-        compilerOptions: expect.any(Object),
-        wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
-      }),
-    );
+    expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>({
+      includes: [iff.join('**/*')],
+      excludes: [],
+      dtsOutDir: iff.join('generated'),
+      arbitraryExtensions: false,
+      namedExports: false,
+      prioritizeNamedImports: false,
+      keyframes: true,
+      basePath: iff.rootDir,
+      configFileName: iff.paths['tsconfig.json'],
+      compilerOptions: expect.any(Object),
+      wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
+      extendedSourceFiles: [],
+      diagnostics: [],
+    });
   });
   test('default option values are overridden by config file values', async () => {
     const iff = await createIFF({
@@ -101,6 +105,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ESNext,
           }),
           wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base.json')],
         }),
       );
     });
@@ -134,6 +139,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ES2015,
           }),
           wildcardDirectories: [{ fileName: iff.join('src2'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base.json')],
         }),
       );
     });
@@ -161,6 +167,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ESNext,
           }),
           wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base2.json'), iff.join('tsconfig.base1.json')],
         }),
       );
     });
@@ -199,6 +206,14 @@ describe('readConfigFile', () => {
         `,
       });
       expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated/cmk'));
+      expect(readConfigFile(iff.rootDir)).toStrictEqual(
+        expect.objectContaining({
+          dtsOutDir: iff.join('generated/cmk'),
+          // The path to tsconfig.json from the package is resolved using `realpath`.
+          // Therefore, the expected path is also resolved using `realpath`.
+          extendedSourceFiles: [slash(realpathSync(iff.join('node_modules/some-pkg/tsconfig.json')))],
+        }),
+      );
     });
     test('inherits from multiple files', async () => {
       const iff = await createIFF({
@@ -222,6 +237,7 @@ describe('readConfigFile', () => {
         expect.objectContaining({
           dtsOutDir: iff.join('generated/cmk'),
           arbitraryExtensions: true,
+          extendedSourceFiles: [iff.join('tsconfig.base1.json'), iff.join('tsconfig.base2.json')],
         }),
       );
     });
