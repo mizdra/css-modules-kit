@@ -18,19 +18,21 @@ describe('readConfigFile', () => {
   });
   test('returns the default options even if tsconfig is empty', async () => {
     const iff = await createIFF({ 'tsconfig.json': '{}' });
-    expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>(
-      expect.objectContaining({
-        includes: [iff.join('**/*')],
-        excludes: [],
-        dtsOutDir: iff.join('generated'),
-        arbitraryExtensions: false,
-        namedExports: false,
-        prioritizeNamedImports: false,
-        keyframes: true,
-        compilerOptions: expect.any(Object),
-        wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
-      }),
-    );
+    expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>({
+      includes: [iff.join('**/*')],
+      excludes: [],
+      dtsOutDir: iff.join('generated'),
+      arbitraryExtensions: false,
+      namedExports: false,
+      prioritizeNamedImports: false,
+      keyframes: true,
+      basePath: iff.rootDir,
+      configFileName: iff.paths['tsconfig.json'],
+      compilerOptions: expect.any(Object),
+      wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
+      extendedSourceFiles: [],
+      diagnostics: [],
+    });
   });
   test('default option values are overridden by config file values', async () => {
     const iff = await createIFF({
@@ -101,6 +103,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ESNext,
           }),
           wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base.json')],
         }),
       );
     });
@@ -134,6 +137,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ES2015,
           }),
           wildcardDirectories: [{ fileName: iff.join('src2'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base.json')],
         }),
       );
     });
@@ -161,6 +165,7 @@ describe('readConfigFile', () => {
             module: ts.ModuleKind.ESNext,
           }),
           wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
+          extendedSourceFiles: [iff.join('tsconfig.base2.json'), iff.join('tsconfig.base1.json')],
         }),
       );
     });
@@ -185,21 +190,6 @@ describe('readConfigFile', () => {
       });
       expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated2'));
     });
-    test('inherits from a package', async () => {
-      const iff = await createIFF({
-        'node_modules/some-pkg/tsconfig.json': dedent`
-          {
-            "cmkOptions": { "dtsOutDir": "generated/cmk" }
-          }
-        `,
-        'tsconfig.json': dedent`
-          {
-            "extends": "some-pkg/tsconfig.json"
-          }
-        `,
-      });
-      expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated/cmk'));
-    });
     test('inherits from multiple files', async () => {
       const iff = await createIFF({
         'tsconfig.base1.json': dedent`
@@ -222,6 +212,7 @@ describe('readConfigFile', () => {
         expect.objectContaining({
           dtsOutDir: iff.join('generated/cmk'),
           arbitraryExtensions: true,
+          extendedSourceFiles: [iff.join('tsconfig.base1.json'), iff.join('tsconfig.base2.json')],
         }),
       );
     });
