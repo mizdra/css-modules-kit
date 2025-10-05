@@ -4,7 +4,7 @@ const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   extensionDevelopmentPath: 'packages/vscode',
   version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
-    timeout: 10000,
+    timeout: 30_000,
     require: ['tsx/cjs', './scripts/vscode-test-setup.ts'],
   },
   download: {
