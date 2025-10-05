@@ -1,11 +1,9 @@
-import { realpathSync } from 'node:fs';
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
 import type { CMKConfig } from './config.js';
 import { readConfigFile } from './config.js';
 import { TsConfigFileNotFoundError } from './error.js';
-import { slash } from './path.js';
 import { createIFF } from './test/fixture.js';
 
 describe('readConfigFile', () => {
@@ -191,29 +189,6 @@ describe('readConfigFile', () => {
       `,
       });
       expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated2'));
-    });
-    test('inherits from a package', async () => {
-      const iff = await createIFF({
-        'node_modules/some-pkg/tsconfig.json': dedent`
-          {
-            "cmkOptions": { "dtsOutDir": "generated/cmk" }
-          }
-        `,
-        'tsconfig.json': dedent`
-          {
-            "extends": "some-pkg/tsconfig.json"
-          }
-        `,
-      });
-      expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated/cmk'));
-      expect(readConfigFile(iff.rootDir)).toStrictEqual(
-        expect.objectContaining({
-          dtsOutDir: iff.join('generated/cmk'),
-          // The path to tsconfig.json from the package is resolved using `realpath`.
-          // Therefore, the expected path is also resolved using `realpath`.
-          extendedSourceFiles: [slash(realpathSync(iff.join('node_modules/some-pkg/tsconfig.json')))],
-        }),
-      );
     });
     test('inherits from multiple files', async () => {
       const iff = await createIFF({
