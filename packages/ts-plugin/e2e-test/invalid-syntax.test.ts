@@ -44,9 +44,6 @@ describe('handle invalid syntax CSS without crashing', async () => {
     expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(normalizeDefinitions(expected));
   });
   test('does not report syntactic diagnostics', async () => {
-    // NOTE: The standard CSS Language Server reports invalid syntax errors.
-    // Therefore, if ts-plugin also reports it, the same error is reported twice.
-    // To avoid this, ts-plugin does not report invalid syntax errors.
     const res = await tsserver.sendSyntacticDiagnosticsSync({
       file: iff.paths['a.module.css'],
     });

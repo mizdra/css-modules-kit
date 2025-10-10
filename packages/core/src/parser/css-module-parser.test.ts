@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.js';
 
-const options: ParseCSSModuleOptions = { fileName: '/test.module.css', safe: false, keyframes: true };
+const options: ParseCSSModuleOptions = { fileName: '/test.module.css', includeSyntaxError: true, keyframes: true };
 
 describe('parseCSSModule', () => {
   test('collects local tokens', () => {
@@ -695,7 +695,35 @@ describe('parseCSSModule', () => {
       {
         "cssModule": {
           "fileName": "/test.module.css",
-          "localTokens": [],
+          "localTokens": [
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 6,
+                  "line": 1,
+                  "offset": 5,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 1,
+                  "offset": 0,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 3,
+                  "line": 1,
+                  "offset": 2,
+                },
+                "start": {
+                  "column": 2,
+                  "line": 1,
+                  "offset": 1,
+                },
+              },
+              "name": "a",
+            },
+          ],
           "text": ".a {",
           "tokenImporters": [],
         },
@@ -742,14 +770,15 @@ describe('parseCSSModule', () => {
       }
     `);
   });
-  test('parses CSS in a fault-tolerant manner if safe is true', () => {
-    const parsed = parseCSSModule(
-      dedent`
-        .a {
-      `,
-      { ...options, safe: true },
-    );
-    expect(parsed).toMatchInlineSnapshot(`
+  test('does not include syntax error in diagnostics if includeSyntaxError is false', () => {
+    expect(
+      parseCSSModule(
+        dedent`
+          .a {
+        `,
+        { ...options, includeSyntaxError: false },
+      ),
+    ).toMatchInlineSnapshot(`
       {
         "cssModule": {
           "fileName": "/test.module.css",

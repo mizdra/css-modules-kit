@@ -34,7 +34,7 @@ async function parseCSSModuleByFileName(fileName: string, config: CMKConfig): Pr
   } catch (error) {
     throw new ReadCSSModuleFileError(fileName, error);
   }
-  return parseCSSModule(text, { fileName, safe: false, keyframes: config.keyframes });
+  return parseCSSModule(text, { fileName, includeSyntaxError: true, keyframes: config.keyframes });
 }
 
 /**
@@ -101,6 +101,15 @@ export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
     syntacticDiagnostics.push(...parseResult.diagnostics);
   }
 
+  if (args.clean) {
+    await rm(config.dtsOutDir, { recursive: true, force: true });
+  }
+  await Promise.all(
+    parseResults.map(async (parseResult) =>
+      writeDtsByCSSModule(parseResult.cssModule, config, resolver, matchesPattern),
+    ),
+  );
+
   if (syntacticDiagnostics.length > 0) {
     logger.logDiagnostics(syntacticDiagnostics);
     // eslint-disable-next-line n/no-process-exit
@@ -120,13 +129,4 @@ export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
     // eslint-disable-next-line n/no-process-exit
     process.exit(1);
   }
-
-  if (args.clean) {
-    await rm(config.dtsOutDir, { recursive: true, force: true });
-  }
-  await Promise.all(
-    parseResults.map(async (parseResult) =>
-      writeDtsByCSSModule(parseResult.cssModule, config, resolver, matchesPattern),
-    ),
-  );
 }

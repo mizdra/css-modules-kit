@@ -78,7 +78,8 @@ function collectTokens(ast: Root, keyframes: boolean) {
 
 export interface ParseCSSModuleOptions {
   fileName: string;
-  safe: boolean;
+  /** Whether to include syntax errors from diagnostics */
+  includeSyntaxError: boolean;
   keyframes: boolean;
 }
 
@@ -87,33 +88,39 @@ export interface ParseCSSModuleResult {
   diagnostics: DiagnosticWithLocation[];
 }
 
+/**
+ * Parse CSS Module text.
+ * If a syntax error is detected in the text, it is re-parsed using `postcss-safe-parser`, and `localTokens` are collected as much as possible.
+ */
 export function parseCSSModule(
   text: string,
-  { fileName, safe, keyframes }: ParseCSSModuleOptions,
+  { fileName, includeSyntaxError, keyframes }: ParseCSSModuleOptions,
 ): ParseCSSModuleResult {
   let ast: Root;
-  const diagnosticSourceFile = { fileName, text };
-  try {
-    const parser = safe ? safeParser : parse;
-    ast = parser(text, { from: fileName });
-  } catch (e) {
-    if (e instanceof CssSyntaxError) {
+  const diagnosticFile = { fileName, text };
+  const allDiagnostics: DiagnosticWithLocation[] = [];
+  if (includeSyntaxError) {
+    try {
+      ast = parse(text, { from: fileName });
+    } catch (e) {
+      if (!(e instanceof CssSyntaxError)) throw e;
+      // If syntax error, try to parse with safe parser. While this incurs a cost
+      // due to parsing the file twice, it rarely becomes an issue since files
+      // with syntax errors are usually few in number.
+      ast = safeParser(text, { from: fileName });
       const { line, column, endColumn } = e.input!;
-      return {
-        cssModule: { fileName, text, localTokens: [], tokenImporters: [] },
-        diagnostics: [
-          {
-            file: diagnosticSourceFile,
-            start: { line, column },
-            length: endColumn !== undefined ? endColumn - column : 1,
-            text: e.reason,
-            category: 'error',
-          },
-        ],
-      };
+      allDiagnostics.push({
+        file: diagnosticFile,
+        start: { line, column },
+        length: endColumn !== undefined ? endColumn - column : 1,
+        text: e.reason,
+        category: 'error',
+      });
     }
-    throw e;
+  } else {
+    ast = safeParser(text, { from: fileName });
   }
+
   const { localTokens, tokenImporters, diagnostics } = collectTokens(ast, keyframes);
   const cssModule = {
     fileName,
@@ -121,5 +128,6 @@ export function parseCSSModule(
     localTokens,
     tokenImporters,
   };
-  return { cssModule, diagnostics: diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticSourceFile })) };
+  allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
+  return { cssModule, diagnostics: allDiagnostics };
 }

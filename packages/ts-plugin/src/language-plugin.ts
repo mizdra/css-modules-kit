@@ -49,9 +49,10 @@ export function createCSSLanguagePlugin(
       const cssModuleCode = snapshot.getText(0, length);
       const { cssModule, diagnostics } = parseCSSModule(cssModuleCode, {
         fileName: scriptId,
-        // The CSS in the process of being written in an editor often contains invalid syntax.
-        // So, ts-plugin uses a fault-tolerant Parser to parse CSS.
-        safe: true,
+        // NOTE: The standard CSS Language Server reports invalid syntax errors.
+        // Therefore, if ts-plugin also reports it, the same error is reported twice.
+        // To avoid this, ts-plugin does not report invalid syntax errors.
+        includeSyntaxError: false,
         keyframes: config.keyframes,
       });
       // eslint-disable-next-line prefer-const

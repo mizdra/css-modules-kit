@@ -204,6 +204,22 @@ describe('runCMK', () => {
         },
       ]
     `);
+    // Even if there is a syntax error, .d.ts files are generated.
+    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        a1: '' as readonly string,
+      };
+      export default styles;
+      "
+    `);
+    expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+      };
+      export default styles;
+      "
+    `);
   });
   test('reports semantic diagnostics in *.module.css', async () => {
     const iff = await createIFF({
@@ -246,6 +262,25 @@ describe('runCMK', () => {
           "text": "Cannot import module './c.module.css'",
         },
       ]
+    `);
+    // Even if there is a semantic error, .d.ts files are generated.
+    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        b_1: (await import('./b.module.css')).default.b_1,
+        b_2: (await import('./b.module.css')).default.b_2,
+      };
+      export default styles;
+      "
+    `);
+    expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        b_1: '' as readonly string,
+        ...(await import('./c.module.css')).default,
+      };
+      export default styles;
+      "
     `);
   });
 });
