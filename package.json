@@ -14,7 +14,7 @@
     "packages/eslint-plugin"
   ],
   "scripts": {
-    "version": "npx @changesets/cli version && npm i",
+    "version": "changeset version && npm i",
     "build": "tsc -b tsconfig.build.json",
     "lint": "run-s -c lint:*",
     "lint:tsc": "tsc -b",
@@ -26,6 +26,7 @@
   },
   "prettier": "@mizdra/prettier-config-mizdra",
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@eslint/css": "^0.10.0",
     "@mizdra/eslint-config-mizdra": "^6.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
@@ -38,9 +39,11 @@
     "@typescript/server-harness": "^0.3.5",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.2",
     "dedent": "^1.6.0",
     "eslint": "^9.33.0",
     "npm-run-all2": "^8.0.4",
+    "ovsx": "^0.10.6",
     "prettier": "^3.6.2",
     "stylelint": "^16.23.1",
     "tsx": "^4.20.3",
