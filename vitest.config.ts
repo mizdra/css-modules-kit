@@ -9,6 +9,7 @@ export default defineConfig({
     testTimeout: 10_000,
     projects: [
       {
+        extends: true,
         test: {
           name: 'unit',
           include: ['packages/*/src/**/*.test.ts'],
@@ -20,6 +21,7 @@ export default defineConfig({
         },
       },
       {
+        extends: true,
         test: {
           name: 'e2e',
           include: ['packages/*/e2e-test/**/*.test.ts'],
