@@ -1,5 +1,18 @@
 # @css-modules-kit/ts-plugin
 
+## 0.7.0
+
+### Minor Changes
+
+- 60b7515: feat: generate .d.ts files even if syntax or semantic errors are found
+
+### Patch Changes
+
+- Updated dependencies [60b7515]
+- Updated dependencies [4d661a1]
+- Updated dependencies [fad888a]
+  - @css-modules-kit/core@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
