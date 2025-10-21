@@ -1,5 +1,13 @@
 # @css-modules-kit/core
 
+## 0.7.0
+
+### Minor Changes
+
+- 60b7515: feat: generate .d.ts files even if syntax or semantic errors are found
+- 4d661a1: feat: add `wildcardDirectories` in `CMKConfig`
+- fad888a: feat: add `extendedSourceFiles` in `CMKConfig`
+
 ## 0.6.0
 
 ### Minor Changes
