@@ -30,443 +30,443 @@ describe('parseCSSModule', () => {
     );
     expect(parsed).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 10,
-                  "line": 1,
-                  "offset": 9,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 1,
-                  "offset": 0,
-                },
+        "diagnostics": [],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 10,
+                "line": 1,
+                "offset": 9,
               },
-              "loc": {
-                "end": {
-                  "column": 7,
-                  "line": 1,
-                  "offset": 6,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 1,
-                  "offset": 1,
-                },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
               },
-              "name": "basic",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 14,
-                  "line": 2,
-                  "offset": 23,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 2,
-                  "offset": 10,
-                },
+            "loc": {
+              "end": {
+                "column": 7,
+                "line": 1,
+                "offset": 6,
               },
-              "loc": {
-                "end": {
-                  "column": 11,
-                  "line": 2,
-                  "offset": 20,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 2,
-                  "offset": 11,
-                },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
               },
-              "name": "cascading",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 14,
-                  "line": 3,
-                  "offset": 37,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 3,
-                  "offset": 24,
-                },
+            "name": "basic",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 14,
+                "line": 2,
+                "offset": 23,
               },
-              "loc": {
-                "end": {
-                  "column": 11,
-                  "line": 3,
-                  "offset": 34,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 3,
-                  "offset": 25,
-                },
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 10,
               },
-              "name": "cascading",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 19,
-                  "line": 4,
-                  "offset": 56,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 4,
-                  "offset": 38,
-                },
+            "loc": {
+              "end": {
+                "column": 11,
+                "line": 2,
+                "offset": 20,
               },
-              "loc": {
-                "end": {
-                  "column": 16,
-                  "line": 4,
-                  "offset": 53,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 4,
-                  "offset": 39,
-                },
+              "start": {
+                "column": 2,
+                "line": 2,
+                "offset": 11,
               },
-              "name": "pseudo_class_1",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 25,
-                  "line": 5,
-                  "offset": 81,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 5,
-                  "offset": 57,
-                },
+            "name": "cascading",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 14,
+                "line": 3,
+                "offset": 37,
               },
-              "loc": {
-                "end": {
-                  "column": 16,
-                  "line": 5,
-                  "offset": 72,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 5,
-                  "offset": 58,
-                },
+              "start": {
+                "column": 1,
+                "line": 3,
+                "offset": 24,
               },
-              "name": "pseudo_class_2",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 25,
-                  "line": 6,
-                  "offset": 106,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 6,
-                  "offset": 82,
-                },
+            "loc": {
+              "end": {
+                "column": 11,
+                "line": 3,
+                "offset": 34,
               },
-              "loc": {
-                "end": {
-                  "column": 21,
-                  "line": 6,
-                  "offset": 102,
-                },
-                "start": {
-                  "column": 7,
-                  "line": 6,
-                  "offset": 88,
-                },
+              "start": {
+                "column": 2,
+                "line": 3,
+                "offset": 25,
               },
-              "name": "pseudo_class_3",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 44,
-                  "line": 7,
-                  "offset": 150,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 7,
-                  "offset": 107,
-                },
+            "name": "cascading",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 19,
+                "line": 4,
+                "offset": 56,
               },
-              "loc": {
-                "end": {
-                  "column": 21,
-                  "line": 7,
-                  "offset": 127,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 7,
-                  "offset": 108,
-                },
+              "start": {
+                "column": 1,
+                "line": 4,
+                "offset": 38,
               },
-              "name": "multiple_selector_1",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 44,
-                  "line": 7,
-                  "offset": 150,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 7,
-                  "offset": 107,
-                },
+            "loc": {
+              "end": {
+                "column": 16,
+                "line": 4,
+                "offset": 53,
               },
-              "loc": {
-                "end": {
-                  "column": 41,
-                  "line": 7,
-                  "offset": 147,
-                },
-                "start": {
-                  "column": 22,
-                  "line": 7,
-                  "offset": 128,
-                },
+              "start": {
+                "column": 2,
+                "line": 4,
+                "offset": 39,
               },
-              "name": "multiple_selector_2",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 33,
-                  "line": 8,
-                  "offset": 183,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 8,
-                  "offset": 151,
-                },
+            "name": "pseudo_class_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 25,
+                "line": 5,
+                "offset": 81,
               },
-              "loc": {
-                "end": {
-                  "column": 14,
-                  "line": 8,
-                  "offset": 164,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 8,
-                  "offset": 152,
-                },
+              "start": {
+                "column": 1,
+                "line": 5,
+                "offset": 57,
               },
-              "name": "combinator_1",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 33,
-                  "line": 8,
-                  "offset": 183,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 8,
-                  "offset": 151,
-                },
+            "loc": {
+              "end": {
+                "column": 16,
+                "line": 5,
+                "offset": 72,
               },
-              "loc": {
-                "end": {
-                  "column": 30,
-                  "line": 8,
-                  "offset": 180,
-                },
-                "start": {
-                  "column": 18,
-                  "line": 8,
-                  "offset": 168,
-                },
+              "start": {
+                "column": 2,
+                "line": 5,
+                "offset": 58,
               },
-              "name": "combinator_2",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 16,
-                  "line": 11,
-                  "offset": 268,
-                },
-                "start": {
-                  "column": 5,
-                  "line": 11,
-                  "offset": 257,
-                },
+            "name": "pseudo_class_2",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 25,
+                "line": 6,
+                "offset": 106,
               },
-              "loc": {
-                "end": {
-                  "column": 13,
-                  "line": 11,
-                  "offset": 265,
-                },
-                "start": {
-                  "column": 6,
-                  "line": 11,
-                  "offset": 258,
-                },
+              "start": {
+                "column": 1,
+                "line": 6,
+                "offset": 82,
               },
-              "name": "at_rule",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 38,
-                  "line": 14,
-                  "offset": 312,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 14,
-                  "offset": 275,
-                },
+            "loc": {
+              "end": {
+                "column": 21,
+                "line": 6,
+                "offset": 102,
               },
-              "loc": {
-                "end": {
-                  "column": 17,
-                  "line": 14,
-                  "offset": 291,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 14,
-                  "offset": 276,
-                },
+              "start": {
+                "column": 7,
+                "line": 6,
+                "offset": 88,
               },
-              "name": "selector_list_1",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 38,
-                  "line": 14,
-                  "offset": 312,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 14,
-                  "offset": 275,
-                },
+            "name": "pseudo_class_3",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 44,
+                "line": 7,
+                "offset": 150,
               },
-              "loc": {
-                "end": {
-                  "column": 35,
-                  "line": 14,
-                  "offset": 309,
-                },
-                "start": {
-                  "column": 20,
-                  "line": 14,
-                  "offset": 294,
-                },
+              "start": {
+                "column": 1,
+                "line": 7,
+                "offset": 107,
               },
-              "name": "selector_list_2",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 20,
-                  "line": 15,
-                  "offset": 332,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 15,
-                  "offset": 313,
-                },
+            "loc": {
+              "end": {
+                "column": 21,
+                "line": 7,
+                "offset": 127,
               },
-              "loc": {
-                "end": {
-                  "column": 16,
-                  "line": 15,
-                  "offset": 328,
-                },
-                "start": {
-                  "column": 9,
-                  "line": 15,
-                  "offset": 321,
-                },
+              "start": {
+                "column": 2,
+                "line": 7,
+                "offset": 108,
               },
-              "name": "local_1",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 22,
-                  "line": 16,
-                  "offset": 354,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 16,
-                  "offset": 333,
-                },
+            "name": "multiple_selector_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 44,
+                "line": 7,
+                "offset": 150,
               },
-              "loc": {
-                "end": {
-                  "column": 13,
-                  "line": 16,
-                  "offset": 345,
-                },
-                "start": {
-                  "column": 8,
-                  "line": 16,
-                  "offset": 340,
-                },
+              "start": {
+                "column": 1,
+                "line": 7,
+                "offset": 107,
               },
-              "name": "value",
             },
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 23,
-                  "line": 17,
-                  "offset": 378,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 17,
-                  "offset": 356,
-                },
+            "loc": {
+              "end": {
+                "column": 41,
+                "line": 7,
+                "offset": 147,
               },
-              "loc": {
-                "end": {
-                  "column": 20,
-                  "line": 17,
-                  "offset": 375,
-                },
-                "start": {
-                  "column": 12,
-                  "line": 17,
-                  "offset": 367,
-                },
+              "start": {
+                "column": 22,
+                "line": 7,
+                "offset": 128,
               },
-              "name": "keyframe",
             },
-          ],
-          "text": ".basic {}
+            "name": "multiple_selector_2",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 33,
+                "line": 8,
+                "offset": 183,
+              },
+              "start": {
+                "column": 1,
+                "line": 8,
+                "offset": 151,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 14,
+                "line": 8,
+                "offset": 164,
+              },
+              "start": {
+                "column": 2,
+                "line": 8,
+                "offset": 152,
+              },
+            },
+            "name": "combinator_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 33,
+                "line": 8,
+                "offset": 183,
+              },
+              "start": {
+                "column": 1,
+                "line": 8,
+                "offset": 151,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 30,
+                "line": 8,
+                "offset": 180,
+              },
+              "start": {
+                "column": 18,
+                "line": 8,
+                "offset": 168,
+              },
+            },
+            "name": "combinator_2",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 16,
+                "line": 11,
+                "offset": 268,
+              },
+              "start": {
+                "column": 5,
+                "line": 11,
+                "offset": 257,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 13,
+                "line": 11,
+                "offset": 265,
+              },
+              "start": {
+                "column": 6,
+                "line": 11,
+                "offset": 258,
+              },
+            },
+            "name": "at_rule",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 38,
+                "line": 14,
+                "offset": 312,
+              },
+              "start": {
+                "column": 1,
+                "line": 14,
+                "offset": 275,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 17,
+                "line": 14,
+                "offset": 291,
+              },
+              "start": {
+                "column": 2,
+                "line": 14,
+                "offset": 276,
+              },
+            },
+            "name": "selector_list_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 38,
+                "line": 14,
+                "offset": 312,
+              },
+              "start": {
+                "column": 1,
+                "line": 14,
+                "offset": 275,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 14,
+                "offset": 309,
+              },
+              "start": {
+                "column": 20,
+                "line": 14,
+                "offset": 294,
+              },
+            },
+            "name": "selector_list_2",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 20,
+                "line": 15,
+                "offset": 332,
+              },
+              "start": {
+                "column": 1,
+                "line": 15,
+                "offset": 313,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 16,
+                "line": 15,
+                "offset": 328,
+              },
+              "start": {
+                "column": 9,
+                "line": 15,
+                "offset": 321,
+              },
+            },
+            "name": "local_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 22,
+                "line": 16,
+                "offset": 354,
+              },
+              "start": {
+                "column": 1,
+                "line": 16,
+                "offset": 333,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 13,
+                "line": 16,
+                "offset": 345,
+              },
+              "start": {
+                "column": 8,
+                "line": 16,
+                "offset": 340,
+              },
+            },
+            "name": "value",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 23,
+                "line": 17,
+                "offset": 378,
+              },
+              "start": {
+                "column": 1,
+                "line": 17,
+                "offset": 356,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 20,
+                "line": 17,
+                "offset": 375,
+              },
+              "start": {
+                "column": 12,
+                "line": 17,
+                "offset": 367,
+              },
+            },
+            "name": "keyframe",
+          },
+        ],
+        "text": ".basic {}
       .cascading {}
       .cascading {}
       .pseudo_class_1 {}
@@ -483,9 +483,7 @@ describe('parseCSSModule', () => {
       :local(.local_1) {}
       @value value: #BF4040;
       @keyframes keyframe {}",
-          "tokenImporters": [],
-        },
-        "diagnostics": [],
+        "tokenImporters": [],
       }
     `);
   });
@@ -499,92 +497,90 @@ describe('parseCSSModule', () => {
     );
     expect(parsed).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [],
-          "text": "@import './a.module.css';
-      @value a, b as alias from './a.module.css';",
-          "tokenImporters": [
-            {
-              "from": "./a.module.css",
-              "fromLoc": {
-                "end": {
-                  "column": 24,
-                  "line": 1,
-                  "offset": 23,
-                },
-                "start": {
-                  "column": 10,
-                  "line": 1,
-                  "offset": 9,
-                },
-              },
-              "type": "import",
-            },
-            {
-              "from": "./a.module.css",
-              "fromLoc": {
-                "end": {
-                  "column": 42,
-                  "line": 2,
-                  "offset": 67,
-                },
-                "start": {
-                  "column": 28,
-                  "line": 2,
-                  "offset": 53,
-                },
-              },
-              "type": "value",
-              "values": [
-                {
-                  "loc": {
-                    "end": {
-                      "column": 9,
-                      "line": 2,
-                      "offset": 34,
-                    },
-                    "start": {
-                      "column": 8,
-                      "line": 2,
-                      "offset": 33,
-                    },
-                  },
-                  "name": "a",
-                },
-                {
-                  "loc": {
-                    "end": {
-                      "column": 12,
-                      "line": 2,
-                      "offset": 37,
-                    },
-                    "start": {
-                      "column": 11,
-                      "line": 2,
-                      "offset": 36,
-                    },
-                  },
-                  "localLoc": {
-                    "end": {
-                      "column": 21,
-                      "line": 2,
-                      "offset": 46,
-                    },
-                    "start": {
-                      "column": 16,
-                      "line": 2,
-                      "offset": 41,
-                    },
-                  },
-                  "localName": "alias",
-                  "name": "b",
-                },
-              ],
-            },
-          ],
-        },
         "diagnostics": [],
+        "fileName": "/test.module.css",
+        "localTokens": [],
+        "text": "@import './a.module.css';
+      @value a, b as alias from './a.module.css';",
+        "tokenImporters": [
+          {
+            "from": "./a.module.css",
+            "fromLoc": {
+              "end": {
+                "column": 24,
+                "line": 1,
+                "offset": 23,
+              },
+              "start": {
+                "column": 10,
+                "line": 1,
+                "offset": 9,
+              },
+            },
+            "type": "import",
+          },
+          {
+            "from": "./a.module.css",
+            "fromLoc": {
+              "end": {
+                "column": 42,
+                "line": 2,
+                "offset": 67,
+              },
+              "start": {
+                "column": 28,
+                "line": 2,
+                "offset": 53,
+              },
+            },
+            "type": "value",
+            "values": [
+              {
+                "loc": {
+                  "end": {
+                    "column": 9,
+                    "line": 2,
+                    "offset": 34,
+                  },
+                  "start": {
+                    "column": 8,
+                    "line": 2,
+                    "offset": 33,
+                  },
+                },
+                "name": "a",
+              },
+              {
+                "loc": {
+                  "end": {
+                    "column": 12,
+                    "line": 2,
+                    "offset": 37,
+                  },
+                  "start": {
+                    "column": 11,
+                    "line": 2,
+                    "offset": 36,
+                  },
+                },
+                "localLoc": {
+                  "end": {
+                    "column": 21,
+                    "line": 2,
+                    "offset": 46,
+                  },
+                  "start": {
+                    "column": 16,
+                    "line": 2,
+                    "offset": 41,
+                  },
+                },
+                "localName": "alias",
+                "name": "b",
+              },
+            ],
+          },
+        ],
       }
     `);
   });
@@ -598,41 +594,6 @@ describe('parseCSSModule', () => {
     );
     expect(parsed).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 18,
-                  "line": 1,
-                  "offset": 17,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 1,
-                  "offset": 0,
-                },
-              },
-              "loc": {
-                "end": {
-                  "column": 15,
-                  "line": 1,
-                  "offset": 14,
-                },
-                "start": {
-                  "column": 9,
-                  "line": 1,
-                  "offset": 8,
-                },
-              },
-              "name": "local1",
-            },
-          ],
-          "text": ":local .local1 {}
-      @value;",
-          "tokenImporters": [],
-        },
         "diagnostics": [
           {
             "category": "error",
@@ -664,6 +625,39 @@ describe('parseCSSModule', () => {
             "text": "\`@value\` is a invalid syntax.",
           },
         ],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 18,
+                "line": 1,
+                "offset": 17,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 15,
+                "line": 1,
+                "offset": 14,
+              },
+              "start": {
+                "column": 9,
+                "line": 1,
+                "offset": 8,
+              },
+            },
+            "name": "local1",
+          },
+        ],
+        "text": ":local .local1 {}
+      @value;",
+        "tokenImporters": [],
       }
     `);
   });
@@ -693,40 +687,6 @@ describe('parseCSSModule', () => {
       ),
     ).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 6,
-                  "line": 1,
-                  "offset": 5,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 1,
-                  "offset": 0,
-                },
-              },
-              "loc": {
-                "end": {
-                  "column": 3,
-                  "line": 1,
-                  "offset": 2,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 1,
-                  "offset": 1,
-                },
-              },
-              "name": "a",
-            },
-          ],
-          "text": ".a {",
-          "tokenImporters": [],
-        },
         "diagnostics": [
           {
             "category": "error",
@@ -742,16 +702,42 @@ describe('parseCSSModule', () => {
             "text": "Unclosed block",
           },
         ],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 6,
+                "line": 1,
+                "offset": 5,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 3,
+                "line": 1,
+                "offset": 2,
+              },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
+              },
+            },
+            "name": "a",
+          },
+        ],
+        "text": ".a {",
+        "tokenImporters": [],
       }
     `);
     expect(parseCSSModule('badword', options)).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [],
-          "text": "badword",
-          "tokenImporters": [],
-        },
         "diagnostics": [
           {
             "category": "error",
@@ -767,6 +753,10 @@ describe('parseCSSModule', () => {
             "text": "Unknown word badword",
           },
         ],
+        "fileName": "/test.module.css",
+        "localTokens": [],
+        "text": "badword",
+        "tokenImporters": [],
       }
     `);
   });
@@ -780,46 +770,44 @@ describe('parseCSSModule', () => {
       ),
     ).toMatchInlineSnapshot(`
       {
-        "cssModule": {
-          "fileName": "/test.module.css",
-          "localTokens": [
-            {
-              "declarationLoc": {
-                "end": {
-                  "column": 6,
-                  "line": 1,
-                  "offset": 5,
-                },
-                "start": {
-                  "column": 1,
-                  "line": 1,
-                  "offset": 0,
-                },
-              },
-              "loc": {
-                "end": {
-                  "column": 3,
-                  "line": 1,
-                  "offset": 2,
-                },
-                "start": {
-                  "column": 2,
-                  "line": 1,
-                  "offset": 1,
-                },
-              },
-              "name": "a",
-            },
-          ],
-          "text": ".a {",
-          "tokenImporters": [],
-        },
         "diagnostics": [],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 6,
+                "line": 1,
+                "offset": 5,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 3,
+                "line": 1,
+                "offset": 2,
+              },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
+              },
+            },
+            "name": "a",
+          },
+        ],
+        "text": ".a {",
+        "tokenImporters": [],
       }
     `);
   });
   test('does not include the token of keyframes if keyframes is false', () => {
-    const parsed = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
-    expect(parsed.cssModule.localTokens).toMatchInlineSnapshot(`[]`);
+    const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
+    expect(cssModule.localTokens).toMatchInlineSnapshot(`[]`);
   });
 });

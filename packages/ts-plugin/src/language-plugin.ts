@@ -1,4 +1,4 @@
-import type { CMKConfig, CSSModule, DiagnosticWithLocation, MatchesPattern, Resolver } from '@css-modules-kit/core';
+import type { CMKConfig, CSSModule, MatchesPattern, Resolver } from '@css-modules-kit/core';
 import { generateDts, parseCSSModule } from '@css-modules-kit/core';
 import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-core';
 import type {} from '@volar/typescript';
@@ -9,10 +9,7 @@ export const LANGUAGE_ID = 'css';
 export const CMK_DATA_KEY = Symbol('css-modules-kit-data');
 
 interface CSSModuleVirtualCode extends VirtualCode {
-  [CMK_DATA_KEY]: {
-    cssModule: CSSModule;
-    syntacticDiagnostics: DiagnosticWithLocation[];
-  };
+  [CMK_DATA_KEY]: CSSModule;
 }
 
 export interface CSSModuleScript extends SourceScript<string> {
@@ -47,7 +44,7 @@ export function createCSSLanguagePlugin(
 
       const length = snapshot.getLength();
       const cssModuleCode = snapshot.getText(0, length);
-      const { cssModule, diagnostics } = parseCSSModule(cssModuleCode, {
+      const cssModule = parseCSSModule(cssModuleCode, {
         fileName: scriptId,
         // NOTE: The standard CSS Language Server reports invalid syntax errors.
         // Therefore, if ts-plugin also reports it, the same error is reported twice.
@@ -73,10 +70,7 @@ export function createCSSLanguagePlugin(
         mappings: [{ ...mapping, data: { navigation: true } }],
         // `linkedCodeMappings` are required to support "Go to Definition" and renaming for the imported tokens
         linkedCodeMappings: [{ ...linkedCodeMapping, data: undefined }],
-        [CMK_DATA_KEY]: {
-          cssModule,
-          syntacticDiagnostics: diagnostics,
-        },
+        [CMK_DATA_KEY]: cssModule,
       };
     },
     typescript: {

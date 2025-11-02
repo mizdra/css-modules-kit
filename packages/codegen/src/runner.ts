@@ -5,7 +5,6 @@ import type {
   Diagnostic,
   DiagnosticWithLocation,
   MatchesPattern,
-  ParseCSSModuleResult,
   Resolver,
 } from '@css-modules-kit/core';
 import {
@@ -27,7 +26,7 @@ import type { Logger } from './logger/logger.js';
 /**
  * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
  */
-async function parseCSSModuleByFileName(fileName: string, config: CMKConfig): Promise<ParseCSSModuleResult> {
+async function parseCSSModuleByFileName(fileName: string, config: CMKConfig): Promise<CSSModule> {
   let text: string;
   try {
     text = await readFile(fileName, 'utf-8');
@@ -96,19 +95,17 @@ export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
     // eslint-disable-next-line n/no-process-exit
     process.exit(1);
   }
-  const parseResults = await Promise.all(fileNames.map(async (fileName) => parseCSSModuleByFileName(fileName, config)));
-  for (const parseResult of parseResults) {
-    cssModuleMap.set(parseResult.cssModule.fileName, parseResult.cssModule);
-    syntacticDiagnostics.push(...parseResult.diagnostics);
+  const cssModules = await Promise.all(fileNames.map(async (fileName) => parseCSSModuleByFileName(fileName, config)));
+  for (const cssModule of cssModules) {
+    cssModuleMap.set(cssModule.fileName, cssModule);
+    syntacticDiagnostics.push(...cssModule.diagnostics);
   }
 
   if (args.clean) {
     await rm(config.dtsOutDir, { recursive: true, force: true });
   }
   await Promise.all(
-    parseResults.map(async (parseResult) =>
-      writeDtsByCSSModule(parseResult.cssModule, config, resolver, matchesPattern),
-    ),
+    cssModules.map(async (cssModule) => writeDtsByCSSModule(cssModule, config, resolver, matchesPattern)),
   );
 
   if (syntacticDiagnostics.length > 0) {
@@ -120,7 +117,7 @@ export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
   const getCSSModule = (path: string) => cssModuleMap.get(path);
   const exportBuilder = createExportBuilder({ getCSSModule, matchesPattern, resolver });
   const semanticDiagnostics: Diagnostic[] = [];
-  for (const { cssModule } of parseResults) {
+  for (const cssModule of cssModules) {
     const diagnostics = checkCSSModule(cssModule, config, exportBuilder, matchesPattern, resolver, getCSSModule);
     semanticDiagnostics.push(...diagnostics);
   }

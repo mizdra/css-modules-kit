@@ -116,6 +116,8 @@ export interface CSSModule {
    * Token importer is a statement that imports tokens from another file.
    */
   tokenImporters: TokenImporter[];
+  /** Diagnostics found during parsing. */
+  diagnostics: DiagnosticWithLocation[];
 }
 
 export interface ResolverOptions {

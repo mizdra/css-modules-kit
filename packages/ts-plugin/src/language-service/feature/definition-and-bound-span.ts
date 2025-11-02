@@ -13,7 +13,7 @@ export function getDefinitionAndBoundSpan(
     for (const def of result.definitions) {
       const script = language.scripts.get(def.fileName);
       if (isCSSModuleScript(script)) {
-        const cssModule = script.generated.root[CMK_DATA_KEY].cssModule;
+        const cssModule = script.generated.root[CMK_DATA_KEY];
         const token = cssModule.localTokens.find((t) => t.name === def.name);
         if (token?.declarationLoc) {
           def.contextSpan = {

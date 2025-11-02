@@ -82,12 +82,6 @@ export interface ParseCSSModuleOptions {
   includeSyntaxError: boolean;
   keyframes: boolean;
 }
-
-export interface ParseCSSModuleResult {
-  cssModule: CSSModule;
-  diagnostics: DiagnosticWithLocation[];
-}
-
 /**
  * Parse CSS Module text.
  * If a syntax error is detected in the text, it is re-parsed using `postcss-safe-parser`, and `localTokens` are collected as much as possible.
@@ -95,7 +89,7 @@ export interface ParseCSSModuleResult {
 export function parseCSSModule(
   text: string,
   { fileName, includeSyntaxError, keyframes }: ParseCSSModuleOptions,
-): ParseCSSModuleResult {
+): CSSModule {
   let ast: Root;
   const diagnosticFile = { fileName, text };
   const allDiagnostics: DiagnosticWithLocation[] = [];
@@ -122,12 +116,12 @@ export function parseCSSModule(
   }
 
   const { localTokens, tokenImporters, diagnostics } = collectTokens(ast, keyframes);
-  const cssModule = {
+  allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
+  return {
     fileName,
     text,
     localTokens,
     tokenImporters,
+    diagnostics: allDiagnostics,
   };
-  allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
-  return { cssModule, diagnostics: allDiagnostics };
 }
