@@ -47,13 +47,13 @@ interface GenerateDtsResult {
  * Generate .d.ts from `CSSModule`.
  */
 export function generateDts(
-  cssModules: CSSModule,
+  cssModule: CSSModule,
   host: GenerateDtsHost,
   options: GenerateDtsOptions,
 ): GenerateDtsResult {
   // Exclude invalid tokens
-  const localTokens = cssModules.localTokens.filter((token) => isValidName(token.name, options));
-  const tokenImporters = cssModules.tokenImporters
+  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
+  const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
       if (tokenImporter.type === 'value') {
@@ -71,7 +71,7 @@ export function generateDts(
     })
     // Exclude token importers for external files
     .filter((tokenImporter) => {
-      const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
+      const resolved = host.resolver(tokenImporter.from, { request: cssModule.fileName });
       return resolved !== undefined && host.matchesPattern(resolved);
     });
 
