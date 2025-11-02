@@ -89,11 +89,12 @@ export async function runCMK(args: ParsedArgs, logger: Logger): Promise<void> {
   if (fileNames.length === 0) {
     logger.logDiagnostics([
       {
-        category: 'warning',
+        category: 'error',
         text: `The file specified in tsconfig.json not found.`,
       },
     ]);
-    return;
+    // eslint-disable-next-line n/no-process-exit
+    process.exit(1);
   }
   const parseResults = await Promise.all(fileNames.map(async (fileName) => parseCSSModuleByFileName(fileName, config)));
   for (const parseResult of parseResults) {
