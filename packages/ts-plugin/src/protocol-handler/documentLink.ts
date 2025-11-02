@@ -23,7 +23,7 @@ export function createDocumentLinkHandler(
     const script = language.scripts.get(fileName);
     const links: DocumentLink[] = [];
     if (isCSSModuleScript(script)) {
-      const { tokenImporters } = script.generated.root[CMK_DATA_KEY].cssModule;
+      const { tokenImporters } = script.generated.root[CMK_DATA_KEY];
       for (const { from, fromLoc } of tokenImporters) {
         const resolved = resolver(from, { request: fileName });
         if (!resolved) continue;

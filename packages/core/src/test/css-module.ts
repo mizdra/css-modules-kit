@@ -6,6 +6,7 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
     text: '',
     localTokens: [],
     tokenImporters: [],
+    diagnostics: [],
     ...args,
   };
 }

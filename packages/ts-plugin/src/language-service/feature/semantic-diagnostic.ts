@@ -20,7 +20,7 @@ export function getSemanticDiagnostics(
     const script = language.scripts.get(fileName);
     if (isCSSModuleScript(script)) {
       const virtualCode = script.generated.root;
-      const cssModule = virtualCode[CMK_DATA_KEY].cssModule;
+      const cssModule = virtualCode[CMK_DATA_KEY];
 
       // Clear cache to update export records for all files
       exportBuilder.clearCache();

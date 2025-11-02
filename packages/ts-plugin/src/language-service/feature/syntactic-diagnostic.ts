@@ -13,7 +13,7 @@ export function getSyntacticDiagnostics(
     const script = language.scripts.get(fileName);
     if (isCSSModuleScript(script)) {
       const virtualCode = script.generated.root;
-      const diagnostics = virtualCode[CMK_DATA_KEY].syntacticDiagnostics;
+      const diagnostics = virtualCode[CMK_DATA_KEY].diagnostics;
       const sourceFile = languageService.getProgram()!.getSourceFile(fileName)!;
       const tsDiagnostics = diagnostics.map((diagnostic) =>
         convertDiagnosticWithLocation(diagnostic, () => sourceFile),

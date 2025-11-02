@@ -31,7 +31,7 @@ export function proxyLanguageService(
   const getCSSModule = (path: string) => {
     const script = language.scripts.get(path);
     if (isCSSModuleScript(script)) {
-      return script.generated.root[CMK_DATA_KEY].cssModule;
+      return script.generated.root[CMK_DATA_KEY];
     }
     return undefined;
   };
