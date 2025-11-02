@@ -16,7 +16,6 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
     compilerOptions: {},
     wildcardDirectories: [{ fileName: '/app', recursive: true }],
     diagnostics: [],
-    extendedSourceFiles: [],
     ...args,
   };
 }
