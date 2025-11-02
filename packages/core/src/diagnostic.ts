@@ -1,20 +1,16 @@
 import ts from 'typescript';
 import type { SystemError } from './error.js';
-import type { Diagnostic, DiagnosticSourceFile, DiagnosticWithLocation } from './type.js';
+import type { Diagnostic, DiagnosticCategory, DiagnosticSourceFile, DiagnosticWithLocation } from './type.js';
 
 /** The error code used by tsserver to display the css-modules-kit error in the editor. */
 const TS_ERROR_CODE = 0;
 
 const TS_ERROR_SOURCE = 'css-modules-kit';
 
-function convertErrorCategory(category: 'error' | 'warning' | 'suggestion'): ts.DiagnosticCategory {
+function convertErrorCategory(category: DiagnosticCategory): ts.DiagnosticCategory {
   switch (category) {
     case 'error':
       return ts.DiagnosticCategory.Error;
-    case 'warning':
-      return ts.DiagnosticCategory.Warning;
-    case 'suggestion':
-      return ts.DiagnosticCategory.Suggestion;
     default:
       throw new Error(`Unknown category: ${String(category)}`);
   }

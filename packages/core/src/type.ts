@@ -149,7 +149,7 @@ export interface ExportBuilder {
   clearCache(): void;
 }
 
-export type DiagnosticCategory = 'error' | 'warning';
+export type DiagnosticCategory = 'error';
 
 export interface DiagnosticSourceFile {
   fileName: string;
