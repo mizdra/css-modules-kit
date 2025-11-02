@@ -92,7 +92,7 @@ describe('runCMK', () => {
       "
     `);
   });
-  test('warns when no files found by `pattern`', async () => {
+  test('report diagnostics when no files found by `pattern`', async () => {
     const iff = await createIFF({
       'tsconfig.json': dedent`
         {
@@ -101,12 +101,12 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
+    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
-          "category": "warning",
+          "category": "error",
           "text": "The file specified in tsconfig.json not found.",
         },
       ]
