@@ -21,7 +21,7 @@ export {
   type DiagnosticCategory,
   type DiagnosticPosition,
 } from './type.js';
-export { type CreateDtsOptions, createDts, STYLES_EXPORT_NAME } from './dts-creator.js';
+export { type GenerateDtsOptions, generateDts, STYLES_EXPORT_NAME } from './dts-generator.js';
 export { createResolver } from './resolver.js';
 export {
   CSS_MODULE_EXTENSION,
