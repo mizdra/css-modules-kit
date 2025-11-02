@@ -60,8 +60,6 @@ export interface CMKConfig {
   compilerOptions: ts.CompilerOptions;
   /** The directories to watch when watch mode is enabled. */
   wildcardDirectories: { fileName: string; recursive: boolean }[];
-  /** The tsconfig files inherited by `configFileName`. */
-  extendedSourceFiles: string[];
   /** The diagnostics that occurred while reading the config file. */
   diagnostics: Diagnostic[];
 }
@@ -248,7 +246,7 @@ export function readConfigFile(project: string): CMKConfig {
 
   const basePath = dirname(configFileName);
   return {
-    // If `include` is not specified, fallback to the default include spec.
+    // If `include` is not specified, fallback to the default include spec。
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
     includes: (parsedTsConfig.config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
     excludes: (parsedTsConfig.config.excludes ?? []).map((e) => join(basePath, e)),
@@ -261,7 +259,6 @@ export function readConfigFile(project: string): CMKConfig {
     configFileName,
     compilerOptions: parsedTsConfig.compilerOptions,
     wildcardDirectories: parsedTsConfig.wildcardDirectories,
-    extendedSourceFiles: parsedTsConfig.extendedSourceFiles ?? [],
     diagnostics: parsedTsConfig.diagnostics,
   };
 }
