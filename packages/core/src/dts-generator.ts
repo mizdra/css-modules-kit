@@ -3,12 +3,12 @@ import { isValidAsJSIdentifier } from './util.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
 
-export interface CreateDtsHost {
+export interface GenerateDtsHost {
   resolver: Resolver;
   matchesPattern: MatchesPattern;
 }
 
-export interface CreateDtsOptions {
+export interface GenerateDtsOptions {
   namedExports: boolean;
   prioritizeNamedImports: boolean;
   /** Generate .d.ts for ts-plugin */
@@ -37,19 +37,23 @@ interface LinkedCodeMapping extends CodeMapping {
   generatedLengths: number[];
 }
 
-interface CreateDtsResult {
+interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
 }
 
 /**
- * Create a d.ts file.
+ * Generate .d.ts from `CSSModule`.
  */
-export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: CreateDtsOptions): CreateDtsResult {
+export function generateDts(
+  cssModule: CSSModule,
+  host: GenerateDtsHost,
+  options: GenerateDtsOptions,
+): GenerateDtsResult {
   // Exclude invalid tokens
-  const localTokens = cssModules.localTokens.filter((token) => isValidName(token.name, options));
-  const tokenImporters = cssModules.tokenImporters
+  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
+  const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
       if (tokenImporter.type === 'value') {
@@ -67,19 +71,19 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
     })
     // Exclude token importers for external files
     .filter((tokenImporter) => {
-      const resolved = host.resolver(tokenImporter.from, { request: cssModules.fileName });
+      const resolved = host.resolver(tokenImporter.from, { request: cssModule.fileName });
       return resolved !== undefined && host.matchesPattern(resolved);
     });
 
   if (options.namedExports) {
-    return createNamedExportsDts(localTokens, tokenImporters, options);
+    return generateNamedExportsDts(localTokens, tokenImporters, options);
   } else {
-    return createDefaultExportDts(localTokens, tokenImporters);
+    return generateDefaultExportDts(localTokens, tokenImporters);
   }
 }
 
 /**
- * Create a d.ts file with named exports.
+ * Generate a d.ts file with named exports.
  * @example
  * If the CSS module file is:
  * ```css
@@ -100,10 +104,10 @@ export function createDts(cssModules: CSSModule, host: CreateDtsHost, options: C
  * } from './b.module.css';
  * ```
  */
-function createNamedExportsDts(
+function generateNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
-  options: CreateDtsOptions,
+  options: GenerateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
@@ -176,7 +180,7 @@ function createNamedExportsDts(
 }
 
 /**
- * Create a d.ts file with a default export.
+ * Generate a d.ts file with a default export.
  * @example
  * If the CSS module file is:
  * ```css
@@ -198,7 +202,7 @@ function createNamedExportsDts(
  * export default styles;
  * ```
  */
-function createDefaultExportDts(
+function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
@@ -263,7 +267,7 @@ function createDefaultExportDts(
   return { text, mapping, linkedCodeMapping };
 }
 
-function isValidName(name: string, options: CreateDtsOptions): boolean {
+function isValidName(name: string, options: GenerateDtsOptions): boolean {
   if (!isValidAsJSIdentifier(name)) return false;
   if (name === '__proto__') return false;
   if (options.namedExports && name === 'default') return false;

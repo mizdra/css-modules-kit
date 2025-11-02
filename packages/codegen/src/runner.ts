@@ -10,10 +10,10 @@ import type {
 } from '@css-modules-kit/core';
 import {
   checkCSSModule,
-  createDts,
   createExportBuilder,
   createMatchesPattern,
   createResolver,
+  generateDts,
   getFileNamesByPattern,
   parseCSSModule,
   readConfigFile,
@@ -46,7 +46,7 @@ async function writeDtsByCSSModule(
   resolver: Resolver,
   matchesPattern: MatchesPattern,
 ): Promise<void> {
-  const dts = createDts(
+  const dts = generateDts(
     cssModule,
     { resolver, matchesPattern },
     { namedExports, prioritizeNamedImports, forTsPlugin: false },

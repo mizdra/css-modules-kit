@@ -1,15 +1,14 @@
 import { describe, expect, test } from 'vitest';
-import type { CreateDtsHost } from './dts-creator.js';
-import { createDts, type CreateDtsOptions } from './dts-creator.js';
+import { generateDts, type GenerateDtsHost, type GenerateDtsOptions } from './dts-generator.js';
 import { fakeCSSModule } from './test/css-module.js';
 import { fakeMatchesPattern, fakeResolver } from './test/faker.js';
 import { fakeAtValueTokenImporter, fakeAtValueTokenImporterValue, fakeToken } from './test/token.js';
 
-const host: CreateDtsHost = {
+const host: GenerateDtsHost = {
   resolver: fakeResolver(),
   matchesPattern: fakeMatchesPattern(),
 };
-const options: CreateDtsOptions = {
+const options: GenerateDtsOptions = {
   namedExports: false,
   prioritizeNamedImports: false,
   forTsPlugin: false,
@@ -19,9 +18,9 @@ function fakeLoc(offset: number) {
   return { start: { line: 1, column: 1, offset }, end: { line: 1, column: 1, offset } };
 }
 
-describe('createDts', () => {
-  test('creates d.ts file if css module file has no tokens', () => {
-    expect(createDts(fakeCSSModule(), host, options).text).toMatchInlineSnapshot(`
+describe('generateDts', () => {
+  test('generates d.ts file if css module file has no tokens', () => {
+    expect(generateDts(fakeCSSModule(), host, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
       };
@@ -29,9 +28,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('creates d.ts file with local tokens', () => {
+  test('generates d.ts file with local tokens', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [
             {
@@ -54,9 +53,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('creates d.ts file with token importers', () => {
+  test('generates d.ts file with token importers', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: './a.module.css', fromLoc: fakeLoc(0) },
@@ -95,9 +94,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('creates types in the order of local tokens and token importers', () => {
+  test('generates types in the order of local tokens and token importers', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
           tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
@@ -118,7 +117,7 @@ describe('createDts', () => {
   test('resolves specifiers', () => {
     const resolver = (specifier: string) => specifier.replace('@', '/src');
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           fileName: '/src/test.module.css',
           tokenImporters: [
@@ -158,9 +157,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('does not create types for external files', () => {
+  test('does not generate types for external files', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           tokenImporters: [
             { type: 'import', from: 'external.css', fromLoc: fakeLoc(0) },
@@ -190,10 +189,10 @@ describe('createDts', () => {
       "
     `);
   });
-  test('does not create types for unresolved files', () => {
+  test('does not generate types for unresolved files', () => {
     const resolver = (_specifier: string) => undefined;
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           fileName: '/src/test.module.css',
           tokenImporters: [{ type: 'import', from: '@/a.module.css', fromLoc: fakeLoc(0) }],
@@ -209,9 +208,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('does not create types for invalid name as JS identifier', () => {
+  test('does not generate types for invalid name as JS identifier', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [fakeToken({ name: 'a-1', loc: fakeLoc(0) })],
           tokenImporters: [
@@ -241,9 +240,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('does not create types for `__proto__`', () => {
+  test('does not generate types for `__proto__`', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [fakeToken({ name: '__proto__', loc: fakeLoc(0) })],
         }),
@@ -258,9 +257,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('does not create types for `default` when `namedExports` is true', () => {
+  test('does not generate types for `default` when `namedExports` is true', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [fakeToken({ name: 'default', loc: fakeLoc(0) })],
         }),
@@ -272,7 +271,7 @@ describe('createDts', () => {
       "
     `);
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [fakeToken({ name: 'default', loc: fakeLoc(0) })],
         }),
@@ -288,9 +287,9 @@ describe('createDts', () => {
       "
     `);
   });
-  test('creates d.ts file with named exports', () => {
+  test('generates d.ts file with named exports', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [
             { name: 'local1', loc: fakeLoc(0) },
@@ -326,7 +325,7 @@ describe('createDts', () => {
   });
   test('exports styles as default when `namedExports` and `forTsPlugin` are true, but `prioritizeNamedImports` is false', () => {
     expect(
-      createDts(
+      generateDts(
         fakeCSSModule({
           localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
         }),
