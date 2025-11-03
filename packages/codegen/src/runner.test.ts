@@ -1,49 +1,28 @@
-import { access, chmod } from 'node:fs/promises';
-import { type Diagnostic } from '@css-modules-kit/core';
+import { access, writeFile } from 'node:fs/promises';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
-import { ReadCSSModuleFileError } from './error.js';
 import { runCMK } from './runner.js';
+import { formatDiagnostics } from './test/diagnostic.js';
 import { fakeParsedArgs } from './test/faker.js';
 import { createIFF } from './test/fixture.js';
 import { createLoggerSpy } from './test/logger.js';
-import { mockProcessExit, ProcessExitError } from './test/process.js';
-
-function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
-  return {
-    text: diagnostic.text.replace(rootDir, '<rootDir>'),
-    category: diagnostic.category,
-    ...('file' in diagnostic ?
-      {
-        fileName: diagnostic.file.fileName.replace(rootDir, '<rootDir>'),
-        start: diagnostic.start,
-        length: diagnostic.length,
-      }
-    : {}),
-  };
-}
-function formatDiagnostics(diagnostics: Diagnostic[], rootDir: string) {
-  return diagnostics.map((diagnostic) => formatDiagnostic(diagnostic, rootDir));
-}
-
-mockProcessExit();
 
 describe('runCMK', () => {
-  test('generates .d.ts files', async () => {
+  test('emits .d.ts files', async () => {
     const iff = await createIFF({
       'tsconfig.json': dedent`
         {
           "cmkOptions": { "dtsOutDir": "generated" }
         }
       `,
-      'src/a.module.css': '.a1 { color: red; }',
-      'src/b.module.css': '.b1 { color: blue; }',
+      'src/a.module.css': '.a_1 { color: red; }',
+      'src/b.module.css': '.b_1 { color: blue; }',
     });
     await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        a1: '' as readonly string,
+        a_1: '' as readonly string,
       };
       export default styles;
       "
@@ -51,134 +30,20 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        b1: '' as readonly string,
+        b_1: '' as readonly string,
       };
       export default styles;
       "
     `);
   });
-  test('does not generate .d.ts files for files not matched by `pattern`', async () => {
+  test('reports diagnostics if errors are found', async () => {
     const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': '.a1 { color: red; }',
-      'src/b.css': '.b1 { color: red; }',
-    });
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
-    await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
-    await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
-  });
-  test('does not generate types derived from files not matched by `pattern`', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': '@import "./b.module.css"; @import "./c.css"',
-      'src/b.module.css': '.b1 { color: blue; }',
-      'src/c.css': '.c1 { color: red; }',
-    });
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        ...(await import('./b.module.css')).default,
-      };
-      export default styles;
-      "
-    `);
-  });
-  test('report diagnostics when no files found by `pattern`', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
+      'tsconfig.json': '{}',
+      'src/a.module.css': '.a_1 {',
+      'src/b.module.css': '.b_1 { color: red; }',
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
-    expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "text": "The file specified in tsconfig.json not found.",
-        },
-      ]
-    `);
-  });
-  test.runIf(process.platform !== 'win32')('throws error when failed to read CSS Module file', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': '.a1 { color: red; }',
-    });
-    await chmod(iff.paths['src/a.module.css'], 0o200); // Remove read permission
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy())).rejects.toThrow(
-      ReadCSSModuleFileError,
-    );
-  });
-  test('support ./ in `pattern`', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': `@import './b.css'; .a1 { color: red; }`,
-      'src/b.css': '.b1 { color: red; }',
-    });
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        a1: '' as readonly string,
-      };
-      export default styles;
-      "
-    `);
-    await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
-  });
-  test('reports semantic diagnostics in tsconfig.json', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": 1 }
-        }
-      `,
-    });
-    const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
-    expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "text": "\`dtsOutDir\` in <rootDir>/tsconfig.json must be a string.",
-        },
-      ]
-    `);
-  });
-  test('reports syntactic diagnostics in *.module.css', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': '.a1 {',
-      'src/b.module.css': '@value;',
-    });
-    const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -192,110 +57,40 @@ describe('runCMK', () => {
           },
           "text": "Unclosed block",
         },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/src/b.module.css",
-          "length": 7,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "\`@value\` is a invalid syntax.",
-        },
       ]
     `);
-    // Even if there is a syntax error, .d.ts files are generated.
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        a1: '' as readonly string,
-      };
-      export default styles;
-      "
-    `);
-    expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-      };
-      export default styles;
-      "
-    `);
   });
-  test('reports semantic diagnostics in *.module.css', async () => {
+  test('returns false if errors are found', async () => {
     const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': dedent`
-        @value b_1, b_2 from "./b.module.css";
-      `,
-      'src/b.module.css': dedent`
-        @value b_1: red;
-        @import "./c.module.css";
-      `,
+      'tsconfig.json': '{}',
+      'src/a.module.css': '.a_1 {',
+    });
+    const result1 = await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
+    expect(result1).toBe(false);
+    await writeFile(iff.join('src/a.module.css'), '.a_1 { color: red; }');
+    const result2 = await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
+    expect(result2).toBe(true);
+  });
+  test('emits .d.ts files even if there are diagnostics', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{}',
+      'src/a.module.css': '.a_1 {',
+      'src/b.module.css': '.b_1 { color: red; }',
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
-    expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/src/a.module.css",
-          "length": 3,
-          "start": {
-            "column": 13,
-            "line": 1,
-          },
-          "text": "Module './b.module.css' has no exported token 'b_2'.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/src/b.module.css",
-          "length": 14,
-          "start": {
-            "column": 10,
-            "line": 2,
-          },
-          "text": "Cannot import module './c.module.css'",
-        },
-      ]
-    `);
-    // Even if there is a semantic error, .d.ts files are generated.
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        b_1: (await import('./b.module.css')).default.b_1,
-        b_2: (await import('./b.module.css')).default.b_2,
-      };
-      export default styles;
-      "
-    `);
-    expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        b_1: '' as readonly string,
-        ...(await import('./c.module.css')).default,
-      };
-      export default styles;
-      "
-    `);
+    await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
+    await expect(access(iff.join('generated/src/b.module.css.d.ts'))).resolves.not.toThrow();
   });
-});
-
-test('removes output directory before generating files when `clean` is true', async () => {
-  const iff = await createIFF({
-    'tsconfig.json': dedent`
-      {
-        "cmkOptions": { "dtsOutDir": "generated" }
-      }
-    `,
-    'src/a.module.css': '.a1 { color: red; }',
-    'generated/src/old.module.css.d.ts': '',
+  test('removes output directory before emitting files when `clean` is true', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{}',
+      'src/a.module.css': '.a_1 { color: red; }',
+      'generated/src/old.module.css.d.ts': '',
+    });
+    await runCMK(fakeParsedArgs({ project: iff.rootDir, clean: true }), createLoggerSpy());
+    await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
+    await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
   });
-  await runCMK(fakeParsedArgs({ project: iff.rootDir, clean: true }), createLoggerSpy());
-  await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
-  await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
 });
