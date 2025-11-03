@@ -8,6 +8,7 @@ export interface Logger {
   logDiagnostics(diagnostics: Diagnostic[]): void;
   logError(error: unknown): void;
   logMessage(message: string): void;
+  clearScreen(): void;
 }
 
 export function createLogger(cwd: string, pretty: boolean): Logger {
@@ -44,6 +45,9 @@ export function createLogger(cwd: string, pretty: boolean): Logger {
     },
     logMessage(message: string): void {
       process.stdout.write(`${message}\n`);
+    },
+    clearScreen(): void {
+      process.stdout.write('\x1B[2J\x1B[3J\x1B[H');
     },
   };
 }

@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import ts from 'typescript';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { formatDiagnostics } from './formatter';
 
 describe('formatDiagnostics', () => {
@@ -38,7 +38,7 @@ describe('formatDiagnostics', () => {
     },
   ];
 
-  it('formats diagnostics with color and context when pretty is true', () => {
+  test('formats diagnostics with color and context when pretty is true', () => {
     const result = formatDiagnostics(diagnostics, host, true);
     expect(result).toMatchInlineSnapshot(`
       "[96mtest.module.css[0m:[93m1[0m:[93m2[0m - [91merror[0m[90m: [0m\`a_1\` is not allowed
@@ -55,7 +55,7 @@ describe('formatDiagnostics', () => {
     `);
   });
 
-  it('formats diagnostics without color and context when pretty is false', () => {
+  test('formats diagnostics without color and context when pretty is false', () => {
     const result = formatDiagnostics(diagnostics, host, false);
     expect(result).toMatchInlineSnapshot(`
       "test.module.css(1,2): error: \`a_1\` is not allowed
