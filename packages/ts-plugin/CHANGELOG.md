@@ -1,5 +1,23 @@
 # @css-modules-kit/ts-plugin
 
+## 0.7.0
+
+### Minor Changes
+
+- 60b7515: feat: generate .d.ts files even if syntax or semantic errors are found
+- c36be81: feat!: report an error diagnostic when no files found by `include`/`exclude` pattern
+
+### Patch Changes
+
+- d1c2051: refactor: rename from `createDts` to `generateDts`
+- 87e1aef: refactor: include diagnostics within `CSSModule` object
+- Updated dependencies [d1c2051]
+- Updated dependencies [60b7515]
+- Updated dependencies [4d661a1]
+- Updated dependencies [87e1aef]
+- Updated dependencies [c36be81]
+  - @css-modules-kit/core@0.7.0
+
 ## 0.6.0
 
 ### Minor Changes
