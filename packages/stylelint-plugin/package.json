@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/stylelint-plugin",
   "description": "A stylelint plugin for CSS Modules",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "commonjs",
   "sideEffects": false,
   "repository": {
@@ -46,7 +46,7 @@
     "dist"
   ],
   "dependencies": {
-    "@css-modules-kit/core": "^0.6.0"
+    "@css-modules-kit/core": "^0.7.0"
   },
   "peerDependencies": {
     "stylelint": "^16.0.0"

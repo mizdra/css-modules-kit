@@ -1,5 +1,15 @@
 # css-modules-kit-vscode
 
+## 0.3.1
+
+### Patch Changes
+
+- Updated dependencies [d1c2051]
+- Updated dependencies [60b7515]
+- Updated dependencies [87e1aef]
+- Updated dependencies [c36be81]
+  - @css-modules-kit/ts-plugin@0.7.0
+
 ## 0.3.0
 
 ### Minor Changes

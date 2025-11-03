@@ -1,5 +1,15 @@
 # @css-modules-kit/core
 
+## 0.7.0
+
+### Minor Changes
+
+- d1c2051: refactor: rename from `createDts` to `generateDts`
+- 60b7515: feat: generate .d.ts files even if syntax or semantic errors are found
+- 4d661a1: feat: add `wildcardDirectories` in `CMKConfig`
+- 87e1aef: refactor: include diagnostics within `CSSModule` object
+- c36be81: feat!: report an error diagnostic when no files found by `include`/`exclude` pattern
+
 ## 0.6.0
 
 ### Minor Changes
