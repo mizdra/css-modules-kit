@@ -18,7 +18,10 @@ try {
     process.exit(0);
   }
 
-  await runCMK(args, logger);
+  const success = await runCMK(args, logger);
+  if (!success) {
+    process.exit(1);
+  }
 } catch (e) {
   logger.logError(e);
   process.exit(1);

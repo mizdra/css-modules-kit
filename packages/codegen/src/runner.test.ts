@@ -7,7 +7,6 @@ import { runCMK } from './runner.js';
 import { fakeParsedArgs } from './test/faker.js';
 import { createIFF } from './test/fixture.js';
 import { createLoggerSpy } from './test/logger.js';
-import { mockProcessExit, ProcessExitError } from './test/process.js';
 
 function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
   return {
@@ -25,8 +24,6 @@ function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
 function formatDiagnostics(diagnostics: Diagnostic[], rootDir: string) {
   return diagnostics.map((diagnostic) => formatDiagnostic(diagnostic, rootDir));
 }
-
-mockProcessExit();
 
 describe('runCMK', () => {
   test('generates .d.ts files', async () => {
@@ -80,7 +77,7 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    expect(await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).toBe(false);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -114,13 +111,17 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    expect(await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).toBe(false);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
           "category": "error",
           "text": "\`dtsOutDir\` in <rootDir>/tsconfig.json must be a string.",
+        },
+        {
+          "category": "error",
+          "text": "The file specified in tsconfig.json not found.",
         },
       ]
     `);
@@ -136,7 +137,7 @@ describe('runCMK', () => {
       'src/b.module.css': '@value;',
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    expect(await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).toBe(false);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
@@ -195,7 +196,7 @@ describe('runCMK', () => {
       `,
     });
     const loggerSpy = createLoggerSpy();
-    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).rejects.toThrow(ProcessExitError);
+    expect(await runCMK(fakeParsedArgs({ project: iff.rootDir }), loggerSpy)).toBe(false);
     expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
     expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).toMatchInlineSnapshot(`
       [
