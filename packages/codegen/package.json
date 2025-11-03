@@ -38,7 +38,8 @@
     "dist"
   ],
   "dependencies": {
-    "@css-modules-kit/core": "^0.6.0"
+    "@css-modules-kit/core": "^0.6.0",
+    "chokidar": "^4.0.3"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
