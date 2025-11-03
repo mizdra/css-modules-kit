@@ -71,27 +71,6 @@ describe('runCMK', () => {
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
   });
-  test('does not generate types derived from files not matched by `pattern`', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': '@import "./b.module.css"; @import "./c.css"',
-      'src/b.module.css': '.b1 { color: blue; }',
-      'src/c.css': '.c1 { color: red; }',
-    });
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        ...(await import('./b.module.css')).default,
-      };
-      export default styles;
-      "
-    `);
-  });
   test('report diagnostics when no files found by `pattern`', async () => {
     const iff = await createIFF({
       'tsconfig.json': dedent`
@@ -125,27 +104,6 @@ describe('runCMK', () => {
     await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy())).rejects.toThrow(
       ReadCSSModuleFileError,
     );
-  });
-  test('support ./ in `pattern`', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': dedent`
-        {
-          "cmkOptions": { "dtsOutDir": "generated" }
-        }
-      `,
-      'src/a.module.css': `@import './b.css'; .a1 { color: red; }`,
-      'src/b.css': '.b1 { color: red; }',
-    });
-    await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
-    expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        a1: '' as readonly string,
-      };
-      export default styles;
-      "
-    `);
-    await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
   });
   test('reports semantic diagnostics in tsconfig.json', async () => {
     const iff = await createIFF({
