@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 /* eslint-disable n/no-process-exit */
 
-import { createLogger, parseCLIArgs, printHelpText, printVersion, runCMK, shouldBePretty } from '../dist/index.js';
+import {
+  createLogger,
+  parseCLIArgs,
+  printHelpText,
+  printVersion,
+  runCMK,
+  runCMKInWatchMode,
+  shouldBePretty,
+} from '../dist/index.js';
 
 const cwd = process.cwd();
 let logger = createLogger(cwd, shouldBePretty(undefined));
@@ -18,9 +26,14 @@ try {
     process.exit(0);
   }
 
-  const success = await runCMK(args, logger);
-  if (!success) {
-    process.exit(1);
+  if (args.watch) {
+    const watcher = await runCMKInWatchMode(args, logger);
+    process.on('SIGINT', () => watcher.close());
+  } else {
+    const success = await runCMK(args, logger);
+    if (!success) {
+      process.exit(1);
+    }
   }
 } catch (e) {
   logger.logError(e);
