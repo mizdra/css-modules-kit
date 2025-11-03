@@ -126,7 +126,7 @@ export function createProject(args: ProjectArgs): Project {
     // TODO: Delete only the minimum amount of check stage cache
     moduleResolutionCache.clear();
     exportBuilder.clearCache();
-    semanticDiagnosticsMap.delete(fileName);
+    semanticDiagnosticsMap.clear();
 
     emittedSet.delete(fileName);
   }
