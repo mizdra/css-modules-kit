@@ -34,22 +34,25 @@ describe('createLogger', () => {
       "
     `);
   });
-  test('logSystemError', () => {
+  test('logError', () => {
     const logger = createLogger(cwd, false);
-    logger.logSystemError(new SystemError('CODE', 'message'));
+    logger.logError(new SystemError('CODE', 'message'));
     expect(stripVTControlCharacters(stderrWriteSpy.mock.lastCall![0] as string)).toMatchInlineSnapshot(`
       "error: message
 
       "
     `);
-    logger.logSystemError(
-      new ReadCSSModuleFileError('/app/a.module.css', new Error('EACCES: permission denied, open ...')),
-    );
+    logger.logError(new ReadCSSModuleFileError('/app/a.module.css', new Error('EACCES: permission denied, open ...')));
     expect(stripVTControlCharacters(stderrWriteSpy.mock.lastCall![0] as string)).toMatchInlineSnapshot(`
       "error: Failed to read CSS Module file /app/a.module.css.: EACCES: permission denied, open ...
 
       "
     `);
+    logger.logError(new Error('Some unknown error'));
+    // Check that error message and stack trace are included
+    expect(stripVTControlCharacters(stderrWriteSpy.mock.lastCall![0] as string)).toMatch(
+      /^Error: Some unknown error\n {4}at /mu,
+    );
   });
   test('logMessage', () => {
     const logger = createLogger(cwd, false);

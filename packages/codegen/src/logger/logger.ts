@@ -1,11 +1,12 @@
+import { inspect } from 'node:util';
 import type { DiagnosticSourceFile } from '@css-modules-kit/core';
-import { convertDiagnostic, convertSystemError, type Diagnostic, type SystemError } from '@css-modules-kit/core';
+import { convertDiagnostic, convertSystemError, type Diagnostic, SystemError } from '@css-modules-kit/core';
 import ts from 'typescript';
 import { formatDiagnostics } from './formatter.js';
 
 export interface Logger {
   logDiagnostics(diagnostics: Diagnostic[]): void;
-  logSystemError(error: SystemError): void;
+  logError(error: unknown): void;
   logMessage(message: string): void;
 }
 
@@ -29,9 +30,17 @@ export function createLogger(cwd: string, pretty: boolean): Logger {
       );
       process.stderr.write(result);
     },
-    logSystemError(error: SystemError): void {
-      const result = formatDiagnostics([convertSystemError(error)], host, pretty);
-      process.stderr.write(result);
+    logError(error: unknown): void {
+      // NOTE: SystemErrors are errors expected by the css-modules-kit specification and may occur within normal usage.
+      // These errors are formatted clearly and concisely. No stack trace is output.
+      //
+      // All other errors are unexpected errors. To assist in debugging when these errors occur, a stack trace is output.
+      if (error instanceof SystemError) {
+        const result = formatDiagnostics([convertSystemError(error)], host, pretty);
+        process.stderr.write(result);
+      } else {
+        process.stderr.write(`${inspect(error, { colors: pretty })}\n`);
+      }
     },
     logMessage(message: string): void {
       process.stdout.write(`${message}\n`);
