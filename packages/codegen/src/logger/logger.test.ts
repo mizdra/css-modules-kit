@@ -7,6 +7,10 @@ import { createLogger } from './logger.js';
 const stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
 const stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
 
+const date = new Date('2023-01-01T00:00:00Z');
+vi.useRealTimers();
+vi.setSystemTime(date);
+
 const cwd = '/app';
 
 describe('createLogger', () => {
@@ -58,5 +62,7 @@ describe('createLogger', () => {
     const logger = createLogger(cwd, false);
     logger.logMessage('message');
     expect(stdoutWriteSpy).toHaveBeenCalledWith('message\n');
+    logger.logMessage('message with time', { time: true });
+    expect(stdoutWriteSpy).toHaveBeenCalledWith('[12:00:00 AM] message with time\n');
   });
 });
