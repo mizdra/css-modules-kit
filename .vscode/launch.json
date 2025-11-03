@@ -14,6 +14,19 @@
       }
     },
     {
+      "name": "codegen: watch mode (1-basic)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/1-basic",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "args": ["--watch"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "npm: build - packages/codegen",
+      "presentation": {
+        "group": "codegen"
+      }
+    },
+    {
       "name": "codegen (2-named-exports)",
       "type": "node",
       "request": "launch",
