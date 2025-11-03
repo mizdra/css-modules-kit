@@ -7,6 +7,7 @@ export function fakeParsedArgs(args?: Partial<ParsedArgs>): ParsedArgs {
     project: '.',
     pretty: undefined,
     clean: false,
+    watch: false,
     ...args,
   };
 }
