@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "cmkOptions": {
+      "type": "object",
+      "markdownDescription": "Config options for css-modules-kit.",
+      "properties": {
+        "dtsOutDir": {
+          "type": "string",
+          "default": "generated",
+          "markdownDescription": "Specifies the directory where `*.d.ts` files are output."
+        },
+        "arbitraryExtensions": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Determines whether to generate `*.module.d.css.ts` instead of `*.module.css.d.ts`."
+        },
+        "namedExports": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Determines whether to generate named exports in the d.ts file instead of a default export."
+        },
+        "prioritizeNamedImports": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Whether to prioritize named imports over namespace imports when adding import statements. This option only takes effect when `cmkOptions.namedExports` is `true`.\n\nWhen this option is `true`, `import { button } from '...'` will be added. When this option is `false`, `import button from '...'` will be added."
+        },
+        "keyframes": {
+          "type": "boolean",
+          "default": true,
+          "title": "keyframes",
+          "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of keyframes in the d.ts file."
+        }
+      }
+    }
+  }
+}
