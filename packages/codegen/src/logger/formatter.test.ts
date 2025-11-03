@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { formatDiagnostics } from './formatter';
+import { formatDiagnostics, formatTime } from './formatter';
 
 describe('formatDiagnostics', () => {
   const file = ts.createSourceFile(
@@ -65,4 +65,14 @@ describe('formatDiagnostics', () => {
       "
     `);
   });
+});
+
+test('formatTime', () => {
+  const date = new Date('2023-01-01T00:00:00Z');
+  expect(formatTime(date, true)).toMatchInlineSnapshot(`
+    "[[90m12:00:00 AM[0m]"
+  `);
+  expect(formatTime(date, false)).toMatchInlineSnapshot(`
+    "[12:00:00 AM]"
+  `);
 });

@@ -2,12 +2,12 @@ import { inspect } from 'node:util';
 import type { DiagnosticSourceFile } from '@css-modules-kit/core';
 import { convertDiagnostic, convertSystemError, type Diagnostic, SystemError } from '@css-modules-kit/core';
 import ts from 'typescript';
-import { formatDiagnostics } from './formatter.js';
+import { formatDiagnostics, formatTime } from './formatter.js';
 
 export interface Logger {
   logDiagnostics(diagnostics: Diagnostic[]): void;
   logError(error: unknown): void;
-  logMessage(message: string): void;
+  logMessage(message: string, options?: { time?: boolean }): void;
   clearScreen(): void;
 }
 
@@ -43,8 +43,9 @@ export function createLogger(cwd: string, pretty: boolean): Logger {
         process.stderr.write(`${inspect(error, { colors: pretty })}\n`);
       }
     },
-    logMessage(message: string): void {
-      process.stdout.write(`${message}\n`);
+    logMessage(message: string, options?: { time?: boolean }): void {
+      const header = options?.time ? `${formatTime(new Date(), pretty)} ` : '';
+      process.stdout.write(`${header}${message}\n`);
     },
     clearScreen(): void {
       process.stdout.write('\x1B[2J\x1B[3J\x1B[H');
