@@ -94,3 +94,5 @@ describe('runCMK', () => {
     await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
   });
 });
+
+describe.todo('runCMKInWatchMode', () => {});
