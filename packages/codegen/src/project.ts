@@ -19,7 +19,7 @@ interface ProjectArgs {
   project: string;
 }
 
-interface Project {
+export interface Project {
   config: CMKConfig;
   /** Whether the file matches the wildcard patterns in `include` / `exclude` options */
   isWildcardMatchedFile(fileName: string): boolean;

@@ -26,6 +26,9 @@ try {
     process.exit(0);
   }
 
+  // Normal mode and watch mode behave differently when errors occur.
+  // - Normal mode: Outputs errors to the terminal and exits the process with exit code 1.
+  // - Watch mode: Outputs errors to the terminal but does not terminate the process. Continues watching the file.
   if (args.watch) {
     const watcher = await runCMKInWatchMode(args, logger);
     process.on('SIGINT', () => watcher.close());
