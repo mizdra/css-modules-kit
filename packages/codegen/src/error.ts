@@ -17,3 +17,9 @@ export class ReadCSSModuleFileError extends SystemError {
     super('READ_CSS_MODULE_FILE_ERROR', `Failed to read CSS Module file ${fileName}.`, cause);
   }
 }
+
+export class WatchInitializationError extends SystemError {
+  constructor(cause: unknown) {
+    super('WATCH_INITIALIZATION_ERROR', `Failed to initialize file watcher.`, cause);
+  }
+}

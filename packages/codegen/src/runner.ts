@@ -1,15 +1,18 @@
 import type { Stats } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import chokidar, { type FSWatcher } from 'chokidar';
+import { WatchInitializationError } from './error.js';
 import type { Logger } from './logger/logger.js';
-import { createProject } from './project.js';
+import { createProject, type Project } from './project.js';
 
 interface RunnerArgs {
   project: string;
   clean: boolean;
 }
 
-interface Watcher {
+export interface Watcher {
+  /** Exported for testing purposes */
+  project: Project;
   close(): Promise<void>;
 }
 
@@ -37,13 +40,19 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
 /**
  * Run css-modules-kit .d.ts generation in watch mode.
  *
+ * The promise resolves when the initial diagnostics report, emit, and watcher initialization are complete.
+ * If an error occurs before the promise resolves, the promise will be rejected. If an error occurs
+ * during file watching, the promise will not be rejected. Errors are reported through the logger.
+ *
  * NOTE: For implementation simplicity, config file changes are not watched.
  * @param project The absolute path to the project directory or the path to `tsconfig.json`.
  * @throws {TsConfigFileNotFoundError}
  * @throws {ReadCSSModuleFileError}
  * @throws {WriteDtsFileError}
+ * @throws {WatchInitializationError}
  */
 export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promise<Watcher> {
+  let initialized = false;
   const fsWatchers: FSWatcher[] = [];
   const project = createProject(args);
   let emitAndReportDiagnosticsTimer: NodeJS.Timeout | undefined = undefined;
@@ -54,7 +63,10 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
   await emitAndReportDiagnostics();
 
   // Watch project files and report diagnostics on changes
+  const readyPromises: Promise<void>[] = [];
   for (const wildcardDirectory of project.config.wildcardDirectories) {
+    const { promise, resolve, reject } = promiseWithResolvers<void>();
+    readyPromises.push(promise);
     fsWatchers.push(
       chokidar
         .watch(wildcardDirectory.fileName, {
@@ -75,7 +87,6 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
           },
           ignoreInitial: true,
           ...(wildcardDirectory.recursive ? {} : { depth: 0 }),
-          awaitWriteFinish: true,
         })
         .on('add', (fileName) => {
           try {
@@ -99,9 +110,19 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
           project.removeFile(fileName);
           scheduleEmitAndReportDiagnostics();
         })
-        .on('error', logger.logError.bind(logger)),
+        // eslint-disable-next-line no-loop-func
+        .on('error', (e) => {
+          if (!initialized) {
+            reject(new WatchInitializationError(e));
+          } else {
+            logger.logError(e);
+          }
+        })
+        .on('ready', () => resolve()),
     );
   }
+  await Promise.all(readyPromises);
+  initialized = true;
 
   function scheduleEmitAndReportDiagnostics() {
     // Switching between git branches results in numerous file changes occurring rapidly.
@@ -136,5 +157,19 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
     await Promise.all(fsWatchers.map(async (watcher) => watcher.close()));
   }
 
-  return { close };
+  return { project, close };
+}
+
+function promiseWithResolvers<T>() {
+  let resolve;
+  let reject;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {
+    promise,
+    resolve: resolve as unknown as (value: T) => void,
+    reject: reject as unknown as (reason?: unknown) => void,
+  };
 }
