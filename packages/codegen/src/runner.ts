@@ -30,9 +30,6 @@ export interface Watcher {
 export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promise<Watcher> {
   const fsWatchers: FSWatcher[] = [];
   const project = createProject(args);
-  let emitAndReportDiagnosticsTimer: NodeJS.Timeout | undefined = undefined;
-
-  await emitAndReportDiagnostics();
 
   // Watch project files and report diagnostics on changes
   const readyPromises: Promise<void>[] = [];
@@ -65,13 +62,6 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
           if (fileName.endsWith('a.module.css')) {
             globalThis.changeCount++;
           }
-          try {
-            project.updateFile(fileName);
-          } catch (e) {
-            logger.logError(e);
-            return;
-          }
-          scheduleEmitAndReportDiagnostics();
         })
         .on('raw', (eventName, fileName, details) => {
           console.log('raw event:', { fileName });
@@ -80,35 +70,6 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
     );
   }
   await Promise.all(readyPromises);
-
-  function scheduleEmitAndReportDiagnostics() {
-    // Switching between git branches results in numerous file changes occurring rapidly.
-    // Reporting diagnostics for each file change would overwhelm users.
-    // Therefore, we batch the processing.
-
-    if (emitAndReportDiagnosticsTimer !== undefined) clearTimeout(emitAndReportDiagnosticsTimer);
-
-    emitAndReportDiagnosticsTimer = setTimeout(() => {
-      emitAndReportDiagnosticsTimer = undefined;
-      emitAndReportDiagnostics().catch(logger.logError.bind(logger));
-    }, 250);
-  }
-
-  /**
-   * @throws {WriteDtsFileError}
-   */
-  async function emitAndReportDiagnostics() {
-    logger.clearScreen();
-    await project.emitDtsFiles();
-    const diagnostics = project.getDiagnostics();
-    if (diagnostics.length > 0) {
-      logger.logDiagnostics(diagnostics);
-    }
-    logger.logMessage(
-      `Found ${diagnostics.length} error${diagnostics.length === 1 ? '' : 's'}. Watching for file changes.`,
-      { time: true },
-    );
-  }
 
   return { project };
 }
