@@ -2,14 +2,10 @@ import assert from 'node:assert';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { platform } from 'node:process';
+import { setTimeout as sleep } from 'node:timers/promises';
 import chokidar from 'chokidar';
 
 let changeCount = 0;
-
-async function sleep(ms: number): Promise<void> {
-  // eslint-disable-next-line no-promise-executor-return
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function waitFor(fn: () => void) {
   return new Promise<void>((resolve, reject) => {
@@ -74,7 +70,8 @@ await waitFor(() => {
 
 console.log('update file');
 await writeFile(textFilePath, '2');
-await sleep(1000);
-assert(changeCount === 2, `Expected changeCount to be 2, but got ${changeCount}`);
+await waitFor(() => {
+  assert(changeCount === 2, `Expected changeCount to be 2, but got ${changeCount}`);
+});
 
 await watcher.close();
