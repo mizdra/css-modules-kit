@@ -10,11 +10,6 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForWatcherEmitAndReportDiagnostics(): Promise<void> {
-  // In watch mode, emits and diagnostic reports are batched with a 250ms delay. Therefore, a wait longer than 250ms is required.
-  await sleep(2000);
-}
-
 describe('runCMKInWatchMode', () => {
   test('reports system error occurs during watching', async () => {
     const fixturePath = join(process.cwd(), 'fixtures');
@@ -54,7 +49,8 @@ describe('runCMKInWatchMode', () => {
 
     console.log('update file');
     await writeFile(textFilePath, '2');
-    await waitForWatcherEmitAndReportDiagnostics();
-    assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
+    await vi.waitFor(() => {
+      assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
+    });
   });
 });
