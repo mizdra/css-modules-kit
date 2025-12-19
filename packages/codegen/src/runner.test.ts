@@ -28,8 +28,7 @@ describe('runCMKInWatchMode', () => {
     // To avoid test flakiness, wait for a short time before starting the watcher.
     await sleep(100);
 
-    const loggerSpy = createLoggerSpy();
-    await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
+    await runCMKInWatchMode(iff.rootDir);
 
     // Workaround for https://github.com/paulmillr/chokidar/issues/1443
     if (platform === 'darwin') {

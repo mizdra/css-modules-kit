@@ -1,12 +1,5 @@
-import type { Stats } from 'node:fs';
 import chokidar, { type FSWatcher } from 'chokidar';
-import type { Logger } from './logger/logger.js';
-import { createProject, type Project } from './project.js';
-
-interface RunnerArgs {
-  project: string;
-  clean: boolean;
-}
+import { type Project } from './project.js';
 
 export interface Watcher {
   /** Exported for testing purposes */
@@ -27,36 +20,17 @@ export interface Watcher {
  * @throws {WriteDtsFileError}
  * @throws {WatchInitializationError}
  */
-export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promise<Watcher> {
+export async function runCMKInWatchMode(rootDir: string): Promise<void> {
   const fsWatchers: FSWatcher[] = [];
-  const project = createProject(args);
 
   // Watch project files and report diagnostics on changes
   const readyPromises: Promise<void>[] = [];
-  for (const wildcardDirectory of project.config.wildcardDirectories) {
+  for (const wildcardDirectory of [{ fileName: rootDir }]) {
     const { promise, resolve } = promiseWithResolvers<void>();
     readyPromises.push(promise);
     fsWatchers.push(
       chokidar
-        .watch(wildcardDirectory.fileName, {
-          ignored: (fileName: string, stats?: Stats) => {
-            // The ignored function is called twice for the same path. The first time with stats undefined,
-            // and the second time with stats provided.
-            // In the first call, we can't determine if the path is a directory or file.
-            // So we include it in the watch target considering it might be a directory.
-            if (!stats) return false;
-
-            // In the second call, we include directories or files that match wildcards in the watch target.
-            // However, `dtsOutDir` is excluded from the watch target.
-            if (stats.isDirectory()) {
-              return fileName === project.config.dtsOutDir;
-            } else {
-              return !project.isWildcardMatchedFile(fileName);
-            }
-          },
-          ignoreInitial: true,
-          ...(wildcardDirectory.recursive ? {} : { depth: 0 }),
-        })
+        .watch(wildcardDirectory.fileName, { ignoreInitial: true })
         .on('change', (fileName) => {
           console.log('change event: ', fileName);
           if (fileName.endsWith('a.module.css')) {
@@ -70,8 +44,6 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
     );
   }
   await Promise.all(readyPromises);
-
-  return { project };
 }
 
 function promiseWithResolvers<T>() {
