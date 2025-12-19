@@ -1,4 +1,4 @@
-import chokidar, { type FSWatcher } from 'chokidar';
+import chokidar from 'chokidar';
 
 /**
  * Run css-modules-kit .d.ts generation in watch mode.
@@ -15,27 +15,18 @@ import chokidar, { type FSWatcher } from 'chokidar';
  * @throws {WatchInitializationError}
  */
 export async function runCMKInWatchMode(rootDir: string): Promise<void> {
-  const fsWatchers: FSWatcher[] = [];
-
-  // Watch project files and report diagnostics on changes
-  const readyPromises: Promise<void>[] = [];
-  for (const wildcardDirectory of [{ fileName: rootDir }]) {
-    const { promise, resolve } = Promise.withResolvers<void>();
-    readyPromises.push(promise);
-    fsWatchers.push(
-      chokidar
-        .watch(wildcardDirectory.fileName, { ignoreInitial: true })
-        .on('change', (fileName) => {
-          console.log('change event: ', fileName);
-          if (fileName.endsWith('a.module.css')) {
-            globalThis.changeCount++;
-          }
-        })
-        .on('raw', (eventName, fileName, details) => {
-          console.log('raw event:', { fileName });
-        })
-        .on('ready', () => resolve()),
-    );
-  }
-  await Promise.all(readyPromises);
+  const { promise, resolve } = Promise.withResolvers<void>();
+  chokidar
+    .watch(rootDir, { ignoreInitial: true })
+    .on('change', (fileName) => {
+      console.log('change event: ', fileName);
+      if (fileName.endsWith('a.module.css')) {
+        globalThis.changeCount++;
+      }
+    })
+    .on('raw', (eventName, fileName, details) => {
+      console.log('raw event:', { fileName });
+    })
+    .on('ready', () => resolve());
+  await promise;
 }
