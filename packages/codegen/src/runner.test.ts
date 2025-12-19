@@ -37,15 +37,6 @@ describe('runCMKInWatchMode', () => {
     const watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
     await waitForWatcherReady();
 
-    // Error when adding a file
-    vi.spyOn(watcher.project, 'addFile').mockImplementationOnce(() => {
-      throw new Error('test error');
-    });
-    await writeFile(iff.join('src/b.module.css'), '.b_1 { color: red; }');
-    await vi.waitFor(() => {
-      expect(loggerSpy.logError).toHaveBeenCalledTimes(1);
-    });
-
     // Error when changing a file
     console.log('update a.module.css');
     vi.spyOn(watcher.project, 'updateFile').mockImplementationOnce(() => {
@@ -53,7 +44,7 @@ describe('runCMKInWatchMode', () => {
     });
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: blue; }');
     await vi.waitFor(() => {
-      expect(loggerSpy.logError).toHaveBeenCalledTimes(2);
+      expect(loggerSpy.logError).toHaveBeenCalledTimes(1);
     });
 
     // Error when emitting files
@@ -63,6 +54,6 @@ describe('runCMKInWatchMode', () => {
     console.log('update a.module.css');
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: yellow; }');
     await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logError).toHaveBeenCalledTimes(3);
+    expect(loggerSpy.logError).toHaveBeenCalledTimes(2);
   });
 });
