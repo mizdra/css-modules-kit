@@ -62,6 +62,9 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
         })
         .on('change', (fileName) => {
           console.log('change event: ', fileName);
+          if (fileName.endsWith('a.module.css')) {
+            globalThis.changeCount++;
+          }
           try {
             project.updateFile(fileName);
           } catch (e) {

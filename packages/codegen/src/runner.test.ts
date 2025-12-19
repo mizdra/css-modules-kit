@@ -1,6 +1,7 @@
+import assert from 'node:assert';
 import { writeFile } from 'node:fs/promises';
 import { platform } from 'node:process';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, test, vi } from 'vitest';
 import { runCMKInWatchMode } from './runner.js';
 import { fakeParsedArgs } from './test/faker.js';
 import { createIFF } from './test/fixture.js';
@@ -35,6 +36,8 @@ describe('runCMKInWatchMode', () => {
       await sleep(100);
     }
 
+    globalThis.changeCount = 0;
+
     // Error when changing a file
     console.log('update a.module.css');
     vi.spyOn(watcher.project, 'updateFile').mockImplementationOnce(() => {
@@ -42,7 +45,7 @@ describe('runCMKInWatchMode', () => {
     });
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: blue; }');
     await vi.waitFor(() => {
-      expect(loggerSpy.logError).toHaveBeenCalledTimes(1);
+      assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
     });
 
     // Error when emitting files
@@ -52,6 +55,6 @@ describe('runCMKInWatchMode', () => {
     console.log('update a.module.css');
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: yellow; }');
     await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logError).toHaveBeenCalledTimes(2);
+    assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
   });
 });
