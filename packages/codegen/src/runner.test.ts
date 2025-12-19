@@ -11,15 +11,9 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForWatcherReady(): Promise<void> {
-  // Workaround for https://github.com/paulmillr/chokidar/issues/1443
-  if (platform === 'darwin') {
-    await sleep(100);
-  }
-}
 async function waitForWatcherEmitAndReportDiagnostics(): Promise<void> {
   // In watch mode, emits and diagnostic reports are batched with a 250ms delay. Therefore, a wait longer than 250ms is required.
-  await sleep(500);
+  await sleep(2000);
 }
 
 describe('runCMKInWatchMode', () => {
@@ -35,7 +29,11 @@ describe('runCMKInWatchMode', () => {
 
     const loggerSpy = createLoggerSpy();
     const watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
-    await waitForWatcherReady();
+
+    // Workaround for https://github.com/paulmillr/chokidar/issues/1443
+    if (platform === 'darwin') {
+      await sleep(100);
+    }
 
     // Error when changing a file
     console.log('update a.module.css');
