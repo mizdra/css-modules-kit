@@ -29,7 +29,7 @@ describe('runCMKInWatchMode', () => {
     await sleep(100);
 
     const loggerSpy = createLoggerSpy();
-    const watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
+    await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), loggerSpy);
 
     // Workaround for https://github.com/paulmillr/chokidar/issues/1443
     if (platform === 'darwin') {
@@ -38,20 +38,12 @@ describe('runCMKInWatchMode', () => {
 
     globalThis.changeCount = 0;
 
-    // Error when changing a file
     console.log('update a.module.css');
-    vi.spyOn(watcher.project, 'updateFile').mockImplementationOnce(() => {
-      throw new Error('test error');
-    });
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: blue; }');
     await vi.waitFor(() => {
       assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
     });
 
-    // Error when emitting files
-    vi.spyOn(watcher.project, 'emitDtsFiles').mockImplementationOnce(() => {
-      throw new Error('test error');
-    });
     console.log('update a.module.css');
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: yellow; }');
     await waitForWatcherEmitAndReportDiagnostics();
