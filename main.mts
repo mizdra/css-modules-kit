@@ -7,34 +7,6 @@ import chokidar from 'chokidar';
 
 let changeCount = 0;
 
-async function waitFor(fn: () => void) {
-  return new Promise<void>((resolve, reject) => {
-    let error: unknown = null;
-    function runFn() {
-      try {
-        fn();
-        clearInterval(intervalTimer);
-        clearTimeout(timeoutTimer);
-        resolve();
-      } catch (e) {
-        error = e;
-      }
-    }
-    const intervalTimer = setInterval(() => {
-      runFn();
-    }, 50);
-    const timeoutTimer = setTimeout(() => {
-      clearInterval(intervalTimer);
-      if (error) {
-        reject(new Error('Timeout waiting for condition', { cause: error }));
-      } else {
-        reject(new Error('unreachable'));
-      }
-    }, 1000);
-    runFn(); // First, execute immediately
-  });
-}
-
 const fixturePath = join(process.cwd(), 'fixtures');
 const textFilePath = join(fixturePath, 'file.txt');
 
@@ -75,3 +47,31 @@ await waitFor(() => {
 });
 
 await watcher.close();
+
+async function waitFor(fn: () => void) {
+  return new Promise<void>((resolve, reject) => {
+    let error: unknown = null;
+    function runFn() {
+      try {
+        fn();
+        clearInterval(intervalTimer);
+        clearTimeout(timeoutTimer);
+        resolve();
+      } catch (e) {
+        error = e;
+      }
+    }
+    const intervalTimer = setInterval(() => {
+      runFn();
+    }, 50);
+    const timeoutTimer = setTimeout(() => {
+      clearInterval(intervalTimer);
+      if (error) {
+        reject(new Error('Timeout waiting for condition', { cause: error }));
+      } else {
+        reject(new Error('unreachable'));
+      }
+    }, 1000);
+    runFn(); // First, execute immediately
+  });
+}
