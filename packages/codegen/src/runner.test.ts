@@ -196,7 +196,7 @@ describe('runCMKInWatchMode', () => {
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
   });
-  test('reports system error occurs during watching', async () => {
+  test.only('reports system error occurs during watching', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{}',
       'src/a.module.css': '.a_1 { color: red; }',
@@ -220,6 +220,7 @@ describe('runCMKInWatchMode', () => {
     });
 
     // Error when changing a file
+    console.log('update a.module.css');
     vi.spyOn(watcher.project, 'updateFile').mockImplementationOnce(() => {
       throw new Error('test error');
     });
@@ -232,6 +233,7 @@ describe('runCMKInWatchMode', () => {
     vi.spyOn(watcher.project, 'emitDtsFiles').mockImplementationOnce(() => {
       throw new Error('test error');
     });
+    console.log('update a.module.css');
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: yellow; }');
     await waitForWatcherEmitAndReportDiagnostics();
     expect(loggerSpy.logError).toHaveBeenCalledTimes(3);

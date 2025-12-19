@@ -21,7 +21,7 @@
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --cache --check .",
     "test": "run-s -c test:*",
-    "test:vitest": "vitest --run",
+    "test:vitest": "vitest --allowOnly runner",
     "test:vscode": "vscode-test"
   },
   "prettier": "@mizdra/prettier-config-mizdra",

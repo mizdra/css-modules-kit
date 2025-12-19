@@ -98,6 +98,7 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
           scheduleEmitAndReportDiagnostics();
         })
         .on('change', (fileName) => {
+          console.log('change event: ', fileName);
           try {
             project.updateFile(fileName);
           } catch (e) {
@@ -109,6 +110,9 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
         .on('unlink', (fileName: string) => {
           project.removeFile(fileName);
           scheduleEmitAndReportDiagnostics();
+        })
+        .on('raw', (eventName, fileName, details) => {
+          console.log('raw event:', { fileName });
         })
         // eslint-disable-next-line no-loop-func
         .on('error', (e) => {
