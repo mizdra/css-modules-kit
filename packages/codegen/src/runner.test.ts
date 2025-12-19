@@ -3,7 +3,6 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { platform } from 'node:process';
 import chokidar from 'chokidar';
-import { describe, test, vi } from 'vitest';
 
 async function sleep(ms: number): Promise<void> {
   // eslint-disable-next-line no-promise-executor-return
@@ -37,49 +36,48 @@ async function waitFor(fn: () => void) {
     runFn(); // First, execute immediately
   });
 }
+async function main() {
+  const fixturePath = join(process.cwd(), 'fixtures');
+  const textFilePath = join(fixturePath, 'file.txt');
 
-describe('runCMKInWatchMode', () => {
-  test('reports system error occurs during watching', async () => {
-    const fixturePath = join(process.cwd(), 'fixtures');
-    const textFilePath = join(fixturePath, 'file.txt');
+  // On macOS, chokidar may detect 'add' events for files added before watching starts.
+  // To avoid test flakiness, wait for a short time before starting the watcher.
+  await sleep(100);
 
-    // On macOS, chokidar may detect 'add' events for files added before watching starts.
-    // To avoid test flakiness, wait for a short time before starting the watcher.
+  const { promise, resolve } = Promise.withResolvers<void>();
+  const watcher = chokidar
+    .watch(fixturePath, { ignoreInitial: true })
+    .on('change', (fileName) => {
+      console.log('change event: ', fileName);
+      if (fileName.endsWith('file.txt')) {
+        globalThis.changeCount++;
+      }
+    })
+    .on('raw', (eventName, fileName, details) => {
+      console.log('raw event:', { fileName });
+    })
+    .on('ready', () => resolve());
+  await promise;
+
+  // Workaround for https://github.com/paulmillr/chokidar/issues/1443
+  if (platform === 'darwin') {
     await sleep(100);
+  }
 
-    const { promise, resolve } = Promise.withResolvers<void>();
-    chokidar
-      .watch(fixturePath, { ignoreInitial: true })
-      .on('change', (fileName) => {
-        console.log('change event: ', fileName);
-        if (fileName.endsWith('file.txt')) {
-          globalThis.changeCount++;
-        }
-      })
-      .on('raw', (eventName, fileName, details) => {
-        console.log('raw event:', { fileName });
-      })
-      .on('ready', () => resolve());
-    await promise;
+  globalThis.changeCount = 0;
 
-    // Workaround for https://github.com/paulmillr/chokidar/issues/1443
-    if (platform === 'darwin') {
-      await sleep(100);
-    }
-
-    globalThis.changeCount = 0;
-
-    console.log('update file');
-    await writeFile(textFilePath, '1');
-    const startTime = Date.now();
-    await waitFor(() => {
-      console.log('elapsed', Date.now() - startTime, globalThis.changeCount);
-      assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
-    });
-
-    console.log('update file');
-    await writeFile(textFilePath, '2');
-    await sleep(1000);
-    assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
+  console.log('update file');
+  await writeFile(textFilePath, '1');
+  await waitFor(() => {
+    assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
   });
-});
+
+  console.log('update file');
+  await writeFile(textFilePath, '2');
+  await sleep(1000);
+  assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
+
+  await watcher.close();
+}
+
+main();

@@ -21,7 +21,7 @@
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --cache --check .",
     "test": "run-s -c test:*",
-    "test:vitest": "vitest runner",
+    "test:vitest": "tsx packages/codegen/src/runner.test.ts",
     "test:vscode": "vscode-test"
   },
   "prettier": "@mizdra/prettier-config-mizdra",
