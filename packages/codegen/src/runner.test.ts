@@ -1,11 +1,9 @@
 import assert from 'node:assert';
 import { writeFile } from 'node:fs/promises';
 import { platform } from 'node:process';
+import chokidar from 'chokidar';
 import { describe, test, vi } from 'vitest';
-import { runCMKInWatchMode } from './runner.js';
-import { fakeParsedArgs } from './test/faker.js';
 import { createIFF } from './test/fixture.js';
-import { createLoggerSpy } from './test/logger.js';
 
 async function sleep(ms: number): Promise<void> {
   // eslint-disable-next-line no-promise-executor-return
@@ -28,7 +26,20 @@ describe('runCMKInWatchMode', () => {
     // To avoid test flakiness, wait for a short time before starting the watcher.
     await sleep(100);
 
-    await runCMKInWatchMode(iff.rootDir);
+    const { promise, resolve } = Promise.withResolvers<void>();
+    chokidar
+      .watch(iff.rootDir, { ignoreInitial: true })
+      .on('change', (fileName) => {
+        console.log('change event: ', fileName);
+        if (fileName.endsWith('a.module.css')) {
+          globalThis.changeCount++;
+        }
+      })
+      .on('raw', (eventName, fileName, details) => {
+        console.log('raw event:', { fileName });
+      })
+      .on('ready', () => resolve());
+    await promise;
 
     // Workaround for https://github.com/paulmillr/chokidar/issues/1443
     if (platform === 'darwin') {
