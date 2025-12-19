@@ -25,13 +25,4 @@ jobs:
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/cache@v4
-        with:
-          path: |
-            node_modules/.vite/vitest
-            packages/*/dist
-            packages/*/tsconfig.build.tsbuildinfo
-            tsconfig.tsbuildinfo
-          key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: npm run test:vitest
+      - run: node main.mts
