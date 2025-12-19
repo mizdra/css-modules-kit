@@ -49,8 +49,7 @@ describe('runCMKInWatchMode', () => {
 
     console.log('update file');
     await writeFile(textFilePath, '2');
-    await vi.waitFor(() => {
-      assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
-    });
+    await sleep(1000);
+    assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
   });
 });
