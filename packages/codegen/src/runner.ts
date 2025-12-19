@@ -1,10 +1,4 @@
 import chokidar, { type FSWatcher } from 'chokidar';
-import { type Project } from './project.js';
-
-export interface Watcher {
-  /** Exported for testing purposes */
-  project: Project;
-}
 
 /**
  * Run css-modules-kit .d.ts generation in watch mode.
@@ -26,7 +20,7 @@ export async function runCMKInWatchMode(rootDir: string): Promise<void> {
   // Watch project files and report diagnostics on changes
   const readyPromises: Promise<void>[] = [];
   for (const wildcardDirectory of [{ fileName: rootDir }]) {
-    const { promise, resolve } = promiseWithResolvers<void>();
+    const { promise, resolve } = Promise.withResolvers<void>();
     readyPromises.push(promise);
     fsWatchers.push(
       chokidar
@@ -44,18 +38,4 @@ export async function runCMKInWatchMode(rootDir: string): Promise<void> {
     );
   }
   await Promise.all(readyPromises);
-}
-
-function promiseWithResolvers<T>() {
-  let resolve;
-  let reject;
-  const promise = new Promise<T>((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return {
-    promise,
-    resolve: resolve as unknown as (value: T) => void,
-    reject: reject as unknown as (reason?: unknown) => void,
-  };
 }
