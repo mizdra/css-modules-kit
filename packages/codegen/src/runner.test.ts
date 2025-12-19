@@ -10,6 +10,34 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function waitFor(fn: () => void) {
+  return new Promise<void>((resolve, reject) => {
+    let error: unknown = null;
+    function runFn() {
+      try {
+        fn();
+        clearInterval(intervalTimer);
+        clearTimeout(timeoutTimer);
+        resolve();
+      } catch (e) {
+        error = e;
+      }
+    }
+    const intervalTimer = setInterval(() => {
+      runFn();
+    }, 50);
+    const timeoutTimer = setTimeout(() => {
+      clearInterval(intervalTimer);
+      if (error) {
+        reject(new Error('Timeout waiting for condition', { cause: error }));
+      } else {
+        reject(new Error('unreachable'));
+      }
+    }, 1000);
+    runFn(); // First, execute immediately
+  });
+}
+
 describe('runCMKInWatchMode', () => {
   test('reports system error occurs during watching', async () => {
     const fixturePath = join(process.cwd(), 'fixtures');
@@ -43,7 +71,9 @@ describe('runCMKInWatchMode', () => {
 
     console.log('update file');
     await writeFile(textFilePath, '1');
-    await vi.waitFor(() => {
+    const startTime = Date.now();
+    await waitFor(() => {
+      console.log('elapsed', Date.now() - startTime, globalThis.changeCount);
       assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
     });
 
