@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { platform } from 'node:process';
 import chokidar from 'chokidar';
 
+let changeCount = 0;
+
 async function sleep(ms: number): Promise<void> {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -50,7 +52,7 @@ const watcher = chokidar
   .on('change', (fileName) => {
     console.log('change event: ', fileName);
     if (fileName.endsWith('file.txt')) {
-      globalThis.changeCount++;
+      changeCount++;
     }
   })
   .on('raw', (eventName, fileName, details) => {
@@ -64,17 +66,15 @@ if (platform === 'darwin') {
   await sleep(100);
 }
 
-globalThis.changeCount = 0;
-
 console.log('update file');
 await writeFile(textFilePath, '1');
 await waitFor(() => {
-  assert(globalThis.changeCount === 1, `Expected changeCount to be 1, but got ${globalThis.changeCount}`);
+  assert(changeCount === 1, `Expected changeCount to be 1, but got ${changeCount}`);
 });
 
 console.log('update file');
 await writeFile(textFilePath, '2');
 await sleep(1000);
-assert(globalThis.changeCount === 2, `Expected changeCount to be 2, but got ${globalThis.changeCount}`);
+assert(changeCount === 2, `Expected changeCount to be 2, but got ${changeCount}`);
 
 await watcher.close();
