@@ -19,23 +19,22 @@ interface ProjectArgs {
   project: string;
 }
 
-interface Project {
+export interface Project {
   config: CMKConfig;
-  // TODO: Implement these methods later for watch mode
-  // /** Whether the file matches the wildcard patterns in `include` / `exclude` options */
-  // isWildcardMatchedFile(fileName: string): boolean;
-  // /**
-  //  * Add a file to the project.
-  //  * @throws {ReadCSSModuleFileError}
-  //  */
-  // addFile(fileName: string): void;
-  // /**
-  //  * Update a file in the project.
-  //  * @throws {ReadCSSModuleFileError}
-  //  */
-  // updateFile(fileName: string): void;
-  // /** Remove a file from the project. */
-  // removeFile(fileName: string): void;
+  /** Whether the file matches the wildcard patterns in `include` / `exclude` options */
+  isWildcardMatchedFile(fileName: string): boolean;
+  /**
+   * Add a file to the project.
+   * @throws {ReadCSSModuleFileError}
+   */
+  addFile(fileName: string): void;
+  /**
+   * Update a file in the project.
+   * @throws {ReadCSSModuleFileError}
+   */
+  updateFile(fileName: string): void;
+  /** Remove a file from the project. */
+  removeFile(fileName: string): void;
   /**
    * Get all diagnostics.
    * Including three types of diagnostics: project diagnostics, syntactic diagnostics, and semantic diagnostics.
@@ -72,16 +71,64 @@ export function createProject(args: ProjectArgs): Project {
   const resolver = createResolver(config.compilerOptions, moduleResolutionCache);
   const matchesPattern = createMatchesPattern(config);
 
-  const parseStageCache = new Map<string, CSSModule>();
-  const checkStageCache = new Map<string, Diagnostic[]>();
-  const getCSSModule = (path: string) => parseStageCache.get(path);
+  const cssModuleMap = new Map<string, CSSModule>();
+  const semanticDiagnosticsMap = new Map<string, Diagnostic[]>();
+  // Tracks whether .d.ts has been emitted after the last change
+  const emittedSet = new Set<string>();
+  const getCSSModule = (path: string) => cssModuleMap.get(path);
   const exportBuilder = createExportBuilder({ getCSSModule, matchesPattern, resolver });
 
   for (const fileName of getFileNamesByPattern(config)) {
     // NOTE: Files may be deleted between executing `getFileNamesByPattern` and `tryParseCSSModule`.
     // Therefore, `tryParseCSSModule` may return `undefined`.
     const cssModule = tryParseCSSModule(fileName);
-    if (cssModule) parseStageCache.set(fileName, cssModule);
+    if (cssModule) cssModuleMap.set(fileName, cssModule);
+  }
+
+  /**
+   * @throws {ReadCSSModuleFileError}
+   */
+  function addFile(fileName: string) {
+    if (cssModuleMap.has(fileName)) return;
+
+    const cssModule = tryParseCSSModule(fileName);
+    if (!cssModule) return;
+    cssModuleMap.set(fileName, cssModule);
+
+    // TODO: Delete only the minimum amount of check stage cache
+    moduleResolutionCache.clear();
+    exportBuilder.clearCache();
+    semanticDiagnosticsMap.clear();
+  }
+
+  /**
+   * @throws {ReadCSSModuleFileError}
+   */
+  function updateFile(fileName: string) {
+    if (!cssModuleMap.has(fileName)) return;
+
+    const cssModule = tryParseCSSModule(fileName);
+    if (!cssModule) return;
+    cssModuleMap.set(fileName, cssModule);
+
+    // TODO: Delete only the minimum amount of check stage cache
+    exportBuilder.clearCache();
+    semanticDiagnosticsMap.clear();
+
+    emittedSet.delete(fileName);
+  }
+
+  function removeFile(fileName: string) {
+    if (!cssModuleMap.has(fileName)) return;
+
+    cssModuleMap.delete(fileName);
+
+    // TODO: Delete only the minimum amount of check stage cache
+    moduleResolutionCache.clear();
+    exportBuilder.clearCache();
+    semanticDiagnosticsMap.clear();
+
+    emittedSet.delete(fileName);
   }
 
   /**
@@ -119,7 +166,7 @@ export function createProject(args: ProjectArgs): Project {
   function getProjectDiagnostics() {
     const diagnostics: Diagnostic[] = [];
     diagnostics.push(...config.diagnostics);
-    if (parseStageCache.size === 0) {
+    if (cssModuleMap.size === 0) {
       diagnostics.push({
         category: 'error',
         text: `The file specified in tsconfig.json not found.`,
@@ -129,16 +176,16 @@ export function createProject(args: ProjectArgs): Project {
   }
 
   function getSyntacticDiagnostics() {
-    return Array.from(parseStageCache.values()).flatMap(({ diagnostics }) => diagnostics);
+    return Array.from(cssModuleMap.values()).flatMap(({ diagnostics }) => diagnostics);
   }
 
   function getSemanticDiagnostics() {
     const allDiagnostics: Diagnostic[] = [];
-    for (const cssModule of parseStageCache.values()) {
-      let diagnostics = checkStageCache.get(cssModule.fileName);
+    for (const cssModule of cssModuleMap.values()) {
+      let diagnostics = semanticDiagnosticsMap.get(cssModule.fileName);
       if (!diagnostics) {
         diagnostics = checkCSSModule(cssModule, config, exportBuilder, matchesPattern, resolver, getCSSModule);
-        checkStageCache.set(cssModule.fileName, diagnostics);
+        semanticDiagnosticsMap.set(cssModule.fileName, diagnostics);
       }
       allDiagnostics.push(...diagnostics);
     }
@@ -150,13 +197,16 @@ export function createProject(args: ProjectArgs): Project {
    */
   async function emitDtsFiles(): Promise<void> {
     const promises: Promise<void>[] = [];
-    for (const cssModule of parseStageCache.values()) {
+    for (const cssModule of cssModuleMap.values()) {
+      if (emittedSet.has(cssModule.fileName)) continue;
       const dts = generateDts(cssModule, { resolver, matchesPattern }, { ...config, forTsPlugin: false });
       promises.push(
         writeDtsFile(dts.text, cssModule.fileName, {
           outDir: config.dtsOutDir,
           basePath: config.basePath,
           arbitraryExtensions: config.arbitraryExtensions,
+        }).then(() => {
+          emittedSet.add(cssModule.fileName);
         }),
       );
     }
@@ -165,6 +215,10 @@ export function createProject(args: ProjectArgs): Project {
 
   return {
     config,
+    isWildcardMatchedFile: (fileName) => matchesPattern(fileName),
+    addFile,
+    updateFile,
+    removeFile,
     getDiagnostics,
     emitDtsFiles,
   };

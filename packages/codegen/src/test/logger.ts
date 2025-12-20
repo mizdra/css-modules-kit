@@ -6,5 +6,6 @@ export function createLoggerSpy() {
     logDiagnostics: vi.fn(),
     logError: vi.fn(),
     logMessage: vi.fn(),
+    clearScreen: vi.fn(),
   } satisfies Logger;
 }
