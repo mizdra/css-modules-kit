@@ -47,11 +47,23 @@
     ],
     "jsonValidation": [
       {
-        "fileMatch": "jsconfig*.json",
+        "fileMatch": "tsconfig.json",
         "url": "./schemas/tsconfig.schema.json"
       },
       {
-        "fileMatch": "tsconfig*.json",
+        "fileMatch": "tsconfig.*.json",
+        "url": "./schemas/tsconfig.schema.json"
+      },
+      {
+        "fileMatch": "tsconfig-*.json",
+        "url": "./schemas/tsconfig.schema.json"
+      },
+      {
+        "fileMatch": "jsconfig.json",
+        "url": "./schemas/tsconfig.schema.json"
+      },
+      {
+        "fileMatch": "jsconfig.*.json",
         "url": "./schemas/tsconfig.schema.json"
       }
     ],
