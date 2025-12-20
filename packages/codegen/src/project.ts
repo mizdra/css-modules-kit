@@ -19,7 +19,7 @@ interface ProjectArgs {
   project: string;
 }
 
-interface Project {
+export interface Project {
   config: CMKConfig;
   /** Whether the file matches the wildcard patterns in `include` / `exclude` options */
   isWildcardMatchedFile(fileName: string): boolean;
@@ -126,7 +126,7 @@ export function createProject(args: ProjectArgs): Project {
     // TODO: Delete only the minimum amount of check stage cache
     moduleResolutionCache.clear();
     exportBuilder.clearCache();
-    semanticDiagnosticsMap.delete(fileName);
+    semanticDiagnosticsMap.clear();
 
     emittedSet.delete(fileName);
   }
