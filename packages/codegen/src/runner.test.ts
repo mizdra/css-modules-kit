@@ -14,11 +14,6 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitForWatcherEmitAndReportDiagnostics(): Promise<void> {
-  // In watch mode, emits and diagnostic reports are batched with a 250ms delay. Therefore, a wait longer than 250ms is required.
-  await sleep(500);
-}
-
 describe('runCMK', () => {
   test('emits .d.ts files', async () => {
     const iff = await createIFF({
@@ -230,8 +225,10 @@ describe('runCMKInWatchMode', () => {
       throw new Error('test error');
     });
     await writeFile(iff.join('src/a.module.css'), '.a_1 { color: yellow; }');
-    await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logError).toHaveBeenCalledTimes(3);
+    await vi.waitFor(() => {
+      // Wait for watcher to emit and report diagnostics
+      expect(loggerSpy.logError).toHaveBeenCalledTimes(3);
+    });
   });
   test('reports diagnostics and emits files on changes', async () => {
     const iff = await createIFF({
@@ -246,21 +243,27 @@ describe('runCMKInWatchMode', () => {
 
     // Add a file
     await writeFile(iff.join('src/b.module.css'), '.b_1 {');
-    await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
-    expect(await iff.readFile('generated/src/b.module.css.d.ts')).contain('b_1');
+    await vi.waitFor(async () => {
+      // Wait for watcher to emit and report diagnostics
+      expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
+      expect(await iff.readFile('generated/src/b.module.css.d.ts')).contain('b_1');
+    });
 
     // Change a file
     await writeFile(iff.join('src/b.module.css'), '.b_2 {');
-    await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(2);
-    expect(await iff.readFile('generated/src/b.module.css.d.ts')).contain('b_2');
+    await vi.waitFor(async () => {
+      // Wait for watcher to emit and report diagnostics
+      expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(2);
+      expect(await iff.readFile('generated/src/b.module.css.d.ts')).contain('b_2');
+    });
 
     // Remove a file
     await rm(iff.join('src/a.module.css'));
-    await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(3);
-    await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
+    await vi.waitFor(async () => {
+      // Wait for watcher to emit and report diagnostics
+      expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(3);
+      await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
+    });
   });
   test('batches rapid file changes', async () => {
     const iff = await createIFF({
@@ -279,9 +282,11 @@ describe('runCMKInWatchMode', () => {
       writeFile(iff.join('src/b.module.css'), '.b_1 {'),
       writeFile(iff.join('src/c.module.css'), '.c_1 {'),
     ]);
-    await waitForWatcherEmitAndReportDiagnostics();
-    expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
-    // Diagnostics for three files are reported at once.
-    expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).length(3);
+    await vi.waitFor(() => {
+      // Wait for watcher to emit and report diagnostics
+      expect(loggerSpy.logDiagnostics).toHaveBeenCalledTimes(1);
+      // Diagnostics for three files are reported at once.
+      expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).length(3);
+    });
   });
 });
