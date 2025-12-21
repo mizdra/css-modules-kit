@@ -1,5 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
+  "include": ["**/*", ".changeset/custom-changelog-github.mts"],
   "exclude": ["node_modules", "**/dist", "examples"],
   "compilerOptions": {
     "target": "ES2022",
