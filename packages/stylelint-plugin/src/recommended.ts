@@ -42,4 +42,4 @@ const recommendedConfig: Config = {
   },
 };
 
-export = recommendedConfig;
+export default recommendedConfig;

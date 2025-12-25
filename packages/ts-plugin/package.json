@@ -2,7 +2,7 @@
   "name": "@css-modules-kit/ts-plugin",
   "description": "A TypeScript Language Service Plugin for CSS Modules",
   "version": "0.7.0",
-  "type": "commonjs",
+  "type": "module",
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "author": "mizdra <pp.mizdra@gmail.com>",
   "license": "MIT",
   "private": false,
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
   "scripts": {
     "build": "tsc -b tsconfig.build.json"
   },
@@ -25,8 +25,8 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
     },
     "./type": {
       "types": "./dist/type.d.ts",

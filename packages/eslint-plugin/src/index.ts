@@ -1,5 +1,5 @@
 import type { ESLint } from 'eslint';
-import packageJson from '../package.json';
+import packageJson from '../package.json' with { type: 'json' };
 import { noMissingComponentFile } from './rules/no-missing-component-file.js';
 import { noUnusedClassNames } from './rules/no-unused-class-names.js';
 
@@ -60,4 +60,4 @@ const plugin = {
 } satisfies ESLint.Plugin;
 plugin.configs.recommended.plugins['css-modules-kit'] = plugin;
 
-export = plugin;
+export default plugin;

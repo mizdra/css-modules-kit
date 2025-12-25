@@ -3,7 +3,7 @@
   "displayName": "CSS Modules Kit",
   "description": "The VS Code extension for CSS Modules",
   "version": "0.4.0",
-  "type": "commonjs",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/mizdra/css-modules-kit.git",

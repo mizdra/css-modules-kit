@@ -2,7 +2,7 @@
   "name": "@css-modules-kit/core",
   "description": "The core of css-modules-kit",
   "version": "0.7.0",
-  "type": "commonjs",
+  "type": "module",
   "sideEffects": false,
   "repository": {
     "type": "git",
