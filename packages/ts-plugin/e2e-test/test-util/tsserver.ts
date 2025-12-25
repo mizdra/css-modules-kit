@@ -42,7 +42,7 @@ export function launchTsserver(): Tsserver {
       '--globalPlugins',
       '@css-modules-kit/ts-plugin',
       '--pluginProbeLocations',
-      __dirname,
+      import.meta.dirname,
     ],
     [],
   );
