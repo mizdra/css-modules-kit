@@ -5,6 +5,9 @@ const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
     timeout: 30_000,
+    // If the test file is ESM, importing 'vscode' can cause a deadlock.
+    // ref: https://github.com/microsoft/vscode-test-cli/issues/77#issuecomment-3696907905
+    // Therefore, we transpile with tsx to CJS before executing.
     require: ['tsx/cjs', './scripts/vscode-test-setup.ts'],
   },
   download: {
