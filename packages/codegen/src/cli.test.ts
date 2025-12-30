@@ -15,6 +15,7 @@ describe('parseCLIArgs', () => {
       pretty: undefined,
       clean: false,
       watch: false,
+      preserveWatchOutput: false,
     });
   });
   it('should parse --help option', () => {
@@ -46,6 +47,10 @@ describe('parseCLIArgs', () => {
     expect(parseCLIArgs(['--watch'], cwd).watch).toBe(true);
     expect(parseCLIArgs(['--no-watch'], cwd).watch).toBe(false);
     expect(parseCLIArgs(['-w'], cwd).watch).toBe(true);
+  });
+  it('should parse --preserveWatchOutput option', () => {
+    expect(parseCLIArgs(['--preserveWatchOutput'], cwd).preserveWatchOutput).toBe(true);
+    expect(parseCLIArgs(['--no-preserveWatchOutput'], cwd).preserveWatchOutput).toBe(false);
   });
   it('should throw ParseCLIArgsError for invalid options', () => {
     expect(() => parseCLIArgs(['--invalid-option'], cwd)).toThrow(ParseCLIArgsError);

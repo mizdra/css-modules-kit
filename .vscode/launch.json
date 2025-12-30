@@ -6,7 +6,7 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/1-basic",
-      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/codegen",
       "presentation": {
@@ -18,8 +18,8 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/1-basic",
-      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
-      "args": ["--watch"],
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
+      "args": ["--watch", "--preserveWatchOutput"],
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/codegen",
       "presentation": {
@@ -31,7 +31,7 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/2-named-exports",
-      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/codegen",
       "presentation": {
@@ -43,7 +43,7 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/3-import-alias",
-      "program": "${workspaceFolder}/packages/codegen/bin/cmk.mjs",
+      "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
       "preLaunchTask": "npm: build - packages/codegen",
       "presentation": {
