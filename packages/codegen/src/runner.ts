@@ -7,6 +7,7 @@ import { createProject, type Project } from './project.js';
 interface RunnerArgs {
   project: string;
   clean: boolean;
+  preserveWatchOutput: boolean;
 }
 
 export interface Watcher {
@@ -129,7 +130,9 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
    * @throws {WriteDtsFileError}
    */
   async function emitAndReportDiagnostics() {
-    logger.clearScreen();
+    if (!args.preserveWatchOutput) {
+      logger.clearScreen();
+    }
     await project.emitDtsFiles();
     const diagnostics = project.getDiagnostics();
     if (diagnostics.length > 0) {
@@ -139,6 +142,9 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
       `Found ${diagnostics.length} error${diagnostics.length === 1 ? '' : 's'}. Watching for file changes.`,
       { time: true },
     );
+    if (args.preserveWatchOutput) {
+      logger.logMessage('');
+    }
   }
 
   async function close() {

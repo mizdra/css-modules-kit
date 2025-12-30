@@ -8,6 +8,7 @@ export function fakeParsedArgs(args?: Partial<ParsedArgs>): ParsedArgs {
     pretty: undefined,
     clean: false,
     watch: false,
+    preserveWatchOutput: false,
     ...args,
   };
 }

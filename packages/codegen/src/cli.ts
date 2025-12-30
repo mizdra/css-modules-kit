@@ -3,16 +3,18 @@ import { resolve } from '@css-modules-kit/core';
 import packageJson from '../package.json' with { type: 'json' };
 import { ParseCLIArgsError } from './error.js';
 
+// NOTE: Keep this help text in sync with the one in packages/codegen/README.md.
 const helpText = `
 Usage: cmk [options]
 
 Options:
-  --help, -h     Show help information
-  --version, -v  Show version number
-  --project, -p  The path to its configuration file, or to a folder with a 'tsconfig.json'.
-  --pretty       Enable color and formatting in output to make errors easier to read.
-  --clean        Remove the output directory before generating files.                       [default: false]
-  --watch, -w    Watch for changes and regenerate files.                                    [default: false]
+  --help, -h             Show help information
+  --version, -v          Show version number
+  --project, -p          The path to its configuration file, or to a folder with a 'tsconfig.json'.
+  --pretty               Enable color and formatting in output to make errors easier to read.
+  --clean                Remove the output directory before generating files.                       [default: false]
+  --watch, -w            Watch for changes and regenerate files.                                    [default: false]
+  --preserveWatchOutput  Disable wiping the console in watch mode.                                  [default: false]
 `;
 
 export function printHelpText(): void {
@@ -32,6 +34,7 @@ export interface ParsedArgs {
   pretty: boolean | undefined;
   clean: boolean;
   watch: boolean;
+  preserveWatchOutput: boolean;
 }
 
 /**
@@ -49,6 +52,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
         pretty: { type: 'boolean' },
         clean: { type: 'boolean', default: false },
         watch: { type: 'boolean', short: 'w', default: false },
+        preserveWatchOutput: { type: 'boolean', default: false },
       },
       allowNegative: true,
     });
@@ -59,6 +63,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
       pretty: values.pretty,
       clean: values.clean,
       watch: values.watch,
+      preserveWatchOutput: values.preserveWatchOutput,
     };
   } catch (cause) {
     throw new ParseCLIArgsError(cause);

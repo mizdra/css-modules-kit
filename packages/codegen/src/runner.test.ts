@@ -289,4 +289,20 @@ describe('runCMKInWatchMode', () => {
       expect(formatDiagnostics(loggerSpy.logDiagnostics.mock.calls[0]![0], iff.rootDir)).length(3);
     });
   });
+  test('does not clear screen when preserveWatchOutput is true', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{}',
+      'src/a.module.css': '.a_1 { color: red; }',
+    });
+
+    const loggerSpy1 = createLoggerSpy();
+    watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: false }), loggerSpy1);
+    expect(loggerSpy1.clearScreen).toHaveBeenCalledTimes(1);
+    await watcher.close();
+
+    const loggerSpy2 = createLoggerSpy();
+    // eslint-disable-next-line require-atomic-updates
+    watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: true }), loggerSpy2);
+    expect(loggerSpy2.clearScreen).toHaveBeenCalledTimes(0);
+  });
 });
