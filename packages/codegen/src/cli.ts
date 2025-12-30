@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { resolve } from '@css-modules-kit/core';
-import packageJson from '../package.json';
+import packageJson from '../package.json' with { type: 'json' };
 import { ParseCLIArgsError } from './error.js';
 
 const helpText = `

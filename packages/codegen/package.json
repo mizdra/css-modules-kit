@@ -2,7 +2,7 @@
   "name": "@css-modules-kit/codegen",
   "description": "A tool for generating `*.d.ts` files for `*.module.css`.",
   "version": "0.7.0",
-  "type": "commonjs",
+  "type": "module",
   "sideEffects": false,
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "bin": {
-    "cmk": "bin/cmk.mjs"
+    "cmk": "bin/cmk.js"
   },
   "keywords": [
     "css-modules",

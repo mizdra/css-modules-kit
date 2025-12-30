@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';
-import { formatDiagnostics, formatTime } from './formatter';
+import { formatDiagnostics, formatTime } from './formatter.js';
 
 describe('formatDiagnostics', () => {
   const file = ts.createSourceFile(
