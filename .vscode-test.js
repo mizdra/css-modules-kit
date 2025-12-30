@@ -1,4 +1,4 @@
-const { defineConfig } = require('@vscode/test-cli');
+import { defineConfig } from '@vscode/test-cli';
 
 const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   extensionDevelopmentPath: 'packages/vscode',
@@ -15,7 +15,7 @@ const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   },
 });
 
-module.exports = defineConfig([
+export default defineConfig([
   {
     ...baseConfig,
     label: 'open-css-file',

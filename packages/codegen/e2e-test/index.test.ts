@@ -5,7 +5,7 @@ import dedent from 'dedent';
 import { expect, test } from 'vitest';
 import { createIFF } from '../src/test/fixture.js';
 
-const binPath = join(import.meta.dirname, '../bin/cmk.mjs');
+const binPath = join(import.meta.dirname, '../bin/cmk.js');
 const tscPath = join(import.meta.dirname, '../../../node_modules/typescript/bin/tsc');
 
 test('generates .d.ts', async () => {
