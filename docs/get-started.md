@@ -47,11 +47,16 @@ Configure npm-script to run `cmk` command before building and type checking. Thi
 
 ## Configure `tsconfig.json`
 
-Finally, you need to configure your tsconfig.json so that the ts-plugin and codegen work correctly.
+Finally, you need to configure your tsconfig.json so that css-modules-kit works correctly.
 
-- Set the `include` option so that files like `*.module.css` are considered for type-checking:
-  - For example: `["src"]`, `["src/**/*"]`, or omitting the `include` option (which is equivalent to `["**/*"]`)
-  - Not recommended: `["src/**/*.ts"]`, `["src/index.ts"]`
+- Set `cmkOptions.enabled` to `true` to enable css-modules-kit.
+- Omit the `include` options or ensure that `*.module.css` files are included when specifying them explicitly.
+  - ✅ Good cases:
+    - Omit `include` (equivalent to `["**/*"]`)
+    - Use patterns like `["src"]`, `["src/**/*"]`
+  - ❌ Bad cases:
+    - `["src/**/*.ts"]`
+    - `["src/index.ts"]` (excludes `*.module.css` files)
 - Set the `rootDirs` option to include both the directory containing `tsconfig.json` and the `generated` directory.
   - Example: `[".", "generated"]`
 
@@ -59,37 +64,15 @@ Below is an example configuration:
 
 ```jsonc
 {
-  // Omitting the `include` option is equivalent to using `["**/*"]`
   "compilerOptions": {
-    /* Projects */
     "rootDirs": [".", "generated"],
-
-    /* Language and Environment */
-    "target": "ESNext",
-    "lib": ["ESNext"],
-
-    /* Modules */
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-
-    /* Emit */
-    "noEmit": true,
-
-    /* Interop Constraints */
-    "verbatimModuleSyntax": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Type Checking */
-    "strict": true,
-
-    /* Completeness */
-    "skipLibCheck": true,
+    // ...
+  },
+  "cmkOptions": {
+    "enabled": true,
   },
 }
 ```
-
-This completes the minimal setup.
 
 ## Install linter plugin (Optional)
 
