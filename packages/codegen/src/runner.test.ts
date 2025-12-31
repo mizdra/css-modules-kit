@@ -45,7 +45,7 @@ describe('runCMK', () => {
   });
   test('reports diagnostics if errors are found', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
       'src/b.module.css': '.b_1 { color: red; }',
     });
@@ -69,7 +69,7 @@ describe('runCMK', () => {
   });
   test('returns false if errors are found', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
     });
     const result1 = await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
@@ -80,7 +80,7 @@ describe('runCMK', () => {
   });
   test('emits .d.ts files even if there are diagnostics', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
       'src/b.module.css': '.b_1 { color: red; }',
     });
@@ -92,7 +92,7 @@ describe('runCMK', () => {
   });
   test('removes output directory before emitting files when `clean` is true', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
       'generated/src/old.module.css.d.ts': '',
     });
@@ -141,7 +141,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('reports diagnostics if errors are found', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
       'src/b.module.css': '.b_1 { color: red; }',
     });
@@ -165,7 +165,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('emits .d.ts files even if there are diagnostics', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
       'src/b.module.css': '.b_1 { color: red; }',
     });
@@ -177,7 +177,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('removes output directory before emitting files when `clean` is true', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
       'generated/src/old.module.css.d.ts': '',
     });
@@ -187,7 +187,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('reports system error occurs during watching', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
     });
 
@@ -232,7 +232,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('reports diagnostics and emits files on changes', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
     });
     const loggerSpy = createLoggerSpy();
@@ -267,7 +267,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('batches rapid file changes', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src': {},
     });
     const loggerSpy = createLoggerSpy();
@@ -291,7 +291,7 @@ describe('runCMKInWatchMode', () => {
   });
   test('does not clear screen when preserveWatchOutput is true', async () => {
     const iff = await createIFF({
-      'tsconfig.json': '{}',
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
     });
 

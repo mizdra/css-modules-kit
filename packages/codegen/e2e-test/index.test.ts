@@ -33,7 +33,8 @@ test('generates .d.ts', async () => {
           "noEmit": true,
           "paths": { "@/*": ["./src/*"] },
           "rootDirs": [".", "generated"]
-        }
+        },
+        "cmkOptions": { "enabled": true }
       }
     `,
   });
@@ -91,7 +92,7 @@ test('prints version number', () => {
 test('reports CSS syntax error', async () => {
   const iff = await createIFF({
     'src/a.module.css': `badword`,
-    'tsconfig.json': '{}',
+    'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
   });
   const cmk = spawnSync('node', [binPath, '--pretty'], { cwd: iff.rootDir });
   expect(cmk.status).toBe(1);
@@ -138,7 +139,8 @@ test('generates .d.ts with circular import', async () => {
           "lib": ["ES2015"],
           "noEmit": true,
           "rootDirs": [".", "generated"]
-        }
+        },
+        "cmkOptions": { "enabled": true }
       }
     `,
   });

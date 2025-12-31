@@ -10,6 +10,7 @@ import {
   getFileNamesByPattern,
   parseCSSModule,
   readConfigFile,
+  relative,
 } from '@css-modules-kit/core';
 import ts from 'typescript';
 import { writeDtsFile } from './dts-writer.js';
@@ -166,6 +167,12 @@ export function createProject(args: ProjectArgs): Project {
   function getProjectDiagnostics() {
     const diagnostics: Diagnostic[] = [];
     diagnostics.push(...config.diagnostics);
+    if (config.enabled === undefined) {
+      diagnostics.push({
+        category: 'warning',
+        text: `"cmkOptions.enabled" will be required in a future version of css-modules-kit. Add \`"cmkOptions": { "enabled": true }\` to ${relative(config.basePath, config.configFileName)}. See https://github.com/mizdra/css-modules-kit/issues/289 for details.`,
+      });
+    }
     if (cssModuleMap.size === 0) {
       diagnostics.push({
         category: 'error',

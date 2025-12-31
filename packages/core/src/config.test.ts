@@ -27,6 +27,7 @@ describe('readConfigFile', () => {
         namedExports: false,
         prioritizeNamedImports: false,
         keyframes: true,
+        enabled: undefined,
         compilerOptions: expect.any(Object),
         wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
       }),
@@ -46,7 +47,8 @@ describe('readConfigFile', () => {
             "arbitraryExtensions": true,
             "namedExports": true,
             "prioritizeNamedImports": true,
-            "keyframes": false
+            "keyframes": false,
+            "enabled": true
           }
         }
       `,
@@ -60,6 +62,7 @@ describe('readConfigFile', () => {
         namedExports: true,
         prioritizeNamedImports: true,
         keyframes: false,
+        enabled: true,
         compilerOptions: expect.objectContaining({
           module: ts.ModuleKind.ESNext,
         }),
@@ -82,7 +85,8 @@ describe('readConfigFile', () => {
             "arbitraryExtensions": true,
             "namedExports": true,
             "prioritizeNamedImports": true,
-            "keyframes": false
+            "keyframes": false,
+            "enabled": true
           }
         }
       `,
@@ -97,12 +101,29 @@ describe('readConfigFile', () => {
           namedExports: true,
           prioritizeNamedImports: true,
           keyframes: false,
+          enabled: true,
           compilerOptions: expect.objectContaining({
             module: ts.ModuleKind.ESNext,
           }),
           wildcardDirectories: [{ fileName: iff.join('src'), recursive: true }],
         }),
       );
+    });
+    test('enabled can be overridden by extending tsconfig', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': dedent`
+        {
+          "cmkOptions": { "enabled": true }
+        }
+      `,
+        'tsconfig.json': dedent`
+        {
+          "extends": "./tsconfig.base.json",
+          "cmkOptions": { "enabled": false }
+        }
+      `,
+      });
+      expect(readConfigFile(iff.rootDir).enabled).toBe(false);
     });
     test('inherited options can be overridden in the target tsconfig', async () => {
       const iff = await createIFF({

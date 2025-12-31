@@ -6,6 +6,7 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
   return {
     includes: ['/app/**/*'],
     excludes: [],
+    enabled: true,
     dtsOutDir: 'generated',
     arbitraryExtensions: false,
     namedExports: false,

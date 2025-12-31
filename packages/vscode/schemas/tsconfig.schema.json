@@ -5,6 +5,11 @@
       "type": "object",
       "markdownDescription": "Config options for css-modules-kit.",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enables or disables css-modules-kit."
+        },
         "dtsOutDir": {
           "type": "string",
           "default": "generated",

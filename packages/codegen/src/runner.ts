@@ -32,7 +32,8 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
   const diagnostics = project.getDiagnostics();
   if (diagnostics.length > 0) {
     logger.logDiagnostics(diagnostics);
-    return false;
+    const hasErrors = diagnostics.some((d) => d.category === 'error');
+    return !hasErrors;
   }
   return true;
 }
@@ -138,8 +139,11 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
     if (diagnostics.length > 0) {
       logger.logDiagnostics(diagnostics);
     }
+    const errorCount = diagnostics.filter((d) => d.category === 'error').length;
+    const warningCount = diagnostics.filter((d) => d.category === 'warning').length;
+    const warningPart = warningCount > 0 ? ` and ${warningCount} warning${warningCount === 1 ? '' : 's'}` : '';
     logger.logMessage(
-      `Found ${diagnostics.length} error${diagnostics.length === 1 ? '' : 's'}. Watching for file changes.`,
+      `Found ${errorCount} error${errorCount === 1 ? '' : 's'}${warningPart}. Watching for file changes.`,
       { time: true },
     );
     if (args.preserveWatchOutput) {
