@@ -14,5 +14,8 @@
     "types": [], // Simplify tsserver.log
 
     "paths": { "@/*": ["./*"] }
+  },
+  "cmkOptions": {
+    "enabled": true
   }
 }
