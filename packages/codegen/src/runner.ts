@@ -1,6 +1,7 @@
 import type { Stats } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import chokidar, { type FSWatcher } from 'chokidar';
+import { CMKDisabledError } from './error.js';
 import type { Logger } from './logger/logger.js';
 import { createProject, type Project } from './project.js';
 
@@ -19,12 +20,16 @@ export interface Watcher {
 /**
  * Run css-modules-kit .d.ts generation.
  * @param project The absolute path to the project directory or the path to `tsconfig.json`.
+ * @throws {CMKDisabledError} When css-modules-kit is disabled.
  * @throws {ReadCSSModuleFileError} When failed to read CSS Module file.
  * @throws {WriteDtsFileError}
  * @returns Whether the process succeeded without errors.
  */
 export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean> {
   const project = createProject(args);
+  if (project.config.enabled === false) {
+    throw new CMKDisabledError(project.config);
+  }
   if (args.clean) {
     await rm(project.config.dtsOutDir, { recursive: true, force: true });
   }
@@ -46,6 +51,7 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
  *
  * NOTE: For implementation simplicity, config file changes are not watched.
  * @param project The absolute path to the project directory or the path to `tsconfig.json`.
+ * @throws {CMKDisabledError} When css-modules-kit is disabled.
  * @throws {TsConfigFileNotFoundError}
  * @throws {ReadCSSModuleFileError}
  * @throws {WriteDtsFileError}
@@ -53,6 +59,9 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
 export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promise<Watcher> {
   const fsWatchers: FSWatcher[] = [];
   const project = createProject(args);
+  if (project.config.enabled === false) {
+    throw new CMKDisabledError(project.config);
+  }
   let emitAndReportDiagnosticsTimer: NodeJS.Timeout | undefined = undefined;
 
   if (args.clean) {

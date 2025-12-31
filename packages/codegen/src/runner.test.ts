@@ -2,6 +2,7 @@ import { access, rm, writeFile } from 'node:fs/promises';
 import { platform } from 'node:process';
 import dedent from 'dedent';
 import { afterEach, describe, expect, test, vi } from 'vitest';
+import { CMKDisabledError } from './error.js';
 import type { Watcher } from './runner.js';
 import { runCMK, runCMKInWatchMode } from './runner.js';
 import { formatDiagnostics } from './test/diagnostic.js';
@@ -99,6 +100,13 @@ describe('runCMK', () => {
     await runCMK(fakeParsedArgs({ project: iff.rootDir, clean: true }), createLoggerSpy());
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
+  });
+  test('throws CMKDisabledError if enabled is false', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{ "cmkOptions": { "enabled": false } }',
+      'src/a.module.css': '.a_1 { color: red; }',
+    });
+    await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy())).rejects.toThrow(CMKDisabledError);
   });
 });
 
@@ -304,5 +312,14 @@ describe('runCMKInWatchMode', () => {
     // eslint-disable-next-line require-atomic-updates
     watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: true }), loggerSpy2);
     expect(loggerSpy2.clearScreen).toHaveBeenCalledTimes(0);
+  });
+  test('throws CMKDisabledError if enabled is false', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{ "cmkOptions": { "enabled": false } }',
+      'src/a.module.css': '.a_1 { color: red; }',
+    });
+    await expect(runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy())).rejects.toThrow(
+      CMKDisabledError,
+    );
   });
 });
