@@ -1,5 +1,22 @@
 # @css-modules-kit/codegen
 
+## 0.8.0
+
+### Minor Changes
+
+- [#288](https://github.com/mizdra/css-modules-kit/pull/288) [`89f11a5`](https://github.com/mizdra/css-modules-kit/commit/89f11a54af1dc86b344e151b63bc2708486c31bb) - feat: add --preserveWatchOutput option
+
+- [#290](https://github.com/mizdra/css-modules-kit/pull/290) [`d75f75f`](https://github.com/mizdra/css-modules-kit/commit/d75f75f5d23e73e366edfdad590da1c695e48374) - feat: exit with error when `cmkOptions.enabled` is false
+
+- [#290](https://github.com/mizdra/css-modules-kit/pull/290) [`d75f75f`](https://github.com/mizdra/css-modules-kit/commit/d75f75f5d23e73e366edfdad590da1c695e48374) - feat: warn when `cmkOptions.enabled` is not set
+
+- [#286](https://github.com/mizdra/css-modules-kit/pull/286) [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9) - chore: migrate from CJS to ESM
+
+### Patch Changes
+
+- Updated dependencies [[`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9)]:
+  - @css-modules-kit/core@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes
