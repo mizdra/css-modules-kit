@@ -151,7 +151,7 @@ export interface ExportBuilder {
   clearCache(): void;
 }
 
-export type DiagnosticCategory = 'error';
+export type DiagnosticCategory = 'error' | 'warning';
 
 export interface DiagnosticSourceFile {
   fileName: string;

@@ -11,6 +11,8 @@ function convertErrorCategory(category: DiagnosticCategory): ts.DiagnosticCatego
   switch (category) {
     case 'error':
       return ts.DiagnosticCategory.Error;
+    case 'warning':
+      return ts.DiagnosticCategory.Warning;
     default:
       throw new Error(`Unknown category: ${String(category)}`);
   }
