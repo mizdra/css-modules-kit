@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.8.0
+
+### Minor Changes
+
+- [#286](https://github.com/mizdra/css-modules-kit/pull/286) [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9) - chore: migrate from CJS to ESM
+
 ## 0.7.0
 
 ### Minor Changes
