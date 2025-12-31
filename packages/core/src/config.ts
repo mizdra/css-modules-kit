@@ -13,6 +13,7 @@ const DEFAULT_INCLUDE_SPEC = '**/*';
 export interface CMKConfig {
   includes: string[];
   excludes: string[];
+  enabled: boolean | undefined;
   dtsOutDir: string;
   arbitraryExtensions: boolean;
   namedExports: boolean;
@@ -71,6 +72,7 @@ export interface CMKConfig {
 interface UnnormalizedRawConfig {
   includes?: string[];
   excludes?: string[];
+  enabled?: boolean;
   dtsOutDir?: string;
   arbitraryExtensions?: boolean;
   namedExports?: boolean;
@@ -99,6 +101,7 @@ function isTsConfigFileExists(fileName: string): boolean {
   return ts.findConfigFile(dirname(fileName), ts.sys.fileExists.bind(ts.sys), basename(fileName)) !== undefined;
 }
 
+// eslint-disable-next-line complexity
 function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
   const result: ParsedRawData = {
     config: {},
@@ -124,6 +127,16 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
     // MEMO: The errors for this option are reported by `tsc` or `tsserver`, so we don't need to report.
   }
   if ('cmkOptions' in raw && typeof raw.cmkOptions === 'object' && raw.cmkOptions !== null) {
+    if ('enabled' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.enabled === 'boolean') {
+        result.config.enabled = raw.cmkOptions.enabled;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`enabled\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+        });
+      }
+    }
     if ('dtsOutDir' in raw.cmkOptions) {
       if (typeof raw.cmkOptions.dtsOutDir === 'string') {
         result.config.dtsOutDir = raw.cmkOptions.dtsOutDir;
@@ -255,6 +268,7 @@ export function readConfigFile(project: string): CMKConfig {
     namedExports: parsedTsConfig.config.namedExports ?? false,
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
     keyframes: parsedTsConfig.config.keyframes ?? true,
+    enabled: parsedTsConfig.config.enabled,
     basePath,
     configFileName,
     compilerOptions: parsedTsConfig.compilerOptions,

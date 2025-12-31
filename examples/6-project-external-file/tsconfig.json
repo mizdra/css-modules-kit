@@ -12,5 +12,8 @@
     "incremental": false,
     "rootDirs": [".", "generated"],
     "types": [] // Simplify tsserver.log
+  },
+  "cmkOptions": {
+    "enabled": true
   }
 }

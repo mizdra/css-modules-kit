@@ -127,6 +127,23 @@ In TypeScript, the `include`/`exclude` properties specify which `*.ts` files to 
 }
 ```
 
+### `cmkOptions.enabled`
+
+Type: `boolean`, Default: `true`
+
+Enables or disables css-modules-kit. When set to `false`, codegen will exit with an error. Currently, both codegen and the ts-plugin will work even if this option is omitted, but in the future, they will not work unless this option is set to `true`. For more details, see [#289](https://github.com/mizdra/css-modules-kit/issues/289).
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "enabled": true,
+  },
+}
+```
+
 ### `cmkOptions.dtsOutDir`
 
 Type: `string`, Default: `"generated"`

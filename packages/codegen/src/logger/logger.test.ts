@@ -26,6 +26,7 @@ describe('createLogger', () => {
         start: { line: 1, column: 2 },
         length: 3,
       },
+      { text: 'text4', category: 'warning' },
     ];
     logger.logDiagnostics(diagnostics);
     expect(stripVTControlCharacters(stderrWriteSpy.mock.lastCall![0] as string)).toMatchInlineSnapshot(`
@@ -34,6 +35,8 @@ describe('createLogger', () => {
       error: text2
 
       a.module.css(1,2): error: text3
+
+      warning: text4
 
       "
     `);

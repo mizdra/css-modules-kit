@@ -13,6 +13,7 @@
     "types": [] // Simplify tsserver.log
   },
   "cmkOptions": {
+    "enabled": true,
     "namedExports": true
   }
 }
