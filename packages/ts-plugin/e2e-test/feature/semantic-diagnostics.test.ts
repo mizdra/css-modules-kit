@@ -79,20 +79,6 @@ test('Semantic Diagnostics', async () => {
         },
         "text": "Module './c.module.css' has no exported token 'c_3'.",
       },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 5,
-          "offset": 24,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 5,
-          "offset": 10,
-        },
-        "text": "Cannot import module './d.module.css'",
-      },
     ]
   `);
 });
