@@ -8,7 +8,6 @@ import type {
   Location,
   MatchesPattern,
   Resolver,
-  TokenImporter,
 } from './type.js';
 import { isValidAsJSIdentifier } from './util.js';
 
@@ -40,10 +39,7 @@ export function checkCSSModule(
     const from = resolver(tokenImporter.from, { request: cssModule.fileName });
     if (!from || !matchesPattern(from)) continue;
     const imported = getCSSModule(from);
-    if (!imported) {
-      diagnostics.push(createCannotImportModuleDiagnostic(cssModule, tokenImporter));
-      continue;
-    }
+    if (!imported) continue;
 
     if (tokenImporter.type === 'value') {
       const exportRecord = exportBuilder.build(imported);
@@ -75,16 +71,6 @@ export function checkCSSModule(
     }
   }
   return diagnostics;
-}
-
-function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): Diagnostic {
-  return {
-    text: `Cannot import module '${tokenImporter.from}'`,
-    category: 'error',
-    file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: tokenImporter.fromLoc.start.line, column: tokenImporter.fromLoc.start.column },
-    length: tokenImporter.fromLoc.end.offset - tokenImporter.fromLoc.start.offset,
-  };
 }
 
 function createModuleHasNoExportedTokenDiagnostic(

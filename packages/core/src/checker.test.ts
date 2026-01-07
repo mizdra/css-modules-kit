@@ -285,59 +285,6 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
-  test('report diagnostics for non-existing module', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        tokenImporters: [
-          fakeAtImportTokenImporter({ from: './b.module.css', fromLoc: fakeLoc({ column: 1 }) }),
-          fakeAtValueTokenImporter({
-            from: './c.module.css',
-            fromLoc: fakeLoc({ column: 2 }),
-            values: [fakeAtValueTokenImporterValue({ name: 'c_1', loc: fakeLoc({ column: 3 }) })],
-          }),
-        ],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "Cannot import module './b.module.css'",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "Cannot import module './c.module.css'",
-        },
-      ]
-    `);
-  });
   test('report diagnostics for non-exported token', () => {
     const args = prepareCheckerArgs([
       fakeCSSModule({
