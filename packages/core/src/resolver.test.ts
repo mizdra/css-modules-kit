@@ -23,6 +23,8 @@ describe('createResolver', async () => {
     'paths1/a.module.css': '',
     'paths2/b.module.css': '',
     'paths3/c.module.css': '',
+    'node_modules/package/a.module.css': '',
+    'node_modules/@scope/package/a.module.css': '',
     'package.json': '{ "imports": { "#*": "./*" } }',
   });
   const request = iff.paths['request.module.css'];
@@ -91,11 +93,19 @@ describe('createResolver', async () => {
     );
     expect(resolve('a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
   });
-  test('does not resolve invalid path', () => {
+  test('resolve package path', () => {
     const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
-    expect(resolve('http://example.com', { request })).toBe(undefined);
-    expect(resolve('package', { request })).toBe(undefined);
-    expect(resolve('@scope/package', { request })).toBe(undefined);
-    expect(resolve('~package', { request })).toBe(undefined);
+    expect(resolve('package/a.module.css', { request })).toBe(iff.paths['node_modules/package/a.module.css']);
+    expect(resolve('@scope/package/a.module.css', { request })).toBe(
+      iff.paths['node_modules/@scope/package/a.module.css'],
+    );
+    // css-modules-kit does not support `~` prefix.
+    expect(resolve('~package/a.module.css', { request })).toBe(undefined);
+  });
+  test('ignore URL', () => {
+    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
+    expect(resolve('http://example.com/a.module.css', { request })).toBe(undefined);
+    expect(resolve('unknown://example.com/a.module.css', { request })).toBe(undefined);
+    expect(resolve(`data:,${encodeURIComponent('.a_1 { color: red; }')}`, { request })).toBe(undefined);
   });
 });
