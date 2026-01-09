@@ -91,10 +91,8 @@ describe('addFile', () => {
     // - The check stage cache for files that indirectly import the added file should also be invalidated.
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
-      'src/a.module.css': '',
-      'src/b.module.css': '@value a_1 from "./a.module.css";', // directly
-      'src/re-export.module.css': '@import "./a.module.css";',
-      'src/c.module.css': '@value a_1 from "./re-export.module.css";', // indirectly
+      'src/b.module.css': '@import "./a.module.css";', // directly
+      'src/c.module.css': '@value a_1 from "./b.module.css";', // indirectly
     });
     const project = createProject({ project: iff.rootDir });
     expect(formatDiagnostics(project.getDiagnostics(), iff.rootDir)).toMatchInlineSnapshot(`
@@ -102,12 +100,12 @@ describe('addFile', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/src/b.module.css",
-          "length": 3,
+          "length": 14,
           "start": {
-            "column": 8,
+            "column": 10,
             "line": 1,
           },
-          "text": "Module './a.module.css' has no exported token 'a_1'.",
+          "text": "Cannot import module './a.module.css'",
         },
         {
           "category": "error",
@@ -117,12 +115,12 @@ describe('addFile', () => {
             "column": 8,
             "line": 1,
           },
-          "text": "Module './re-export.module.css' has no exported token 'a_1'.",
+          "text": "Module './b.module.css' has no exported token 'a_1'.",
         },
       ]
     `);
     await writeFile(iff.join('src/a.module.css'), '@value a_1: red;');
-    project.updateFile(iff.join('src/a.module.css'));
+    project.addFile(iff.join('src/a.module.css'));
     expect(formatDiagnostics(project.getDiagnostics(), iff.rootDir)).toMatchInlineSnapshot(`[]`);
   });
   test('changes the resolution results of import specifiers in other files', async () => {
@@ -206,19 +204,19 @@ describe('updateFile', () => {
     `);
 
     // New semantic diagnostics are reported
-    await writeFile(iff.join('src/a.module.css'), `.a-1 {}`);
+    await writeFile(iff.join('src/a.module.css'), `@import './non-existent.module.css';`);
     project.updateFile(iff.join('src/a.module.css'));
     expect(formatDiagnostics(project.getDiagnostics(), iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
           "category": "error",
           "fileName": "<rootDir>/src/a.module.css",
-          "length": 3,
+          "length": 25,
           "start": {
-            "column": 2,
+            "column": 10,
             "line": 1,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Cannot import module './non-existent.module.css'",
         },
       ]
     `);
@@ -313,9 +311,8 @@ describe('removeFile', () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '@value a_1: red;',
-      'src/b.module.css': '@value a_1 from "./a.module.css";', // directly
-      'src/re-export.module.css': '@import "./a.module.css";',
-      'src/c.module.css': '@value a_1 from "./re-export.module.css";', // indirectly
+      'src/b.module.css': '@import "./a.module.css";', // directly
+      'src/c.module.css': '@value a_1 from "./b.module.css";', // indirectly
     });
     const project = createProject({ project: iff.rootDir });
     expect(formatDiagnostics(project.getDiagnostics(), iff.rootDir)).toMatchInlineSnapshot(`[]`);
@@ -325,13 +322,23 @@ describe('removeFile', () => {
       [
         {
           "category": "error",
+          "fileName": "<rootDir>/src/b.module.css",
+          "length": 14,
+          "start": {
+            "column": 10,
+            "line": 1,
+          },
+          "text": "Cannot import module './a.module.css'",
+        },
+        {
+          "category": "error",
           "fileName": "<rootDir>/src/c.module.css",
           "length": 3,
           "start": {
             "column": 8,
             "line": 1,
           },
-          "text": "Module './re-export.module.css' has no exported token 'a_1'.",
+          "text": "Module './b.module.css' has no exported token 'a_1'.",
         },
       ]
     `);
@@ -459,8 +466,8 @@ describe('getDiagnostics', () => {
   test('returns semantic diagnostics', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
-      'src/a.module.css': `.a-1 {}`,
-      'src/b.module.css': `.b-1 {}`,
+      'src/a.module.css': `@import './non-existent-1.module.css';`,
+      'src/b.module.css': `@import './non-existent-2.module.css';`,
     });
     const project = createProject({ project: iff.rootDir });
     const diagnostics = project.getDiagnostics();
@@ -469,22 +476,22 @@ describe('getDiagnostics', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/src/a.module.css",
-          "length": 3,
+          "length": 27,
           "start": {
-            "column": 2,
+            "column": 10,
             "line": 1,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Cannot import module './non-existent-1.module.css'",
         },
         {
           "category": "error",
           "fileName": "<rootDir>/src/b.module.css",
-          "length": 3,
+          "length": 27,
           "start": {
-            "column": 2,
+            "column": 10,
             "line": 1,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Cannot import module './non-existent-2.module.css'",
         },
       ]
     `);
