@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { parseCSSModule } from '../parser/css-module-parser.js';
 import type { CSSModule } from '../type.js';
 
 export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
@@ -9,4 +11,18 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
     diagnostics: [],
     ...args,
   };
+}
+
+export function readAndParseCSSModule(path: string): CSSModule | undefined {
+  let text: string;
+  try {
+    text = readFileSync(path, 'utf-8');
+  } catch {
+    return undefined;
+  }
+  return parseCSSModule(text, {
+    fileName: path,
+    includeSyntaxError: false,
+    keyframes: false,
+  });
 }
