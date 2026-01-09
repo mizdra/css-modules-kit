@@ -191,7 +191,13 @@ export function createProject(args: ProjectArgs): Project {
     for (const cssModule of cssModuleMap.values()) {
       let diagnostics = semanticDiagnosticsMap.get(cssModule.fileName);
       if (!diagnostics) {
-        diagnostics = checkCSSModule(cssModule, config, exportBuilder, matchesPattern, resolver, getCSSModule);
+        diagnostics = checkCSSModule(cssModule, {
+          config,
+          getExportRecord: (m) => exportBuilder.build(m),
+          matchesPattern,
+          resolver,
+          getCSSModule,
+        });
         semanticDiagnosticsMap.set(cssModule.fileName, diagnostics);
       }
       allDiagnostics.push(...diagnostics);

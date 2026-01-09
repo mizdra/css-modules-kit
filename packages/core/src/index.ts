@@ -15,6 +15,7 @@ export {
   type Resolver,
   type MatchesPattern,
   type ExportBuilder,
+  type ExportRecord,
   type DiagnosticSourceFile,
   type Diagnostic,
   type DiagnosticWithLocation,
@@ -33,7 +34,7 @@ export {
   createMatchesPattern,
   getFileNamesByPattern,
 } from './file.js';
-export { checkCSSModule } from './checker.js';
+export { checkCSSModule, type CheckerArgs } from './checker.js';
 export { createExportBuilder } from './export-builder.js';
 export { join, resolve, relative, dirname, basename, parse, isAbsolute } from './path.js';
 export { findUsedTokenNames } from './util.js';
