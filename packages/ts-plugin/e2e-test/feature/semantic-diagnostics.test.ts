@@ -8,9 +8,9 @@ test('Semantic Diagnostics', async () => {
   const iff = await createIFF({
     'index.ts': dedent`
       import styles from './a.module.css';
-      type Expected = { a_1: string, a_2: string, b_1: string, c_1: string, c_alias: string };
+      type Expected = { a_1: string, a_2: string, b_1: string, c_1: string, c_alias: string, c_3: string };
       const t1: Expected = styles;
-      const t2: typeof styles = 0 as any as Expected;
+      const t2: typeof styles = t1;
       styles.unknown;
     `,
     'a.module.css': dedent`
@@ -18,7 +18,6 @@ test('Semantic Diagnostics', async () => {
       @value c_1, c_2 as c_alias, c_3 from './c.module.css';
       .a_1 { color: red; }
       @value a_2: red;
-      @import './d.module.css';
       .a-3 { color: red; }
     `,
     'b.module.css': dedent`
@@ -43,8 +42,23 @@ test('Semantic Diagnostics', async () => {
   const res1 = await tsserver.sendSemanticDiagnosticsSync({
     file: iff.paths['index.ts'],
   });
-  // TODO: Report type errors
-  expect(res1.body).toMatchInlineSnapshot(`[]`);
+  expect(res1.body).toMatchInlineSnapshot(`
+    [
+      {
+        "category": "error",
+        "code": 2339,
+        "end": {
+          "line": 5,
+          "offset": 15,
+        },
+        "start": {
+          "line": 5,
+          "offset": 8,
+        },
+        "text": "Property 'unknown' does not exist on type '{ c_1: string; c_alias: string; c_3: any; b_1: string; a_1: string; a_2: string; }'.",
+      },
+    ]
+  `);
 
   const res2 = await tsserver.sendSemanticDiagnosticsSync({
     file: iff.paths['a.module.css'],
@@ -55,12 +69,12 @@ test('Semantic Diagnostics', async () => {
         "category": "error",
         "code": 0,
         "end": {
-          "line": 6,
+          "line": 5,
           "offset": 5,
         },
         "source": "css-modules-kit",
         "start": {
-          "line": 6,
+          "line": 5,
           "offset": 2,
         },
         "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
@@ -78,20 +92,6 @@ test('Semantic Diagnostics', async () => {
           "offset": 29,
         },
         "text": "Module './c.module.css' has no exported token 'c_3'.",
-      },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 5,
-          "offset": 24,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 5,
-          "offset": 10,
-        },
-        "text": "Cannot import module './d.module.css'",
       },
     ]
   `);

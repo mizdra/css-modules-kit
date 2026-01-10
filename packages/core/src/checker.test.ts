@@ -1,382 +1,215 @@
+import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { checkCSSModule } from './checker.js';
 import { createExportBuilder } from './export-builder.js';
-import { resolve } from './path.js';
 import { createResolver } from './resolver.js';
-import { fakeCSSModule } from './test/css-module.js';
+import { readAndParseCSSModule } from './test/css-module.js';
+import { formatDiagnostics } from './test/diagnostic.js';
 import { fakeConfig } from './test/faker.js';
-import {
-  fakeAtImportTokenImporter,
-  fakeAtValueTokenImporter,
-  fakeAtValueTokenImporterValue,
-  fakeToken,
-} from './test/token.js';
-import type { CSSModule, Location } from './type.js';
+import { createIFF } from './test/fixture.js';
+import type { CSSModule } from './type.js';
 
 const resolver = createResolver({}, undefined);
+const matchesPattern = (path: string) => path.endsWith('.module.css');
 
-function prepareCheckerArgs<const T extends CSSModule[]>(cssModules: T) {
-  const config = fakeConfig();
-  const getCSSModule = (path: string) => cssModules.find((m) => resolve(m.fileName) === resolve(path));
-  const matchesPattern = (path: string) => path.endsWith('.module.css');
-  const exportBuilder = createExportBuilder({
-    getCSSModule,
-    matchesPattern,
-    resolver,
-  });
-  return { cssModules, config, exportBuilder, matchesPattern, resolver, getCSSModule };
+type Checker = (cssModule: CSSModule) => ReturnType<typeof checkCSSModule>;
+
+interface PrepareCheckerOptions {
+  config?: ReturnType<typeof fakeConfig>;
+  resolver?: typeof resolver;
+  matchesPattern?: typeof matchesPattern;
 }
 
-function fakeLoc({ column }: { column: number }): Location {
-  return {
-    start: { line: 1, column, offset: column - 1 },
-    end: { line: 1, column, offset: column - 1 },
+function prepareChecker(options?: PrepareCheckerOptions): Checker {
+  const config = options?.config ?? fakeConfig();
+  const resolverFn = options?.resolver ?? resolver;
+  const matchesPatternFn = options?.matchesPattern ?? matchesPattern;
+  return (cssModule: CSSModule) => {
+    return checkCSSModule(
+      cssModule,
+      config,
+      createExportBuilder({
+        getCSSModule: readAndParseCSSModule,
+        matchesPattern: matchesPatternFn,
+        resolver: resolverFn,
+      }),
+      matchesPatternFn,
+      resolverFn,
+      readAndParseCSSModule,
+    );
   };
 }
 
 describe('checkCSSModule', () => {
-  test('report diagnostics for invalid name as js identifier', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        localTokens: [fakeToken({ name: 'a-1', loc: fakeLoc({ column: 1 }) })],
-        tokenImporters: [
-          fakeAtValueTokenImporter({
-            from: './b.module.css',
-            fromLoc: fakeLoc({ column: 2 }),
-            values: [
-              fakeAtValueTokenImporterValue({ name: 'b-1', loc: fakeLoc({ column: 3 }) }),
-              fakeAtValueTokenImporterValue({
-                name: 'b-2',
-                loc: fakeLoc({ column: 4 }),
-                localName: 'a-2',
-                localLoc: fakeLoc({ column: 5 }),
-              }),
-            ],
-          }),
-        ],
-      }),
-      fakeCSSModule({
-        fileName: '/b.module.css',
-        localTokens: [fakeToken({ name: 'b-1' }), fakeToken({ name: 'b-2' })],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
+  test('report diagnostics for invalid name as js identifier', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .a-1 { color: red; }
+        @value b-1, b-2 as a-2 from './b.module.css';
+      `,
+      'b.module.css': dedent`
+        @value b-1: red;
+        @value b-2: red;
+      `,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
           "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 3,
-            "line": 1,
-          },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 4,
-            "line": 1,
-          },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 5,
-            "line": 1,
-          },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-        },
-      ]
-    `);
-  });
-  test('report diagnostics for "__proto__" name', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        localTokens: [fakeToken({ name: '__proto__', loc: fakeLoc({ column: 1 }) })],
-        tokenImporters: [
-          fakeAtValueTokenImporter({
-            from: './b.module.css',
-            fromLoc: fakeLoc({ column: 2 }),
-            values: [
-              fakeAtValueTokenImporterValue({ name: '__proto__', loc: fakeLoc({ column: 3 }) }),
-              fakeAtValueTokenImporterValue({
-                name: 'valid',
-                loc: fakeLoc({ column: 4 }),
-                localName: '__proto__',
-                localLoc: fakeLoc({ column: 5 }),
-              }),
-            ],
-          }),
-        ],
-      }),
-      fakeCSSModule({
-        fileName: '/b.module.css',
-        localTokens: [fakeToken({ name: '__proto__' }), fakeToken({ name: 'valid' })],
-      }),
-    ]);
-
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 3,
-            "line": 1,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 5,
-            "line": 1,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-      ]
-    `);
-  });
-  test('report diagnostics for "default" name when namedExports is true', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        localTokens: [fakeToken({ name: 'default', loc: fakeLoc({ column: 1 }) })],
-        tokenImporters: [
-          fakeAtValueTokenImporter({
-            from: './b.module.css',
-            fromLoc: fakeLoc({ column: 2 }),
-            values: [
-              fakeAtValueTokenImporterValue({ name: 'default', loc: fakeLoc({ column: 3 }) }),
-              fakeAtValueTokenImporterValue({
-                name: 'valid',
-                loc: fakeLoc({ column: 4 }),
-                localName: 'default',
-                localLoc: fakeLoc({ column: 5 }),
-              }),
-            ],
-          }),
-        ],
-      }),
-      fakeCSSModule({
-        fileName: '/b.module.css',
-        localTokens: [fakeToken({ name: 'default' }), fakeToken({ name: 'valid' })],
-      }),
-    ]);
-    args.config.namedExports = true;
-
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 3,
-            "line": 1,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 5,
-            "line": 1,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-      ]
-    `);
-  });
-  test('report diagnostics for non-existing module', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        tokenImporters: [
-          fakeAtImportTokenImporter({ from: './b.module.css', fromLoc: fakeLoc({ column: 1 }) }),
-          fakeAtValueTokenImporter({
-            from: './c.module.css',
-            fromLoc: fakeLoc({ column: 2 }),
-            values: [fakeAtValueTokenImporterValue({ name: 'c_1', loc: fakeLoc({ column: 3 }) })],
-          }),
-        ],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
-          "start": {
-            "column": 1,
-            "line": 1,
-          },
-          "text": "Cannot import module './b.module.css'",
-        },
-        {
-          "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
+          "fileName": "<rootDir>/a.module.css",
+          "length": 3,
           "start": {
             "column": 2,
             "line": 1,
           },
-          "text": "Cannot import module './c.module.css'",
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 3,
+          "start": {
+            "column": 8,
+            "line": 2,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 3,
+          "start": {
+            "column": 13,
+            "line": 2,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 3,
+          "start": {
+            "column": 20,
+            "line": 2,
+          },
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
         },
       ]
     `);
   });
-  test('report diagnostics for non-exported token', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        tokenImporters: [
-          fakeAtValueTokenImporter({
-            from: './b.module.css',
-            fromLoc: fakeLoc({ column: 1 }),
-            values: [
-              fakeAtValueTokenImporterValue({ name: 'b_1', loc: fakeLoc({ column: 2 }) }),
-              fakeAtValueTokenImporterValue({ name: 'b_2', loc: fakeLoc({ column: 3 }) }),
-            ],
-          }),
-        ],
-      }),
-      fakeCSSModule({
-        fileName: '/b.module.css',
-        localTokens: [fakeToken({ name: 'b_1' })],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      args.resolver,
-      args.getCSSModule,
-    );
-    expect(diagnostics).toMatchInlineSnapshot(`
+  test('report diagnostics for "__proto__" name', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .__proto__ { color: red; }
+        @value __proto__, valid as __proto__ from './b.module.css';
+      `,
+      'b.module.css': dedent`
+        @value __proto__: red;
+        @value valid: red;
+      `,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
           "category": "error",
-          "file": {
-            "fileName": "/a.module.css",
-            "text": "",
-          },
-          "length": 0,
+          "fileName": "<rootDir>/a.module.css",
+          "length": 9,
           "start": {
-            "column": 3,
+            "column": 2,
+            "line": 1,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 9,
+          "start": {
+            "column": 8,
+            "line": 2,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 9,
+          "start": {
+            "column": 28,
+            "line": 2,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+      ]
+    `);
+  });
+  test('report diagnostics for "default" name when namedExports is true', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .default { color: red; }
+        @value default, valid as default from './b.module.css';
+      `,
+      'b.module.css': dedent`
+        @value default: red;
+        @value valid: red;
+      `,
+    });
+    const check = prepareChecker({ config: fakeConfig({ namedExports: true }) });
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 7,
+          "start": {
+            "column": 2,
+            "line": 1,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 7,
+          "start": {
+            "column": 8,
+            "line": 2,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 7,
+          "start": {
+            "column": 26,
+            "line": 2,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+      ]
+    `);
+  });
+  test('report diagnostics for non-exported token', async () => {
+    const iff = await createIFF({
+      'a.module.css': `@value b_1, b_2 from './b.module.css';`,
+      'b.module.css': `@value b_1: red;`,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 3,
+          "start": {
+            "column": 13,
             "line": 1,
           },
           "text": "Module './b.module.css' has no exported token 'b_2'.",
@@ -384,44 +217,70 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
-  test('ignore token importers for unresolvable modules', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        tokenImporters: [fakeAtImportTokenImporter({ from: './unresolvable.module.css' })],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      args.matchesPattern,
-      () => undefined, // Simulate unresolvable module
-      args.getCSSModule,
-    );
+  test('report diagnostics for unresolvable modules', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @import './b.module.css';
+        @import 'package/c.module.css';
+        @value b_1 from './b.module.css';
+        @value c_1 from 'package/c.module.css';
+      `,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    // TODO: Report diagnostics for `package/c.module.css`
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 14,
+          "start": {
+            "column": 10,
+            "line": 1,
+          },
+          "text": "Cannot import module './b.module.css'",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 14,
+          "start": {
+            "column": 18,
+            "line": 3,
+          },
+          "text": "Cannot import module './b.module.css'",
+        },
+      ]
+    `);
+  });
+  test('do not report diagnostics for `@import` for URLs and unmatched modules', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @import 'https://example.com/a.module.css';
+        @import './unmatched.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
+    });
+    const check = prepareChecker({
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
+    });
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
     expect(diagnostics).toEqual([]);
   });
-  test('ignore token importers that do not match the pattern', () => {
-    const args = prepareCheckerArgs([
-      fakeCSSModule({
-        fileName: '/a.module.css',
-        tokenImporters: [
-          fakeAtImportTokenImporter({ from: './b.module.css' }),
-          fakeAtValueTokenImporter({
-            from: './c.module.css',
-            values: [fakeAtValueTokenImporterValue({ name: 'c_1' })],
-          }),
-        ],
-      }),
-    ]);
-    const diagnostics = checkCSSModule(
-      args.cssModules[0],
-      args.config,
-      args.exportBuilder,
-      (path: string) => path === '/a.module.css', // Only match the current module
-      args.resolver,
-      args.getCSSModule,
-    );
+  test('report diagnostics for `@value ... from ...` for URLs and unmatched modules', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @value a_1 from 'https://example.com/a.module.css';
+        @value unmatched_1 from './unmatched.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
+    });
+    const check = prepareChecker({
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
+    });
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    // TODO: Report diagnostics
     expect(diagnostics).toEqual([]);
   });
 });
