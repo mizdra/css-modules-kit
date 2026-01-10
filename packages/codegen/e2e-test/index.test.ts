@@ -12,7 +12,7 @@ test('generates .d.ts', async () => {
   const iff = await createIFF({
     'src/a.module.css': dedent`
       @import './b.module.css';
-      @import './external.css';
+      @import './unmatched.module.css';
       /* @import '@/c.module.css'; */ /* TODO: Fix this */
       .a1 { color: red; }
     `,
@@ -26,8 +26,10 @@ test('generates .d.ts', async () => {
       // @ts-expect-error
       styles.a2;
     `,
+    'src/unmatched.module.css': '',
     'tsconfig.json': dedent`
       {
+        "exclude": ["unmatched.module.css"],
         "compilerOptions": {
           "lib": ["ES2015"],
           "noEmit": true,
@@ -47,6 +49,7 @@ test('generates .d.ts', async () => {
     declare const styles = {
       a1: '' as readonly string,
       ...(await import('./b.module.css')).default,
+      ...(await import('./unmatched.module.css')).default,
     };
     export default styles;
     "
