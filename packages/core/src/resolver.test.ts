@@ -117,8 +117,7 @@ describe('createResolver', async () => {
     );
     expect(resolve('https://example.com/a.module.css', { request })).toBe(undefined);
     // Tests that the URL specifier is not resolved using import aliases such as paths.
-    // FIXME: It should return `undefined`.
-    expect(resolve('https://paths.com/a.module.css', { request })).toBe(iff.paths['paths1/a.module.css']);
+    expect(resolve('https://paths.com/a.module.css', { request })).toBe(undefined);
     expect(resolve('unknown://example.com/a.module.css', { request })).toBe(undefined);
     expect(resolve(`data:,${encodeURIComponent('.a_1 { color: red; }')}`, { request })).toBe(undefined);
   });
