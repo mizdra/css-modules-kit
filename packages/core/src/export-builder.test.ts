@@ -82,11 +82,17 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('do not collect tokens from unresolvable modules', async () => {
+  test('do not collect tokens from `@import` for unmatched or unresolvable modules', async () => {
     const iff = await createIFF({
-      'a.module.css': `@import './unresolvable.module.css';`,
+      'a.module.css': dedent`
+        @import './unmatched.module.css';
+        @import './unresolvable.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
-    const exportBuilder = prepareExportBuilder();
+    const exportBuilder = prepareExportBuilder({
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
+    });
     const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
@@ -94,25 +100,19 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('do not collect tokens from modules that do not match the pattern', async () => {
+  test('collect tokens from `@value ... from ...` for unmatched or unresolvable modules', async () => {
     const iff = await createIFF({
-      'a.module.css': `@import './b.css';`,
-      'b.css': '.b_1 { color: red; }',
+      'a.module.css': dedent`
+        @value unmatched_1 from './unmatched.module.css';
+        @value unresolvable_1 from './unresolvable.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
-    const exportBuilder = prepareExportBuilder();
-    const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
-    expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
-      {
-        "allTokens": [],
-      }
-    `);
-  });
-  test('do not collect tokens from non-existing modules', async () => {
-    const iff = await createIFF({
-      'a.module.css': `@import './non-existing.module.css';`,
+    const exportBuilder = prepareExportBuilder({
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
     });
-    const exportBuilder = prepareExportBuilder();
     const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
+    // TODO: It should collect tokens
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [],

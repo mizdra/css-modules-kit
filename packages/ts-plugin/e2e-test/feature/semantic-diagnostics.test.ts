@@ -10,7 +10,7 @@ test('Semantic Diagnostics', async () => {
       import styles from './a.module.css';
       type Expected = { a_1: string, a_2: string, b_1: string, c_1: string, c_alias: string };
       const t1: Expected = styles;
-      const t2: typeof styles = 0 as any as Expected;
+      const t2: typeof styles = t1;
       styles.unknown;
     `,
     'a.module.css': dedent`

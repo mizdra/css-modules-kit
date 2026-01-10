@@ -94,40 +94,49 @@ describe('generateDts', () => {
       "
     `);
   });
-  test('does not generate types for external files', async () => {
+  test('does not generate `@import` types for unmatched or unresolvable modules', async () => {
     const iff = await createIFF({
       'test.module.css': dedent`
-        @import './external.css';
-        @value imported from './external.css';
+        @import './unmatched.module.css';
+        @import './unresolvable.module.css';
       `,
-      'external.css': '',
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
+    // FIXME: Currently, the type for unresolvable modules is still generated.
     expect(
       generateDts(
         readAndParseCSSModule(iff.paths['test.module.css'])!,
-        { ...host, matchesPattern: (path) => path.endsWith('.module.css') },
+        { ...host, matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css') },
         options,
       ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
+        ...(await import('./unresolvable.module.css')).default,
       };
       export default styles;
       "
     `);
   });
-  test('does not generate types for unresolved files', async () => {
+  test('generates `@value` types for unmatched or unresolvable modules', async () => {
     const iff = await createIFF({
       'test.module.css': dedent`
-        @import '@/a.module.css';
+        @value unmatched_1 from './unmatched.module.css';
+        @value unresolvable_1 from './unresolvable.module.css';
       `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
-    const resolver = (_specifier: string) => undefined;
+    // FIXME: Currently, the type for unmatched modules is missing.
     expect(
-      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, { ...host, resolver }, options).text,
+      generateDts(
+        readAndParseCSSModule(iff.paths['test.module.css'])!,
+        { ...host, matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css') },
+        options,
+      ).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
+        unresolvable_1: (await import('./unresolvable.module.css')).default.unresolvable_1,
       };
       export default styles;
       "
@@ -145,9 +154,8 @@ describe('generateDts', () => {
         @value b_2: red;
       `,
     });
-    expect(
-      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, options).text,
-    ).toMatchInlineSnapshot(`
+    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, options).text)
+      .toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
       };
@@ -159,9 +167,8 @@ describe('generateDts', () => {
     const iff = await createIFF({
       'test.module.css': '.__proto__ { color: red; }',
     });
-    expect(
-      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, options).text,
-    ).toMatchInlineSnapshot(`
+    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, options).text)
+      .toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
       };
@@ -174,21 +181,13 @@ describe('generateDts', () => {
       'test.module.css': '.default { color: red; }',
     });
     expect(
-      generateDts(
-        readAndParseCSSModule(iff.paths['test.module.css'])!,
-        host,
-        { ...options, namedExports: true },
-      ).text,
+      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, { ...options, namedExports: true }).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       "
     `);
     expect(
-      generateDts(
-        readAndParseCSSModule(iff.paths['test.module.css'])!,
-        host,
-        { ...options, namedExports: false },
-      ).text,
+      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, { ...options, namedExports: false }).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
@@ -213,11 +212,7 @@ describe('generateDts', () => {
       `,
     });
     expect(
-      generateDts(
-        readAndParseCSSModule(iff.paths['test.module.css'])!,
-        host,
-        { ...options, namedExports: true },
-      ).text,
+      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, { ...options, namedExports: true }).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       export var local1: string;
@@ -235,11 +230,12 @@ describe('generateDts', () => {
       'test.module.css': '.local1 { color: red; }',
     });
     expect(
-      generateDts(
-        readAndParseCSSModule(iff.paths['test.module.css'])!,
-        host,
-        { ...options, namedExports: true, forTsPlugin: true, prioritizeNamedImports: false },
-      ).text,
+      generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, {
+        ...options,
+        namedExports: true,
+        forTsPlugin: true,
+        prioritizeNamedImports: false,
+      }).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       export var local1: string;

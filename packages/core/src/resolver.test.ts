@@ -32,6 +32,8 @@ describe('createResolver', async () => {
     const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
     expect(resolve('./a.module.css', { request })).toBe(iff.paths['a.module.css']);
     expect(resolve('./dir/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
+    // FIXME: It should return `undefined`.
+    expect(resolve('./non-existent.module.css', { request })).toBe(iff.join('non-existent.module.css'));
   });
   describe('resolve with `paths` option', () => {
     test('basic', () => {
@@ -103,8 +105,21 @@ describe('createResolver', async () => {
     expect(resolve('~package/a.module.css', { request })).toBe(undefined);
   });
   test('ignore URL', () => {
-    const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
-    expect(resolve('http://example.com/a.module.css', { request })).toBe(undefined);
+    const resolve = createResolver(
+      normalizeCompilerOptions(
+        {
+          paths: {
+            'https://paths.com/*': ['./paths1/*'],
+          },
+        },
+        iff.rootDir,
+      ),
+      undefined,
+    );
+    expect(resolve('https://example.com/a.module.css', { request })).toBe(undefined);
+    // Tests that the URL specifier is not resolved using import aliases such as paths.
+    // FIXME: It should return `undefined`.
+    expect(resolve('https://paths.com/a.module.css', { request })).toBe(iff.paths['paths1/a.module.css']);
     expect(resolve('unknown://example.com/a.module.css', { request })).toBe(undefined);
     expect(resolve(`data:,${encodeURIComponent('.a_1 { color: red; }')}`, { request })).toBe(undefined);
   });

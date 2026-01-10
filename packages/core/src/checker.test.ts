@@ -195,40 +195,6 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
-  test('report diagnostics for non-existing module', async () => {
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        @import './b.module.css';
-        @value c_1 from './c.module.css';
-      `,
-    });
-    const check = prepareChecker();
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 14,
-          "start": {
-            "column": 10,
-            "line": 1,
-          },
-          "text": "Cannot import module './b.module.css'",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 14,
-          "start": {
-            "column": 18,
-            "line": 2,
-          },
-          "text": "Cannot import module './c.module.css'",
-        },
-      ]
-    `);
-  });
   test('report diagnostics for non-exported token', async () => {
     const iff = await createIFF({
       'a.module.css': `@value b_1, b_2 from './b.module.css';`,
@@ -251,27 +217,70 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
-  test('ignore token importers for unresolvable modules', async () => {
-    const iff = await createIFF({
-      'a.module.css': `@import 'unresolvable';`,
-    });
-    const check = prepareChecker();
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(diagnostics).toEqual([]);
-  });
-  test('ignore token importers that do not match the pattern', async () => {
+  test('report diagnostics for unresolvable modules', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         @import './b.module.css';
-        @value non_existing_value from './b.module.css';
+        @import 'package/c.module.css';
+        @value b_1 from './b.module.css';
+        @value c_1 from 'package/c.module.css';
       `,
-      'b.module.css': '.b_1 { color: red; }',
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    // TODO: Report diagnostics for `package/c.module.css`
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 14,
+          "start": {
+            "column": 10,
+            "line": 1,
+          },
+          "text": "Cannot import module './b.module.css'",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 14,
+          "start": {
+            "column": 18,
+            "line": 3,
+          },
+          "text": "Cannot import module './b.module.css'",
+        },
+      ]
+    `);
+  });
+  test('do not report diagnostics for `@import` for URLs and unmatched modules', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @import 'https://example.com/a.module.css';
+        @import './unmatched.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
     const check = prepareChecker({
-      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('b.module.css'),
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
     });
     const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    // TODO: Report a diagnostic for code that imports values from modules that do not match the pattern.
+    expect(diagnostics).toEqual([]);
+  });
+  test('report diagnostics for `@value ... from ...` for URLs and unmatched modules', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @value a_1 from 'https://example.com/a.module.css';
+        @value unmatched_1 from './unmatched.module.css';
+      `,
+      'unmatched.module.css': '.unmatched_1 { color: red; }',
+    });
+    const check = prepareChecker({
+      matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
+    });
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    // TODO: Report diagnostics
     expect(diagnostics).toEqual([]);
   });
 });
