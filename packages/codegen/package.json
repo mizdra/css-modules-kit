@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/codegen",
   "description": "A tool for generating `*.d.ts` files for `*.module.css`.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "type": "module",
   "sideEffects": false,
   "repository": {
@@ -38,7 +38,7 @@
     "dist"
   ],
   "dependencies": {
-    "@css-modules-kit/core": "^0.7.0",
+    "@css-modules-kit/core": "^0.8.0",
     "chokidar": "^4.0.3"
   },
   "peerDependencies": {
