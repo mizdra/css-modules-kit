@@ -32,6 +32,3 @@ export function parse(path: string): ParsedPath {
   const { root, dir, base, name, ext } = nodePath.parse(path);
   return { root: slash(root), dir: slash(dir), base, name, ext };
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-export const isAbsolute = nodePath.isAbsolute;

@@ -10,7 +10,7 @@ import type {
   Resolver,
   TokenImporter,
 } from './type.js';
-import { isValidAsJSIdentifier } from './util.js';
+import { isURLSpecifier, isValidAsJSIdentifier } from './util.js';
 
 export interface CheckerArgs {
   config: CMKConfig;
@@ -39,13 +39,15 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
   }
 
   for (const tokenImporter of cssModule.tokenImporters) {
+    if (isURLSpecifier(tokenImporter.from)) continue;
     const from = args.resolver(tokenImporter.from, { request: cssModule.fileName });
-    if (!from || !args.matchesPattern(from)) continue;
-    const imported = args.getCSSModule(from);
-    if (!imported) {
+    if (!from) {
       diagnostics.push(createCannotImportModuleDiagnostic(cssModule, tokenImporter));
       continue;
     }
+    if (!args.matchesPattern(from)) continue;
+    const imported = args.getCSSModule(from);
+    if (!imported) throw new Error('unreachable: `imported` is undefined');
 
     if (tokenImporter.type === 'value') {
       const exportRecord = args.getExportRecord(imported);

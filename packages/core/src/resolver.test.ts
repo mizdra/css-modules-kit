@@ -32,8 +32,7 @@ describe('createResolver', async () => {
     const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
     expect(resolve('./a.module.css', { request })).toBe(iff.paths['a.module.css']);
     expect(resolve('./dir/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
-    // FIXME: It should return `undefined`.
-    expect(resolve('./non-existent.module.css', { request })).toBe(iff.join('non-existent.module.css'));
+    expect(resolve('./non-existent.module.css', { request })).toBe(undefined);
   });
   describe('resolve with `paths` option', () => {
     test('basic', () => {

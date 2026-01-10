@@ -36,6 +36,6 @@ export {
 } from './file.js';
 export { checkCSSModule, type CheckerArgs } from './checker.js';
 export { createExportBuilder } from './export-builder.js';
-export { join, resolve, relative, dirname, basename, parse, isAbsolute } from './path.js';
+export { join, resolve, relative, dirname, basename, parse } from './path.js';
 export { findUsedTokenNames } from './util.js';
 export { convertDiagnostic, convertDiagnosticWithLocation, convertSystemError } from './diagnostic.js';
