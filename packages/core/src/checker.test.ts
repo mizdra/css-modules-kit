@@ -223,7 +223,6 @@ describe('checkCSSModule', () => {
     });
     const check = prepareChecker();
     const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    // TODO: Report diagnostics for `package/c.module.css`
     expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
@@ -239,12 +238,32 @@ describe('checkCSSModule', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/a.module.css",
+          "length": 20,
+          "start": {
+            "column": 10,
+            "line": 2,
+          },
+          "text": "Cannot import module 'package/c.module.css'",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
           "length": 14,
           "start": {
             "column": 18,
             "line": 3,
           },
           "text": "Cannot import module './b.module.css'",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 20,
+          "start": {
+            "column": 18,
+            "line": 4,
+          },
+          "text": "Cannot import module 'package/c.module.css'",
         },
       ]
     `);

@@ -25,3 +25,7 @@ export function findUsedTokenNames(componentText: string): Set<string> {
   }
   return usedClassNames;
 }
+
+export function isURLSpecifier(specifier: string): boolean {
+  return URL.canParse(specifier);
+}
