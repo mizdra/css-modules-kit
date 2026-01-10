@@ -4,7 +4,7 @@ import type {
   AtValueTokenImporterValue,
   CSSModule,
   Diagnostic,
-  ExportBuilder,
+  ExportRecord,
   Location,
   MatchesPattern,
   Resolver,
@@ -12,15 +12,17 @@ import type {
 } from './type.js';
 import { isValidAsJSIdentifier } from './util.js';
 
-// eslint-disable-next-line max-params, complexity
-export function checkCSSModule(
-  cssModule: CSSModule,
-  config: CMKConfig,
-  exportBuilder: ExportBuilder,
-  matchesPattern: MatchesPattern,
-  resolver: Resolver,
-  getCSSModule: (path: string) => CSSModule | undefined,
-): Diagnostic[] {
+export interface CheckerArgs {
+  config: CMKConfig;
+  getExportRecord: (cssModule: CSSModule) => ExportRecord;
+  matchesPattern: MatchesPattern;
+  resolver: Resolver;
+  getCSSModule: (path: string) => CSSModule | undefined;
+}
+
+// eslint-disable-next-line complexity
+export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnostic[] {
+  const { config } = args;
   const diagnostics: Diagnostic[] = [];
 
   for (const token of cssModule.localTokens) {
@@ -37,16 +39,16 @@ export function checkCSSModule(
   }
 
   for (const tokenImporter of cssModule.tokenImporters) {
-    const from = resolver(tokenImporter.from, { request: cssModule.fileName });
-    if (!from || !matchesPattern(from)) continue;
-    const imported = getCSSModule(from);
+    const from = args.resolver(tokenImporter.from, { request: cssModule.fileName });
+    if (!from || !args.matchesPattern(from)) continue;
+    const imported = args.getCSSModule(from);
     if (!imported) {
       diagnostics.push(createCannotImportModuleDiagnostic(cssModule, tokenImporter));
       continue;
     }
 
     if (tokenImporter.type === 'value') {
-      const exportRecord = exportBuilder.build(imported);
+      const exportRecord = args.getExportRecord(imported);
       for (const value of tokenImporter.values) {
         if (!exportRecord.allTokens.includes(value.name)) {
           diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, value));

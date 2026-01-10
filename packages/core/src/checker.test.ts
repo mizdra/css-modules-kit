@@ -1,5 +1,6 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
+import type { CheckerArgs } from './checker.js';
 import { checkCSSModule } from './checker.js';
 import { createExportBuilder } from './export-builder.js';
 import { createResolver } from './resolver.js';
@@ -14,29 +15,23 @@ const matchesPattern = (path: string) => path.endsWith('.module.css');
 
 type Checker = (cssModule: CSSModule) => ReturnType<typeof checkCSSModule>;
 
-interface PrepareCheckerOptions {
-  config?: ReturnType<typeof fakeConfig>;
-  resolver?: typeof resolver;
-  matchesPattern?: typeof matchesPattern;
-}
-
-function prepareChecker(options?: PrepareCheckerOptions): Checker {
-  const config = options?.config ?? fakeConfig();
-  const resolverFn = options?.resolver ?? resolver;
-  const matchesPatternFn = options?.matchesPattern ?? matchesPattern;
+function prepareChecker(args?: Partial<CheckerArgs>): Checker {
+  const config = args?.config ?? fakeConfig();
+  const resolverFn = args?.resolver ?? resolver;
+  const matchesPatternFn = args?.matchesPattern ?? matchesPattern;
+  const exportBuilder = createExportBuilder({
+    getCSSModule: readAndParseCSSModule,
+    matchesPattern: matchesPatternFn,
+    resolver: resolverFn,
+  });
   return (cssModule: CSSModule) => {
-    return checkCSSModule(
-      cssModule,
+    return checkCSSModule(cssModule, {
       config,
-      createExportBuilder({
-        getCSSModule: readAndParseCSSModule,
-        matchesPattern: matchesPatternFn,
-        resolver: resolverFn,
-      }),
-      matchesPatternFn,
-      resolverFn,
-      readAndParseCSSModule,
-    );
+      getExportRecord: (m) => exportBuilder.build(m),
+      matchesPattern: matchesPatternFn,
+      resolver: resolverFn,
+      getCSSModule: readAndParseCSSModule,
+    });
   };
 }
 

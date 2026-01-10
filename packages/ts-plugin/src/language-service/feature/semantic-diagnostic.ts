@@ -25,7 +25,13 @@ export function getSemanticDiagnostics(
       // Clear cache to update export records for all files
       exportBuilder.clearCache();
 
-      const diagnostics = checkCSSModule(cssModule, config, exportBuilder, matchesPattern, resolver, getCSSModule);
+      const diagnostics = checkCSSModule(cssModule, {
+        config,
+        getExportRecord: (m) => exportBuilder.build(m),
+        matchesPattern,
+        resolver,
+        getCSSModule,
+      });
       const sourceFile = languageService.getProgram()!.getSourceFile(fileName)!;
       const tsDiagnostics = diagnostics.map((diagnostic) => convertDiagnostic(diagnostic, () => sourceFile));
       prior.push(...tsDiagnostics);
