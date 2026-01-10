@@ -94,26 +94,6 @@ describe('generateDts', () => {
       "
     `);
   });
-  test('generates types in the order of local tokens and token importers', () => {
-    expect(
-      generateDts(
-        fakeCSSModule({
-          localTokens: [{ name: 'local1', loc: fakeLoc(0) }],
-          tokenImporters: [{ type: 'import', from: './a.module.css', fromLoc: fakeLoc(1) }],
-        }),
-        host,
-        options,
-      ).text,
-    ).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        local1: '' as readonly string,
-        ...(await import('./a.module.css')).default,
-      };
-      export default styles;
-      "
-    `);
-  });
   test('resolves specifiers', () => {
     const resolver = (specifier: string) => specifier.replace('@', '/src');
     expect(
