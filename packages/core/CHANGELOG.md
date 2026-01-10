@@ -1,5 +1,23 @@
 # @css-modules-kit/core
 
+## 0.8.0
+
+### Minor Changes
+
+- [#296](https://github.com/mizdra/css-modules-kit/pull/296) [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab) - feat!: remove unused `isAbsolute`
+
+- [#295](https://github.com/mizdra/css-modules-kit/pull/295) [`4318015`](https://github.com/mizdra/css-modules-kit/commit/4318015b66dae10da4ebd15048628c9cc133bffe) - refactor: consolidate `checkCSSModule` arguments into `CheckerArgs`
+
+- [#286](https://github.com/mizdra/css-modules-kit/pull/286) [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9) - chore: migrate from CJS to ESM
+
+### Patch Changes
+
+- [#297](https://github.com/mizdra/css-modules-kit/pull/297) [`673b45a`](https://github.com/mizdra/css-modules-kit/commit/673b45aa30152e80a251e1234aa1c8e4c327d6e9) - fix: prevent URL specifiers from being resolved by import aliases
+
+- [#296](https://github.com/mizdra/css-modules-kit/pull/296) [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab) - fix: report "Cannot import module" diagnostic for unresolvable bare specifiers
+
+- [#296](https://github.com/mizdra/css-modules-kit/pull/296) [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab) - fix: return `undefined` for non-existent CSS module paths in resolver
+
 ## 0.7.0
 
 ### Minor Changes
