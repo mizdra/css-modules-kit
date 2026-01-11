@@ -40,6 +40,10 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     }
   }
 
+  if (config.enabled === false) {
+    return { languagePlugins: [] };
+  }
+
   // tsserver should report a “Cannot find module” error for import statements in CSS Modules that
   // do not exist. However, if `dtsOutDir` is included in `rootDirs` and old .d.ts files remain
   // in `dtsOutDir`, the error will not be reported. Therefore, remove `dtsOutDir` from `rootDirs`.
