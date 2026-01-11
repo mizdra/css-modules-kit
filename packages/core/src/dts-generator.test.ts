@@ -94,15 +94,14 @@ describe('generateDts', () => {
       "
     `);
   });
-  test('does not generate `@import` types for unmatched or unresolvable modules', async () => {
+  test('does not generate types for unmatched modules', async () => {
     const iff = await createIFF({
       'test.module.css': dedent`
         @import './unmatched.module.css';
-        @import './unresolvable.module.css';
+        @value unmatched_1 from './unmatched.module.css';
       `,
       'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
-    // FIXME: Currently, the type for unresolvable modules is still generated.
     expect(
       generateDts(
         readAndParseCSSModule(iff.paths['test.module.css'])!,
@@ -112,35 +111,28 @@ describe('generateDts', () => {
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        ...(await import('./unresolvable.module.css')).default,
       };
       export default styles;
       "
     `);
   });
-  test('generates `@value` types for unmatched or unresolvable modules', async () => {
+  test('generates types for unresolvable modules', async () => {
     const iff = await createIFF({
       'test.module.css': dedent`
-        @value unmatched_1 from './unmatched.module.css';
+        @import './unresolvable.module.css';
         @value unresolvable_1 from './unresolvable.module.css';
       `,
-      'unmatched.module.css': '.unmatched_1 { color: red; }',
     });
-    // FIXME: Currently, the type for unmatched modules is missing.
-    expect(
-      generateDts(
-        readAndParseCSSModule(iff.paths['test.module.css'])!,
-        { ...host, matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css') },
-        options,
-      ).text,
-    ).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        unresolvable_1: (await import('./unresolvable.module.css')).default.unresolvable_1,
-      };
-      export default styles;
-      "
-    `);
+    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, host, options).text)
+      .toMatchInlineSnapshot(`
+        "// @ts-nocheck
+        declare const styles = {
+          ...(await import('./unresolvable.module.css')).default,
+          unresolvable_1: (await import('./unresolvable.module.css')).default.unresolvable_1,
+        };
+        export default styles;
+        "
+      `);
   });
   test('does not generate types for invalid name as JS identifier', async () => {
     const iff = await createIFF({

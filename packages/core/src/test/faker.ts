@@ -1,5 +1,5 @@
 import type { CMKConfig } from '../config.js';
-import { dirname, join } from '../path.js';
+import { createResolver } from '../resolver.js';
 import type { MatchesPattern, Resolver } from '../type.js';
 
 export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
@@ -21,8 +21,9 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
   };
 }
 
-export function fakeResolver(): Resolver {
-  return (specifier, { request }) => join(dirname(request), specifier);
+export function fakeResolver(args?: { config?: CMKConfig }): Resolver {
+  const config = args?.config ?? fakeConfig();
+  return createResolver(config.compilerOptions, undefined);
 }
 
 export function fakeMatchesPattern(): MatchesPattern {
