@@ -10,15 +10,32 @@ A toolkit for making CSS Modules useful.
 
 By default, CSS Modules have limited language features in editors. For example:
 
-- Clicking on `styles.button` does not go to its definition in `Button.module.css`.
-- Renaming `styles.button` does not rename the corresponding `.button {...}` in `Button.module.css`.
-- Find all references of `styles.button` does not include its definition in `Button.module.css`.
+- Clicking on `styles.button` does not "Go to Definition" in `Button.module.css`.
+- Renaming `styles.button` modifies the code in `Button.tsx` but not in `Button.module.css`.
+- Performing "Find All References" for `styles.button` finds references in `Button.tsx`, not in `Button.module.css`.
 
-It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not handle CSS files. Since tsserver does not load CSS files, it cannot determine which definitions to go to or which code to rename.
+It has been difficult to solve these issues because the TypeScript Language Server (tsserver) does not load CSS files. TSServer does not know which part of the code to "Go to Definition" for, nor which part of the code to rename.
 
-css-modules-kit solves this problem by using the [TypeScript Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin). css-modules-kit extends tsserver to handle `*.module.css` files using it. As a result, rich language features like code navigation and rename refactoring become available. Moreover, it works with various editors.
+CSS Modules Kit solves this problem by using the [TypeScript Language Service Plugin](https://github.com/microsoft/TypeScript/wiki/Writing-a-Language-Service-Plugin) and [Volar.js](https://volarjs.dev/). They extend tsserver to load `*.module.css` files. As a result, [rich language features](#supported-language-features) become available. Moreover, it works with various editors.
 
-css-modules-kit also provides various development tools for CSS Modules. For example, stylelint plugins and the tool that generates `*.d.ts` files.
+In addition, CSS Modules Kit provides various tools for CSS Modules (e.g., codegen, linter-plugin). CSS Modules Kit provides you everything you need. It saves you from the hassle of combining multiple third-party tools.
+
+## Get Started
+
+See [docs/get-started.md](./docs/get-started.md).
+
+## Playground
+
+1. Open https://stackblitz.com/~/github.com/mizdra/css-modules-kit-example
+2. After waiting a moment, a message will appear in the bottom-right saying `you want to install the recommended extensions`. Click `Install` and wait for the installation to complete.
+3. Open `src/a.tsx`. CSS Modules language features should now be enabled.
+
+## Available Tools
+
+- [`@css-modules-kit/ts-plugin`](./packages/ts-plugin/README.md)
+- [`@css-modules-kit/codegen`](./packages/codegen/README.md)
+- [`@css-modules-kit/stylelint-plugin`](./packages/stylelint-plugin/README.md)
+- [`@css-modules-kit/eslint-plugin`](./packages/eslint-plugin/README.md)
 
 ## Supported Language Features
 
@@ -37,7 +54,7 @@ https://github.com/user-attachments/assets/db39a95e-2fc8-42a6-a64d-02f2822afbfe
 </details>
 
 <details>
-<summary>Find all references</summary>
+<summary>Find All References</summary>
 
 https://github.com/user-attachments/assets/df1e2feb-2a1a-4bf5-ae70-1cac36d90409
 
@@ -73,7 +90,7 @@ https://github.com/user-attachments/assets/05f9e839-9617-43dc-a519-d5a20adf1146
 
 In projects where CSS Modules are used, the element is styled with `className={styles.xxx}`. However, when you type `className`, `className="..."` is completed. This is annoying to the user.
 
-So, instead of `className="..."` instead of `className={...}` instead of `className="..."`.
+Therefore, instead of completing `className="..."`, it should complete `className={...}`.
 
 https://github.com/user-attachments/assets/b3609c8a-123f-4f4b-af8c-3c8bf7ab4363
 
@@ -99,33 +116,9 @@ https://github.com/user-attachments/assets/3502150a-985d-45f3-9912-bbc183e41c03
 
 </details>
 
-## Get Started
-
-Please read the [Get Started](docs/get-started.md) guide.
-
-## How to try demo
-
-1. Open this repository with VS Code
-2. Open `Run and Debug` menu
-3. Select `vscode (1-basic)` configuration and start debugging
-
 ## Configuration
 
-css-modules-kit uses `tsconfig.json` as its configuration file.
-
-### `include`/`exclude`
-
-In TypeScript, the `include`/`exclude` properties specify which `*.ts` files to compile. css-modules-kit reuses these options to determine which `*.module.css` files to handle with codegen and ts-plugin. Therefore, make sure your `*.module.css` files are included in the `include` or `exclude` settings.
-
-```jsonc
-{
-  // For example, if your project's `*.module.css` files are in `src/`:
-  "include": ["src"], // Default is ["**/*"], so it can be omitted
-  "compilerOptions": {
-    // ...
-  },
-}
-```
+css-modules-kit uses `tsconfig.json` as its configuration file. This configuration only affects the ts-plugin and codegen.
 
 ### `cmkOptions.enabled`
 
@@ -232,23 +225,23 @@ Determines whether to generate the [token](docs/glossary.md#token) of keyframes 
 }
 ```
 
-## Supported CSS Modules features
-
-- `:local(...)` and `:global(...)`
-- `@keyframes <name> { ... }`
-- `@value <name>: <value>;`
-- `@value <name>[, <value>]+ from <module-specifier>;`
-- `@import <module-specifier>;`
-
 ## Limitations
 
-To simplify the implementation, some features are not supported.
+Due to implementation constraints and technical reasons, css-modules-kit has various limitations.
 
 - Sass and Less are not supported.
   - If you want to use Sass and Less, please use [happy-css-modules](https://github.com/mizdra/happy-css-modules). Although it does not offer as rich language features as css-modules-kit, it provides basic features such as code completion and Go to Definition.
 - The name of classes, `@value`, and `@keyframes` must be valid JavaScript identifiers.
   - For example, `.fooBar` and `.foo_bar` are supported, but `.foo-bar` is not supported.
   - See [#176](https://github.com/mizdra/css-modules-kit/issues/176) for more details.
+- The specifiers in `@import '<specifier>'` and `@value ... from '<specifier>'` are resolved according to TypeScript's module resolution method.
+  - This may differ from the resolution methods of bundlers like Turbopack or Vite.
+  - If you want to use import aliases, use [`compilerOptions.paths`](https://www.typescriptlang.org/tsconfig/#paths) or [`imports`](https://nodejs.org/api/packages.html#imports) in `package.json`.
+    - Example: `"paths": { "@/*": ["src/*"] }`
+  - If you want to omit `.css`, use [`compilerOptions.moduleSuffixes`](https://www.typescriptlang.org/tsconfig/#moduleSuffixes).
+    - Example: `"moduleSuffixes": [".css", ""]`
+  - If you want to resolve the `style` condition, use [`compilerOptions.customConditions`](https://www.typescriptlang.org/tsconfig/#customConditions).
+    - Example: `"customConditions": ["style"]`
 - `:local .foo {...}` is not supported.
   - Use `:local(.foo) {...}` instead.
 - `:global .foo {...}` is not supported.
