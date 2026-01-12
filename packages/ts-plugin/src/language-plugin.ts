@@ -1,4 +1,4 @@
-import type { CMKConfig, CSSModule, MatchesPattern, Resolver } from '@css-modules-kit/core';
+import type { CMKConfig, CSSModule, MatchesPattern } from '@css-modules-kit/core';
 import { generateDts, parseCSSModule } from '@css-modules-kit/core';
 import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-core';
 import type {} from '@volar/typescript';
@@ -19,7 +19,6 @@ export interface CSSModuleScript extends SourceScript<string> {
 }
 
 export function createCSSLanguagePlugin(
-  resolver: Resolver,
   matchesPattern: MatchesPattern,
   config: CMKConfig,
 ): LanguagePlugin<string, VirtualCode> {
@@ -53,11 +52,7 @@ export function createCSSLanguagePlugin(
         keyframes: config.keyframes,
       });
       // eslint-disable-next-line prefer-const
-      let { text, mapping, linkedCodeMapping } = generateDts(
-        cssModule,
-        { resolver, matchesPattern },
-        { ...config, forTsPlugin: true },
-      );
+      let { text, mapping, linkedCodeMapping } = generateDts(cssModule, { ...config, forTsPlugin: true });
       return {
         id: 'main',
         languageId: 'typescript',

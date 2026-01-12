@@ -212,7 +212,7 @@ export function createProject(args: ProjectArgs): Project {
     const promises: Promise<void>[] = [];
     for (const cssModule of cssModuleMap.values()) {
       if (emittedSet.has(cssModule.fileName)) continue;
-      const dts = generateDts(cssModule, { resolver, matchesPattern }, { ...config, forTsPlugin: false });
+      const dts = generateDts(cssModule, { ...config, forTsPlugin: false });
       promises.push(
         writeDtsFile(dts.text, cssModule.fileName, {
           outDir: config.dtsOutDir,
