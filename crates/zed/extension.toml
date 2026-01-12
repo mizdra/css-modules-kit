@@ -1,6 +1,6 @@
 id = "css-modules-kit"
 name = "CSS Modules Kit"
-version = "0.1.1"
+version = "0.1.2"
 schema_version = 1
 authors = ["mizdra <pp.mizdra@gmail.com>"]
 description = "The Zed extension for CSS Modules Kit"

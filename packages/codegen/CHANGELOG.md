@@ -1,5 +1,26 @@
 # @css-modules-kit/codegen
 
+## 0.8.0
+
+### Minor Changes
+
+- [#288](https://github.com/mizdra/css-modules-kit/pull/288) [`89f11a5`](https://github.com/mizdra/css-modules-kit/commit/89f11a54af1dc86b344e151b63bc2708486c31bb) - feat: add --preserveWatchOutput option
+
+- [#290](https://github.com/mizdra/css-modules-kit/pull/290) [`d75f75f`](https://github.com/mizdra/css-modules-kit/commit/d75f75f5d23e73e366edfdad590da1c695e48374) - feat: exit with error when `cmkOptions.enabled` is false
+
+- [#302](https://github.com/mizdra/css-modules-kit/pull/302) [`32ecdc2`](https://github.com/mizdra/css-modules-kit/commit/32ecdc2f8b720bc9ab1d85d41e4fb45fe6510658) - feat!: include types in .d.ts files for unresolved or unmatched module imports
+
+- [#290](https://github.com/mizdra/css-modules-kit/pull/290) [`d75f75f`](https://github.com/mizdra/css-modules-kit/commit/d75f75f5d23e73e366edfdad590da1c695e48374) - feat: warn when `cmkOptions.enabled` is not set
+
+- [#286](https://github.com/mizdra/css-modules-kit/pull/286) [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9) - chore: migrate from CJS to ESM
+
+### Patch Changes
+
+- [#300](https://github.com/mizdra/css-modules-kit/pull/300) [`96108ad`](https://github.com/mizdra/css-modules-kit/commit/96108ade58a14f42420423117c5611c74db23d20) - docs: update documentation
+
+- Updated dependencies [[`673b45a`](https://github.com/mizdra/css-modules-kit/commit/673b45aa30152e80a251e1234aa1c8e4c327d6e9), [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab), [`92d7918`](https://github.com/mizdra/css-modules-kit/commit/92d7918669a5cc79ad8c0de3e3a8bb784844b72e), [`0128985`](https://github.com/mizdra/css-modules-kit/commit/012898565db011194d30f7718f913a5053855794), [`32ecdc2`](https://github.com/mizdra/css-modules-kit/commit/32ecdc2f8b720bc9ab1d85d41e4fb45fe6510658), [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab), [`4318015`](https://github.com/mizdra/css-modules-kit/commit/4318015b66dae10da4ebd15048628c9cc133bffe), [`b5cdd4a`](https://github.com/mizdra/css-modules-kit/commit/b5cdd4a1df3af54a156a9be886c056b2db48fcab), [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9)]:
+  - @css-modules-kit/core@0.8.0
+
 ## 0.7.0
 
 ### Minor Changes

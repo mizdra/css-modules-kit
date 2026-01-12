@@ -1,5 +1,18 @@
 # css-modules-kit-vscode
 
+## 0.5.0
+
+### Minor Changes
+
+- [#286](https://github.com/mizdra/css-modules-kit/pull/286) [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9) - chore: migrate from CJS to ESM
+
+### Patch Changes
+
+- [#300](https://github.com/mizdra/css-modules-kit/pull/300) [`96108ad`](https://github.com/mizdra/css-modules-kit/commit/96108ade58a14f42420423117c5611c74db23d20) - docs: update documentation
+
+- Updated dependencies [[`51a78a7`](https://github.com/mizdra/css-modules-kit/commit/51a78a7751703ae17f38ec7fd7d20c7f22ec521d), [`4c604fe`](https://github.com/mizdra/css-modules-kit/commit/4c604feb795eccb561d7992402346890541cc6f6), [`352f53c`](https://github.com/mizdra/css-modules-kit/commit/352f53c2b9a3fbdfbf1493aa53c61bbb99246ee9), [`32ecdc2`](https://github.com/mizdra/css-modules-kit/commit/32ecdc2f8b720bc9ab1d85d41e4fb45fe6510658), [`4318015`](https://github.com/mizdra/css-modules-kit/commit/4318015b66dae10da4ebd15048628c9cc133bffe), [`96108ad`](https://github.com/mizdra/css-modules-kit/commit/96108ade58a14f42420423117c5611c74db23d20)]:
+  - @css-modules-kit/ts-plugin@0.8.0
+
 ## 0.4.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # css-modules-kit-zed
 
+## 0.1.2
+
+### Patch Changes
+
+- [#300](https://github.com/mizdra/css-modules-kit/pull/300) [`96108ad`](https://github.com/mizdra/css-modules-kit/commit/96108ade58a14f42420423117c5611c74db23d20) - docs: update documentation
+
 ## 0.1.1
 
 ### Patch Changes
