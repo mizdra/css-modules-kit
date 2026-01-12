@@ -1,37 +1,70 @@
 # `@css-modules-kit/ts-plugin`
 
-A TypeScript Language Service Plugin for CSS Modules
-
-## What is this?
-
-`@css-modules-kit/ts-plugin` is a TypeScript Language Service Plugin that extends tsserver to handle `*.module.css` files. As a result, many language features like code navigation and rename refactoring become available.
+A TypeScript Language Service Plugin for CSS Modules.
 
 ## Installation
 
-```bash
-npm i -D @css-modules-kit/ts-plugin
-```
+### VS Code
 
-## How to setup your editor
+Install the ts-plugin via the Extension. Please install:
+
+- https://marketplace.visualstudio.com/items?itemName=mizdra.css-modules-kit-vscode
 
 ### Neovim
+
+First, install ts-plugin globally.
+
+```bash
+npm i -g @css-modules-kit/ts-plugin
+```
+
+Next, update your LSP client configuration. Below is an example using `nvim-lspconfig`.
 
 ```lua
 local lspconfig = require('lspconfig')
 
-lspconfig.ts_ls.setup {
-  init_options = {
-    plugins = {
-      {
-        name = '@css-modules-kit/ts-plugin',
-        languages = { 'css' },
-      },
-    },
-  },
-  filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'css' },
-}
+-- TODO: Welcome to contribute
 ```
+
+### Emacs
+
+First, install ts-plugin globally.
+
+```bash
+npm i -g @css-modules-kit/ts-plugin
+```
+
+Next, update your LSP client configuration.
+
+TODO: Welcome to contribute
+
+### Zed
+
+Install the ts-plugin via the Extension. Please follow the steps below:
+
+1. Install ["CSS Modules Kit" extension](https://zed.dev/extensions/css-modules-kit).
+2. Add the following to your `~./config/zed/settings.json` file:
+   ```json
+   {
+     "languages": {
+       "CSS": {
+         "language_servers": ["vtsls", "..."]
+       }
+     }
+   }
+   ```
+3. Restart Zed.
+
+### WebStorm
+
+Not yet supported.
+
+### StackBlitz Codeflow
+
+Install the ts-plugin via the Extension. Please install:
+
+- https://open-vsx.org/extension/mizdra/css-modules-kit-vscode
 
 ## Configuration
 
-See [css-modules-kit's README](https://github.com/mizdra/css-modules-kit?tab=readme-ov-file#configuration).
+See [Configuration](https://github.com/mizdra/css-modules-kit?tab=readme-ov-file#configuration).

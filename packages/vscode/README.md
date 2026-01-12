@@ -1,7 +1,7 @@
 # css-modules-kit-vscode
 
-The VS Code extension for CSS Modules
+The VS Code extension for CSS Modules.
 
-## What is this?
+## Installation
 
-This is an extension for using `@css-modules-kit/ts-plugin` in VS Code.
+See [Get Started](https://github.com/mizdra/css-modules-kit/tree/main/packages/ts-plugin#vs-code).

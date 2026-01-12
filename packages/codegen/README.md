@@ -8,21 +8,6 @@ A tool for generating `*.d.ts` files for `*.module.css`.
 npm i -D @css-modules-kit/codegen
 ```
 
-## Requirements
-
-Set `cmkOptions.dtsOutDir` and `"."` to `rootDirs`. This is necessary for the `tsc` command to load the generated `*.d.ts` files.
-
-```json
-{
-  "compilerOptions": {
-    "rootDirs": [".", "generated"] // Required
-  },
-  "cmkOptions": {
-    "dtsOutDir": "generated" // Default is `"generated"`, so it can be omitted
-  }
-}
-```
-
 ## Usage
 
 From the command line, run the `cmk` command.

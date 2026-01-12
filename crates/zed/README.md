@@ -4,15 +4,4 @@ The Zed extension for CSS Modules Kit
 
 ## Installation
 
-1. Install "CSS Modules Kit" extension on Zed.
-2. Add the following to your `~./config/zed/settings.json` file:
-   ```json
-   {
-     "languages": {
-       "CSS": {
-         "language_servers": ["vtsls", "..."]
-       }
-     }
-   }
-   ```
-3. Restart Zed.
+See [Get Started](https://github.com/mizdra/css-modules-kit/tree/main/packages/ts-plugin#zed).
