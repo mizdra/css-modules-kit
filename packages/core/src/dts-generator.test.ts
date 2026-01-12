@@ -49,8 +49,9 @@ describe('generateDts', () => {
     });
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
+      function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
       declare const styles = {
-        ...(await import('./a.module.css')).default,
+        ...blockErrorType((await import('./a.module.css')).default),
         imported1: (await import('./b.module.css')).default.imported1,
         aliasedImported2: (await import('./b.module.css')).default.imported2,
       };

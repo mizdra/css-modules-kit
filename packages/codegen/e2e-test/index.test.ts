@@ -46,10 +46,11 @@ test('generates .d.ts', async () => {
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
+    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
       a1: '' as readonly string,
-      ...(await import('./b.module.css')).default,
-      ...(await import('./unmatched.module.css')).default,
+      ...blockErrorType((await import('./b.module.css')).default),
+      ...blockErrorType((await import('./unmatched.module.css')).default),
     };
     export default styles;
     "
@@ -155,27 +156,30 @@ test('generates .d.ts with circular import', async () => {
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
+    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
       a1: '' as readonly string,
-      ...(await import('./b.module.css')).default,
+      ...blockErrorType((await import('./b.module.css')).default),
     };
     export default styles;
     "
   `);
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
+    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
       b1: '' as readonly string,
-      ...(await import('./a.module.css')).default,
+      ...blockErrorType((await import('./a.module.css')).default),
     };
     export default styles;
     "
   `);
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
+    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
       c1: '' as readonly string,
-      ...(await import('./c.module.css')).default,
+      ...blockErrorType((await import('./c.module.css')).default),
     };
     export default styles;
     "
