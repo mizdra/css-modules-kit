@@ -1,12 +1,7 @@
-import type { CSSModule, MatchesPattern, Resolver, Token, TokenImporter } from './type.js';
+import type { CSSModule, Token, TokenImporter } from './type.js';
 import { isURLSpecifier, isValidAsJSIdentifier } from './util.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
-
-export interface GenerateDtsHost {
-  resolver: Resolver;
-  matchesPattern: MatchesPattern;
-}
 
 export interface GenerateDtsOptions {
   namedExports: boolean;
@@ -46,11 +41,7 @@ interface GenerateDtsResult {
 /**
  * Generate .d.ts from `CSSModule`.
  */
-export function generateDts(
-  cssModule: CSSModule,
-  host: GenerateDtsHost,
-  options: GenerateDtsOptions,
-): GenerateDtsResult {
+export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
   const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
   const tokenImporters = cssModule.tokenImporters
@@ -71,95 +62,41 @@ export function generateDts(
     })
     .filter((tokenImporter) => {
       /**
-       * Token importers with the following specifiers are excluded from type definitions:
-       *
-       * - URL specifiers
-       * - Specifiers that are not URLs, can be resolved, and do not match the pattern
-       *
-       * On the other hand, token importers with the following specifiers are included in type definitions:
-       *
-       * - Specifiers that are not URLs, can be resolved, and match the pattern
-       * - Specifiers that are not URLs and cannot be resolved
-       *
-       * Including the latter (non-existent specifiers) in type definitions may look unnatural, but
-       * without doing so, watch mode will stop working correctly.
-       *
-       * As an example, consider the following setup:
+       * In principle, token importers with specifiers that cannot be resolved are still included in the type
+       * definitions. For example, consider the following:
        *
        * ```css
        * // src/a.module.css
-       * @import '@/b.module.css';
+       * @import './unresolved.module.css';
+       * @import './unmatched.css';
        * .a_1 { color: red; }
        * ```
        *
-       * ```json
-       * // tsconfig.json
-       * {
-       *   "compilerOptions": {
-       *     "paths": {
-       *       "@/*": ["src/*"]
-       *     }
-       *   }
-       * }
-       * ```
-       *
-       * In watch mode, only the type definitions for files whose changes are detected are regenerated
-       * (unchanged files are not regenerated). Therefore, on the first generation, only the type
-       * definition for `a.module.css` is generated, with the following content:
+       * In this case, CSS Modules Kit generates the following type definitions:
        *
        * ```ts
        * // generated/src/a.module.css.d.ts
        * // @ts-nocheck
        * declare const styles = {
+       *   a_1: '' as readonly string,
+       *   ...(await import('./unresolved.module.css')).default,
+       *   ...(await import('./unmatched.css')).default,
        * };
-       * export default styles;
        * ```
        *
-       * At this point, since `src/b.module.css` does not exist yet, `@/b.module.css` cannot be
-       * resolved. As a result, the type definition for `a.module.css` does not include tokens from
-       * `src/b.module.css`.
+       * Even if `./unresolved.module.css` or `./unmatched.css` does not exist, the same type definitions are
+       * generated. It is important that the generated type definitions do not change depending on whether the
+       * files exist. This provides the following benefits:
        *
-       * Next, suppose the user creates `src/b.module.css`:
+       * - Simplifies the watch mode implementation
+       *   - Only the type definitions for changed files need to be regenerated
+       * - Makes it easier to parallelize code generation
+       *   - Type definitions can be generated independently per file
        *
-       * ```css
-       * // src/b.module.css
-       * .b_1 { color: blue; }
-       * ```
-       *
-       * When watch mode detects this, on the second generation only the type definition for
-       * `b.module.css` is generated:
-       *
-       * ```ts
-       * // generated/src/b.module.css.d.ts
-       * // @ts-nocheck
-       * declare const styles = {
-       *   b_1: '' as readonly string,
-       * };
-       * export default styles;
-       * ```
-       *
-       * However, since the type definition for `a.module.css` is not regenerated, `a.module.css`
-       * still does not have `b_1`.
-       *
-       * To prevent this, token importers for specifiers that match the pattern must be included in
-       * the type definitions even if they do not exist yet.
-       *
-       * Therefore, css-modules-kit generates the following type definition in the first code
-       * generation:
-       *
-       * ```ts
-       * // generated/src/a.module.css.d.ts
-       * // @ts-nocheck
-       * declare const styles = {
-       *   ...(await import('@/b.module.css')).default,
-       * };
-       * export default styles;
-       * ```
+       * However, as an exception, URL specifiers are not included in the type definitions, because URL
+       * specifiers are typically resolved at runtime.
        */
-      if (isURLSpecifier(tokenImporter.from)) return false;
-      const resolved = host.resolver(tokenImporter.from, { request: cssModule.fileName });
-      if (!resolved) return true;
-      return host.matchesPattern(resolved);
+      return !isURLSpecifier(tokenImporter.from);
     });
 
   if (options.namedExports) {
