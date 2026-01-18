@@ -20,7 +20,6 @@ export interface CheckerArgs {
   getCSSModule: (path: string) => CSSModule | undefined;
 }
 
-// eslint-disable-next-line complexity
 export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnostic[] {
   const { config } = args;
   const diagnostics: Diagnostic[] = [];

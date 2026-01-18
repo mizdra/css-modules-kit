@@ -52,6 +52,10 @@ export default [
       // Disable because it does not work in the workspace
       // ref: https://github.com/eslint-community/eslint-plugin-n/issues/209
       'n/no-extraneous-import': 'off',
+      // Disabled because it's too strict
+      'complexity': 'off',
+      // Disabled because it's too strict
+      'max-params': 'off',
     },
   },
   mizdra.prettierConfig,
