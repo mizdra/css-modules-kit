@@ -4,7 +4,6 @@ import type { Language } from '@volar/language-core';
 import type ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../../language-plugin.js';
 
-// eslint-disable-next-line max-params
 export function getSemanticDiagnostics(
   language: Language<string>,
   languageService: ts.LanguageService,

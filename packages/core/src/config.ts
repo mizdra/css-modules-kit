@@ -101,7 +101,6 @@ function isTsConfigFileExists(fileName: string): boolean {
   return ts.findConfigFile(dirname(fileName), ts.sys.fileExists.bind(ts.sys), basename(fileName)) !== undefined;
 }
 
-// eslint-disable-next-line complexity
 function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
   const result: ParsedRawData = {
     config: {},

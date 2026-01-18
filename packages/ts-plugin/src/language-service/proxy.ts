@@ -10,7 +10,6 @@ import { getApplicableRefactors, getEditsForRefactor } from './feature/refactor.
 import { getSemanticDiagnostics } from './feature/semantic-diagnostic.js';
 import { getSyntacticDiagnostics } from './feature/syntactic-diagnostic.js';
 
-// eslint-disable-next-line max-params
 export function proxyLanguageService(
   language: Language<string>,
   languageService: ts.LanguageService,
