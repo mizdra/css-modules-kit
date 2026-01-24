@@ -34,6 +34,7 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
+      - run: npm run build
       - run: |
           failed=0
           for i in $(seq 1 50); do
