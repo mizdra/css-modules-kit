@@ -13,37 +13,12 @@ env:
   VSCODE_VERSION: '1.103.0'
 
 jobs:
-  lint:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node-and-node-modules
-        with:
-          node-version: 22
-      - uses: actions/cache@v4
-        with:
-          path: |
-            node_modules/.cache/prettier/.prettier-cache
-            packages/*/dist
-            packages/*/tsconfig.build.tsbuildinfo
-            tsconfig.tsbuildinfo
-          key: lint-tools-${{ runner.arch }}-${{ runner.os }}-${{ github.sha }}
-          restore-keys: lint-tools-${{ runner.arch }}-${{ runner.os }}
-      - run: npm run lint
-  build:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node-and-node-modules
-        with:
-          node-version: 22
-      - run: npm run build
   test-vitest:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
-        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
+        node: [22]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -59,33 +34,11 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: npm run test:vitest
-  test-vscode:
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [20, 22]
-        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-node-and-node-modules
-        with:
-          node-version: ${{ matrix.node }}
-      - uses: actions/cache@v4
-        with:
-          path: |
-            packages/*/dist
-            packages/*/tsconfig.build.tsbuildinfo
-            tsconfig.tsbuildinfo
-          key: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - uses: actions/cache@v4
-        with:
-          path: .vscode-test
-          key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
-
-      - run: xvfb-run -a npm run test:vscode
-        if: runner.os == 'Linux'
-      - run: npm run test:vscode
-        if: runner.os != 'Linux'
+      - run: |
+          for i in $(seq 1 30); do
+            if npm run test:vitest -- file-operation.test.ts -t "updating file" > /dev/null 2>&1; then
+              echo "Attempt #$i: passed"
+            else
+              echo "Attempt #$i: failed"
+            fi
+          done

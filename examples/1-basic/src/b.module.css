@@ -1,2 +1,0 @@
-.b_1 { color: red; composes: b_2; }
-@value b_2: red;
