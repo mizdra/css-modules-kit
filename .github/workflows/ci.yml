@@ -35,10 +35,10 @@ jobs:
           key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - run: |
-          for i in $(seq 1 30); do
+          for i in $(seq 1 50); do
             if npm run test:vitest -- file-operation.test.ts > /dev/null 2>&1; then
               echo "Attempt #$i: passed"
             else
-              echo "Attempt #$i: failed"
+              echo -e "\033[31mAttempt #$i: failed\033[0m"
             fi
           done
