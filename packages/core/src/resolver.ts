@@ -26,7 +26,6 @@ export function createResolver(
       moduleResolutionCache,
     );
     if (resolvedModule) {
-      // TODO: Logging that the paths is used.
       return resolvedModule.resolvedFileName.replace(/\.d\.css\.ts$/u, '.css');
     }
     return undefined;
