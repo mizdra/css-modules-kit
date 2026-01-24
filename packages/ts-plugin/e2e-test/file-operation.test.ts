@@ -74,7 +74,7 @@ test('adding file', async () => {
   `);
 });
 
-test('updating file', async () => {
+test('updating file', { repeats: 100 - 1 }, async () => {
   const tsserver = launchTsserver();
   const iff = await createIFF({
     'index.ts': dedent`

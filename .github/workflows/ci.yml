@@ -35,4 +35,4 @@ jobs:
           key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - run: npm run build
-      - run: scripts/test-vitest-updating-file.sh
+      - run: npm run test:vitest -- file-operation -t "updating file"
