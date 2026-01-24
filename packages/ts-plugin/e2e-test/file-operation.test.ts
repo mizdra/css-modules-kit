@@ -115,15 +115,22 @@ test('updating file', { repeats: 100 - 1 }, async () => {
   `);
 
   // Update a.module.css to have a semantic error
-  await writeFile(
-    iff.paths['a.module.css'],
-    dedent`
-      .a_1 {}
-      .a-2 {}
-    `,
-  );
   await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['a.module.css'] }],
+    changedFiles: [
+      {
+        fileName: iff.paths['a.module.css'],
+        textChanges: [
+          {
+            start: { line: 1, offset: 1 },
+            end: { line: 1, offset: 1 },
+            newText: dedent`
+              .a_1 {}
+              .a-2 {}
+            `,
+          },
+        ],
+      },
+    ],
   });
 
   // The diagnostics in a.module.css are updated
