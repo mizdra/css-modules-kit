@@ -12,15 +12,34 @@ export function getDefinitionAndBoundSpan(
     if (!result.definitions) return result;
     for (const def of result.definitions) {
       const script = language.scripts.get(def.fileName);
-      if (isCSSModuleScript(script)) {
-        const cssModule = script.generated.root[CMK_DATA_KEY];
-        const token = cssModule.localTokens.find((t) => t.name === def.name);
-        if (token?.declarationLoc) {
-          def.contextSpan = {
-            start: token.declarationLoc.start.offset,
-            length: token.declarationLoc.end.offset - token.declarationLoc.start.offset,
-          };
-        }
+      if (!isCSSModuleScript(script)) continue;
+
+      const cssModule = script.generated.root[CMK_DATA_KEY];
+
+      // Search tokens and set `contextSpan`. `contextSpan` is used for Definition Preview in editors.
+      const localToken = cssModule.localTokens.find(
+        (t) => t.name === def.name && t.loc.start.offset === def.textSpan.start,
+      );
+      if (localToken?.declarationLoc) {
+        def.contextSpan = {
+          start: localToken.declarationLoc.start.offset,
+          length: localToken.declarationLoc.end.offset - localToken.declarationLoc.start.offset,
+        };
+        continue;
+      }
+      const importedValue = cssModule.tokenImporters
+        .flatMap((i) => (i.type === 'value' ? i.values : []))
+        .find((v) => {
+          const localName = v.localName ?? v.name;
+          const localLoc = v.localLoc ?? v.loc;
+          return localName === def.name && localLoc.start.offset === def.textSpan.start;
+        });
+      if (importedValue) {
+        const loc = importedValue.localLoc ?? importedValue.loc;
+        def.contextSpan = {
+          start: loc.start.offset,
+          length: loc.end.offset - loc.start.offset,
+        };
       }
     }
     return result;
