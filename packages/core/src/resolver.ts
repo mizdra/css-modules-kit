@@ -12,8 +12,8 @@ export function createResolver(
     const host: ts.ModuleResolutionHost = {
       ...ts.sys,
       fileExists: (fileName) => {
-        if (fileName.endsWith('.module.d.css.ts')) {
-          return ts.sys.fileExists(fileName.replace(/\.module\.d\.css\.ts$/u, '.module.css'));
+        if (fileName.endsWith('.d.css.ts')) {
+          return ts.sys.fileExists(fileName.replace(/\.d\.css\.ts$/u, '.css'));
         }
         return ts.sys.fileExists(fileName);
       },
@@ -27,7 +27,7 @@ export function createResolver(
     );
     if (resolvedModule) {
       // TODO: Logging that the paths is used.
-      return resolvedModule.resolvedFileName.replace(/\.module\.d\.css\.ts$/u, '.module.css');
+      return resolvedModule.resolvedFileName.replace(/\.d\.css\.ts$/u, '.css');
     }
     return undefined;
   };
