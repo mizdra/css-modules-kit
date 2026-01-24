@@ -19,6 +19,7 @@ describe('createResolver', async () => {
   const iff = await createIFF({
     'request.module.css': '',
     'a.module.css': '',
+    'a.css': '',
     'dir/a.module.css': '',
     'paths1/a.module.css': '',
     'paths2/b.module.css': '',
@@ -31,6 +32,7 @@ describe('createResolver', async () => {
   test('resolves relative path', () => {
     const resolve = createResolver(normalizeCompilerOptions({}, iff.rootDir), undefined);
     expect(resolve('./a.module.css', { request })).toBe(iff.paths['a.module.css']);
+    expect(resolve('./a.css', { request })).toBe(iff.paths['a.css']);
     expect(resolve('./dir/a.module.css', { request })).toBe(iff.paths['dir/a.module.css']);
     expect(resolve('./non-existent.module.css', { request })).toBe(undefined);
   });
