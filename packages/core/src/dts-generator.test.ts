@@ -33,8 +33,8 @@ describe('generateDts', () => {
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        local1: '' as readonly string,
-        local2: '' as readonly string,
+        'local1': '' as readonly string,
+        'local2': '' as readonly string,
       };
       export default styles;
       "
@@ -52,8 +52,27 @@ describe('generateDts', () => {
       function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
       declare const styles = {
         ...blockErrorType((await import('./a.module.css')).default),
-        imported1: (await import('./b.module.css')).default.imported1,
-        aliasedImported2: (await import('./b.module.css')).default.imported2,
+        'imported1': (await import('./b.module.css')).default['imported1'],
+        'aliasedImported2': (await import('./b.module.css')).default['imported2'],
+      };
+      export default styles;
+      "
+    `);
+  });
+  test('generates types for tokens with invalid JS identifier names', async () => {
+    const iff = await createIFF({
+      'test.module.css': dedent`
+        .a-1 { color: red; }
+        @value b_1 from './b.module.css';
+        @value b_2 as a_2 from './b.module.css';
+      `,
+    });
+    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      declare const styles = {
+        'a-1': '' as readonly string,
+        'b_1': (await import('./b.module.css')).default['b_1'],
+        'a_2': (await import('./b.module.css')).default['b_2'],
       };
       export default styles;
       "
@@ -64,22 +83,6 @@ describe('generateDts', () => {
       'test.module.css': dedent`
         @import 'https://example.com/a.module.css';
         @value imported1 from 'https://example.com/b.module.css';
-      `,
-    });
-    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-      };
-      export default styles;
-      "
-    `);
-  });
-  test('does not generate types for invalid name as JS identifier', async () => {
-    const iff = await createIFF({
-      'test.module.css': dedent`
-        .a-1 { color: red; }
-        @value b-1 from './b.module.css';
-        @value b_2 as a-2 from './b.module.css';
       `,
     });
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
@@ -115,9 +118,27 @@ describe('generateDts', () => {
       .toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        default: '' as readonly string,
+        'default': '' as readonly string,
       };
       export default styles;
+      "
+    `);
+  });
+  test('does not generate types for invalid name as JS identifier when `namedExports` is true', async () => {
+    const iff = await createIFF({
+      'test.module.css': dedent`
+        .a-1 { color: red; }
+        @value b-1 from './b.module.css';
+        @value b_2 as a-2 from './b.module.css';
+      `,
+    });
+    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, { ...options, namedExports: true }).text)
+      .toMatchInlineSnapshot(`
+      "// @ts-nocheck
+      export {
+      } from './b.module.css';
+      export {
+      } from './b.module.css';
       "
     `);
   });

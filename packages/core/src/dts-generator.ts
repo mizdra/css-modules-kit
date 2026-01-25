@@ -17,6 +17,8 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
+  /** The lengths of the tokens in the *.d.ts file. */
+  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -265,7 +267,7 @@ function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -312,11 +314,15 @@ function generateDefaultExportDts(
      * 4 | };
      */
 
-    text += `  `;
+    const base = text.length;
+    text += `  '`;
+    const keyStart = base + 3;
+    // Map the inner content so rename ranges without quotes still resolve.
     mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(text.length);
+    mapping.generatedOffsets.push(keyStart);
     mapping.lengths.push(token.name.length);
-    text += `${token.name}: '' as readonly string,\n`;
+    mapping.generatedLengths!.push(token.name.length);
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -347,6 +353,7 @@ function generateDefaultExportDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths!.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
       /**
@@ -389,27 +396,35 @@ function generateDefaultExportDts(
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
 
-        text += `  `;
+        const base = text.length;
+        text += `  '`;
+        const keyStart = base + 3;
+        // Map the inner content so rename ranges without quotes still resolve.
         mapping.sourceOffsets.push(localLoc.start.offset);
+        mapping.generatedOffsets.push(keyStart);
         mapping.lengths.push(localName.length);
-        mapping.generatedOffsets.push(text.length);
-        linkedCodeMapping.sourceOffsets.push(text.length);
+        mapping.generatedLengths!.push(localName.length);
+        linkedCodeMapping.sourceOffsets.push(keyStart);
         linkedCodeMapping.lengths.push(localName.length);
-        text += `${localName}: (await import(`;
+        text += `${localName}': (await import(`;
         if (i === 0) {
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths!.push(tokenImporter.from.length + 2);
         }
-        text += `'${tokenImporter.from}')).default.`;
-        if ('localName' in value) {
-          mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(value.name.length);
-          mapping.generatedOffsets.push(text.length);
-        }
-        linkedCodeMapping.generatedOffsets.push(text.length);
+        text += `'${tokenImporter.from}')).default`;
+        const valueBase = text.length;
+        text += `['`;
+        const valueKeyStart = valueBase + 2;
+        // Map the inner content so rename ranges without quotes still resolve.
+        mapping.sourceOffsets.push(value.loc.start.offset);
+        mapping.generatedOffsets.push(valueKeyStart);
+        mapping.lengths.push(value.name.length);
+        mapping.generatedLengths!.push(value.name.length);
+        linkedCodeMapping.generatedOffsets.push(valueKeyStart);
         linkedCodeMapping.generatedLengths.push(value.name.length);
-        text += `${value.name},\n`;
+        text += `${value.name}'],\n`;
       });
     }
   }
@@ -418,7 +433,7 @@ function generateDefaultExportDts(
 }
 
 function isValidName(name: string, options: GenerateDtsOptions): boolean {
-  if (!isValidAsJSIdentifier(name)) return false;
+  if (options.namedExports && !isValidAsJSIdentifier(name)) return false;
   if (name === '__proto__') return false;
   if (options.namedExports && name === 'default') return false;
   return true;

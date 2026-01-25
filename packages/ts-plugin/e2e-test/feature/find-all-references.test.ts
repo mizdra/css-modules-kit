@@ -71,6 +71,11 @@ describe('Find All References', async () => {
     start: { line: 2, offset: 8 },
     end: { line: 2, offset: 11 },
   };
+  const c_1_in_a_module_css_inner = {
+    file: formatPath(iff.paths['a.module.css']),
+    start: { line: 2, offset: 8 },
+    end: { line: 2, offset: 11 },
+  };
   const c_1_in_c_module_css = {
     file: formatPath(iff.paths['c.module.css']),
     start: { line: 1, offset: 8 },
@@ -168,19 +173,25 @@ describe('Find All References', async () => {
       name: 'c_1 in index.ts',
       file: c_1_in_index_ts.file,
       ...c_1_in_index_ts.start,
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
+      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css_inner, c_1_in_c_module_css],
     },
     {
       name: 'c_1 in a.module.css',
       file: c_1_in_a_module_css.file,
       ...c_1_in_a_module_css.start,
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
+      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css_inner, c_1_in_c_module_css],
     },
     {
       name: 'c_1 in c.module.css',
       file: c_1_in_c_module_css.file,
       ...c_1_in_c_module_css.start,
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
+      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css_inner, c_1_in_c_module_css],
     },
     {
       name: 'c_alias in index.ts',

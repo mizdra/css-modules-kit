@@ -137,24 +137,7 @@ test('updating file', async () => {
   const res2 = await tsserver.sendSemanticDiagnosticsSync({
     file: iff.paths['a.module.css'],
   });
-  expect(res2.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 2,
-          "offset": 5,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 2,
-          "offset": 2,
-        },
-        "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-      },
-    ]
-  `);
+  expect(res2.body).toMatchInlineSnapshot(`[]`);
 
   // The diagnostics of files importing a.module.css are updated.
   const res3 = await tsserver.sendSemanticDiagnosticsSync({
