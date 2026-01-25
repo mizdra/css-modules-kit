@@ -17,8 +17,6 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
-  /** The lengths of the tokens in the *.d.ts file. */
-  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -267,12 +265,7 @@ function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping & { generatedLengths: number[] } = {
-    sourceOffsets: [],
-    lengths: [],
-    generatedOffsets: [],
-    generatedLengths: [],
-  };
+  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -323,7 +316,6 @@ function generateDefaultExportDts(
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.lengths.push(token.name.length);
     mapping.generatedOffsets.push(text.length);
-    mapping.generatedLengths.push(token.name.length);
     text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
@@ -355,7 +347,6 @@ function generateDefaultExportDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
-      mapping.generatedLengths.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
       /**
@@ -402,7 +393,6 @@ function generateDefaultExportDts(
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
-        mapping.generatedLengths.push(localName.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
         text += `${localName}': (await import(`;
@@ -410,13 +400,11 @@ function generateDefaultExportDts(
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
-          mapping.generatedLengths.push(tokenImporter.from.length + 2);
         }
         text += `'${tokenImporter.from}')).default['`;
         mapping.sourceOffsets.push(value.loc.start.offset);
         mapping.lengths.push(value.name.length);
         mapping.generatedOffsets.push(text.length);
-        mapping.generatedLengths.push(value.name.length);
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
         text += `${value.name}'],\n`;
