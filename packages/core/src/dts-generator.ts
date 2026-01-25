@@ -353,36 +353,35 @@ function generateDefaultExportDts(
        * The mapping is created as follows:
        * a.module.css:
        * 1 | @value b_1, b_2 from './b.module.css';
-       *   |        ^    ^        ^ mapping.sourceOffsets[1]
-       *   |        ^    ^ mapping.sourceOffsets[3], mapping.sourceOffsets[4]
-       *   |        ^ mapping.sourceOffsets[0], mapping.sourceOffsets[2]
+       *   |        ^    ^        ^ mapping.sourceOffsets[0]
+       *   |        ^    ^ mapping.sourceOffsets[2]
+       *   |        ^ mapping.sourceOffsets[1]
        *   |
        * 2 | @value c_1 as aliased_c_1 from './c.module.css';
-       *   |        ^      ^                ^ mapping.sourceOffsets[6]
-       *   |        ^      ^ mapping.sourceOffsets[5]
-       *   |        ^ mapping.sourceOffsets[7]
+       *   |        ^      ^                ^ mapping.sourceOffsets[4]
+       *   |        ^      ^ mapping.sourceOffsets[3]
+       *   |        ^ mapping.sourceOffsets[5]
        *   |
        *
        * a.module.css.d.ts:
        * 1 | declare const styles = {
        * 2 |   b_1: (await import('./b.module.css')).default.b_1,
-       *   |   ^                  ^                          ^ mapping.generatedOffsets[2], linkedCodeMapping.generatedOffsets[0]
+       *   |   ^                  ^                          ^ linkedCodeMapping.generatedOffsets[0]
        *   |   ^                  ^ mapping.generatedOffsets[1]
        *   |   ^ mapping.generatedOffsets[0], linkedCodeMapping.sourceOffsets[0]
        *   |
        * 3 |   b_2: (await import('./b.module.css')).default.b_2,
-       *   |   ^                                             ^ mapping.generatedOffsets[4], linkedCodeMapping.generatedOffsets[1]
-       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.sourceOffsets[1]
+       *   |   ^                                             ^ linkedCodeMapping.generatedOffsets[1]
+       *   |   ^ mapping.generatedOffsets[2], linkedCodeMapping.sourceOffsets[1]
        *   |
        * 4 |   aliased_c_1: (await import('./c.module.css')).default.c_1,
-       *   |   ^                          ^                          ^ mapping.generatedOffsets[7], linkedCodeMapping.generatedOffsets[2]
-       *   |   ^                          ^ mapping.generatedOffsets[6]
-       *   |   ^ mapping.generatedOffsets[5], linkedCodeMapping.sourceOffsets[2]
+       *   |   ^                          ^                          ^ mapping.generatedOffsets[5], linkedCodeMapping.generatedOffsets[2]
+       *   |   ^                          ^ mapping.generatedOffsets[4]
+       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.sourceOffsets[2]
        *   |
        * 5 | };
        *
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
-       * TODO: Stop generating unnecessary mappings for tokens that do not have a `localName`.
        */
 
       // eslint-disable-next-line no-loop-func
@@ -403,9 +402,11 @@ function generateDefaultExportDts(
           mapping.generatedOffsets.push(text.length);
         }
         text += `'${tokenImporter.from}')).default.`;
-        mapping.sourceOffsets.push(value.loc.start.offset);
-        mapping.lengths.push(value.name.length);
-        mapping.generatedOffsets.push(text.length);
+        if ('localName' in value) {
+          mapping.sourceOffsets.push(value.loc.start.offset);
+          mapping.lengths.push(value.name.length);
+          mapping.generatedOffsets.push(text.length);
+        }
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
         text += `${value.name},\n`;

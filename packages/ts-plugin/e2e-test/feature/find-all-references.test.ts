@@ -168,25 +168,19 @@ describe('Find All References', async () => {
       name: 'c_1 in index.ts',
       file: c_1_in_index_ts.file,
       ...c_1_in_index_ts.start,
-      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
     },
     {
       name: 'c_1 in a.module.css',
       file: c_1_in_a_module_css.file,
       ...c_1_in_a_module_css.start,
-      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
     },
     {
       name: 'c_1 in c.module.css',
       file: c_1_in_c_module_css.file,
       ...c_1_in_c_module_css.start,
-      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-      // expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_a_module_css, c_1_in_c_module_css],
+      expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
     },
     {
       name: 'c_alias in index.ts',
