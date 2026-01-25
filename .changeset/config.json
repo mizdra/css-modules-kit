@@ -2,7 +2,16 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
   "changelog": ["./custom-changelog-github.ts", { "repo": "mizdra/css-modules-kit" }],
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@css-modules-kit/core",
+      "@css-modules-kit/ts-plugin",
+      "@css-modules-kit/codegen",
+      "@css-modules-kit/eslint-plugin",
+      "@css-modules-kit/stylelint-plugin",
+      "css-modules-kit-vscode"
+    ]
+  ],
   "linked": [],
   "access": "restricted",
   "baseBranch": "main",
