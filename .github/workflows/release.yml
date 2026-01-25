@@ -48,9 +48,9 @@ jobs:
       #
       # To address this, if `npx vsce publish` fails, it will be retried.
       - run: |
-          for _ in {1..5}; do
+          for _ in {1..10}; do
             npx vsce publish --no-git-tag-version --skip-duplicate && exit 0
-            sleep 15
+            sleep 30
           done
           exit 1
         if: steps.changesets.outputs.hasChangesets == 'false'
