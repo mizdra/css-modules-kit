@@ -106,28 +106,7 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
   }
 }
 
-/**
- * Generate a d.ts file with named exports.
- * @example
- * If the CSS module file is:
- * ```css
- * @import './a.module.css';
- * @value local1: string;
- * @value imported1, imported2 as aliasedImported2 from './b.module.css';
- * .local2 { color: red }
- * ```
- * The d.ts file would be:
- * ```ts
- * // @ts-nocheck
- * export var local1: string;
- * export var local2: string;
- * export * from './a.module.css';
- * export {
- *   imported1,
- *   imported2 as aliasedImported2,
- * } from './b.module.css';
- * ```
- */
+/** Generate a d.ts file with named exports. */
 function generateNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
@@ -149,6 +128,25 @@ function generateNamedExportsDts(
   let text = `// @ts-nocheck\n`;
 
   for (const token of localTokens) {
+    /**
+     * The mapping is created as follows:
+     * a.module.css:
+     * 1 | .a_1 { color: red; }
+     *   |  ^ mapping.sourceOffsets[0]
+     *   |
+     * 2 | .a_2 { color: blue; }
+     *   |  ^ mapping.sourceOffsets[1]
+     *   |
+     *
+     * a.module.css.d.ts:
+     * 1 | // @ts-nocheck
+     * 2 | export var a_1: string;
+     *   |            ^ mapping.generatedOffsets[0]
+     *   |
+     * 3 | export var a_2: string;
+     *   |            ^ mapping.generatedOffsets[1]
+     */
+
     text += `export var `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -157,12 +155,71 @@ function generateNamedExportsDts(
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
+      /**
+       * The mapping is created as follows:
+       * a.module.css:
+       * 1 | @import './b.module.css';
+       *   |         ^ mapping.sourceOffsets[0]
+       *   |
+       * 2 | @import './c.module.css';
+       *   |         ^ mapping.sourceOffsets[1]
+       *   |
+       *
+       * a.module.css.d.ts:
+       * 1 | // @ts-nocheck
+       * 2 | export * from './b.module.css';
+       *   |               ^ mapping.generatedOffsets[0]
+       *   |
+       * 3 | export * from './c.module.css';
+       *   |               ^ mapping.generatedOffsets[1]
+       *
+       * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
+       */
+
       text += `export * from `;
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
       text += `'${tokenImporter.from}';\n`;
     } else {
+      /**
+       * The mapping is created as follows:
+       * a.module.css:
+       * 1 | @value b_1, b_2 from './b.module.css';
+       *   |        ^    ^        ^ mapping.sourceOffsets[2]
+       *   |        ^    ^ mapping.sourceOffsets[1]
+       *   |        ^ mapping.sourceOffsets[0]
+       *   |
+       * 2 | @value c_1 as aliased_c_1 from './c.module.css';
+       *   |        ^      ^                ^ mapping.sourceOffsets[5]
+       *   |        ^      ^ mapping.sourceOffsets[4]
+       *   |        ^ mapping.sourceOffsets[3]
+       *   |
+       *
+       * a.module.css.d.ts:
+       * 1 | // @ts-nocheck
+       * 2 | export {
+       * 3 |   b_1,
+       *   |   ^ mapping.generatedOffsets[0]
+       *   |
+       * 4 |   b_2,
+       *   |   ^ mapping.generatedOffsets[1]
+       *   |
+       * 5 | } from './b.module.css';
+       *   |        ^ mapping.generatedOffsets[2]
+       *   |
+       * 6 | export {
+       * 7 |   c_1 as aliased_c_1,
+       *   |   ^      ^ mapping.generatedOffsets[4], linkedCodeMapping.sourceOffsets[0]
+       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.generatedOffsets[0]
+       *   |
+       * 8 | } from './c.module.css';
+       *   |        ^ mapping.generatedOffsets[5]
+       *
+       * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
+       * NOTE: linkedCodeMapping is only generated for tokens that have a `localName` (i.e., aliased tokens).
+       */
+
       text += `export {\n`;
       // eslint-disable-next-line no-loop-func
       tokenImporter.values.forEach((value) => {
@@ -203,29 +260,7 @@ function generateNamedExportsDts(
   return { text, mapping, linkedCodeMapping };
 }
 
-/**
- * Generate a d.ts file with a default export.
- * @example
- * If the CSS module file is:
- * ```css
- * @import './a.module.css';
- * @value local1: string;
- * @value imported1, imported2 as aliasedImported2 from './b.module.css';
- * .local2 { color: red }
- * ```
- * The d.ts file would be:
- * ```ts
- * // @ts-nocheck
- * const styles = {
- *   local1: '' as readonly string,
- *   local2: '' as readonly string,
- *   ...(await import('./a.module.css')).default,
- *   imported1: (await import('./b.module.css')).default.imported1,
- *   aliasedImported2: (await import('./b.module.css')).default.imported2,
- * };
- * export default styles;
- * ```
- */
+/** Generate a d.ts file with a default export. */
 function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
@@ -256,6 +291,27 @@ function generateDefaultExportDts(
 
   text += `declare const ${STYLES_EXPORT_NAME} = {\n`;
   for (const token of localTokens) {
+    /**
+     * The mapping is created as follows:
+     * a.module.css:
+     * 1 | .a_1 { color: red; }
+     *   |  ^ mapping.sourceOffsets[0]
+     *   |
+     * 2 | .a_2 { color: blue; }
+     *   |  ^ mapping.sourceOffsets[1]
+     *   |
+     *
+     * a.module.css.d.ts:
+     * 1 | declare const styles = {
+     * 2 |   a_1: '' as readonly string,
+     *   |   ^ mapping.generatedOffsets[0]
+     *   |
+     * 3 |   a_2: '' as readonly string,
+     *   |   ^ mapping.generatedOffsets[1]
+     *   |
+     * 4 | };
+     */
+
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
@@ -264,12 +320,71 @@ function generateDefaultExportDts(
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
+      /**
+       * The mapping is created as follows:
+       * a.module.css:
+       * 1 | @import './b.module.css';
+       *   |         ^ mapping.sourceOffsets[0]
+       *   |
+       * 2 | @import './c.module.css';
+       *   |         ^ mapping.sourceOffsets[1]
+       *   |
+       *
+       * a.module.css.d.ts:
+       * 1 | declare const styles = {
+       * 2 |   ...blockErrorType((await import('./b.module.css')).default),
+       *   |                                   ^ mapping.generatedOffsets[0]
+       *   |
+       * 3 |   ...blockErrorType((await import('./c.module.css')).default),
+       *   |                                   ^ mapping.generatedOffsets[1]
+       *   |
+       * 4 | };
+       *
+       * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
+       */
+
       text += `  ...blockErrorType((await import(`;
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
+      /**
+       * The mapping is created as follows:
+       * a.module.css:
+       * 1 | @value b_1, b_2 from './b.module.css';
+       *   |        ^    ^        ^ mapping.sourceOffsets[1]
+       *   |        ^    ^ mapping.sourceOffsets[3], mapping.sourceOffsets[4]
+       *   |        ^ mapping.sourceOffsets[0], mapping.sourceOffsets[2]
+       *   |
+       * 2 | @value c_1 as aliased_c_1 from './c.module.css';
+       *   |        ^      ^                ^ mapping.sourceOffsets[6]
+       *   |        ^      ^ mapping.sourceOffsets[5]
+       *   |        ^ mapping.sourceOffsets[7]
+       *   |
+       *
+       * a.module.css.d.ts:
+       * 1 | declare const styles = {
+       * 2 |   b_1: (await import('./b.module.css')).default.b_1,
+       *   |   ^                  ^                          ^ mapping.generatedOffsets[2], linkedCodeMapping.generatedOffsets[0]
+       *   |   ^                  ^ mapping.generatedOffsets[1]
+       *   |   ^ mapping.generatedOffsets[0], linkedCodeMapping.sourceOffsets[0]
+       *   |
+       * 3 |   b_2: (await import('./b.module.css')).default.b_2,
+       *   |   ^                                             ^ mapping.generatedOffsets[4], linkedCodeMapping.generatedOffsets[1]
+       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.sourceOffsets[1]
+       *   |
+       * 4 |   aliased_c_1: (await import('./c.module.css')).default.c_1,
+       *   |   ^                          ^                          ^ mapping.generatedOffsets[7], linkedCodeMapping.generatedOffsets[2]
+       *   |   ^                          ^ mapping.generatedOffsets[6]
+       *   |   ^ mapping.generatedOffsets[5], linkedCodeMapping.sourceOffsets[2]
+       *   |
+       * 5 | };
+       *
+       * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
+       * TODO: Stop generating unnecessary mappings for tokens that do not have a `localName`.
+       */
+
       // eslint-disable-next-line no-loop-func
       tokenImporter.values.forEach((value, i) => {
         const localName = value.localName ?? value.name;
