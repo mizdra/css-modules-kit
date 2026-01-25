@@ -314,13 +314,10 @@ function generateDefaultExportDts(
      * 4 | };
      */
 
-    const base = text.length;
     text += `  '`;
-    const keyStart = base + 3;
-    // Map the inner content so rename ranges without quotes still resolve.
     mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(keyStart);
     mapping.lengths.push(token.name.length);
+    mapping.generatedOffsets.push(text.length);
     mapping.generatedLengths!.push(token.name.length);
     text += `${token.name}': '' as readonly string,\n`;
   }
@@ -396,15 +393,12 @@ function generateDefaultExportDts(
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
 
-        const base = text.length;
         text += `  '`;
-        const keyStart = base + 3;
-        // Map the inner content so rename ranges without quotes still resolve.
         mapping.sourceOffsets.push(localLoc.start.offset);
-        mapping.generatedOffsets.push(keyStart);
         mapping.lengths.push(localName.length);
+        mapping.generatedOffsets.push(text.length);
         mapping.generatedLengths!.push(localName.length);
-        linkedCodeMapping.sourceOffsets.push(keyStart);
+        linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
         text += `${localName}': (await import(`;
         if (i === 0) {
@@ -414,15 +408,12 @@ function generateDefaultExportDts(
           mapping.generatedLengths!.push(tokenImporter.from.length + 2);
         }
         text += `'${tokenImporter.from}')).default`;
-        const valueBase = text.length;
         text += `['`;
-        const valueKeyStart = valueBase + 2;
-        // Map the inner content so rename ranges without quotes still resolve.
         mapping.sourceOffsets.push(value.loc.start.offset);
-        mapping.generatedOffsets.push(valueKeyStart);
         mapping.lengths.push(value.name.length);
+        mapping.generatedOffsets.push(text.length);
         mapping.generatedLengths!.push(value.name.length);
-        linkedCodeMapping.generatedOffsets.push(valueKeyStart);
+        linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
         text += `${value.name}'],\n`;
       });
