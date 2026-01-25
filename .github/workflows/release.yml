@@ -38,10 +38,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-      - name: Wait for npm packages to be available
-        if: steps.changesets.outputs.publishedPackages != '[]'
-        run: ./scripts/wait-for-npm-packages.sh '${{ steps.changesets.outputs.publishedPackages }}'
-      - run: npx @vscode/vsce publish --no-git-tag-version --skip-duplicate
+      # `typescriptServerPlugins` looks for plugins in the node_modules directory inside the extension.
+      # Therefore, before publishing the vscode extension, the ts-plugin must be installed in the vscode extension.
+      # This is done during the execution of `npx vsce publish`.
+      #
+      # However, packages published with `npm publish` are not immediately reflected on npmjs.com.
+      # Therefore, right after publishing a new version of the ts-plugin, installing the ts-plugin may fail.
+      # As a result, `npx vsce publish` may also fail.
+      #
+      # To address this, if `npx vsce publish` fails, it will be retried.
+      - run: |
+          for _ in {1..5}; do
+            npx vsce publish --no-git-tag-version --skip-duplicate && exit 0
+            sleep 15
+          done
+          exit 1
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:
