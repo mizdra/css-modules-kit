@@ -402,9 +402,11 @@ function generateDefaultExportDts(
           mapping.generatedOffsets.push(text.length);
         }
         text += `'${tokenImporter.from}')).default['`;
-        mapping.sourceOffsets.push(value.loc.start.offset);
-        mapping.lengths.push(value.name.length);
-        mapping.generatedOffsets.push(text.length);
+        if ('localName' in value) {
+          mapping.sourceOffsets.push(value.loc.start.offset);
+          mapping.lengths.push(value.name.length);
+          mapping.generatedOffsets.push(text.length);
+        }
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
         text += `${value.name}'],\n`;
