@@ -1,5 +1,18 @@
 # @css-modules-kit/ts-plugin
 
+## 0.8.1
+
+### Patch Changes
+
+- [#306](https://github.com/mizdra/css-modules-kit/pull/306) [`61cb7a5`](https://github.com/mizdra/css-modules-kit/commit/61cb7a5d4d0f2514c85f2f430ee2080de2f1573a) - chore: disable complexity and max-params ESLint rules
+
+- [#315](https://github.com/mizdra/css-modules-kit/pull/315) [`f5a008a`](https://github.com/mizdra/css-modules-kit/commit/f5a008a6e984b74e27b1b49fbf27829d5acaaac0) - fix(ts-plugin): fix incorrect Definition Preview
+
+- [#318](https://github.com/mizdra/css-modules-kit/pull/318) [`ece6603`](https://github.com/mizdra/css-modules-kit/commit/ece6603058cb303df389969aba74648f4ed7ef68) - chore: synchronize versions across all packages (except zed)
+
+- Updated dependencies [[`61cb7a5`](https://github.com/mizdra/css-modules-kit/commit/61cb7a5d4d0f2514c85f2f430ee2080de2f1573a), [`df01b95`](https://github.com/mizdra/css-modules-kit/commit/df01b95d3177e8fd486b8b8a36873915b989de75), [`707df0c`](https://github.com/mizdra/css-modules-kit/commit/707df0c75939699bec4a1d438f04aebe2a17a3db), [`ece6603`](https://github.com/mizdra/css-modules-kit/commit/ece6603058cb303df389969aba74648f4ed7ef68)]:
+  - @css-modules-kit/core@0.8.1
+
 ## 0.8.0
 
 ### Minor Changes
