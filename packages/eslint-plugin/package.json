@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/eslint-plugin",
   "description": "A eslint plugin for CSS Modules",
-  "version": "0.4.0",
+  "version": "0.8.1",
   "type": "module",
   "sideEffects": false,
   "repository": {
@@ -44,7 +44,7 @@
     "dist"
   ],
   "dependencies": {
-    "@css-modules-kit/core": "^0.8.0",
+    "@css-modules-kit/core": "^0.8.1",
     "postcss-safe-parser": "^7.0.1"
   },
   "peerDependencies": {

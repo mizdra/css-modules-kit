@@ -1,5 +1,14 @@
 # css-modules-kit-vscode
 
+## 0.8.1
+
+### Patch Changes
+
+- [#318](https://github.com/mizdra/css-modules-kit/pull/318) [`ece6603`](https://github.com/mizdra/css-modules-kit/commit/ece6603058cb303df389969aba74648f4ed7ef68) - chore: synchronize versions across all packages (except zed)
+
+- Updated dependencies [[`61cb7a5`](https://github.com/mizdra/css-modules-kit/commit/61cb7a5d4d0f2514c85f2f430ee2080de2f1573a), [`f5a008a`](https://github.com/mizdra/css-modules-kit/commit/f5a008a6e984b74e27b1b49fbf27829d5acaaac0), [`ece6603`](https://github.com/mizdra/css-modules-kit/commit/ece6603058cb303df389969aba74648f4ed7ef68)]:
+  - @css-modules-kit/ts-plugin@0.8.1
+
 ## 0.5.0
 
 ### Minor Changes
