@@ -26,7 +26,7 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 
   for (const token of cssModule.localTokens) {
     // Reject special names as they may break .d.ts files
-    if (!isValidAsJSIdentifier(token.name)) {
+    if (config.namedExports && !isValidAsJSIdentifier(token.name)) {
       diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, token.loc));
     }
     if (token.name === '__proto__') {
@@ -54,11 +54,13 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
         if (!exportRecord.allTokens.includes(value.name)) {
           diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, value));
         }
-        if (!isValidAsJSIdentifier(value.name)) {
-          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.loc));
-        }
-        if (value.localName && !isValidAsJSIdentifier(value.localName)) {
-          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.localLoc!));
+        if (config.namedExports) {
+          if (!isValidAsJSIdentifier(value.name)) {
+            diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.loc));
+          }
+          if (value.localName && !isValidAsJSIdentifier(value.localName)) {
+            diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.localLoc!));
+          }
         }
         if (value.name === '__proto__') {
           diagnostics.push(createProtoIsNotAllowedDiagnostic(cssModule, value.loc));
