@@ -69,7 +69,7 @@ function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violatio
   let text: string;
   switch (violation) {
     case 'invalid-js-identifier':
-      text = `css-modules-kit does not support invalid names as JavaScript identifiers.`;
+      text = `Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.`;
       break;
     case 'proto-not-allowed':
       text = `\`__proto__\` is not allowed as names.`;

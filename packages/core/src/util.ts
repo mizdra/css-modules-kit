@@ -21,14 +21,10 @@ export interface ValidateTokenNameOptions {
  * @returns The violation, or `undefined` if the name is valid.
  */
 export function validateTokenName(name: string, options: ValidateTokenNameOptions): TokenNameViolation | undefined {
-  if (name === '__proto__') {
-    return 'proto-not-allowed';
-  }
-  if (options.namedExports && name === 'default') {
-    return 'default-not-allowed';
-  }
-  if (!JS_IDENTIFIER_PATTERN.test(name)) {
-    return 'invalid-js-identifier';
+  if (name === '__proto__') return 'proto-not-allowed';
+  if (options.namedExports) {
+    if (name === 'default') return 'default-not-allowed';
+    if (!JS_IDENTIFIER_PATTERN.test(name)) return 'invalid-js-identifier';
   }
   return undefined;
 }
