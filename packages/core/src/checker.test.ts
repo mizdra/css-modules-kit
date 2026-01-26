@@ -36,7 +36,7 @@ function prepareChecker(args?: Partial<CheckerArgs>): Checker {
 }
 
 describe('checkCSSModule', () => {
-  test('report diagnostics for invalid name as js identifier', async () => {
+  test('do not report diagnostics for invalid name as js identifier when namedExports is false', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a-1 { color: red; }
@@ -49,6 +49,21 @@ describe('checkCSSModule', () => {
     });
     const check = prepareChecker();
     const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`[]`);
+  });
+  test('report diagnostics for invalid name as js identifier when namedExports is true', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .a-1 { color: red; }
+        @value b-1, b-2 as a-2 from './b.module.css';
+      `,
+      'b.module.css': dedent`
+        @value b-1: red;
+        @value b-2: red;
+      `,
+    });
+    const check = prepareChecker({ config: fakeConfig({ namedExports: true }) });
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
     expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
       [
         {
@@ -59,7 +74,7 @@ describe('checkCSSModule', () => {
             "column": 2,
             "line": 1,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
         {
           "category": "error",
@@ -69,7 +84,7 @@ describe('checkCSSModule', () => {
             "column": 8,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
         {
           "category": "error",
@@ -79,7 +94,7 @@ describe('checkCSSModule', () => {
             "column": 13,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
         {
           "category": "error",
@@ -89,7 +104,7 @@ describe('checkCSSModule', () => {
             "column": 20,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
       ]
     `);

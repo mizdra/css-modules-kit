@@ -17,9 +17,11 @@ describe('validateTokenName', () => {
   test('returns undefined for default when namedExports is false', () => {
     expect(validateTokenName('default', { namedExports: false })).toBe(undefined);
   });
-  test('returns "invalid-js-identifier" for invalid JS identifier', () => {
-    expect(validateTokenName('a-1', { namedExports: false })).toBe('invalid-js-identifier');
-    expect(validateTokenName('123', { namedExports: false })).toBe('invalid-js-identifier');
+  test('returns "invalid-js-identifier" for invalid JS identifier when namedExports is true', () => {
+    expect(validateTokenName('a-1', { namedExports: true })).toBe('invalid-js-identifier');
+  });
+  test('returns undefined for invalid JS identifier when namedExports is false', () => {
+    expect(validateTokenName('a-1', { namedExports: false })).toBe(undefined);
   });
 });
 
