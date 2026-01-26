@@ -33,8 +33,8 @@ describe('generateDts', () => {
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        local1: '' as readonly string,
-        local2: '' as readonly string,
+        'local1': '' as readonly string,
+        'local2': '' as readonly string,
       };
       export default styles;
       "
@@ -52,8 +52,8 @@ describe('generateDts', () => {
       function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
       declare const styles = {
         ...blockErrorType((await import('./a.module.css')).default),
-        imported1: (await import('./b.module.css')).default.imported1,
-        aliasedImported2: (await import('./b.module.css')).default.imported2,
+        'imported1': (await import('./b.module.css')).default['imported1'],
+        'aliasedImported2': (await import('./b.module.css')).default['imported2'],
       };
       export default styles;
       "
