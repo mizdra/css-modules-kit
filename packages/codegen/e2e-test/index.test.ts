@@ -48,7 +48,7 @@ test('generates .d.ts', async () => {
     "// @ts-nocheck
     function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
-      a1: '' as readonly string,
+      'a1': '' as readonly string,
       ...blockErrorType((await import('./b.module.css')).default),
       ...blockErrorType((await import('./unmatched.module.css')).default),
     };
@@ -58,7 +58,7 @@ test('generates .d.ts', async () => {
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
     declare const styles = {
-      b1: '' as readonly string,
+      'b1': '' as readonly string,
     };
     export default styles;
     "
@@ -66,7 +66,7 @@ test('generates .d.ts', async () => {
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
     "// @ts-nocheck
     declare const styles = {
-      c1: '' as readonly string,
+      'c1': '' as readonly string,
     };
     export default styles;
     "
@@ -158,7 +158,7 @@ test('generates .d.ts with circular import', async () => {
     "// @ts-nocheck
     function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
-      a1: '' as readonly string,
+      'a1': '' as readonly string,
       ...blockErrorType((await import('./b.module.css')).default),
     };
     export default styles;
@@ -168,7 +168,7 @@ test('generates .d.ts with circular import', async () => {
     "// @ts-nocheck
     function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
-      b1: '' as readonly string,
+      'b1': '' as readonly string,
       ...blockErrorType((await import('./a.module.css')).default),
     };
     export default styles;
@@ -178,7 +178,7 @@ test('generates .d.ts with circular import', async () => {
     "// @ts-nocheck
     function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
     declare const styles = {
-      c1: '' as readonly string,
+      'c1': '' as readonly string,
       ...blockErrorType((await import('./c.module.css')).default),
     };
     export default styles;
