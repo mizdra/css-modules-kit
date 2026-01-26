@@ -14,6 +14,7 @@ describe('Go to Definition', async () => {
       styles.b_1;
       styles.c_1;
       styles.c_alias;
+      styles['d-1'];
     `,
     'a.module.css': dedent`
       @import './b.module.css';
@@ -23,6 +24,7 @@ describe('Go to Definition', async () => {
       .a_2 { color: red; }
       @value a_3: red;
       @import url(./b.module.css);
+      .d-1 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -183,10 +185,8 @@ describe('Go to Definition', async () => {
       expected: [
         {
           file: formatPath(iff.paths['a.module.css']),
-          start: { line: 2, offset: 8 },
-          end: { line: 2, offset: 11 },
-          contextStart: { line: 2, offset: 8 },
-          contextEnd: { line: 2, offset: 11 },
+          start: { line: 1, offset: 1 },
+          end: { line: 1, offset: 1 },
         },
         {
           file: formatPath(iff.paths['c.module.css']),
@@ -202,18 +202,7 @@ describe('Go to Definition', async () => {
       file: iff.paths['a.module.css'],
       line: 2,
       offset: 8,
-      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-      // expected: [
-      //   { file: formatPath(iff.paths['c.module.css']), start: { line: 1, offset: 8 }, end: { line: 1, offset: 11 } },
-      // ],
       expected: [
-        {
-          file: formatPath(iff.paths['a.module.css']),
-          start: { line: 2, offset: 8 },
-          end: { line: 2, offset: 11 },
-          contextStart: { line: 2, offset: 8 },
-          contextEnd: { line: 2, offset: 11 },
-        },
         {
           file: formatPath(iff.paths['c.module.css']),
           start: { line: 1, offset: 8 },
@@ -235,10 +224,8 @@ describe('Go to Definition', async () => {
       expected: [
         {
           file: formatPath(iff.paths['a.module.css']),
-          start: { line: 2, offset: 20 },
-          end: { line: 2, offset: 27 },
-          contextStart: { line: 2, offset: 20 },
-          contextEnd: { line: 2, offset: 27 },
+          start: { line: 1, offset: 1 },
+          end: { line: 1, offset: 1 },
         },
         {
           file: formatPath(iff.paths['c.module.css']),
@@ -254,18 +241,7 @@ describe('Go to Definition', async () => {
       file: iff.paths['a.module.css'],
       line: 2,
       offset: 20,
-      // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-      // expected: [
-      //   { file: formatPath(iff.paths['c.module.css']), start: { line: 2, offset: 8 }, end: { line: 2, offset: 11 } },
-      // ],
       expected: [
-        {
-          file: formatPath(iff.paths['a.module.css']),
-          start: { line: 2, offset: 20 },
-          end: { line: 2, offset: 27 },
-          contextStart: { line: 2, offset: 20 },
-          contextEnd: { line: 2, offset: 27 },
-        },
         {
           file: formatPath(iff.paths['c.module.css']),
           start: { line: 2, offset: 8 },
@@ -298,6 +274,21 @@ describe('Go to Definition', async () => {
       offset: 12,
       expected: [
         { file: formatPath(iff.paths['b.module.css']), start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 } },
+      ],
+    },
+    {
+      name: 'd-1 in index.ts',
+      file: iff.paths['index.ts'],
+      line: 8,
+      offset: 8,
+      expected: [
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          start: { line: 8, offset: 2 },
+          end: { line: 8, offset: 5 },
+          contextStart: { line: 8, offset: 1 },
+          contextEnd: { line: 8, offset: 21 },
+        },
       ],
     },
   ])('Go to Definition for $name', async ({ file, line, offset, expected }) => {

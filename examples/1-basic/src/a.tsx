@@ -8,6 +8,7 @@ styles.b_1;
 styles.b_2;
 styles.c_1;
 styles.c_alias;
+styles['a-1'];
 styles.unknown; // Expected TS2339 error
 
 const jsx = (
