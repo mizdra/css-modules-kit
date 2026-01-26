@@ -18,19 +18,6 @@ function toTextSpan(loc: { start: { offset: number }; end: { offset: number } })
   return { start: loc.start.offset, length: loc.end.offset - loc.start.offset };
 }
 
-function dedupeDefinitions(definitions: readonly ts.DefinitionInfo[]): ts.DefinitionInfo[] {
-  const seen = new Set<string>();
-  const result: ts.DefinitionInfo[] = [];
-  for (const def of definitions) {
-    const context = def.contextSpan ? `${def.contextSpan.start}:${def.contextSpan.length}` : 'none';
-    const key = `${def.fileName}:${def.textSpan.start}:${def.textSpan.length}:${context}:${def.name}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(def);
-  }
-  return result;
-}
-
 export function getDefinitionAndBoundSpan(
   language: Language<string>,
   languageService: ts.LanguageService,
@@ -191,7 +178,7 @@ export function getDefinitionAndBoundSpan(
       }
       updatedDefinitions.push(def);
     }
-    result.definitions = dedupeDefinitions(updatedDefinitions);
+    result.definitions = updatedDefinitions;
     return result;
   };
 }
