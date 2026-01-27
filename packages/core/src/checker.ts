@@ -26,7 +26,7 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 
   for (const token of cssModule.localTokens) {
     // Reject special names as they may break .d.ts files
-    if (!isValidAsJSIdentifier(token.name)) {
+    if (config.namedExports && !isValidAsJSIdentifier(token.name)) {
       diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, token.loc));
     }
     if (token.name === '__proto__') {
@@ -106,7 +106,7 @@ function createModuleHasNoExportedTokenDiagnostic(
 
 function createInvalidNameAsJSIdentifiersDiagnostic(cssModule: CSSModule, loc: Location): Diagnostic {
   return {
-    text: `css-modules-kit does not support invalid names as JavaScript identifiers.`,
+    text: `css-modules-kit does not support invalid names as JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.`,
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: loc.start.line, column: loc.start.column },

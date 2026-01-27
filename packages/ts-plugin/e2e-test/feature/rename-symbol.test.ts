@@ -15,6 +15,7 @@ describe('Rename Symbol', async () => {
       styles.c_1;
       styles.c_alias;
       styles.d_1;
+      styles['e-1'];
     `,
     'a.module.css': dedent`
       @import './b.module.css';
@@ -22,6 +23,7 @@ describe('Rename Symbol', async () => {
       .a_1 { color: red; }
       .a_1 { color: red; }
       @value a_2: red;
+      .e-1 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -385,6 +387,23 @@ describe('Rename Symbol', async () => {
         },
       ],
     },
+    // TODO
+    // {
+    //   name: 'e-1 in index.ts',
+    //   file: iff.paths['index.ts'],
+    //   line: 9,
+    //   offset: 9,
+    //   expected: [
+    //     {
+    //       file: formatPath(iff.paths['index.ts']),
+    //       locs: [{ start: { line: 9, offset: 9 }, end: { line: 9, offset: 12 } }],
+    //     },
+    //     {
+    //       file: formatPath(iff.paths['a.module.css']),
+    //       locs: [{ start: { line: 6, offset: 2 }, end: { line: 6, offset: 5 } }],
+    //     },
+    //   ],
+    // },
   ])('Rename Symbol for $name', async ({ file, line, offset, expected }) => {
     const res = await tsserver.sendRename({
       file,

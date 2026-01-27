@@ -7,5 +7,7 @@
   100% { transform: translateY(-100%); }
 }
 
+.a-1 { color: red; }
+
 @import './b.module.css';
 @value c_1, c_2 as c_alias from './c.module.css';

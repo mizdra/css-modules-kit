@@ -56,20 +56,10 @@ describe('checkCSSModule', () => {
           "fileName": "<rootDir>/a.module.css",
           "length": 3,
           "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 3,
-          "start": {
             "column": 8,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
         {
           "category": "error",
@@ -79,7 +69,7 @@ describe('checkCSSModule', () => {
             "column": 13,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
         {
           "category": "error",
@@ -89,7 +79,7 @@ describe('checkCSSModule', () => {
             "column": 20,
             "line": 2,
           },
-          "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+          "text": "css-modules-kit does not support invalid names as JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
         },
       ]
     `);
