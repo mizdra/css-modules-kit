@@ -8,7 +8,7 @@ test('Semantic Diagnostics', async () => {
   const iff = await createIFF({
     'index.ts': dedent`
       import styles from './a.module.css';
-      type Expected = { a_1: string, a_2: string, b_1: string, c_1: string, c_alias: string, c_3: string };
+      type Expected = { a_1: string, a_2: string, b_1: string, c_1: string, c_alias: string, c_3: string, 'a-3': string };
       const t1: Expected = styles;
       const t2: typeof styles = t1;
       styles.unknown;
@@ -55,7 +55,7 @@ test('Semantic Diagnostics', async () => {
           "line": 5,
           "offset": 8,
         },
-        "text": "Property 'unknown' does not exist on type '{ c_1: string; c_alias: string; c_3: any; b_1: string; a_1: string; a_2: string; }'.",
+        "text": "Property 'unknown' does not exist on type '{ c_1: string; c_alias: string; c_3: any; b_1: string; a_1: string; a_2: string; 'a-3': string; }'.",
       },
     ]
   `);
@@ -65,20 +65,6 @@ test('Semantic Diagnostics', async () => {
   });
   expect(res2.body).toMatchInlineSnapshot(`
     [
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 5,
-          "offset": 5,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 5,
-          "offset": 2,
-        },
-        "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-      },
       {
         "category": "error",
         "code": 0,

@@ -85,6 +85,7 @@ describe('generateDts', () => {
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
+        'a-1': '' as readonly string,
       };
       export default styles;
       "

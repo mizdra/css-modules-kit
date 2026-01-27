@@ -14,6 +14,7 @@ describe('Go to Definition', async () => {
       styles.b_1;
       styles.c_1;
       styles.c_alias;
+      styles['d-1'];
     `,
     'a.module.css': dedent`
       @import './b.module.css';
@@ -23,6 +24,7 @@ describe('Go to Definition', async () => {
       .a_2 { color: red; }
       @value a_3: red;
       @import url(./b.module.css);
+      .d-1 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -298,6 +300,19 @@ describe('Go to Definition', async () => {
       offset: 12,
       expected: [
         { file: formatPath(iff.paths['b.module.css']), start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 } },
+      ],
+    },
+    {
+      name: 'd-1 in index.ts',
+      file: iff.paths['index.ts'],
+      line: 8,
+      offset: 8,
+      expected: [
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          start: { line: 8, offset: 2 },
+          end: { line: 8, offset: 5 },
+        },
       ],
     },
   ])('Go to Definition for $name', async ({ file, line, offset, expected }) => {

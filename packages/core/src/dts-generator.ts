@@ -17,6 +17,8 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
+  /** The lengths of the tokens in the *.d.ts file. */
+  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -43,7 +45,7 @@ interface GenerateDtsResult {
  */
 export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
-  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
+  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options, false));
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
@@ -52,8 +54,8 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
           ...tokenImporter,
           values: tokenImporter.values.filter(
             (value) =>
-              isValidName(value.name, options) &&
-              (value.localName === undefined || isValidName(value.localName, options)),
+              isValidName(value.name, options, true) &&
+              (value.localName === undefined || isValidName(value.localName, options, true)),
           ),
         };
       } else {
@@ -265,7 +267,7 @@ function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -310,13 +312,31 @@ function generateDefaultExportDts(
      *   |   ^ mapping.generatedOffsets[1]
      *   |
      * 4 | };
+     *
+     * invalid as js identifier:
+     * a.module.css:
+     * 1 | .a-123 { color: red; }
+     *   |  ^ mapping.sourceOffsets[0]
+     *
+     * a.module.css.d.ts:
+     * 1 | declare const styles = {
+     * 2 |   'a-123': '' as readonly string,
+     *   |   ^ mapping.generatedOffsets[0]
+     * 3 | };
      */
 
     text += `  `;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.generatedOffsets.push(text.length);
     mapping.lengths.push(token.name.length);
-    text += `${token.name}: '' as readonly string,\n`;
+    if (isValidAsJSIdentifier(token.name)) {
+      mapping.generatedLengths!.push(token.name.length);
+      text += `${token.name}: '' as readonly string,\n`;
+    } else {
+      // Include quotes in the mapping for invalid JS identifiers
+      mapping.generatedLengths!.push(token.name.length + 2);
+      text += `'${token.name}': '' as readonly string,\n`;
+    }
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -347,6 +367,7 @@ function generateDefaultExportDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths!.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
       /**
@@ -393,6 +414,7 @@ function generateDefaultExportDts(
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
+        mapping.generatedLengths!.push(localName.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
         text += `${localName}: (await import(`;
@@ -400,12 +422,14 @@ function generateDefaultExportDts(
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths!.push(tokenImporter.from.length + 2);
         }
         text += `'${tokenImporter.from}')).default.`;
         if ('localName' in value) {
           mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths!.push(value.name.length);
         }
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
@@ -417,8 +441,8 @@ function generateDefaultExportDts(
   return { text, mapping, linkedCodeMapping };
 }
 
-function isValidName(name: string, options: GenerateDtsOptions): boolean {
-  if (!isValidAsJSIdentifier(name)) return false;
+function isValidName(name: string, options: GenerateDtsOptions, isTokenImport: boolean): boolean {
+  if ((options.namedExports || isTokenImport) && !isValidAsJSIdentifier(name)) return false;
   if (name === '__proto__') return false;
   if (options.namedExports && name === 'default') return false;
   return true;
