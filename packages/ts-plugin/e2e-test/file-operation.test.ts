@@ -124,8 +124,8 @@ test('updating file', async () => {
             start: { line: 1, offset: 1 },
             end: { line: 1, offset: 1 },
             newText: dedent`
+              @import './unresolvable.module.css';
               .a_1 {}
-              .a-2 {}
             `,
           },
         ],
@@ -143,15 +143,15 @@ test('updating file', async () => {
         "category": "error",
         "code": 0,
         "end": {
-          "line": 2,
-          "offset": 5,
+          "line": 1,
+          "offset": 35,
         },
         "source": "css-modules-kit",
         "start": {
-          "line": 2,
-          "offset": 2,
+          "line": 1,
+          "offset": 10,
         },
-        "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
+        "text": "Cannot import module './unresolvable.module.css'",
       },
     ]
   `);

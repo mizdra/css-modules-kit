@@ -16,9 +16,9 @@ test('Semantic Diagnostics', async () => {
     'a.module.css': dedent`
       @import './b.module.css';
       @value c_1, c_2 as c_alias, c_3 from './c.module.css';
+      @import './unresolvable.module.css';
       .a_1 { color: red; }
       @value a_2: red;
-      .a-3 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -69,20 +69,6 @@ test('Semantic Diagnostics', async () => {
         "category": "error",
         "code": 0,
         "end": {
-          "line": 5,
-          "offset": 5,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 5,
-          "offset": 2,
-        },
-        "text": "css-modules-kit does not support invalid names as JavaScript identifiers.",
-      },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
           "line": 2,
           "offset": 32,
         },
@@ -92,6 +78,20 @@ test('Semantic Diagnostics', async () => {
           "offset": 29,
         },
         "text": "Module './c.module.css' has no exported token 'c_3'.",
+      },
+      {
+        "category": "error",
+        "code": 0,
+        "end": {
+          "line": 3,
+          "offset": 35,
+        },
+        "source": "css-modules-kit",
+        "start": {
+          "line": 3,
+          "offset": 10,
+        },
+        "text": "Cannot import module './unresolvable.module.css'",
       },
     ]
   `);
