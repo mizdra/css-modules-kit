@@ -310,6 +310,14 @@ describe('Go to Definition', async () => {
       expected: [
         {
           file: formatPath(iff.paths['a.module.css']),
+          contextStart: {
+            line: 8,
+            offset: 1,
+          },
+          contextEnd: {
+            line: 8,
+            offset: 21,
+          },
           start: { line: 8, offset: 2 },
           end: { line: 8, offset: 5 },
         },

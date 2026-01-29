@@ -7,6 +7,7 @@ import { getCodeFixesAtPosition } from './feature/code-fix.js';
 import { getCompletionEntryDetails, getCompletionsAtPosition } from './feature/completion.js';
 import { getDefinitionAndBoundSpan } from './feature/definition-and-bound-span.js';
 import { getApplicableRefactors, getEditsForRefactor } from './feature/refactor.js';
+import { findReferences, getReferencesAtPosition } from './feature/references.js';
 import { getSemanticDiagnostics } from './feature/semantic-diagnostic.js';
 import { getSyntacticDiagnostics } from './feature/syntactic-diagnostic.js';
 
@@ -52,6 +53,8 @@ export function proxyLanguageService(
   proxy.getCompletionEntryDetails = getCompletionEntryDetails(languageService, resolver, config);
   proxy.getCodeFixesAtPosition = getCodeFixesAtPosition(language, languageService, project, resolver, config);
   proxy.getDefinitionAndBoundSpan = getDefinitionAndBoundSpan(language, languageService);
+  proxy.findReferences = findReferences(languageService);
+  proxy.getReferencesAtPosition = getReferencesAtPosition(languageService);
 
   return proxy;
 }

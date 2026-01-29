@@ -315,32 +315,25 @@ function generateDefaultExportDts(localTokens: Token[], tokenImporters: TokenImp
      */
 
     text += `  `;
-    if (isValidAsJSIdentifier(token.name)) {
-      mapping.sourceOffsets.push(token.loc.start.offset);
-      mapping.lengths.push(token.name.length);
-      mapping.generatedOffsets.push(text.length);
-      mapping.generatedLengths!.push(token.name.length);
-      text += `${token.name}: '' as readonly string,\n`;
-    } else {
-      const quoteStart = text.length;
-      text += `'`;
-      const keyStart = text.length;
-      // Map unquoted range in the primary mapping.
-      // This mapping is necessary when renaming.
-      // When performing a rename, the textSpan does not include quotes,
-      // but for "go to definition," the textSpan includes quotes, which necessitates a dual mapping.
-      mapping.sourceOffsets.push(token.loc.start.offset);
-      mapping.lengths.push(token.name.length);
-      mapping.generatedOffsets.push(keyStart);
-      mapping.generatedLengths!.push(token.name.length);
-      // Map quoted range separately to avoid overlapping ranges in a single mapping.
-      // This mapping is necessary for features like "go to definition".
-      quotedMapping.sourceOffsets.push(token.loc.start.offset);
-      quotedMapping.lengths.push(token.name.length);
-      quotedMapping.generatedOffsets.push(quoteStart);
-      quotedMapping.generatedLengths!.push(token.name.length + 2);
-      text += `${token.name}': '' as readonly string,\n`;
-    }
+    const quoteStart = text.length;
+    text += `'`;
+    const keyStart = text.length;
+    // Map unquoted range in the primary mapping.
+    // This mapping is necessary when renaming.
+    // For rename, tsserver tends to return a span without quotes,
+    // while for go to definition, the span tends to include quotes.
+    // This is why we keep a dual mapping.
+    mapping.sourceOffsets.push(token.loc.start.offset);
+    mapping.lengths.push(token.name.length);
+    mapping.generatedOffsets.push(keyStart);
+    mapping.generatedLengths!.push(token.name.length);
+    // Map quoted range separately to avoid overlapping ranges in a single mapping.
+    // This mapping is necessary for features like "go to definition".
+    quotedMapping.sourceOffsets.push(token.loc.start.offset);
+    quotedMapping.lengths.push(token.name.length);
+    quotedMapping.generatedOffsets.push(quoteStart);
+    quotedMapping.generatedLengths!.push(token.name.length + 2);
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
