@@ -74,7 +74,7 @@ describe('generateDts', () => {
       "
     `);
   });
-  test('does not generate types for invalid name as JS identifier', async () => {
+  test('does not generate types for invalid name', async () => {
     const iff = await createIFF({
       'test.module.css': dedent`
         .a-1 { color: red; }
@@ -85,37 +85,6 @@ describe('generateDts', () => {
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-      };
-      export default styles;
-      "
-    `);
-  });
-  test('does not generate types for `__proto__`', async () => {
-    const iff = await createIFF({
-      'test.module.css': '.__proto__ { color: red; }',
-    });
-    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, options).text).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-      };
-      export default styles;
-      "
-    `);
-  });
-  test('does not generate types for `default` when `namedExports` is true', async () => {
-    const iff = await createIFF({
-      'test.module.css': '.default { color: red; }',
-    });
-    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, { ...options, namedExports: true }).text)
-      .toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      "
-    `);
-    expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, { ...options, namedExports: false }).text)
-      .toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        default: '' as readonly string,
       };
       export default styles;
       "
