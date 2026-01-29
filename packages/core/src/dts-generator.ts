@@ -1,5 +1,6 @@
 import type { CSSModule, Token, TokenImporter } from './type.js';
-import { isURLSpecifier, isValidAsJSIdentifier } from './util.js';
+import type { ValidateTokenNameOptions } from './util.js';
+import { isURLSpecifier, validateTokenName } from './util.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
 
@@ -43,7 +44,7 @@ interface GenerateDtsResult {
  */
 export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
-  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
+  const localTokens = cssModule.localTokens.filter((token) => isValidTokenName(token.name, options));
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
@@ -52,8 +53,8 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
           ...tokenImporter,
           values: tokenImporter.values.filter(
             (value) =>
-              isValidName(value.name, options) &&
-              (value.localName === undefined || isValidName(value.localName, options)),
+              isValidTokenName(value.name, options) &&
+              (value.localName === undefined || isValidTokenName(value.localName, options)),
           ),
         };
       } else {
@@ -417,9 +418,6 @@ function generateDefaultExportDts(
   return { text, mapping, linkedCodeMapping };
 }
 
-function isValidName(name: string, options: GenerateDtsOptions): boolean {
-  if (!isValidAsJSIdentifier(name)) return false;
-  if (name === '__proto__') return false;
-  if (options.namedExports && name === 'default') return false;
-  return true;
+function isValidTokenName(name: string, options: ValidateTokenNameOptions): boolean {
+  return validateTokenName(name, options) === undefined;
 }

@@ -10,7 +10,7 @@ import type {
   Resolver,
   TokenImporter,
 } from './type.js';
-import { isURLSpecifier, isValidAsJSIdentifier } from './util.js';
+import { isURLSpecifier, type TokenNameViolation, validateTokenName } from './util.js';
 
 export interface CheckerArgs {
   config: CMKConfig;
@@ -26,14 +26,9 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 
   for (const token of cssModule.localTokens) {
     // Reject special names as they may break .d.ts files
-    if (!isValidAsJSIdentifier(token.name)) {
-      diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, token.loc));
-    }
-    if (token.name === '__proto__') {
-      diagnostics.push(createProtoIsNotAllowedDiagnostic(cssModule, token.loc));
-    }
-    if (config.namedExports && token.name === 'default') {
-      diagnostics.push(createDefaultIsNotAllowedDiagnostic(cssModule, token.loc));
+    const violation = validateTokenName(token.name, { namedExports: config.namedExports });
+    if (violation) {
+      diagnostics.push(createTokenNameDiagnostic(cssModule, token.loc, violation));
     }
   }
 
@@ -54,30 +49,44 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
         if (!exportRecord.allTokens.includes(value.name)) {
           diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, value));
         }
-        if (!isValidAsJSIdentifier(value.name)) {
-          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.loc));
+        const nameViolation = validateTokenName(value.name, { namedExports: config.namedExports });
+        if (nameViolation) {
+          diagnostics.push(createTokenNameDiagnostic(cssModule, value.loc, nameViolation));
         }
-        if (value.localName && !isValidAsJSIdentifier(value.localName)) {
-          diagnostics.push(createInvalidNameAsJSIdentifiersDiagnostic(cssModule, value.localLoc!));
-        }
-        if (value.name === '__proto__') {
-          diagnostics.push(createProtoIsNotAllowedDiagnostic(cssModule, value.loc));
-        }
-        if (value.localName === '__proto__') {
-          diagnostics.push(createProtoIsNotAllowedDiagnostic(cssModule, value.localLoc!));
-        }
-        if (config.namedExports) {
-          if (value.name === 'default') {
-            diagnostics.push(createDefaultIsNotAllowedDiagnostic(cssModule, value.loc));
-          }
-          if (value.localName === 'default') {
-            diagnostics.push(createDefaultIsNotAllowedDiagnostic(cssModule, value.localLoc!));
+        if (value.localName) {
+          const localNameViolation = validateTokenName(value.localName, { namedExports: config.namedExports });
+          if (localNameViolation) {
+            diagnostics.push(createTokenNameDiagnostic(cssModule, value.localLoc!, localNameViolation));
           }
         }
       }
     }
   }
   return diagnostics;
+}
+
+function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violation: TokenNameViolation): Diagnostic {
+  let text: string;
+  switch (violation) {
+    case 'invalid-js-identifier':
+      text = `css-modules-kit does not support invalid names as JavaScript identifiers.`;
+      break;
+    case 'proto-not-allowed':
+      text = `\`__proto__\` is not allowed as names.`;
+      break;
+    case 'default-not-allowed':
+      text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
+      break;
+    default:
+      throw new Error('unreachable: unknown TokenNameViolation');
+  }
+  return {
+    text,
+    category: 'error',
+    file: { fileName: cssModule.fileName, text: cssModule.text },
+    start: { line: loc.start.line, column: loc.start.column },
+    length: loc.end.offset - loc.start.offset,
+  };
 }
 
 function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): Diagnostic {
@@ -101,35 +110,5 @@ function createModuleHasNoExportedTokenDiagnostic(
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: value.loc.start.line, column: value.loc.start.column },
     length: value.loc.end.offset - value.loc.start.offset,
-  };
-}
-
-function createInvalidNameAsJSIdentifiersDiagnostic(cssModule: CSSModule, loc: Location): Diagnostic {
-  return {
-    text: `css-modules-kit does not support invalid names as JavaScript identifiers.`,
-    category: 'error',
-    file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: loc.start.line, column: loc.start.column },
-    length: loc.end.offset - loc.start.offset,
-  };
-}
-
-function createProtoIsNotAllowedDiagnostic(cssModule: CSSModule, loc: Location): Diagnostic {
-  return {
-    text: `\`__proto__\` is not allowed as names.`,
-    category: 'error',
-    file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: loc.start.line, column: loc.start.column },
-    length: loc.end.offset - loc.start.offset,
-  };
-}
-
-function createDefaultIsNotAllowedDiagnostic(cssModule: CSSModule, loc: Location): Diagnostic {
-  return {
-    text: `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`,
-    category: 'error',
-    file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: loc.start.line, column: loc.start.column },
-    length: loc.end.offset - loc.start.offset,
   };
 }
