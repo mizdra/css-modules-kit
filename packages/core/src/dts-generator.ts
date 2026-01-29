@@ -38,6 +38,8 @@ interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
+  /** Additional mappings used by ts-plugin (e.g. quoted string literal keys). */
+  extraMappings?: CodeMapping[];
 }
 
 /**
@@ -113,7 +115,7 @@ function generateNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
   options: GenerateDtsOptions,
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
+): GenerateDtsResult {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
@@ -263,11 +265,9 @@ function generateNamedExportsDts(
 }
 
 /** Generate a d.ts file with a default export. */
-function generateDefaultExportDts(
-  localTokens: Token[],
-  tokenImporters: TokenImporter[],
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
+function generateDefaultExportDts(localTokens: Token[], tokenImporters: TokenImporter[]): GenerateDtsResult {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
+  const quotedMapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -312,30 +312,34 @@ function generateDefaultExportDts(
      *   |   ^ mapping.generatedOffsets[1]
      *   |
      * 4 | };
-     *
-     * invalid as js identifier:
-     * a.module.css:
-     * 1 | .a-123 { color: red; }
-     *   |  ^ mapping.sourceOffsets[0]
-     *
-     * a.module.css.d.ts:
-     * 1 | declare const styles = {
-     * 2 |   'a-123': '' as readonly string,
-     *   |   ^ mapping.generatedOffsets[0]
-     * 3 | };
      */
 
     text += `  `;
-    mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(text.length);
-    mapping.lengths.push(token.name.length);
     if (isValidAsJSIdentifier(token.name)) {
+      mapping.sourceOffsets.push(token.loc.start.offset);
+      mapping.lengths.push(token.name.length);
+      mapping.generatedOffsets.push(text.length);
       mapping.generatedLengths!.push(token.name.length);
       text += `${token.name}: '' as readonly string,\n`;
     } else {
-      // Include quotes in the mapping for invalid JS identifiers
-      mapping.generatedLengths!.push(token.name.length + 2);
-      text += `'${token.name}': '' as readonly string,\n`;
+      const quoteStart = text.length;
+      text += `'`;
+      const keyStart = text.length;
+      // Map unquoted range in the primary mapping.
+      // This mapping is necessary when renaming.
+      // When performing a rename, the textSpan does not include quotes,
+      // but for "go to definition," the textSpan includes quotes, which necessitates a dual mapping.
+      mapping.sourceOffsets.push(token.loc.start.offset);
+      mapping.lengths.push(token.name.length);
+      mapping.generatedOffsets.push(keyStart);
+      mapping.generatedLengths!.push(token.name.length);
+      // Map quoted range separately to avoid overlapping ranges in a single mapping.
+      // This mapping is necessary for features like "go to definition".
+      quotedMapping.sourceOffsets.push(token.loc.start.offset);
+      quotedMapping.lengths.push(token.name.length);
+      quotedMapping.generatedOffsets.push(quoteStart);
+      quotedMapping.generatedLengths!.push(token.name.length + 2);
+      text += `${token.name}': '' as readonly string,\n`;
     }
   }
   for (const tokenImporter of tokenImporters) {
@@ -438,6 +442,9 @@ function generateDefaultExportDts(
     }
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
+  if (quotedMapping.sourceOffsets.length) {
+    return { text, mapping, linkedCodeMapping, extraMappings: [quotedMapping] };
+  }
   return { text, mapping, linkedCodeMapping };
 }
 
