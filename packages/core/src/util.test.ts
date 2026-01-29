@@ -1,6 +1,27 @@
 import dedent from 'dedent';
-import { expect, test } from 'vitest';
-import { findUsedTokenNames } from './util.js';
+import { describe, expect, test } from 'vitest';
+import { findUsedTokenNames, validateTokenName } from './util.js';
+
+describe('validateTokenName', () => {
+  test('returns undefined for valid token name', () => {
+    expect(validateTokenName('validName', { namedExports: false })).toBe(undefined);
+    expect(validateTokenName('validName', { namedExports: true })).toBe(undefined);
+  });
+  test('returns "proto-not-allowed" for __proto__', () => {
+    expect(validateTokenName('__proto__', { namedExports: false })).toBe('proto-not-allowed');
+    expect(validateTokenName('__proto__', { namedExports: true })).toBe('proto-not-allowed');
+  });
+  test('returns "default-not-allowed" for default when namedExports is true', () => {
+    expect(validateTokenName('default', { namedExports: true })).toBe('default-not-allowed');
+  });
+  test('returns undefined for default when namedExports is false', () => {
+    expect(validateTokenName('default', { namedExports: false })).toBe(undefined);
+  });
+  test('returns "invalid-js-identifier" for invalid JS identifier', () => {
+    expect(validateTokenName('a-1', { namedExports: false })).toBe('invalid-js-identifier');
+    expect(validateTokenName('123', { namedExports: false })).toBe('invalid-js-identifier');
+  });
+});
 
 test('findUsedTokenNames', () => {
   const text = dedent`
