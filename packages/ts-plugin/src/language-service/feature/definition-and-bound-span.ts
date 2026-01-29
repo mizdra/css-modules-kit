@@ -16,9 +16,12 @@ export function getDefinitionAndBoundSpan(
 
       const cssModule = script.generated.root[CMK_DATA_KEY];
 
+      // The type definition is a string literal (single quotes), so remove them to match the classname.
+      const normalizedName = normalizeQuotedName(def.name);
+
       // Search tokens and set `contextSpan`. `contextSpan` is used for Definition Preview in editors.
       const localToken = cssModule.localTokens.find(
-        (t) => t.name === def.name && t.loc.start.offset === def.textSpan.start,
+        (t) => t.name === normalizedName && t.loc.start.offset === def.textSpan.start,
       );
       if (localToken?.declarationLoc) {
         def.contextSpan = {
@@ -32,7 +35,7 @@ export function getDefinitionAndBoundSpan(
         .find((v) => {
           const localName = v.localName ?? v.name;
           const localLoc = v.localLoc ?? v.loc;
-          return localName === def.name && localLoc.start.offset === def.textSpan.start;
+          return localName === normalizedName && localLoc.start.offset === def.textSpan.start;
         });
       if (importedValue) {
         const loc = importedValue.localLoc ?? importedValue.loc;
@@ -44,4 +47,11 @@ export function getDefinitionAndBoundSpan(
     }
     return result;
   };
+}
+
+function normalizeQuotedName(name: string) {
+  if (name.length >= 2 && name.startsWith("'") && name.endsWith("'")) {
+    return name.slice(1, -1);
+  }
+  return name;
 }

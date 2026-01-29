@@ -17,6 +17,8 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
+  /** The lengths of the tokens in the *.d.ts file. */
+  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -36,6 +38,8 @@ interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
+  /** Additional mappings used by ts-plugin (e.g. quoted string literal keys). */
+  extraMappings?: CodeMapping[];
 }
 
 /**
@@ -43,7 +47,7 @@ interface GenerateDtsResult {
  */
 export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
-  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options));
+  const localTokens = cssModule.localTokens.filter((token) => isValidName(token.name, options, false));
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
@@ -52,8 +56,8 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
           ...tokenImporter,
           values: tokenImporter.values.filter(
             (value) =>
-              isValidName(value.name, options) &&
-              (value.localName === undefined || isValidName(value.localName, options)),
+              isValidName(value.name, options, true) &&
+              (value.localName === undefined || isValidName(value.localName, options, true)),
           ),
         };
       } else {
@@ -111,7 +115,7 @@ function generateNamedExportsDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
   options: GenerateDtsOptions,
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
+): GenerateDtsResult {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
@@ -261,11 +265,9 @@ function generateNamedExportsDts(
 }
 
 /** Generate a d.ts file with a default export. */
-function generateDefaultExportDts(
-  localTokens: Token[],
-  tokenImporters: TokenImporter[],
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+function generateDefaultExportDts(localTokens: Token[], tokenImporters: TokenImporter[]): GenerateDtsResult {
+  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
+  const quotedMapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [], generatedLengths: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -313,10 +315,25 @@ function generateDefaultExportDts(
      */
 
     text += `  `;
+    const quoteStart = text.length;
+    text += `'`;
+    const keyStart = text.length;
+    // Map unquoted range in the primary mapping.
+    // This mapping is necessary when renaming.
+    // For rename, tsserver tends to return a span without quotes,
+    // while for go to definition, the span tends to include quotes.
+    // This is why we keep a dual mapping.
     mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(text.length);
     mapping.lengths.push(token.name.length);
-    text += `${token.name}: '' as readonly string,\n`;
+    mapping.generatedOffsets.push(keyStart);
+    mapping.generatedLengths!.push(token.name.length);
+    // Map quoted range separately to avoid overlapping ranges in a single mapping.
+    // This mapping is necessary for features like "go to definition".
+    quotedMapping.sourceOffsets.push(token.loc.start.offset);
+    quotedMapping.lengths.push(token.name.length);
+    quotedMapping.generatedOffsets.push(quoteStart);
+    quotedMapping.generatedLengths!.push(token.name.length + 2);
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -347,6 +364,7 @@ function generateDefaultExportDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths!.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
       /**
@@ -393,6 +411,7 @@ function generateDefaultExportDts(
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
+        mapping.generatedLengths!.push(localName.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
         text += `${localName}: (await import(`;
@@ -400,12 +419,14 @@ function generateDefaultExportDts(
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths!.push(tokenImporter.from.length + 2);
         }
         text += `'${tokenImporter.from}')).default.`;
         if ('localName' in value) {
           mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths!.push(value.name.length);
         }
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
@@ -414,11 +435,14 @@ function generateDefaultExportDts(
     }
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
+  if (quotedMapping.sourceOffsets.length) {
+    return { text, mapping, linkedCodeMapping, extraMappings: [quotedMapping] };
+  }
   return { text, mapping, linkedCodeMapping };
 }
 
-function isValidName(name: string, options: GenerateDtsOptions): boolean {
-  if (!isValidAsJSIdentifier(name)) return false;
+function isValidName(name: string, options: GenerateDtsOptions, isTokenImport: boolean): boolean {
+  if ((options.namedExports || isTokenImport) && !isValidAsJSIdentifier(name)) return false;
   if (name === '__proto__') return false;
   if (options.namedExports && name === 'default') return false;
   return true;
