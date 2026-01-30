@@ -205,6 +205,31 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
+  test('report diagnostics for backslash in name when namedExports is false', async () => {
+    // NOTE: The backslash is valid syntax in class selectors, but it is invalid syntax in `@value`.
+    // Therefore, it is sufficient for diagnostics to be reported only for class selectors.
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .a\\1 { color: red; }
+      `,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "fileName": "<rootDir>/a.module.css",
+          "length": 4,
+          "start": {
+            "column": 2,
+            "line": 1,
+          },
+          "text": "Backslash (\\) is not allowed in names when \`cmkOptions.namedExports\` is set to \`false\`.",
+        },
+      ]
+    `);
+  });
   test('report diagnostics for non-exported token', async () => {
     const iff = await createIFF({
       'a.module.css': `@value b_1, b_2 from './b.module.css';`,
