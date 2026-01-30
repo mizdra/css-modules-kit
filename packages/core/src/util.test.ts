@@ -23,6 +23,12 @@ describe('validateTokenName', () => {
   test('returns undefined for invalid JS identifier when namedExports is false', () => {
     expect(validateTokenName('a-1', { namedExports: false })).toBe(undefined);
   });
+  test('returns "backslash-not-allowed" for backslash when namedExports is false', () => {
+    expect(validateTokenName('a\\b', { namedExports: false })).toBe('backslash-not-allowed');
+  });
+  test('returns "invalid-js-identifier" for backslash when namedExports is true', () => {
+    expect(validateTokenName('a\\b', { namedExports: true })).toBe('invalid-js-identifier');
+  });
 });
 
 test('findUsedTokenNames', () => {

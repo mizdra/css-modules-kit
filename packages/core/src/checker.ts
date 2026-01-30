@@ -77,6 +77,9 @@ function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violatio
     case 'default-not-allowed':
       text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
       break;
+    case 'backslash-not-allowed':
+      text = `Backslash (\\) is not allowed in names when \`cmkOptions.namedExports\` is set to \`false\`.`;
+      break;
     default:
       throw new Error('unreachable: unknown TokenNameViolation');
   }
