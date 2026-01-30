@@ -8,7 +8,8 @@ const JS_IDENTIFIER_PATTERN = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$
 export type TokenNameViolation =
   | 'invalid-js-identifier' // Invalid as a JavaScript identifier
   | 'proto-not-allowed' // `__proto__` is not allowed
-  | 'default-not-allowed'; // `default` is not allowed when namedExports is true
+  | 'default-not-allowed' // `default` is not allowed when namedExports is true
+  | 'backslash-not-allowed'; // Backslash (`\`) is not allowed
 
 export interface ValidateTokenNameOptions {
   namedExports: boolean;
@@ -25,6 +26,8 @@ export function validateTokenName(name: string, options: ValidateTokenNameOption
   if (options.namedExports) {
     if (name === 'default') return 'default-not-allowed';
     if (!JS_IDENTIFIER_PATTERN.test(name)) return 'invalid-js-identifier';
+  } else {
+    if (name.includes('\\')) return 'backslash-not-allowed';
   }
   return undefined;
 }
