@@ -1,5 +1,12 @@
 # @css-modules-kit/codegen
 
+## 0.8.2
+
+### Patch Changes
+
+- Updated dependencies [[`61f228a`](https://github.com/mizdra/css-modules-kit/commit/61f228a13908f69588bae7d52dc0c656d5eaff17)]:
+  - @css-modules-kit/core@0.8.2
+
 ## 0.8.1
 
 ### Patch Changes
