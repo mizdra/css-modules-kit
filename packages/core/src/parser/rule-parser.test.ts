@@ -750,6 +750,170 @@ describe('parseRule', () => {
       ]
     `);
   });
+  test('collect class selectors containing special characters', () => {
+    const rules = fakeRules(
+      fakeRoot(dedent`
+        .non-js-identifier {}
+        .\\backslash_1, .\'backslash_2, .\31 backslash_3 {}
+        /* comment */.class_selector_after_comment {}
+      `),
+    );
+    const result = rules.map(parseRule);
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "classSelectors": [
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 22,
+                  "line": 1,
+                  "offset": 21,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 1,
+                  "offset": 0,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 19,
+                  "line": 1,
+                  "offset": 18,
+                },
+                "start": {
+                  "column": 2,
+                  "line": 1,
+                  "offset": 1,
+                },
+              },
+              "name": "non-js-identifier",
+            },
+          ],
+          "diagnostics": [],
+        },
+        {
+          "classSelectors": [
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 52,
+                  "line": 2,
+                  "offset": 73,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 2,
+                  "offset": 22,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 15,
+                  "line": 2,
+                  "offset": 36,
+                },
+                "start": {
+                  "column": 2,
+                  "line": 2,
+                  "offset": 23,
+                },
+              },
+              "name": "\\\\backslash_1",
+            },
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 52,
+                  "line": 2,
+                  "offset": 73,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 2,
+                  "offset": 22,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 31,
+                  "line": 2,
+                  "offset": 52,
+                },
+                "start": {
+                  "column": 18,
+                  "line": 2,
+                  "offset": 39,
+                },
+              },
+              "name": "\\'backslash_2",
+            },
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 52,
+                  "line": 2,
+                  "offset": 73,
+                },
+                "start": {
+                  "column": 1,
+                  "line": 2,
+                  "offset": 22,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 49,
+                  "line": 2,
+                  "offset": 70,
+                },
+                "start": {
+                  "column": 34,
+                  "line": 2,
+                  "offset": 55,
+                },
+              },
+              "name": "\\31 backslash_3",
+            },
+          ],
+          "diagnostics": [],
+        },
+        {
+          "classSelectors": [
+            {
+              "declarationLoc": {
+                "end": {
+                  "column": 46,
+                  "line": 3,
+                  "offset": 119,
+                },
+                "start": {
+                  "column": 14,
+                  "line": 3,
+                  "offset": 87,
+                },
+              },
+              "loc": {
+                "end": {
+                  "column": 43,
+                  "line": 3,
+                  "offset": 116,
+                },
+                "start": {
+                  "column": 15,
+                  "line": 3,
+                  "offset": 88,
+                },
+              },
+              "name": "class_selector_after_comment",
+            },
+          ],
+          "diagnostics": [],
+        },
+      ]
+    `);
+  });
   describe('`:local(...)` and `:global(...)`', () => {
     test('The class names wrapped by `:global(...)` is global', () => {
       expect(parseRuleSimply('.local1 :global(.global1 :is(.global2)) .local2 {}')).toStrictEqual(['local1', 'local2']);
