@@ -1,5 +1,11 @@
 # @css-modules-kit/core
 
+## 0.8.2
+
+### Patch Changes
+
+- [#326](https://github.com/mizdra/css-modules-kit/pull/326) [`61f228a`](https://github.com/mizdra/css-modules-kit/commit/61f228a13908f69588bae7d52dc0c656d5eaff17) - fix(core): fix the incorrect position of the diagnostics for the escaped class selectors
+
 ## 0.8.1
 
 ### Patch Changes
