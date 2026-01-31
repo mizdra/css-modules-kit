@@ -119,14 +119,24 @@ export function parseRule(rule: Rule): ParseRuleResult {
       column: rule.source!.start!.column + className.source!.start!.column,
       offset: rule.source!.start!.offset + className.sourceIndex + 1,
     };
+    /**
+     * When there is a selector like `.\31 backslash`, `className.value` becomes `"1backslash"`.
+     * In other words, it is the string after escape sequences have been interpreted.
+     * However, here we need the raw string as written in the CSS source code.
+     * So we use `className.toString()`.
+     *
+     * The return value of `className.toString()` may contain leading dots and spaces like `" .1backslash"`.
+     * Therefore, we remove the leading spaces and dot with a regular expression.
+     */
+    const rawClassName = className.toString().replace(/^\s*\./u, '');
     const end = {
       // The end line is always the same as the start line, as a class selector cannot break in the middle.
       line: start.line,
-      column: start.column + className.value.length,
-      offset: start.offset + className.value.length,
+      column: start.column + rawClassName.length,
+      offset: start.offset + rawClassName.length,
     };
     return {
-      name: className.value,
+      name: rawClassName,
       loc: { start, end },
       declarationLoc: { start: rule.source!.start!, end: rule.positionBy({ index: rule.toString().length }) },
     };

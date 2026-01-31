@@ -412,89 +412,153 @@ describe('parseAtValue', () => {
     `);
   });
   test('invalid', () => {
-    const [atValue1, atValue2] = fakeAtValues(
+    // NOTE: These test cases are invalid as the syntax of @value. The behavior when using
+    // these syntaxes is undefined. A diagnostic like "`@value` is a invalid syntax." may
+    // or may not be reported.
+    const atValues = fakeAtValues(
       fakeRoot(dedent`
         @value;
         @value a,,b from "test.css";
+        @value \\c: #000;
+        @value \'d: #000;
+        @value \31 e: #000;
       `),
     );
-    expect(parseAtValue(atValue1!)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [
-          {
-            "category": "error",
-            "length": 7,
-            "start": {
-              "column": 1,
-              "line": 1,
-            },
-            "text": "\`@value\` is a invalid syntax.",
-          },
-        ],
-      }
-    `);
-    expect(parseAtValue(atValue2!)).toMatchInlineSnapshot(`
-      {
-        "atValue": {
-          "from": "test.css",
-          "fromLoc": {
-            "end": {
-              "column": 27,
-              "line": 2,
-              "offset": 34,
-            },
-            "start": {
-              "column": 19,
-              "line": 2,
-              "offset": 26,
-            },
-          },
-          "type": "valueImportDeclaration",
-          "values": [
+    const result = atValues.map(parseAtValue);
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "diagnostics": [
             {
-              "loc": {
-                "end": {
-                  "column": 9,
-                  "line": 2,
-                  "offset": 16,
-                },
-                "start": {
-                  "column": 8,
-                  "line": 2,
-                  "offset": 15,
-                },
+              "category": "error",
+              "length": 7,
+              "start": {
+                "column": 1,
+                "line": 1,
               },
-              "name": "a",
-            },
-            {
-              "loc": {
-                "end": {
-                  "column": 12,
-                  "line": 2,
-                  "offset": 19,
-                },
-                "start": {
-                  "column": 11,
-                  "line": 2,
-                  "offset": 18,
-                },
-              },
-              "name": "b",
+              "text": "\`@value\` is a invalid syntax.",
             },
           ],
         },
-        "diagnostics": [
-          {
-            "category": "error",
-            "length": 0,
-            "start": {
-              "column": 8,
-              "line": 2,
+        {
+          "atValue": {
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 27,
+                "line": 2,
+                "offset": 34,
+              },
+              "start": {
+                "column": 19,
+                "line": 2,
+                "offset": 26,
+              },
             },
-            "text": "\`\` is invalid syntax.",
+            "type": "valueImportDeclaration",
+            "values": [
+              {
+                "loc": {
+                  "end": {
+                    "column": 9,
+                    "line": 2,
+                    "offset": 16,
+                  },
+                  "start": {
+                    "column": 8,
+                    "line": 2,
+                    "offset": 15,
+                  },
+                },
+                "name": "a",
+              },
+              {
+                "loc": {
+                  "end": {
+                    "column": 12,
+                    "line": 2,
+                    "offset": 19,
+                  },
+                  "start": {
+                    "column": 11,
+                    "line": 2,
+                    "offset": 18,
+                  },
+                },
+                "name": "b",
+              },
+            ],
           },
-        ],
-      }
+          "diagnostics": [
+            {
+              "category": "error",
+              "length": 0,
+              "start": {
+                "column": 8,
+                "line": 2,
+              },
+              "text": "\`\` is invalid syntax.",
+            },
+          ],
+        },
+        {
+          "diagnostics": [
+            {
+              "category": "error",
+              "length": 17,
+              "start": {
+                "column": 1,
+                "line": 3,
+              },
+              "text": "\`@value \\\\c: #000\` is a invalid syntax.",
+            },
+          ],
+        },
+        {
+          "diagnostics": [
+            {
+              "category": "error",
+              "length": 17,
+              "start": {
+                "column": 1,
+                "line": 4,
+              },
+              "text": "\`@value \\'d: #000\` is a invalid syntax.",
+            },
+          ],
+        },
+        {
+          "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 19,
+                "line": 5,
+                "offset": 91,
+              },
+              "start": {
+                "column": 1,
+                "line": 5,
+                "offset": 73,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 13,
+                "line": 5,
+                "offset": 85,
+              },
+              "start": {
+                "column": 12,
+                "line": 5,
+                "offset": 84,
+              },
+            },
+            "name": "e",
+            "type": "valueDeclaration",
+          },
+          "diagnostics": [],
+        },
+      ]
     `);
   });
 });
