@@ -30,7 +30,7 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        a_1: '' as readonly string,
+        'a_1': '' as readonly string,
       };
       export default styles;
       "
@@ -38,7 +38,7 @@ describe('runCMK', () => {
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        b_1: '' as readonly string,
+        'b_1': '' as readonly string,
       };
       export default styles;
       "
@@ -133,7 +133,7 @@ describe('runCMKInWatchMode', () => {
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        a_1: '' as readonly string,
+        'a_1': '' as readonly string,
       };
       export default styles;
       "
@@ -141,7 +141,7 @@ describe('runCMKInWatchMode', () => {
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
       "// @ts-nocheck
       declare const styles = {
-        b_1: '' as readonly string,
+        'b_1': '' as readonly string,
       };
       export default styles;
       "
