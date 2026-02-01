@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "version": "./scripts/version.sh",
+    "update-generated-in-examples": "./scripts/update-generated-in-examples.sh",
     "build": "tsc -b tsconfig.build.json",
     "lint": "run-s -c lint:*",
     "lint:tsc": "tsc -b",
