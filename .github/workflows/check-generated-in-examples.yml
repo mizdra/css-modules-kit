@@ -1,0 +1,30 @@
+name: check-generated-in-examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-generated-in-examples:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/dist
+            packages/*/tsconfig.build.tsbuildinfo
+            tsconfig.tsbuildinfo
+          key: check-generated-in-examples-${{ runner.arch }}-${{ runner.os }}-${{ github.sha }}
+          restore-keys: check-generated-in-examples-${{ runner.arch }}-${{ runner.os }}
+      - run: npm run update-generated-in-examples
+      - name: Check for uncommitted changes
+        run: git diff --exit-code

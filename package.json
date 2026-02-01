@@ -23,7 +23,8 @@
     "lint:prettier": "prettier --cache --check .",
     "test": "run-s -c test:*",
     "test:vitest": "vitest --run",
-    "test:vscode": "vscode-test"
+    "test:vscode": "vscode-test",
+    "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
   },
   "prettier": "@mizdra/prettier-config-mizdra",
   "devDependencies": {
