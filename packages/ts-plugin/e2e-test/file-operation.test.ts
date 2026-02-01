@@ -1,4 +1,3 @@
-import { writeFile } from 'node:fs/promises';
 import dedent from 'dedent';
 import { expect, test } from 'vitest';
 import { createIFF } from './test-util/fixture.js';
@@ -45,16 +44,15 @@ test('adding file', async () => {
   `);
 
   // Add a.module.css
-  await writeFile(iff.join('a.module.css'), '.a_1 { color: red; }');
   await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.join('a.module.css') }],
+    openFiles: [{ file: iff.join('a.module.css'), fileContent: '.a_1 { color: red; }' }],
   });
 
   // If a.module.css exists, the diagnostic should disappear
   const res2 = await tsserver.sendSemanticDiagnosticsSync({
     file: iff.paths['index.ts'],
   });
-  // TODO: It should be `[]`.
+  // TODO: This should become `[]`, but due to a bug in tsserver, it does not.
   expect(res2.body).toMatchInlineSnapshot(`
     [
       {
