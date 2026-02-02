@@ -18,7 +18,6 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
-  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -267,12 +266,7 @@ function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping & { generatedLengths: number[] } = {
-    sourceOffsets: [],
-    lengths: [],
-    generatedOffsets: [],
-    generatedLengths: [],
-  };
+  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -302,35 +296,43 @@ function generateDefaultExportDts(
      * The mapping is created as follows:
      * a.module.css:
      * 1 | .a_1 { color: red; }
-     *   |  ^ mapping.sourceOffsets[0], mapping.sourceOffsets[1]
+     *   |    ^ mapping.sourceOffsets[2] (length: 0)
+     *   |  ^ mapping.sourceOffsets[0] (length: 0), mapping.sourceOffsets[1]
      *   |
      * 2 | .a_2 { color: blue; }
-     *   |  ^ mapping.sourceOffsets[2], mapping.sourceOffsets[3]
+     *   |    ^ mapping.sourceOffsets[5] (length: 0)
+     *   |  ^ mapping.sourceOffsets[3] (length: 0), mapping.sourceOffsets[4]
      *   |
      *
      * a.module.css.d.ts:
      * 1 | declare const styles = {
      * 2 |   'a_1': '' as readonly string,
+     * 2 |   ^^  ^ mapping.generatedOffsets[2] (length: 0)
      *   |   ^^ mapping.generatedOffsets[1]
-     *   |   ^ mapping.generatedOffsets[0]
+     *   |   ^ mapping.generatedOffsets[0] (length: 0)
      *   |
      * 3 |   'a_2': '' as readonly string,
-     *   |   ^^ mapping.generatedOffsets[3]
-     *   |   ^ mapping.generatedOffsets[2]
+     *   |   ^^  ^ mapping.generatedOffsets[5] (length: 0)
+     *   |   ^^ mapping.generatedOffsets[4]
+     *   |   ^ mapping.generatedOffsets[3] (length: 0)
      *   |
      * 4 | };
      */
 
-    text += `  `;
+    text += `  '`;
+    mapping.sourceOffsets.push(token.loc.start.offset);
+    mapping.lengths.push(0);
+    mapping.generatedOffsets.push(text.length - 1);
+
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.lengths.push(token.name.length);
     mapping.generatedOffsets.push(text.length);
-    mapping.generatedLengths.push(token.name.length + 2);
-    mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.lengths.push(token.name.length);
-    mapping.generatedOffsets.push(text.length + 1);
-    mapping.generatedLengths.push(token.name.length);
-    text += `'${token.name}': '' as readonly string,\n`;
+
+    mapping.sourceOffsets.push(token.loc.end.offset);
+    mapping.lengths.push(0);
+    mapping.generatedOffsets.push(text.length + token.name.length + 1);
+
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -361,42 +363,49 @@ function generateDefaultExportDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
-      mapping.generatedLengths.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}')).default),\n`;
     } else {
       /**
        * The mapping is created as follows:
        * a.module.css:
        * 1 | @value b_1, b_2 from './b.module.css';
-       *   |        ^    ^        ^ mapping.sourceOffsets[2]
-       *   |        ^    ^ mapping.sourceOffsets[3], mapping.sourceOffsets[4]
-       *   |        ^ mapping.sourceOffsets[0], mapping.sourceOffsets[1]
+       *   |        ^ ^  ^ ^      ^ mapping.sourceOffsets[3]
+       *   |        ^ ^  ^ ^ mapping.sourceOffsets[6] (length: 0)
+       *   |        ^ ^  ^ mapping.sourceOffsets[4] (length: 0), mapping.sourceOffsets[5]
+       *   |        ^ ^ mapping.sourceOffsets[2] (length: 0)
+       *   |        ^ mapping.sourceOffsets[0] (length: 0), mapping.sourceOffsets[1]
        *   |
        * 2 | @value c_1 as aliased_c_1 from './c.module.css';
-       *   |        ^      ^                ^ mapping.sourceOffsets[7]
-       *   |        ^      ^ mapping.sourceOffsets[5], mapping.sourceOffsets[6]
-       *   |        ^ mapping.sourceOffsets[8], mapping.sourceOffsets[9]
+       *   |        ^ ^    ^         ^      ^ mapping.sourceOffsets[10]
+       *   |        ^ ^    ^         ^ mapping.sourceOffsets[9] (length: 0)
+       *   |        ^ ^    ^ mapping.sourceOffsets[7] (length: 0), mapping.sourceOffsets[8]
+       *   |        ^ ^ mapping.sourceOffsets[13] (length: 0)
+       *   |        ^ mapping.sourceOffsets[11] (length: 0), mapping.sourceOffsets[12]
        *   |
        *
        * a.module.css.d.ts:
        * 1 | declare const styles = {
        * 2 |   'b_1': (await import('./b.module.css')).default['b_1'],
-       *   |   ^^                   ^                           ^ linkedCodeMapping.generatedOffsets[0]
-       *   |   ^^                   ^ mapping.generatedOffsets[2]
+       *   |   ^^  ^                ^                           ^ linkedCodeMapping.generatedOffsets[0]
+       *   |   ^^  ^                ^ mapping.generatedOffsets[3]
+       *   |   ^^  ^ mapping.generatedOffsets[2] (length: 0)
        *   |   ^^ mapping.generatedOffsets[1], linkedCodeMapping.sourceOffsets[0]
-       *   |   ^ mapping.generatedOffsets[0]
+       *   |   ^ mapping.generatedOffsets[0] (length: 0)
        *   |
        * 3 |   'b_2': (await import('./b.module.css')).default['b_2'],
-       *   |   ^^                                               ^ linkedCodeMapping.generatedOffsets[1]
-       *   |   ^^ mapping.generatedOffsets[4], linkedCodeMapping.sourceOffsets[1]
-       *   |   ^ mapping.generatedOffsets[3],
+       *   |   ^^  ^                                            ^ linkedCodeMapping.generatedOffsets[1]
+       *   |   ^^  ^ mapping.generatedOffsets[6] (length: 0)
+       *   |   ^^ mapping.generatedOffsets[5], linkedCodeMapping.sourceOffsets[1]
+       *   |   ^ mapping.generatedOffsets[4] (length: 0)
        *   |
        * 4 |   'aliased_c_1': (await import('./c.module.css')).default['c_1'],
-       *   |   ^^                           ^                          ^^ mapping.generatedOffsets[9], linkedCodeMapping.generatedOffsets[2]
-       *   |   ^^                           ^                          ^ mapping.generatedOffsets[8]
-       *   |   ^^                           ^ mapping.generatedOffsets[7]
-       *   |   ^^ mapping.generatedOffsets[6], linkedCodeMapping.sourceOffsets[2]
-       *   |   ^ mapping.generatedOffsets[5]
+       *   |   ^^          ^                ^                          ^^  ^ mapping.generatedOffsets[13] (length: 0)
+       *   |   ^^          ^                ^                          ^^ mapping.generatedOffsets[12], linkedCodeMapping.generatedOffsets[2]
+       *   |   ^^          ^                ^                          ^ mapping.generatedOffsets[11] (length: 0)
+       *   |   ^^          ^                ^ mapping.generatedOffsets[10]
+       *   |   ^^          ^ mapping.generatedOffsets[9] (length: 0)
+       *   |   ^^ mapping.generatedOffsets[8], linkedCodeMapping.sourceOffsets[2]
+       *   |   ^ mapping.generatedOffsets[7] (length: 0)
        *   |
        * 5 | };
        *
@@ -408,38 +417,45 @@ function generateDefaultExportDts(
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
 
-        text += `  `;
+        text += `  '`;
+
+        mapping.sourceOffsets.push(localLoc.start.offset);
+        mapping.lengths.push(0);
+        mapping.generatedOffsets.push(text.length - 1);
+
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
-        mapping.generatedLengths.push(localName.length + 2);
-        mapping.sourceOffsets.push(localLoc.start.offset);
-        mapping.lengths.push(localName.length);
-        mapping.generatedOffsets.push(text.length + 1);
-        mapping.generatedLengths.push(localName.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
-        linkedCodeMapping.lengths.push(localName.length + 2);
-        text += `'${localName}': (await import(`;
+        linkedCodeMapping.lengths.push(localName.length);
+
+        mapping.sourceOffsets.push(localLoc.end.offset);
+        mapping.lengths.push(0);
+        mapping.generatedOffsets.push(text.length + localName.length + 1);
+
+        text += `${localName}': (await import(`;
         if (i === 0) {
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
-          mapping.generatedLengths.push(tokenImporter.from.length + 2);
         }
-        text += `'${tokenImporter.from}')).default[`;
+        text += `'${tokenImporter.from}')).default['`;
         if ('localName' in value) {
+          mapping.sourceOffsets.push(value.loc.start.offset);
+          mapping.lengths.push(0);
+          mapping.generatedOffsets.push(text.length - 1);
+
           mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
-          mapping.generatedLengths.push(value.name.length + 2);
-          mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(value.name.length);
-          mapping.generatedOffsets.push(text.length + 1);
-          mapping.generatedLengths.push(value.name.length);
+
+          mapping.sourceOffsets.push(value.loc.end.offset);
+          mapping.lengths.push(0);
+          mapping.generatedOffsets.push(text.length + value.name.length + 1);
         }
         linkedCodeMapping.generatedOffsets.push(text.length);
-        linkedCodeMapping.generatedLengths.push(value.name.length + 2);
-        text += `'${value.name}'],\n`;
+        linkedCodeMapping.generatedLengths.push(value.name.length);
+        text += `${value.name}'],\n`;
       });
     }
   }
