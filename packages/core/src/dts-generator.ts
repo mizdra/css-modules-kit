@@ -20,6 +20,11 @@ interface CodeMapping {
   generatedOffsets: number[];
 }
 
+interface CodeMappingForGoToDefinition extends CodeMapping {
+  /** The lengths of the tokens in the *.d.ts file. If not provided, it is assumed to be the same as `lengths`. */
+  generatedLengths: number[];
+}
+
 /** The map linking the two codes in *.d.ts */
 // NOTE: `sourceOffsets` and `generatedOffsets` are interchangeable. Exchanging code assignments does not change the behavior.
 interface LinkedCodeMapping extends CodeMapping {
@@ -37,6 +42,7 @@ interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
+  mappingForGoToDefinition?: CodeMappingForGoToDefinition;
 }
 
 /**
@@ -265,8 +271,19 @@ function generateNamedExportsDts(
 function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
+): {
+  text: string;
+  mapping: CodeMapping;
+  linkedCodeMapping: LinkedCodeMapping;
+  mappingForGoToDefinition: CodeMappingForGoToDefinition;
+} {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+  const mappingForGoToDefinition: CodeMappingForGoToDefinition = {
+    sourceOffsets: [],
+    lengths: [],
+    generatedOffsets: [],
+    generatedLengths: [],
+  };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -296,42 +313,35 @@ function generateDefaultExportDts(
      * The mapping is created as follows:
      * a.module.css:
      * 1 | .a_1 { color: red; }
-     *   |    ^ mapping.sourceOffsets[2] (length: 0)
-     *   |  ^ mapping.sourceOffsets[0] (length: 0), mapping.sourceOffsets[1]
+     *   |  ^ mapping.sourceOffsets[0]
      *   |
      * 2 | .a_2 { color: blue; }
-     *   |    ^ mapping.sourceOffsets[5] (length: 0)
-     *   |  ^ mapping.sourceOffsets[3] (length: 0), mapping.sourceOffsets[4]
+     *   |  ^ mapping.sourceOffsets[1]
      *   |
      *
      * a.module.css.d.ts:
      * 1 | declare const styles = {
      * 2 |   'a_1': '' as readonly string,
-     * 2 |   ^^  ^ mapping.generatedOffsets[2] (length: 0)
-     *   |   ^^ mapping.generatedOffsets[1]
-     *   |   ^ mapping.generatedOffsets[0] (length: 0)
+     *   |    ^ mapping.generatedOffsets[0]
      *   |
      * 3 |   'a_2': '' as readonly string,
-     *   |   ^^  ^ mapping.generatedOffsets[5] (length: 0)
-     *   |   ^^ mapping.generatedOffsets[4]
-     *   |   ^ mapping.generatedOffsets[3] (length: 0)
+     *   |    ^ mapping.generatedOffsets[1]
      *   |
      * 4 | };
+     *
+     * NOTE: In "Go to Definition", mapping only the inner part of the quotes does not work.
+     * Therefore, we also generate a mapping that includes the quotes.
+     * For more details, see https://github.com/mizdra/typescript-volar-span-comparison.
      */
 
     text += `  '`;
     mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.lengths.push(0);
-    mapping.generatedOffsets.push(text.length - 1);
-
-    mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.lengths.push(token.name.length);
     mapping.generatedOffsets.push(text.length);
-
-    mapping.sourceOffsets.push(token.loc.end.offset);
-    mapping.lengths.push(0);
-    mapping.generatedOffsets.push(text.length + token.name.length + 1);
-
+    mappingForGoToDefinition.sourceOffsets.push(token.loc.start.offset);
+    mappingForGoToDefinition.lengths.push(token.name.length);
+    mappingForGoToDefinition.generatedOffsets.push(text.length - 1);
+    mappingForGoToDefinition.generatedLengths.push(token.name.length + 2);
     text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
@@ -369,47 +379,39 @@ function generateDefaultExportDts(
        * The mapping is created as follows:
        * a.module.css:
        * 1 | @value b_1, b_2 from './b.module.css';
-       *   |        ^ ^  ^ ^      ^ mapping.sourceOffsets[3]
-       *   |        ^ ^  ^ ^ mapping.sourceOffsets[6] (length: 0)
-       *   |        ^ ^  ^ mapping.sourceOffsets[4] (length: 0), mapping.sourceOffsets[5]
-       *   |        ^ ^ mapping.sourceOffsets[2] (length: 0)
-       *   |        ^ mapping.sourceOffsets[0] (length: 0), mapping.sourceOffsets[1]
+       *   |        ^    ^        ^ mapping.sourceOffsets[0]
+       *   |        ^    ^ mapping.sourceOffsets[2]
+       *   |        ^ mapping.sourceOffsets[1]
        *   |
        * 2 | @value c_1 as aliased_c_1 from './c.module.css';
-       *   |        ^ ^    ^         ^      ^ mapping.sourceOffsets[10]
-       *   |        ^ ^    ^         ^ mapping.sourceOffsets[9] (length: 0)
-       *   |        ^ ^    ^ mapping.sourceOffsets[7] (length: 0), mapping.sourceOffsets[8]
-       *   |        ^ ^ mapping.sourceOffsets[13] (length: 0)
-       *   |        ^ mapping.sourceOffsets[11] (length: 0), mapping.sourceOffsets[12]
+       *   |        ^      ^                ^ mapping.sourceOffsets[4]
+       *   |        ^      ^ mapping.sourceOffsets[3]
+       *   |        ^ mapping.sourceOffsets[5]
        *   |
        *
        * a.module.css.d.ts:
        * 1 | declare const styles = {
        * 2 |   'b_1': (await import('./b.module.css')).default['b_1'],
-       *   |   ^^  ^                ^                           ^ linkedCodeMapping.generatedOffsets[0]
-       *   |   ^^  ^                ^ mapping.generatedOffsets[3]
-       *   |   ^^  ^ mapping.generatedOffsets[2] (length: 0)
-       *   |   ^^ mapping.generatedOffsets[1], linkedCodeMapping.sourceOffsets[0]
-       *   |   ^ mapping.generatedOffsets[0] (length: 0)
+       *   |    ^                   ^                           ^ linkedCodeMapping.generatedOffsets[0]
+       *   |    ^                   ^ mapping.generatedOffsets[1]
+       *   |    ^ mapping.generatedOffsets[0], linkedCodeMapping.sourceOffsets[0]
        *   |
        * 3 |   'b_2': (await import('./b.module.css')).default['b_2'],
-       *   |   ^^  ^                                            ^ linkedCodeMapping.generatedOffsets[1]
-       *   |   ^^  ^ mapping.generatedOffsets[6] (length: 0)
-       *   |   ^^ mapping.generatedOffsets[5], linkedCodeMapping.sourceOffsets[1]
-       *   |   ^ mapping.generatedOffsets[4] (length: 0)
+       *   |    ^                                               ^ linkedCodeMapping.generatedOffsets[1]
+       *   |    ^ mapping.generatedOffsets[2], linkedCodeMapping.sourceOffsets[1]
        *   |
        * 4 |   'aliased_c_1': (await import('./c.module.css')).default['c_1'],
-       *   |   ^^          ^                ^                          ^^  ^ mapping.generatedOffsets[13] (length: 0)
-       *   |   ^^          ^                ^                          ^^ mapping.generatedOffsets[12], linkedCodeMapping.generatedOffsets[2]
-       *   |   ^^          ^                ^                          ^ mapping.generatedOffsets[11] (length: 0)
-       *   |   ^^          ^                ^ mapping.generatedOffsets[10]
-       *   |   ^^          ^ mapping.generatedOffsets[9] (length: 0)
-       *   |   ^^ mapping.generatedOffsets[8], linkedCodeMapping.sourceOffsets[2]
-       *   |   ^ mapping.generatedOffsets[7] (length: 0)
+       *   |    ^                           ^                           ^ mapping.generatedOffsets[5], linkedCodeMapping.generatedOffsets[2]
+       *   |    ^                           ^ mapping.generatedOffsets[4]
+       *   |    ^ mapping.generatedOffsets[3], linkedCodeMapping.sourceOffsets[2]
        *   |
        * 5 | };
        *
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
+       *
+       * NOTE: In "Go to Definition", mapping only the inner part of the quotes does not work.
+       * Therefore, we also generate a mapping that includes the quotes.
+       * For more details, see https://github.com/mizdra/typescript-volar-span-comparison.
        */
 
       // eslint-disable-next-line no-loop-func
@@ -418,21 +420,17 @@ function generateDefaultExportDts(
         const localLoc = value.localLoc ?? value.loc;
 
         text += `  '`;
-
-        mapping.sourceOffsets.push(localLoc.start.offset);
-        mapping.lengths.push(0);
-        mapping.generatedOffsets.push(text.length - 1);
-
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
         linkedCodeMapping.sourceOffsets.push(text.length);
         linkedCodeMapping.lengths.push(localName.length);
-
-        mapping.sourceOffsets.push(localLoc.end.offset);
-        mapping.lengths.push(0);
-        mapping.generatedOffsets.push(text.length + localName.length + 1);
-
+        mappingForGoToDefinition.sourceOffsets.push(localLoc.start.offset);
+        mappingForGoToDefinition.lengths.push(localName.length);
+        mappingForGoToDefinition.generatedOffsets.push(text.length - 1);
+        mappingForGoToDefinition.generatedLengths.push(localName.length + 2);
+        linkedCodeMapping.sourceOffsets.push(text.length - 1);
+        linkedCodeMapping.lengths.push(localName.length + 2);
         text += `${localName}': (await import(`;
         if (i === 0) {
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
@@ -442,25 +440,23 @@ function generateDefaultExportDts(
         text += `'${tokenImporter.from}')).default['`;
         if ('localName' in value) {
           mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(0);
-          mapping.generatedOffsets.push(text.length - 1);
-
-          mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
-
-          mapping.sourceOffsets.push(value.loc.end.offset);
-          mapping.lengths.push(0);
-          mapping.generatedOffsets.push(text.length + value.name.length + 1);
+          mappingForGoToDefinition.sourceOffsets.push(value.loc.start.offset);
+          mappingForGoToDefinition.lengths.push(value.name.length);
+          mappingForGoToDefinition.generatedOffsets.push(text.length - 1);
+          mappingForGoToDefinition.generatedLengths.push(value.name.length + 2);
         }
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(value.name.length);
+        linkedCodeMapping.generatedOffsets.push(text.length - 1);
+        linkedCodeMapping.generatedLengths.push(value.name.length + 2);
         text += `${value.name}'],\n`;
       });
     }
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
-  return { text, mapping, linkedCodeMapping };
+  return { text, mapping, linkedCodeMapping, mappingForGoToDefinition };
 }
 
 function isValidTokenName(name: string, options: ValidateTokenNameOptions): boolean {
