@@ -11,6 +11,7 @@ describe('Rename Symbol', async () => {
       styles.a_1;
       styles.a_1;
       styles.a_2;
+      styles['a-3'];
       styles.b_1;
       styles.c_1;
       styles.c_alias;
@@ -22,6 +23,7 @@ describe('Rename Symbol', async () => {
       .a_1 { color: red; }
       .a_1 { color: red; }
       @value a_2: red;
+      .a-3 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -124,14 +126,46 @@ describe('Rename Symbol', async () => {
       ],
     },
     {
-      name: 'b_1 in index.ts',
+      name: 'a-2 in index.ts',
       file: iff.paths['index.ts'],
       line: 5,
+      offset: 9,
+      expected: [
+        {
+          file: formatPath(iff.paths['index.ts']),
+          locs: [{ start: { line: 5, offset: 9 }, end: { line: 5, offset: 12 } }],
+        },
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          locs: [{ start: { line: 6, offset: 2 }, end: { line: 6, offset: 5 } }],
+        },
+      ],
+    },
+    {
+      name: 'a-2 in a.module.css',
+      file: iff.paths['a.module.css'],
+      line: 6,
+      offset: 2,
+      expected: [
+        {
+          file: formatPath(iff.paths['index.ts']),
+          locs: [{ start: { line: 5, offset: 9 }, end: { line: 5, offset: 12 } }],
+        },
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          locs: [{ start: { line: 6, offset: 2 }, end: { line: 6, offset: 5 } }],
+        },
+      ],
+    },
+    {
+      name: 'b_1 in index.ts',
+      file: iff.paths['index.ts'],
+      line: 6,
       offset: 8,
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 5, offset: 8 }, end: { line: 5, offset: 11 } }],
+          locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['b.module.css']),
@@ -147,7 +181,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 5, offset: 8 }, end: { line: 5, offset: 11 } }],
+          locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['b.module.css']),
@@ -158,13 +192,13 @@ describe('Rename Symbol', async () => {
     {
       name: 'c_1 in index.ts',
       file: iff.paths['index.ts'],
-      line: 6,
+      line: 7,
       offset: 8,
       // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
       // expected: [
       //   {
       //     file: formatPath(iff.paths['index.ts']),
-      //     locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
+      //     locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 11 } }],
       //   },
       //   {
       //     file: formatPath(iff.paths['a.module.css']),
@@ -174,7 +208,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
+          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -195,7 +229,7 @@ describe('Rename Symbol', async () => {
       // expected: [
       //   {
       //     file: formatPath(iff.paths['index.ts']),
-      //     locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
+      //     locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 11 } }],
       //   },
       //   {
       //     file: formatPath(iff.paths['a.module.css']),
@@ -205,7 +239,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
+          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -236,7 +270,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 6, offset: 8 }, end: { line: 6, offset: 11 } }],
+          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -251,13 +285,13 @@ describe('Rename Symbol', async () => {
     {
       name: 'c_alias in index.ts',
       file: iff.paths['index.ts'],
-      line: 7,
+      line: 8,
       offset: 8,
       // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
       // expected: [
       //   {
       //     file: formatPath(iff.paths['index.ts']),
-      //     locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 15 } }],
+      //     locs: [{ start: { line: 8, offset: 8 }, end: { line: 8, offset: 15 } }],
       //   },
       //   {
       //     file: formatPath(iff.paths['a.module.css']),
@@ -267,7 +301,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 15 } }],
+          locs: [{ start: { line: 8, offset: 8 }, end: { line: 8, offset: 15 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -301,7 +335,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 15 } }],
+          locs: [{ start: { line: 8, offset: 8 }, end: { line: 8, offset: 15 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -335,7 +369,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 7, offset: 8 }, end: { line: 7, offset: 15 } }],
+          locs: [{ start: { line: 8, offset: 8 }, end: { line: 8, offset: 15 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
@@ -369,7 +403,7 @@ describe('Rename Symbol', async () => {
       expected: [
         {
           file: formatPath(iff.paths['index.ts']),
-          locs: [{ start: { line: 8, offset: 8 }, end: { line: 8, offset: 11 } }],
+          locs: [{ start: { line: 9, offset: 8 }, end: { line: 9, offset: 11 } }],
         },
         {
           file: formatPath(iff.paths['a.module.css']),
