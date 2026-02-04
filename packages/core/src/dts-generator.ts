@@ -354,9 +354,9 @@ function generateDefaultExportDts(
        * The mapping is created as follows:
        * a.module.css:
        * 1 | @value b_1, b_2 from './b.module.css';
-       *   |        ^    ^        ^ mapping.sourceOffsets[0]
+       *   |        ^    ^        ^ mapping.sourceOffsets[1]
        *   |        ^    ^ mapping.sourceOffsets[2]
-       *   |        ^ mapping.sourceOffsets[1]
+       *   |        ^ mapping.sourceOffsets[0]
        *   |
        * 2 | @value c_1 as aliased_c_1 from './c.module.css';
        *   |        ^      ^                ^ mapping.sourceOffsets[4]
