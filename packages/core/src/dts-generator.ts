@@ -18,6 +18,8 @@ interface CodeMapping {
   lengths: number[];
   /** The generated offsets of the tokens in the *.d.ts file. */
   generatedOffsets: number[];
+  /** The lengths of the tokens in the *.d.ts file. If not provided, it is assumed to be the same as `lengths`. */
+  generatedLengths?: number[];
 }
 
 /** The map linking the two codes in *.d.ts */
@@ -36,6 +38,7 @@ interface LinkedCodeMapping extends CodeMapping {
 interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
+  secondaryMapping?: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
 }
 
@@ -265,8 +268,24 @@ function generateNamedExportsDts(
 function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
-): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
+): {
+  text: string;
+  mapping: CodeMapping;
+  secondaryMapping: CodeMapping;
+  linkedCodeMapping: LinkedCodeMapping;
+} {
   const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+  /**
+   * In "Go to Definition", mapping only the inner part of the quotes does not work.
+   * Therefore, we also generate a mapping that includes the quotes.
+   * For more details, see https://github.com/mizdra/volar-single-quote-span-problem.
+   */
+  const secondaryMapping: CodeMapping & { generatedLengths: number[] } = {
+    sourceOffsets: [],
+    lengths: [],
+    generatedOffsets: [],
+    generatedLengths: [],
+  };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -296,28 +315,34 @@ function generateDefaultExportDts(
      * The mapping is created as follows:
      * a.module.css:
      * 1 | .a_1 { color: red; }
-     *   |  ^ mapping.sourceOffsets[0]
+     *   |  ^ mapping.sourceOffsets[0], secondaryMapping.sourceOffsets[0]
      *   |
      * 2 | .a_2 { color: blue; }
-     *   |  ^ mapping.sourceOffsets[1]
+     *   |  ^ mapping.sourceOffsets[1], secondaryMapping.sourceOffsets[1]
      *   |
      *
      * a.module.css.d.ts:
      * 1 | declare const styles = {
-     * 2 |   a_1: '' as readonly string,
-     *   |   ^ mapping.generatedOffsets[0]
+     * 2 |   'a_1': '' as readonly string,
+     *   |   ^^ mapping.generatedOffsets[0]
+     *   |   ^ secondaryMapping.generatedOffsets[0]
      *   |
-     * 3 |   a_2: '' as readonly string,
-     *   |   ^ mapping.generatedOffsets[1]
+     * 3 |   'a_2': '' as readonly string,
+     *   |   ^^ mapping.generatedOffsets[1]
+     *   |   ^ secondaryMapping.generatedOffsets[1]
      *   |
      * 4 | };
      */
 
-    text += `  `;
+    text += `  '`;
     mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(text.length);
     mapping.lengths.push(token.name.length);
-    text += `${token.name}: '' as readonly string,\n`;
+    mapping.generatedOffsets.push(text.length);
+    secondaryMapping.sourceOffsets.push(token.loc.start.offset);
+    secondaryMapping.lengths.push(token.name.length);
+    secondaryMapping.generatedOffsets.push(text.length - 1);
+    secondaryMapping.generatedLengths.push(token.name.length + 2);
+    text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -355,30 +380,34 @@ function generateDefaultExportDts(
        * a.module.css:
        * 1 | @value b_1, b_2 from './b.module.css';
        *   |        ^    ^        ^ mapping.sourceOffsets[1]
-       *   |        ^    ^ mapping.sourceOffsets[2]
-       *   |        ^ mapping.sourceOffsets[0]
+       *   |        ^    ^ mapping.sourceOffsets[2], secondaryMapping.sourceOffsets[1]
+       *   |        ^ mapping.sourceOffsets[0], secondaryMapping.sourceOffsets[0]
        *   |
        * 2 | @value c_1 as aliased_c_1 from './c.module.css';
        *   |        ^      ^                ^ mapping.sourceOffsets[4]
-       *   |        ^      ^ mapping.sourceOffsets[3]
-       *   |        ^ mapping.sourceOffsets[5]
+       *   |        ^      ^ mapping.sourceOffsets[3], secondaryMapping.sourceOffsets[2]
+       *   |        ^ mapping.sourceOffsets[5], secondaryMapping.sourceOffsets[3]
        *   |
        *
        * a.module.css.d.ts:
        * 1 | declare const styles = {
-       * 2 |   b_1: (await import('./b.module.css')).default.b_1,
-       *   |   ^                  ^                          ^ linkedCodeMapping.generatedOffsets[0]
-       *   |   ^                  ^ mapping.generatedOffsets[1]
-       *   |   ^ mapping.generatedOffsets[0], linkedCodeMapping.sourceOffsets[0]
+       * 2 |   'b_1': (await import('./b.module.css')).default['b_1'],
+       *   |   ^^                   ^                          ^ linkedCodeMapping.generatedOffsets[0]
+       *   |   ^^                   ^ mapping.generatedOffsets[1]
+       *   |   ^^ mapping.generatedOffsets[0]
+       *   |   ^ secondaryMapping.generatedOffsets[0], linkedCodeMapping.sourceOffsets[0]
        *   |
-       * 3 |   b_2: (await import('./b.module.css')).default.b_2,
-       *   |   ^                                             ^ linkedCodeMapping.generatedOffsets[1]
-       *   |   ^ mapping.generatedOffsets[2], linkedCodeMapping.sourceOffsets[1]
+       * 3 |   'b_2': (await import('./b.module.css')).default['b_2'],
+       *   |   ^^                                              ^ linkedCodeMapping.generatedOffsets[1]
+       *   |   ^^ mapping.generatedOffsets[2]
+       *   |   ^ secondaryMapping.generatedOffsets[1], linkedCodeMapping.sourceOffsets[1]
        *   |
-       * 4 |   aliased_c_1: (await import('./c.module.css')).default.c_1,
-       *   |   ^                          ^                          ^ mapping.generatedOffsets[5], linkedCodeMapping.generatedOffsets[2]
-       *   |   ^                          ^ mapping.generatedOffsets[4]
-       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.sourceOffsets[2]
+       * 4 |   'aliased_c_1': (await import('./c.module.css')).default['c_1'],
+       *   |   ^^                           ^                          ^^ mapping.generatedOffsets[5]
+       *   |   ^^                           ^                          ^ secondaryMapping.generatedOffsets[3], linkedCodeMapping.generatedOffsets[2]
+       *   |   ^^                           ^ mapping.generatedOffsets[4]
+       *   |   ^^ mapping.generatedOffsets[3]
+       *   |   ^ secondaryMapping.generatedOffsets[2], linkedCodeMapping.sourceOffsets[2]
        *   |
        * 5 | };
        *
@@ -390,32 +419,40 @@ function generateDefaultExportDts(
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
 
-        text += `  `;
+        text += `  '`;
         mapping.sourceOffsets.push(localLoc.start.offset);
         mapping.lengths.push(localName.length);
         mapping.generatedOffsets.push(text.length);
-        linkedCodeMapping.sourceOffsets.push(text.length);
-        linkedCodeMapping.lengths.push(localName.length);
-        text += `${localName}: (await import(`;
+        secondaryMapping.sourceOffsets.push(localLoc.start.offset);
+        secondaryMapping.lengths.push(localName.length);
+        secondaryMapping.generatedOffsets.push(text.length - 1);
+        secondaryMapping.generatedLengths.push(localName.length + 2);
+        linkedCodeMapping.sourceOffsets.push(text.length - 1);
+        linkedCodeMapping.lengths.push(localName.length + 2);
+        text += `${localName}': (await import(`;
         if (i === 0) {
           mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
           mapping.lengths.push(tokenImporter.from.length + 2);
           mapping.generatedOffsets.push(text.length);
         }
-        text += `'${tokenImporter.from}')).default.`;
+        text += `'${tokenImporter.from}')).default['`;
         if ('localName' in value) {
           mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
+          secondaryMapping.sourceOffsets.push(value.loc.start.offset);
+          secondaryMapping.lengths.push(value.name.length);
+          secondaryMapping.generatedOffsets.push(text.length - 1);
+          secondaryMapping.generatedLengths.push(value.name.length + 2);
         }
-        linkedCodeMapping.generatedOffsets.push(text.length);
-        linkedCodeMapping.generatedLengths.push(value.name.length);
-        text += `${value.name},\n`;
+        linkedCodeMapping.generatedOffsets.push(text.length - 1);
+        linkedCodeMapping.generatedLengths.push(value.name.length + 2);
+        text += `${value.name}'],\n`;
       });
     }
   }
   text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
-  return { text, mapping, linkedCodeMapping };
+  return { text, mapping, linkedCodeMapping, secondaryMapping };
 }
 
 function isValidTokenName(name: string, options: ValidateTokenNameOptions): boolean {

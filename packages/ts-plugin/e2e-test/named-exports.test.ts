@@ -183,16 +183,7 @@ describe('supports basic language features', async () => {
       name: 'c_alias in index.ts',
       file: c_alias_in_index_ts.file,
       ...c_alias_in_index_ts.start,
-      expected: [
-        // For some reason, `c_alias_in_a_module_css` and `c_alias_in_index_ts` appear to be duplicated.
-        // This is likely a bug in Volar.js.
-        c_alias_in_index_ts,
-        c_alias_in_index_ts,
-        c_2_in_a_module_css,
-        c_alias_in_a_module_css,
-        c_alias_in_a_module_css,
-        c_2_in_c_module_css,
-      ],
+      expected: [c_alias_in_index_ts, c_2_in_a_module_css, c_alias_in_a_module_css, c_2_in_c_module_css],
     },
   ])('Find All References for $name', async ({ file, line, offset, expected }) => {
     const res = await tsserver.sendReferences({
