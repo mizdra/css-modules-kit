@@ -53,7 +53,7 @@ export function getDefinitionAndBoundSpan(
  * but `token.name` is `"tokenName"` (without quotes).
  */
 function unquote(name: string): string {
-  if (name.startsWith("'") && name.endsWith("'")) {
+  if (name.length >= 2 && name.startsWith("'") && name.endsWith("'")) {
     return name.slice(1, -1);
   }
   return name;
