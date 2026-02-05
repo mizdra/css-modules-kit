@@ -10,6 +10,7 @@ describe('Find All References', async () => {
     'index.ts': dedent`
       import styles from './a.module.css';
       styles.a_1;
+      styles['a-2'];
       styles.b_1;
       styles.c_1;
       styles.c_alias;
@@ -19,6 +20,7 @@ describe('Find All References', async () => {
       @value c_1, c_2 as c_alias from './c.module.css';
       .a_1 { color: red; }
       .a_1 { color: red; }
+      .a-2 { color: red; }
     `,
     'b.module.css': dedent`
       .b_1 { color: red; }
@@ -51,10 +53,20 @@ describe('Find All References', async () => {
     start: { line: 4, offset: 2 },
     end: { line: 4, offset: 5 },
   };
+  const a_2_in_index_ts = {
+    file: formatPath(iff.paths['index.ts']),
+    start: { line: 3, offset: 9 },
+    end: { line: 3, offset: 12 },
+  };
+  const a_2_in_a_module_css = {
+    file: formatPath(iff.paths['a.module.css']),
+    start: { line: 5, offset: 2 },
+    end: { line: 5, offset: 5 },
+  };
   const b_1_in_index_ts = {
     file: formatPath(iff.paths['index.ts']),
-    start: { line: 3, offset: 8 },
-    end: { line: 3, offset: 11 },
+    start: { line: 4, offset: 8 },
+    end: { line: 4, offset: 11 },
   };
   const b_1_in_b_module_css = {
     file: formatPath(iff.paths['b.module.css']),
@@ -63,8 +75,8 @@ describe('Find All References', async () => {
   };
   const c_1_in_index_ts = {
     file: formatPath(iff.paths['index.ts']),
-    start: { line: 4, offset: 8 },
-    end: { line: 4, offset: 11 },
+    start: { line: 5, offset: 8 },
+    end: { line: 5, offset: 11 },
   };
   const c_1_in_a_module_css = {
     file: formatPath(iff.paths['a.module.css']),
@@ -78,8 +90,8 @@ describe('Find All References', async () => {
   };
   const c_alias_in_index_ts = {
     file: formatPath(iff.paths['index.ts']),
-    start: { line: 5, offset: 8 },
-    end: { line: 5, offset: 15 },
+    start: { line: 6, offset: 8 },
+    end: { line: 6, offset: 15 },
   };
   const c_alias_in_a_module_css = {
     file: formatPath(iff.paths['a.module.css']),
@@ -111,6 +123,7 @@ describe('Find All References', async () => {
         { file: formatPath(iff.paths['index.ts']), start: { line: 3, offset: 1 }, end: { line: 3, offset: 7 } },
         { file: formatPath(iff.paths['index.ts']), start: { line: 4, offset: 1 }, end: { line: 4, offset: 7 } },
         { file: formatPath(iff.paths['index.ts']), start: { line: 5, offset: 1 }, end: { line: 5, offset: 7 } },
+        { file: formatPath(iff.paths['index.ts']), start: { line: 6, offset: 1 }, end: { line: 6, offset: 7 } },
       ],
     },
     {
@@ -151,6 +164,18 @@ describe('Find All References', async () => {
       file: a_1_1_in_a_module_css.file,
       ...a_1_1_in_a_module_css.start,
       expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
+    },
+    {
+      name: 'a-2 in index.ts',
+      file: a_2_in_index_ts.file,
+      ...a_2_in_index_ts.start,
+      expected: [a_2_in_index_ts, a_2_in_a_module_css],
+    },
+    {
+      name: 'a-2 in a.module.css',
+      file: a_2_in_a_module_css.file,
+      ...a_2_in_a_module_css.start,
+      expected: [a_2_in_index_ts, a_2_in_a_module_css],
     },
     {
       name: 'b_1 in index.ts',

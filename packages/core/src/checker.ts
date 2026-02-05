@@ -69,13 +69,16 @@ function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violatio
   let text: string;
   switch (violation) {
     case 'invalid-js-identifier':
-      text = `css-modules-kit does not support invalid names as JavaScript identifiers.`;
+      text = `Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.`;
       break;
     case 'proto-not-allowed':
       text = `\`__proto__\` is not allowed as names.`;
       break;
     case 'default-not-allowed':
       text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
+      break;
+    case 'backslash-not-allowed':
+      text = `Backslash (\\) is not allowed in names when \`cmkOptions.namedExports\` is set to \`false\`.`;
       break;
     default:
       throw new Error('unreachable: unknown TokenNameViolation');

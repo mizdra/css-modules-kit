@@ -17,8 +17,9 @@ export function getDefinitionAndBoundSpan(
       const cssModule = script.generated.root[CMK_DATA_KEY];
 
       // Search tokens and set `contextSpan`. `contextSpan` is used for Definition Preview in editors.
+      const defName = unquote(def.name);
       const localToken = cssModule.localTokens.find(
-        (t) => t.name === def.name && t.loc.start.offset === def.textSpan.start,
+        (t) => t.name === defName && t.loc.start.offset === def.textSpan.start,
       );
       if (localToken?.declarationLoc) {
         def.contextSpan = {
@@ -32,7 +33,7 @@ export function getDefinitionAndBoundSpan(
         .find((v) => {
           const localName = v.localName ?? v.name;
           const localLoc = v.localLoc ?? v.loc;
-          return localName === def.name && localLoc.start.offset === def.textSpan.start;
+          return localName === defName && localLoc.start.offset === def.textSpan.start;
         });
       if (importedValue) {
         const loc = importedValue.localLoc ?? importedValue.loc;
@@ -44,4 +45,16 @@ export function getDefinitionAndBoundSpan(
     }
     return result;
   };
+}
+
+/**
+ * Removes surrounding single quotes from a string if present.
+ * When `namedExport` is false, `def.name` is `"'tokenName'"` (with quotes),
+ * but `token.name` is `"tokenName"` (without quotes).
+ */
+function unquote(name: string): string {
+  if (name.length >= 2 && name.startsWith("'") && name.endsWith("'")) {
+    return name.slice(1, -1);
+  }
+  return name;
 }

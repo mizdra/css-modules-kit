@@ -11,6 +11,7 @@ describe('Go to Definition', async () => {
       styles.a_1;
       styles.a_2;
       styles.a_3;
+      styles['a-4'];
       styles.b_1;
       styles.c_1;
       styles.c_alias;
@@ -22,6 +23,7 @@ describe('Go to Definition', async () => {
       .a_2 { color: red; }
       .a_2 { color: red; }
       @value a_3: red;
+      .a-4 { color: red; }
       @import url(./b.module.css);
     `,
     'b.module.css': dedent`
@@ -157,9 +159,39 @@ describe('Go to Definition', async () => {
       ],
     },
     {
-      name: 'b_1 in index.ts',
+      name: 'a-4 in index.ts',
       file: iff.paths['index.ts'],
       line: 5,
+      offset: 8,
+      expected: [
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          start: { line: 7, offset: 2 },
+          end: { line: 7, offset: 5 },
+          contextStart: { line: 7, offset: 1 },
+          contextEnd: { line: 7, offset: 21 },
+        },
+      ],
+    },
+    {
+      name: 'a-4 in a.module.css',
+      file: iff.paths['a.module.css'],
+      line: 7,
+      offset: 2,
+      expected: [
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          start: { line: 7, offset: 2 },
+          end: { line: 7, offset: 5 },
+          contextStart: { line: 7, offset: 1 },
+          contextEnd: { line: 7, offset: 21 },
+        },
+      ],
+    },
+    {
+      name: 'b_1 in index.ts',
+      file: iff.paths['index.ts'],
+      line: 6,
       offset: 8,
       expected: [
         {
@@ -174,7 +206,7 @@ describe('Go to Definition', async () => {
     {
       name: 'c_1 in index.ts',
       file: iff.paths['index.ts'],
-      line: 6,
+      line: 7,
       offset: 8,
       // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
       // expected: [
@@ -226,7 +258,7 @@ describe('Go to Definition', async () => {
     {
       name: 'c_alias in index.ts',
       file: iff.paths['index.ts'],
-      line: 7,
+      line: 8,
       offset: 8,
       // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
       // expected: [
@@ -294,7 +326,7 @@ describe('Go to Definition', async () => {
       // NOTE: It is strange that `(` has a definition, but we allow it to keep the implementation simple.
       name: '(./b.module.css) in a.module.css',
       file: iff.paths['a.module.css'],
-      line: 7,
+      line: 8,
       offset: 12,
       expected: [
         { file: formatPath(iff.paths['b.module.css']), start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 } },

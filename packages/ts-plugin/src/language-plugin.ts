@@ -52,7 +52,10 @@ export function createCSSLanguagePlugin(
         keyframes: config.keyframes,
       });
       // eslint-disable-next-line prefer-const
-      let { text, mapping, linkedCodeMapping } = generateDts(cssModule, { ...config, forTsPlugin: true });
+      let { text, mapping, linkedCodeMapping, secondaryMapping } = generateDts(cssModule, {
+        ...config,
+        forTsPlugin: true,
+      });
       return {
         id: 'main',
         languageId: 'typescript',
@@ -61,9 +64,11 @@ export function createCSSLanguagePlugin(
           getLength: () => text.length,
           getChangeRange: () => undefined,
         },
-        // `mappings` are required to support "Go to Definition" and renaming
-        mappings: [{ ...mapping, data: { navigation: true } }],
-        // `linkedCodeMappings` are required to support "Go to Definition" and renaming for the imported tokens
+        // `mappings` are required to support navigation features such as "Go to Definition" and "Find all References".
+        mappings: [mapping, secondaryMapping]
+          .filter((mapping) => mapping !== undefined)
+          .map((mapping) => ({ ...mapping, data: { navigation: true } })),
+        // `linkedCodeMappings` are required to support navigation features for the imported tokens.
         linkedCodeMappings: [{ ...linkedCodeMapping, data: undefined }],
         [CMK_DATA_KEY]: cssModule,
       };
