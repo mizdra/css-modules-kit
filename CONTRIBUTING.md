@@ -20,6 +20,7 @@ npm run test
 - `npm run build`: Build for production
 - `npm run lint`: Run static-checking
 - `npm run test`: Run tests
+- `npm run vscode-test`: Run VS Code Extension tests
 
 ## How to debug
 
@@ -29,7 +30,7 @@ You can run code in debug mode from the "Run and Debug" panel in VS Code. To sta
 - `eslint-plugin (...)`: Debug for `eslint-plugin` package
 - `stylelint (...)`: Debug for `stylelint` package
 - `vscode (...)`: Debug for `vscode` and `ts-plugin` package
-- `vscode-test`: Debug for `npm run test:vscode`
+- `vscode-test`: Debug for `npm run vscode-test`
 
 Good to know:
 
@@ -59,7 +60,7 @@ Good to know:
 1. Write your code
 1. Add tests if necessary
 1. Update documentation if necessary
-1. Pass `npm run lint` and `npm run test`
+1. Pass `npm run lint`, `npm run test`, and `npm run vscode-test`
 1. Run `npx @changesets/cli add` to create a changeset if the change affects users
    - The summary should be in the following format:
      - For bug fixes: `fix: ...`

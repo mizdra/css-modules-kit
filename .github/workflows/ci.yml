@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 22
       - run: npm run build
-  test-vitest:
+  test:
     strategy:
       fail-fast: false
       matrix:
@@ -57,10 +57,10 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-          key: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: test-vitest-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: npm run test:vitest
-  test-vscode:
+          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
+          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
+      - run: npm run test
+  vscode-test:
     strategy:
       fail-fast: false
       matrix:
@@ -85,7 +85,7 @@ jobs:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
 
-      - run: xvfb-run -a npm run test:vscode
+      - run: xvfb-run -a npm run vscode-test
         if: runner.os == 'Linux'
-      - run: npm run test:vscode
+      - run: npm run vscode-test
         if: runner.os != 'Linux'

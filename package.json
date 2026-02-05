@@ -21,9 +21,8 @@
     "lint:tsc": "tsc -b",
     "lint:eslint": "eslint .",
     "lint:prettier": "prettier --cache --check .",
-    "test": "run-s -c test:*",
-    "test:vitest": "vitest --run",
-    "test:vscode": "vscode-test",
+    "test": "vitest --run",
+    "vscode-test": "vscode-test",
     "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
   },
   "prettier": "@mizdra/prettier-config-mizdra",
