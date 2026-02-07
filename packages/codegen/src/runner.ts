@@ -1,9 +1,16 @@
 import type { Stats } from 'node:fs';
 import { rm } from 'node:fs/promises';
+import { basename } from '@css-modules-kit/core';
 import chokidar, { type FSWatcher } from 'chokidar';
 import { CMKDisabledError } from './error.js';
 import type { Logger } from './logger/logger.js';
 import { createProject, type Project } from './project.js';
+
+// The CSS Modules Kit also ignores the minimum set of directories that TypeScript typically ignores.
+// ref: https://github.com/microsoft/TypeScript/blob/87aa917befa8f6182f5535df3c77287209692a04/src/compiler/sys.ts#L562
+// ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/utilities.ts#L9506
+// ref: https://github.com/mizdra/css-modules-kit/issues/321
+const ignoredDirname: readonly string[] = ['node_modules', '.git'];
 
 interface RunnerArgs {
   project: string;
@@ -78,6 +85,8 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
       chokidar
         .watch(wildcardDirectory.fileName, {
           ignored: (fileName: string, stats?: Stats) => {
+            if (ignoredDirname.includes(basename(fileName))) return true;
+
             // The ignored function is called twice for the same path. The first time with stats undefined,
             // and the second time with stats provided.
             // In the first call, we can't determine if the path is a directory or file.
