@@ -34,17 +34,18 @@ export function validateTokenName(name: string, options: ValidateTokenNameOption
 
 /**
  * The syntax pattern for consuming tokens imported from CSS Module.
- * @example `styles.foo`
+ * @example `styles.foo`, `styles['foo']`, `styles["foo"]`
  */
-// TODO(#125): Support `styles['foo']` and `styles["foo"]`
 // MEMO: The `xxxStyles.foo` format is not supported, because the css module file for current component file is usually imported with `styles`.
 //       It is sufficient to support only the `styles.foo` format.
-const TOKEN_CONSUMER_PATTERN = /styles\.([$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*)/gu;
+const TOKEN_CONSUMER_PATTERN =
+  /styles(?:\.([$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*)|\['([^']*?)'\]|\["([^"]*?)"\])/gu;
 
 export function findUsedTokenNames(componentText: string): Set<string> {
   const usedClassNames = new Set<string>();
   for (const match of componentText.matchAll(TOKEN_CONSUMER_PATTERN)) {
-    usedClassNames.add(match[1]!);
+    const name = match[1] ?? match[2] ?? match[3];
+    if (name) usedClassNames.add(name);
   }
   return usedClassNames;
 }
