@@ -2,7 +2,7 @@
   "name": "css-modules-kit-vscode",
   "displayName": "CSS Modules Kit",
   "description": "The VS Code extension for CSS Modules",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "type": "module",
   "repository": {
     "type": "git",
@@ -81,6 +81,6 @@
     }
   },
   "dependencies": {
-    "@css-modules-kit/ts-plugin": "^0.8.1"
+    "@css-modules-kit/ts-plugin": "^0.9.0"
   }
 }

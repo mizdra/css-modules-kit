@@ -1,5 +1,19 @@
 # @css-modules-kit/core
 
+## 0.9.0
+
+### Minor Changes
+
+- [#330](https://github.com/mizdra/css-modules-kit/pull/330) [`d89f583`](https://github.com/mizdra/css-modules-kit/commit/d89f583c96176164dc05b5fd77cd5851738cd31b) - feat(core, ts-plugin): support non-JavaScript identifier token in default export
+
+### Patch Changes
+
+- [#333](https://github.com/mizdra/css-modules-kit/pull/333) [`9b9aeae`](https://github.com/mizdra/css-modules-kit/commit/9b9aeae02196db948975fecd5177e0de0a1477eb) - fix(core): use `matchAll` instead of `exec` in `findUsedTokenNames` to avoid potential `lastIndex` state issues
+
+- [#334](https://github.com/mizdra/css-modules-kit/pull/334) [`9ca81da`](https://github.com/mizdra/css-modules-kit/commit/9ca81da5d6a8f101aaafd9ba1fce5eb329ac2ac9) - fix(core): support `styles['foo']` and `styles["foo"]` bracket notation in `findUsedTokenNames`
+
+- [#326](https://github.com/mizdra/css-modules-kit/pull/326) [`61f228a`](https://github.com/mizdra/css-modules-kit/commit/61f228a13908f69588bae7d52dc0c656d5eaff17) - fix(core): fix the incorrect position of the diagnostics for the escaped class selectors
+
 ## 0.8.1
 
 ### Patch Changes
