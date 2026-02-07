@@ -43,7 +43,7 @@ TODO: Welcome to contribute
 Install the ts-plugin via the Extension. Please follow the steps below:
 
 1. Install ["CSS Modules Kit" extension](https://zed.dev/extensions/css-modules-kit).
-2. Add the following to your `~./config/zed/settings.json` file:
+2. Add the following to your `~/.config/zed/settings.json` file:
    ```json
    {
      "languages": {
