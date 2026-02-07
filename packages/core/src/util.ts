@@ -43,8 +43,7 @@ const TOKEN_CONSUMER_PATTERN = /styles\.([$_\p{ID_Start}][$\u200c\u200d\p{ID_Con
 
 export function findUsedTokenNames(componentText: string): Set<string> {
   const usedClassNames = new Set<string>();
-  let match;
-  while ((match = TOKEN_CONSUMER_PATTERN.exec(componentText)) !== null) {
+  for (const match of componentText.matchAll(TOKEN_CONSUMER_PATTERN)) {
     usedClassNames.add(match[1]!);
   }
   return usedClassNames;
