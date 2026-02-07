@@ -1,5 +1,12 @@
 # @css-modules-kit/stylelint-plugin
 
+## 0.9.0
+
+### Patch Changes
+
+- Updated dependencies [[`d89f583`](https://github.com/mizdra/css-modules-kit/commit/d89f583c96176164dc05b5fd77cd5851738cd31b), [`9b9aeae`](https://github.com/mizdra/css-modules-kit/commit/9b9aeae02196db948975fecd5177e0de0a1477eb), [`9ca81da`](https://github.com/mizdra/css-modules-kit/commit/9ca81da5d6a8f101aaafd9ba1fce5eb329ac2ac9), [`61f228a`](https://github.com/mizdra/css-modules-kit/commit/61f228a13908f69588bae7d52dc0c656d5eaff17)]:
+  - @css-modules-kit/core@0.9.0
+
 ## 0.8.1
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "@css-modules-kit/core",
   "description": "The core of css-modules-kit",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "type": "module",
   "sideEffects": false,
   "repository": {
