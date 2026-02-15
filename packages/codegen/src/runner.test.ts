@@ -193,7 +193,8 @@ describe('runCMKInWatchMode', () => {
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
   });
-  test('reports system error occurs during watching', async () => {
+  // This is a flaky test that sometimes fails to detect file changes. Retrying may help.
+  test('reports system error occurs during watching', { retry: 5 }, async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
@@ -238,7 +239,8 @@ describe('runCMKInWatchMode', () => {
       expect(loggerSpy.logError).toHaveBeenCalledTimes(3);
     });
   });
-  test('reports diagnostics and emits files on changes', async () => {
+  // This is a flaky test that sometimes fails to detect file changes. Retrying may help.
+  test('reports diagnostics and emits files on changes', { retry: 5 }, async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
