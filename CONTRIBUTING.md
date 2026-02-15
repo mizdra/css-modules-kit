@@ -55,6 +55,52 @@ Good to know:
 - When you start zed with the `--foreground` option, you can view the stdout of the Extension.
   - e.g. `CMK_LOAD_LOCAL_TS_PLUGIN=0 zed --foreground examples/1-basic`
 
+### NeoVim
+
+1. Run `npm run build`
+1. Edit your `init.lua`
+   ```diff
+    vim.lsp.config('vtsls', {
+      filetypes = vim.list_extend(vtsls_default.filetypes, { 'css' }),
+      settings = {
+        vtsls = {
+          tsserver = {
+            globalPlugins = {
+              {
+                name = '@css-modules-kit/ts-plugin',
+   -            location = npm_root,
+   +            location = '/path/to/css-modules-kit-repo-dir',
+                languages = { 'css' },
+              },
+            },
+          },
+        },
+      },
+    })
+   ```
+1. Start `TSS_LOG="-level verbose -file /tmp/tsserver.log" nvim .`
+
+### Emacs
+
+1. Run `npm run build`
+1. Edit your `init.el`
+   ```diff
+      (add-to-list
+        'eglot-server-programs
+        `(((js-ts-mode :language-id "javascript")
+           (typescript-ts-mode :language-id "typescript")
+           (tsx-ts-mode :language-id "typescriptreact")
+           (css-ts-mode :language-id "css"))
+          . ("typescript-language-server" "--stdio"
+              :initializationOptions
+              ((plugins
+                . [((name      . "@css-modules-kit/ts-plugin")
+   -                (location  . ,npm-root)
+   +                (location  . "/path/to/css-modules-kit-repo-dir")
+                    (languages . ["css"]))]))))))
+   ```
+1. Start `TSS_LOG="-level verbose -file /tmp/tsserver.log" emacs -nw .`
+
 ## Pull Request Guidelines
 
 1. Write your code
