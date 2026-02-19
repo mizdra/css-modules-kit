@@ -89,9 +89,8 @@ interface ParsedRawData {
 }
 
 function findTsConfigFile(project: string): string | undefined {
-  const configFile =
-    ts.sys.directoryExists(project) ?
-      ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
+  const configFile = ts.sys.directoryExists(project)
+    ? ts.findConfigFile(project, ts.sys.fileExists.bind(ts.sys), 'tsconfig.json')
     : ts.findConfigFile(dirname(project), ts.sys.fileExists.bind(ts.sys), basename(project));
   if (!configFile) return undefined;
   return resolve(configFile);

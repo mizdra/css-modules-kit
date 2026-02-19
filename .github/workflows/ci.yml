@@ -23,7 +23,6 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: |
-            node_modules/.cache/prettier/.prettier-cache
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo

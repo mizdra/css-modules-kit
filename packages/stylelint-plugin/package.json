@@ -1,17 +1,30 @@
 {
   "name": "@css-modules-kit/stylelint-plugin",
-  "description": "A stylelint plugin for CSS Modules",
   "version": "0.9.0",
-  "type": "module",
-  "sideEffects": false,
+  "private": false,
+  "description": "A stylelint plugin for CSS Modules",
+  "keywords": [
+    "css-modules",
+    "stylelint",
+    "stylelint-plugin"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/mizdra/css-modules-kit.git",
     "directory": "packages/stylelint-plugin"
   },
-  "author": "mizdra <pp.mizdra@gmail.com>",
-  "license": "MIT",
-  "private": false,
+  "files": [
+    "bin",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/__snapshots__",
+    "!src/test",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,33 +35,20 @@
       "default": "./dist/recommended.js"
     }
   },
-  "scripts": {
-    "build": "tsc -b tsconfig.build.json"
-  },
-  "engines": {
-    "node": ">=20.19.0"
-  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "keywords": [
-    "css-modules",
-    "stylelint",
-    "stylelint-plugin"
-  ],
-  "files": [
-    "bin",
-    "src",
-    "!src/**/*.test.ts",
-    "!src/**/__snapshots__",
-    "!src/test",
-    "dist"
-  ],
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
   "dependencies": {
     "@css-modules-kit/core": "^0.9.0"
   },
   "peerDependencies": {
     "stylelint": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

@@ -1,34 +1,22 @@
 {
   "name": "@css-modules-kit/codegen",
-  "description": "A tool for generating `*.d.ts` files for `*.module.css`.",
   "version": "0.9.0",
-  "type": "module",
-  "sideEffects": false,
+  "private": false,
+  "description": "A tool for generating `*.d.ts` files for `*.module.css`.",
+  "keywords": [
+    "css-modules",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/mizdra/css-modules-kit.git",
     "directory": "packages/codegen"
   },
-  "author": "mizdra <pp.mizdra@gmail.com>",
-  "license": "MIT",
-  "private": false,
-  "scripts": {
-    "build": "tsc -b tsconfig.build.json"
-  },
-  "engines": {
-    "node": ">=20.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "bin": {
     "cmk": "bin/cmk.js"
   },
-  "keywords": [
-    "css-modules",
-    "typescript"
-  ],
   "files": [
     "bin",
     "src",
@@ -37,11 +25,23 @@
     "!src/test",
     "dist"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
   "dependencies": {
     "@css-modules-kit/core": "^0.9.0",
     "chokidar": "^4.0.3"
   },
   "peerDependencies": {
     "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }
