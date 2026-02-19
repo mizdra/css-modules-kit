@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* oxlint-disable @typescript-eslint/naming-convention */
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vitest';

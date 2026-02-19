@@ -27,7 +27,7 @@ export async function findComponentFile(
   for (const path of COMPONENT_EXTENSIONS.map((ext) => pathWithoutExtension + ext)) {
     try {
       // TODO: Cache the result of readFile
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       const text = await readFile(path);
       return { fileName: path, text };
     } catch {

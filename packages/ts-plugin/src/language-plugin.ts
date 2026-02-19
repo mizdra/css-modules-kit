@@ -51,7 +51,7 @@ export function createCSSLanguagePlugin(
         includeSyntaxError: false,
         keyframes: config.keyframes,
       });
-      // eslint-disable-next-line prefer-const
+      // oxlint-disable-next-line prefer-const
       let { text, mapping, linkedCodeMapping, secondaryMapping } = generateDts(cssModule, {
         ...config,
         forTsPlugin: true,

@@ -1,6 +1,6 @@
-// eslint-disable-next-line no-restricted-imports
+// oxlint-disable-next-line no-restricted-imports
 import type { ParsedPath } from 'node:path';
-// eslint-disable-next-line no-restricted-imports
+// oxlint-disable-next-line no-restricted-imports
 import nodePath from 'node:path';
 import ts from 'typescript';
 

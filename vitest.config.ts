@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-restricted-imports
+// oxlint-disable-next-line no-restricted-imports
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 

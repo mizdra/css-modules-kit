@@ -225,7 +225,7 @@ function generateNamedExportsDts(
        */
 
       text += `export {\n`;
-      // eslint-disable-next-line no-loop-func
+      // oxlint-disable-next-line no-loop-func
       tokenImporter.values.forEach((value) => {
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
@@ -414,7 +414,7 @@ function generateDefaultExportDts(
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
        */
 
-      // eslint-disable-next-line no-loop-func
+      // oxlint-disable-next-line no-loop-func
       tokenImporter.values.forEach((value, i) => {
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
