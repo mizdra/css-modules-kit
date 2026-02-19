@@ -217,13 +217,13 @@ export function normalizeCompletionDetails(
 ): SimplifiedCompletionDetails[] {
   return entries.map((entry) => {
     return {
-      ...(entry.codeActions ?
-        {
-          codeActions: entry.codeActions.map((action) => {
-            return { changes: action.changes };
-          }),
-        }
-      : {}),
+      ...(entry.codeActions
+        ? {
+            codeActions: entry.codeActions.map((action) => {
+              return { changes: action.changes };
+            }),
+          }
+        : {}),
     };
   });
 }

@@ -1,28 +1,31 @@
 {
   "name": "@css-modules-kit/ts-plugin",
-  "description": "A TypeScript Language Service Plugin for CSS Modules",
   "version": "0.9.0",
-  "type": "module",
-  "sideEffects": false,
+  "private": false,
+  "description": "A TypeScript Language Service Plugin for CSS Modules",
+  "keywords": [
+    "css-modules",
+    "language service",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/mizdra/css-modules-kit.git",
     "directory": "packages/ts-plugin"
   },
-  "author": "mizdra <pp.mizdra@gmail.com>",
-  "license": "MIT",
-  "private": false,
+  "files": [
+    "bin",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/__snapshots__",
+    "!src/test",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
-  "scripts": {
-    "build": "tsc -b tsconfig.build.json"
-  },
-  "engines": {
-    "node": ">=20.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.cts",
@@ -33,25 +36,22 @@
       "default": "./dist/type.js"
     }
   },
-  "keywords": [
-    "css-modules",
-    "typescript",
-    "language service"
-  ],
-  "files": [
-    "bin",
-    "src",
-    "!src/**/*.test.ts",
-    "!src/**/__snapshots__",
-    "!src/test",
-    "dist"
-  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
   "dependencies": {
+    "@css-modules-kit/core": "^0.9.0",
     "@volar/language-core": "^2.4.28",
-    "@volar/typescript": "^2.4.28",
-    "@css-modules-kit/core": "^0.9.0"
+    "@volar/typescript": "^2.4.28"
   },
   "peerDependencies": {
     "typescript": ">=5.6.3"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

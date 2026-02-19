@@ -1,6 +1,6 @@
-import { defineConfig } from 'eslint/config';
-import css from '@eslint/css';
 import cssModulesKit from '@css-modules-kit/eslint-plugin';
+import css from '@eslint/css';
+import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
   {

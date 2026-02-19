@@ -1,18 +1,25 @@
 {
   "name": "css-modules-kit-vscode",
   "displayName": "CSS Modules Kit",
-  "description": "The VS Code extension for CSS Modules",
   "version": "0.9.0",
-  "type": "module",
+  "private": true,
+  "description": "The VS Code extension for CSS Modules",
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "css-modules",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/mizdra/css-modules-kit.git",
     "directory": "packages/vscode"
   },
-  "author": "mizdra <pp.mizdra@gmail.com>",
   "publisher": "mizdra",
-  "license": "MIT",
-  "private": true,
+  "type": "module",
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
@@ -20,20 +27,9 @@
     "vscode:prepublish:rewrite-root-package-json": "jq 'del(.workspaces)' ../../package.json > tmp.json && mv tmp.json ../../package.json",
     "vscode:prepublish:npm-install": "npm i --no-package-lock --omit=dev"
   },
-  "engines": {
-    "vscode": "^1.84.0"
+  "dependencies": {
+    "@css-modules-kit/ts-plugin": "^0.9.0"
   },
-  "icon": "./image/logo.png",
-  "keywords": [
-    "css-modules",
-    "typescript"
-  ],
-  "categories": [
-    "Programming Languages"
-  ],
-  "activationEvents": [
-    "onLanguage:css"
-  ],
   "contributes": {
     "typescriptServerPlugins": [
       {
@@ -80,7 +76,11 @@
       ]
     }
   },
-  "dependencies": {
-    "@css-modules-kit/ts-plugin": "^0.9.0"
+  "activationEvents": [
+    "onLanguage:css"
+  ],
+  "icon": "./image/logo.png",
+  "engines": {
+    "vscode": "^1.84.0"
   }
 }

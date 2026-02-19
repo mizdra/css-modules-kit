@@ -1,10 +1,9 @@
 {
   "name": "css-modules-kit-monorepo",
-  "type": "module",
-  "repository": "https://github.com/mizdra/css-modules-kit.git",
-  "author": "mizdra <pp.mizdra@gmail.com>",
-  "license": "MIT",
   "private": true,
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
+  "repository": "https://github.com/mizdra/css-modules-kit.git",
   "workspaces": [
     "packages/core",
     "packages/codegen",
@@ -14,6 +13,7 @@
     "packages/eslint-plugin",
     "crates/zed"
   ],
+  "type": "module",
   "scripts": {
     "version": "./scripts/version.sh",
     "build": "tsc -b tsconfig.build.json",

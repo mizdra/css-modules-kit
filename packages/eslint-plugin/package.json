@@ -1,40 +1,20 @@
 {
   "name": "@css-modules-kit/eslint-plugin",
-  "description": "A eslint plugin for CSS Modules",
   "version": "0.9.0",
-  "type": "module",
-  "sideEffects": false,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mizdra/css-modules-kit.git",
-    "directory": "packages/eslint-plugin"
-  },
-  "author": "mizdra <pp.mizdra@gmail.com>",
-  "license": "MIT",
   "private": false,
-  "exports": {
-    ".": {
-      "default": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
-  "scripts": {
-    "build": "tsc -b tsconfig.build.json"
-  },
-  "engines": {
-    "node": ">=20.19.0"
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
-  },
+  "description": "A eslint plugin for CSS Modules",
   "keywords": [
     "css-modules",
     "eslint",
     "eslint-plugin"
   ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizdra/css-modules-kit.git",
+    "directory": "packages/eslint-plugin"
+  },
   "files": [
     "bin",
     "src",
@@ -43,6 +23,23 @@
     "!src/test",
     "dist"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
   "dependencies": {
     "@css-modules-kit/core": "^0.9.0",
     "postcss-safe-parser": "^7.0.1"
@@ -50,5 +47,8 @@
   "peerDependencies": {
     "@eslint/css": ">=0.4.0",
     "eslint": ">=9.0.0"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }
