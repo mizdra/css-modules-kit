@@ -216,15 +216,13 @@ export function normalizeCompletionDetails(
   entries: readonly SimplifiedCompletionDetails[],
 ): SimplifiedCompletionDetails[] {
   return entries.map((entry) => {
-    return {
-      ...(entry.codeActions
+    return (entry.codeActions
         ? {
             codeActions: entry.codeActions.map((action) => {
               return { changes: action.changes };
             }),
           }
-        : {}),
-    };
+        : {});
   });
 }
 

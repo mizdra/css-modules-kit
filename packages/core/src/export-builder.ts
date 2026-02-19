@@ -21,7 +21,7 @@ export function createExportBuilder(host: ExportBuilderHost): ExportBuilder {
     // when the module graph has circular dependencies.
     cache.set(cssModule.fileName, { allTokens: [] });
 
-    const result: ExportRecord = { allTokens: [...cssModule.localTokens.map((t) => t.name)] };
+    const result: ExportRecord = { allTokens: cssModule.localTokens.map((t) => t.name) };
 
     for (const tokenImporter of cssModule.tokenImporters) {
       const from = host.resolver(tokenImporter.from, { request: cssModule.fileName });
