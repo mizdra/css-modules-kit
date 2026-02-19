@@ -32,6 +32,7 @@ Package dependencies:
 npm run build # Build all packages
 
 npm run lint  # Run all linting
+npm run lint-fix # Auto-fix linting issues
 
 npm run test # Run all tests except VS Code extension tests
 npx vitest --run --project unit # Run only unit tests
