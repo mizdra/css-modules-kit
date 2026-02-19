@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "bracketSameLine": true,
+  "experimentalSortImports": {
+    "newlinesBetween": false
+  },
+  "printWidth": 120,
+  "quoteProps": "consistent",
+  "singleQuote": true
+}

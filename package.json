@@ -20,7 +20,7 @@
     "lint": "run-s -c lint:*",
     "lint:tsc": "tsc -b",
     "lint:eslint": "eslint .",
-    "lint:oxfmt": "oxfmt -c ./node_modules/@mizdra/oxfmt-config/.oxfmtrc.json --check",
+    "lint:oxfmt": "oxfmt --check",
     "test": "vitest --run",
     "vscode-test": "vscode-test",
     "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
@@ -31,7 +31,6 @@
     "@eslint/css": "^0.10.0",
     "@mizdra/eslint-config-mizdra": "^6.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
-    "@mizdra/oxfmt-config": "*",
     "@types/eslint": "^9.6.1",
     "@types/node": "^24.2.1",
     "@types/postcss-safe-parser": "^5.0.4",
