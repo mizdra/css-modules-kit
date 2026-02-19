@@ -60,7 +60,7 @@ function isDefaultExportedStylesEntry(entry: ts.CompletionEntry): entry is Defau
   return (
     entry.name === STYLES_EXPORT_NAME &&
     entry.data !== undefined &&
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     entry.data.exportName === ts.InternalSymbolName.Default &&
     entry.data.fileName !== undefined &&
     isCSSModuleFile(entry.data.fileName)
@@ -73,7 +73,7 @@ function isDefaultExportedStylesEntry(entry: ts.CompletionEntry): entry is Defau
 function isNamedExportedTokenEntry(entry: ts.CompletionEntry): boolean {
   return (
     entry.data !== undefined &&
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+    // oxlint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     entry.data.exportName !== ts.InternalSymbolName.Default &&
     entry.data.fileName !== undefined &&
     isCSSModuleFile(entry.data.fileName)

@@ -11,7 +11,7 @@ import { createIFF } from './test/fixture.js';
 import { createLoggerSpy } from './test/logger.js';
 
 async function sleep(ms: number): Promise<void> {
-  // eslint-disable-next-line no-promise-executor-return
+  // oxlint-disable-next-line no-promise-executor-return
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -115,7 +115,7 @@ describe('runCMKInWatchMode', () => {
   afterEach(async () => {
     if (watcher) {
       await watcher.close();
-      // eslint-disable-next-line require-atomic-updates
+      // oxlint-disable-next-line require-atomic-updates
       watcher = null;
     }
   });
@@ -311,7 +311,7 @@ describe('runCMKInWatchMode', () => {
     await watcher.close();
 
     const loggerSpy2 = createLoggerSpy();
-    // eslint-disable-next-line require-atomic-updates
+    // oxlint-disable-next-line require-atomic-updates
     watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: true }), loggerSpy2);
     expect(loggerSpy2.clearScreen).toHaveBeenCalledTimes(0);
   });

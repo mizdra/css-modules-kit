@@ -16,11 +16,11 @@ export async function waitFor<T>(
 
   while (Date.now() < endTime) {
     try {
-      // eslint-disable-next-line no-await-in-loop
+      // oxlint-disable-next-line no-await-in-loop
       return await testFn();
     } catch (error) {
       if (error instanceof AssertionError) {
-        // eslint-disable-next-line no-await-in-loop
+        // oxlint-disable-next-line no-await-in-loop
         await setTimeout(interval);
       } else {
         throw error;

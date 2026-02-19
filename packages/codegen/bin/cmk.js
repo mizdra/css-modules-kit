@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* eslint-disable n/no-process-exit */
+/* oxlint-disable n/no-process-exit */
 
 import {
   createLogger,
@@ -31,7 +31,8 @@ try {
   // - Watch mode: Outputs errors to the terminal but does not terminate the process. Continues watching the file.
   if (args.watch) {
     const watcher = await runCMKInWatchMode(args, logger);
-    process.on('SIGINT', () => watcher.close());
+    // oxlint-disable-next-line typescript/no-misused-promises
+    process.on('SIGINT', async () => watcher.close());
   } else {
     const success = await runCMK(args, logger);
     if (!success) {

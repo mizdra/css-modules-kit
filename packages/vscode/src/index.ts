@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* oxlint-disable no-console */
 
 import type {
   CSSModulesKitDocumentLinkRequest,
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (!res.success || !res.body || !res.body.result || res.body.result.length === 0) return;
           const edit = new vscode.WorkspaceEdit();
           for (const location of res.body.result) {
-            // eslint-disable-next-line no-await-in-loop
+            // oxlint-disable-next-line no-await-in-loop
             const document = await vscode.workspace.openTextDocument(location.fileName);
             const start = document.positionAt(location.textSpan.start);
             const end = document.positionAt(location.textSpan.start + location.textSpan.length);

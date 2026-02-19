@@ -1,6 +1,6 @@
 import { defineConfig } from '@vscode/test-cli';
 
-const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
+const baseConfig = {
   extensionDevelopmentPath: 'packages/vscode',
   version: process.env.VSCODE_VERSION ?? 'stable',
   mocha: {
@@ -13,7 +13,7 @@ const baseConfig = /** @type {Parameters<typeof defineConfig>[0]} */ ({
   download: {
     timeout: 60_000,
   },
-});
+};
 
 export default defineConfig([
   {

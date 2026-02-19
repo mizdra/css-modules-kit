@@ -50,7 +50,7 @@ export function launchTsserver(): Tsserver {
   async function sendRequest(
     command: string,
     args?: unknown,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   ): Promise<any> {
     const res: server.protocol.Response = await server.message({
       seq: seq++,
@@ -216,15 +216,13 @@ export function normalizeCompletionDetails(
   entries: readonly SimplifiedCompletionDetails[],
 ): SimplifiedCompletionDetails[] {
   return entries.map((entry) => {
-    return {
-      ...(entry.codeActions
-        ? {
-            codeActions: entry.codeActions.map((action) => {
-              return { changes: action.changes };
-            }),
-          }
-        : {}),
-    };
+    return entry.codeActions
+      ? {
+          codeActions: entry.codeActions.map((action) => {
+            return { changes: action.changes };
+          }),
+        }
+      : {};
   });
 }
 

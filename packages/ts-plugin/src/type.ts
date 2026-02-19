@@ -41,7 +41,7 @@ export interface CSSModulesKitDocumentLinkResponse extends ts.server.protocol.Re
 }
 
 declare module 'typescript' {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+  // oxlint-disable-next-line @typescript-eslint/no-namespace
   namespace server {
     export interface Session {
       addProtocolHandler(
