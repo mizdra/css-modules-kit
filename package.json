@@ -21,6 +21,9 @@
     "lint:tsc": "tsc -b",
     "lint:oxfmt": "oxfmt --check",
     "lint:oxlint": "oxlint --type-aware",
+    "lint-fix": "run-s -c lint-fix:*",
+    "lint-fix:oxfmt": "oxfmt --write",
+    "lint-fix:oxlint": "oxlint --type-aware --fix",
     "test": "vitest --run",
     "vscode-test": "vscode-test",
     "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
