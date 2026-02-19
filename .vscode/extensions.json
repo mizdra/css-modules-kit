@@ -1,7 +1,6 @@
 {
   "recommendations": [
-    "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint",
+    "oxc.oxc-vscode",
     "vitest.explorer",
     "mizdra.css-modules-kit-vscode"
   ]

@@ -108,7 +108,7 @@ function myFunction() {
 - TypeScript
 - Vitest
 - ESLint
-- Prettier
+- Oxfmt
 - npm, npm workspaces
 - Changesets
 
