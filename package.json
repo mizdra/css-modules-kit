@@ -22,7 +22,7 @@
     "lint:oxlint": "oxlint --type-aware --type-check",
     "lint-fix": "run-s -c lint-fix:*",
     "lint-fix:oxfmt": "oxfmt --write",
-    "lint-fix:oxlint": "oxlint --type-aware --fix",
+    "lint-fix:oxlint": "npm run lint:oxlint -- --fix",
     "test": "vitest --run",
     "vscode-test": "vscode-test",
     "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
