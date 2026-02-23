@@ -49,7 +49,7 @@
     "oxfmt": "*",
     "oxlint": "^1.48.0",
     "oxlint-tsgolint": "^0.14.1",
-    "stylelint": "^16.23.1",
+    "stylelint": "^17.3.0",
     "tsx": "^4.20.3",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"

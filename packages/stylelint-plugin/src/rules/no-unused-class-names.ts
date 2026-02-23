@@ -40,8 +40,8 @@ const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {
             ruleName,
             message: messages.disallow(classSelector.name, componentFile.fileName),
             node: rule,
-            index: classSelector.loc.start.offset,
-            endIndex: classSelector.loc.end.offset,
+            index: classSelector.loc.start.offset - rule.source!.start!.offset,
+            endIndex: classSelector.loc.end.offset - rule.source!.start!.offset,
             word: classSelector.name,
           });
         }

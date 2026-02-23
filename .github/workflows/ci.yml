@@ -51,6 +51,24 @@ jobs:
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - run: npm run test
+  test-stylelint-v16:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-node-and-node-modules
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite/vitest
+            packages/*/dist
+            packages/*/tsconfig.build.tsbuildinfo
+            tsconfig.tsbuildinfo
+          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-22-${{ github.sha }}
+          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-22
+      - run: npm install stylelint@16 --no-save
+      - run: npx vitest --run --project unit -- packages/stylelint-plugin
   vscode-test:
     strategy:
       fail-fast: false
