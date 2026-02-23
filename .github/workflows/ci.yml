@@ -51,6 +51,18 @@ jobs:
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
       - run: npm run test
+  test-stylelint-v16:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i -D stylelint@16
+      - uses: ./.github/actions/setup-node-and-node-modules
+        with:
+          node-version: 22
+      - run: npm run test -- packages/stylelint-plugin
   vscode-test:
     strategy:
       fail-fast: false
