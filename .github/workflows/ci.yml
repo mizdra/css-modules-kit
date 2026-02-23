@@ -62,15 +62,6 @@ jobs:
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-      - uses: actions/cache@v4
-        with:
-          path: |
-            node_modules/.vite/vitest
-            packages/*/dist
-            packages/*/tsconfig.build.tsbuildinfo
-            tsconfig.tsbuildinfo
-          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-22-${{ github.sha }}
-          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-22
       - run: npm run test -- packages/stylelint-plugin
   vscode-test:
     strategy:
