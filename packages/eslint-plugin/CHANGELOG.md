@@ -1,5 +1,14 @@
 # @css-modules-kit/eslint-plugin
 
+## 0.10.0
+
+### Patch Changes
+
+- [#341](https://github.com/mizdra/css-modules-kit/pull/341) [`70660f4`](https://github.com/mizdra/css-modules-kit/commit/70660f4146ad499988c5239d839951495d8a0703) - chore: migrate from Prettier to oxfmt
+
+- Updated dependencies [[`727f295`](https://github.com/mizdra/css-modules-kit/commit/727f29598cc3256dfaccff1d1582e7f74189e4f4), [`70660f4`](https://github.com/mizdra/css-modules-kit/commit/70660f4146ad499988c5239d839951495d8a0703)]:
+  - @css-modules-kit/core@0.10.0
+
 ## 0.9.0
 
 ### Patch Changes

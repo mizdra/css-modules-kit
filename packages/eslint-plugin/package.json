@@ -1,6 +1,6 @@
 {
   "name": "@css-modules-kit/eslint-plugin",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "description": "A eslint plugin for CSS Modules",
   "keywords": [
@@ -41,7 +41,7 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@css-modules-kit/core": "^0.9.0",
+    "@css-modules-kit/core": "^0.10.0",
     "postcss-safe-parser": "^7.0.1"
   },
   "peerDependencies": {

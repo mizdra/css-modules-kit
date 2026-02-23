@@ -1,5 +1,18 @@
 # @css-modules-kit/ts-plugin
 
+## 0.10.0
+
+### Patch Changes
+
+- [#337](https://github.com/mizdra/css-modules-kit/pull/337) [`b857cc8`](https://github.com/mizdra/css-modules-kit/commit/b857cc863f06437f18ad281f14cdf75fdec06131) - docs(ts-plugin): improve Neovim/Emacs setup guide in README
+
+- [#343](https://github.com/mizdra/css-modules-kit/pull/343) [`727f295`](https://github.com/mizdra/css-modules-kit/commit/727f29598cc3256dfaccff1d1582e7f74189e4f4) - chore: migrate from ESLint to oxlint
+
+- [#341](https://github.com/mizdra/css-modules-kit/pull/341) [`70660f4`](https://github.com/mizdra/css-modules-kit/commit/70660f4146ad499988c5239d839951495d8a0703) - chore: migrate from Prettier to oxfmt
+
+- Updated dependencies [[`727f295`](https://github.com/mizdra/css-modules-kit/commit/727f29598cc3256dfaccff1d1582e7f74189e4f4), [`70660f4`](https://github.com/mizdra/css-modules-kit/commit/70660f4146ad499988c5239d839951495d8a0703)]:
+  - @css-modules-kit/core@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes
