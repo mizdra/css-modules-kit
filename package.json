@@ -45,7 +45,7 @@
     "eslint": "^10.2.0",
     "npm-run-all2": "^8.0.4",
     "ovsx": "^0.10.10",
-    "oxfmt": "*",
+    "oxfmt": "^0.44.0",
     "oxlint": "^1.59.0",
     "oxlint-tsgolint": "^0.20.0",
     "stylelint": "^17.6.0",
