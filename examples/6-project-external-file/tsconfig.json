@@ -2,8 +2,8 @@
   "exclude": ["src/external.module.css"],
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES5", // Simplify tsserver.log
-    "lib": ["ES5"], // Simplify tsserver.log
+    "target": "ES2015",
+    "lib": ["ES2015"],
     "module": "Preserve",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
