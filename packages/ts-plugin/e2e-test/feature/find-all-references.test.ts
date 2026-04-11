@@ -32,6 +32,7 @@ describe('Find All References', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

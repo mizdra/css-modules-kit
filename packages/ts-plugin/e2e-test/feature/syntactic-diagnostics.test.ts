@@ -15,6 +15,7 @@ test('Syntactic Diagnostics', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

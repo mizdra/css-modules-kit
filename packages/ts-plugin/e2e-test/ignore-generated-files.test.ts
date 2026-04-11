@@ -19,6 +19,9 @@ test('report the import of files where .d.ts exists but .module.css does not exi
       {
         "compilerOptions": {
           "rootDirs": [".", "generated"],
+        },
+        "cmkOptions": {
+          "enabled": true
         }
       }
     `,

@@ -13,7 +13,7 @@ test('adding file', async () => {
     'tsconfig.json': dedent`
       {
         "compilerOptions": {},
-        "cmkOptions": {}
+        "cmkOptions": { "enabled": true }
       }
     `,
   });
@@ -83,7 +83,7 @@ test('updating file', async () => {
     'tsconfig.json': dedent`
       {
         "compilerOptions": {},
-        "cmkOptions": {}
+        "cmkOptions": { "enabled": true }
       }
     `,
   });

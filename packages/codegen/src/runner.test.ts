@@ -20,7 +20,7 @@ describe('runCMK', () => {
     const iff = await createIFF({
       'tsconfig.json': dedent`
         {
-          "cmkOptions": { "dtsOutDir": "generated" }
+          "cmkOptions": { "enabled": true, "dtsOutDir": "generated" }
         }
       `,
       'src/a.module.css': '.a_1 { color: red; }',
@@ -101,7 +101,7 @@ describe('runCMK', () => {
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/old.module.css.d.ts'))).rejects.toThrow();
   });
-  test('throws CMKDisabledError if enabled is false', async () => {
+  test('throws CMKDisabledError if enabled is not true', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": false } }',
       'src/a.module.css': '.a_1 { color: red; }',
@@ -122,7 +122,7 @@ describe('runCMKInWatchMode', () => {
     const iff = await createIFF({
       'tsconfig.json': dedent`
         {
-          "cmkOptions": { "dtsOutDir": "generated" }
+          "cmkOptions": { "enabled": true, "dtsOutDir": "generated" }
         }
       `,
       'src/a.module.css': '.a_1 { color: red; }',
@@ -313,7 +313,7 @@ describe('runCMKInWatchMode', () => {
     watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: true }), loggerSpy2);
     expect(loggerSpy2.clearScreen).toHaveBeenCalledTimes(0);
   });
-  test('throws CMKDisabledError if enabled is false', async () => {
+  test('throws CMKDisabledError if enabled is not true', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": false } }',
       'src/a.module.css': '.a_1 { color: red; }',

@@ -18,6 +18,7 @@ describe('handle invalid syntax CSS without crashing', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

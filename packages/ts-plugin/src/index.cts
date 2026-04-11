@@ -40,7 +40,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
     }
   }
 
-  if (config.enabled === false) {
+  if (!config.enabled) {
     return { languagePlugins: [] };
   }
 

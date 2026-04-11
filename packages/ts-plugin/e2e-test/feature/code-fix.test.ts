@@ -35,6 +35,7 @@ describe('Get Code Fixes', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

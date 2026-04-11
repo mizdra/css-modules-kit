@@ -34,7 +34,7 @@ export interface Watcher {
  */
 export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean> {
   const project = createProject(args);
-  if (project.config.enabled === false) {
+  if (!project.config.enabled) {
     throw new CMKDisabledError(project.config);
   }
   if (args.clean) {
@@ -66,7 +66,7 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
 export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promise<Watcher> {
   const fsWatchers: FSWatcher[] = [];
   const project = createProject(args);
-  if (project.config.enabled === false) {
+  if (!project.config.enabled) {
     throw new CMKDisabledError(project.config);
   }
   let emitAndReportDiagnosticsTimer: NodeJS.Timeout | undefined = undefined;
