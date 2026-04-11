@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-/* oxlint-disable n/no-process-exit */
 
 import {
   createLogger,

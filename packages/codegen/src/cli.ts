@@ -18,12 +18,10 @@ Options:
 `;
 
 export function printHelpText(): void {
-  // oxlint-disable-next-line no-console
   console.log(helpText);
 }
 
 export function printVersion(): void {
-  // oxlint-disable-next-line no-console
   console.log(packageJson.version);
 }
 
