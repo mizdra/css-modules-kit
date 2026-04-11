@@ -41,7 +41,7 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@css-modules-kit/core": "^0.10.0",
+    "@css-modules-kit/core": "workspace:^",
     "postcss-safe-parser": "^7.0.1"
   },
   "peerDependencies": {

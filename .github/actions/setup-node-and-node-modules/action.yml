@@ -1,25 +1,16 @@
-name: 'Setup Node and node_modules cache'
-description: 'Setup Node.js and node_modules'
+name: 'Setup Node and pnpm store cache'
+description: 'Setup pnpm, Node.js, and restore pnpm store cache'
 inputs:
   node-version:
     description: 'Node.js version'
     required: true
-outputs:
-  cache-hit:
-    description: 'Whether node_modules cache was hit'
-    value: ${{ steps.node-modules-cache.outputs.cache-hit }}
 runs:
   using: 'composite'
   steps:
+    - uses: pnpm/action-setup@v5
     - uses: actions/setup-node@v4
-      id: setup-node
       with:
         node-version: ${{ inputs.node-version }}
-    - uses: actions/cache@v4
-      id: node-modules-cache
-      with:
-        path: node_modules
-        key: node-modules-${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup-node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
-    - run: npm install
-      if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        cache: 'pnpm'
+    - run: pnpm install --frozen-lockfile
       shell: sh

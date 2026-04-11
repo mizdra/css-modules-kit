@@ -1,0 +1,8 @@
+packages:
+  - 'packages/*'
+  - 'crates/*'
+allowBuilds:
+  '@vscode/vsce-sign': true
+  esbuild: true
+blockExoticSubdeps: true
+minimumReleaseAge: 4320

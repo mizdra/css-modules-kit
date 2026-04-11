@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "pnpm: build - packages/codegen",
+      "type": "shell",
+      "command": "pnpm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/codegen"
+      },
+      "group": "build"
+    },
+    {
+      "label": "pnpm: build - packages/stylelint-plugin",
+      "type": "shell",
+      "command": "pnpm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/stylelint-plugin"
+      },
+      "group": "build"
+    },
+    {
+      "label": "pnpm: build - packages/eslint-plugin",
+      "type": "shell",
+      "command": "pnpm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/eslint-plugin"
+      },
+      "group": "build"
+    },
+    {
+      "label": "pnpm: build - packages/vscode",
+      "type": "shell",
+      "command": "pnpm run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/vscode"
+      },
+      "group": "build"
+    }
+  ]
+}

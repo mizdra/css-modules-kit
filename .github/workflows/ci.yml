@@ -20,7 +20,7 @@ jobs:
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-      - run: npm run lint
+      - run: pnpm run lint
   build:
     runs-on: ubuntu-24.04-arm
     steps:
@@ -28,7 +28,7 @@ jobs:
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-      - run: npm run build
+      - run: pnpm run build
   test:
     strategy:
       fail-fast: false
@@ -50,19 +50,20 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: npm run test
+      - run: pnpm run test
   test-stylelint-v16:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v5
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm i -D stylelint@16
+      - run: pnpm add -D -w stylelint@16
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
-      - run: npm run test -- packages/stylelint-plugin
+      - run: pnpm run test -- packages/stylelint-plugin
   vscode-test:
     strategy:
       fail-fast: false
@@ -88,7 +89,7 @@ jobs:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
 
-      - run: xvfb-run -a npm run vscode-test
+      - run: xvfb-run -a pnpm run vscode-test
         if: runner.os == 'Linux'
-      - run: npm run vscode-test
+      - run: pnpm run vscode-test
         if: runner.os != 'Linux'
