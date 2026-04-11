@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { createCssModuleFileRefactor } from '../../src/language-service/feature/refactor.js';
 import { createIFF } from '../test-util/fixture.js';
 import { launchTsserver } from '../test-util/tsserver.js';

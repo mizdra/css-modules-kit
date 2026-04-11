@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { fakeAtValues, fakeRoot } from '../test/ast.js';
 import { parseAtValue } from './at-value-parser.js';
 

@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import ts from 'typescript';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import {
   CANNOT_FIND_NAME_ERROR_CODE,
   PROPERTY_DOES_NOT_EXIST_ERROR_CODES,

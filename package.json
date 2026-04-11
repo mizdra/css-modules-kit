@@ -8,15 +8,11 @@
   "scripts": {
     "version": "./scripts/version.sh",
     "build": "tsc -b tsconfig.build.json",
-    "lint": "run-s -c lint:*",
-    "lint:oxfmt": "oxfmt --check",
-    "lint:oxlint": "oxlint --type-aware --type-check",
-    "lint-fix": "run-s -c lint-fix:*",
-    "lint-fix:oxfmt": "oxfmt --write",
-    "lint-fix:oxlint": "pnpm run lint:oxlint --fix",
-    "test": "vitest --run",
+    "check": "vp check",
+    "test": "vp test",
     "vscode-test": "vscode-test",
-    "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
+    "update-generated-in-examples": "./scripts/update-generated-in-examples.sh",
+    "prepare": "vp config"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
@@ -25,6 +21,7 @@
     "@css-modules-kit/codegen": "workspace:^",
     "@eslint/css": "^1.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
+    "@mizdra/oxfmt-config": "^0.2.0",
     "@mizdra/oxlint-config": "^0.3.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.3.0",
@@ -38,16 +35,13 @@
     "dedent": "^1.7.2",
     "eslint": "^10.2.0",
     "mocha": "^11.7.5",
-    "npm-run-all2": "^8.0.4",
     "ovsx": "^0.10.10",
-    "oxfmt": "^0.44.0",
-    "oxlint": "^1.59.0",
-    "oxlint-tsgolint": "^0.20.0",
     "rolldown": "1.0.0-rc.13",
     "stylelint": "^17.6.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
-    "vitest": "^4.1.3"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }

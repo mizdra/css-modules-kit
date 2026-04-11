@@ -1,7 +1,7 @@
 import { access, chmod, rm, writeFile } from 'node:fs/promises';
 import { TsConfigFileNotFoundError } from '@css-modules-kit/core';
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { ReadCSSModuleFileError } from './error.js';
 import { createProject } from './project.js';
 import { formatDiagnostics } from './test/diagnostic.js';

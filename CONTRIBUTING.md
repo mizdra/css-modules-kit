@@ -11,16 +11,16 @@ Please read the slides about css-modules-kit (in Japanese).
 ## Repo Setup
 
 ```console
-pnpm install
-pnpm run test
+vp install
+vp test
 ```
 
 ## npm-scripts
 
-- `pnpm run build`: Build for production
-- `pnpm run lint`: Run static-checking
-- `pnpm run test`: Run tests
-- `pnpm run vscode-test`: Run VS Code Extension tests
+- `vp run build`: Build for production
+- `vp check`: Run static-checking
+- `vp test`: Run tests
+- `vp run vscode-test`: Run VS Code Extension tests
 
 ## How to debug
 
@@ -30,7 +30,7 @@ You can run code in debug mode from the "Run and Debug" panel in VS Code. To sta
 - `eslint-plugin (...)`: Debug for `eslint-plugin` package
 - `stylelint (...)`: Debug for `stylelint` package
 - `vscode (...)`: Debug for `vscode` and `ts-plugin` package
-- `vscode-test`: Debug for `pnpm run vscode-test`
+- `vscode-test`: Debug for `vp run vscode-test`
 
 Good to know:
 
@@ -44,12 +44,12 @@ Good to know:
 
 Debugging Zed Extension is a bit tricky.
 
-1. Run `pnpm run build`
+1. Run `vp run build`
 1. Start `CMK_LOAD_LOCAL_TS_PLUGIN=0 zed examples/1-basic`
 
 Good to know:
 
-- If `CMK_LOAD_LOCAL_TS_PLUGIN` is set to `1`, the `ts-plugin` built with `pnpm run build` will be loaded.
+- If `CMK_LOAD_LOCAL_TS_PLUGIN` is set to `1`, the `ts-plugin` built with `vp run build` will be loaded.
   - When it is not `1`, the `ts-plugin` downloaded from npmjs.com is loaded.
 - In Zed, you can view the tsserver log with `F1 > dev: Open language server logs > vtsls (1-basic)`.
 - When you start zed with the `--foreground` option, you can view the stdout of the Extension.
@@ -57,7 +57,7 @@ Good to know:
 
 ### NeoVim
 
-1. Run `pnpm run build`
+1. Run `vp run build`
 1. Edit your `init.lua`
    ```diff
     vim.lsp.config('vtsls', {
@@ -82,7 +82,7 @@ Good to know:
 
 ### Emacs
 
-1. Run `pnpm run build`
+1. Run `vp run build`
 1. Edit your `init.el`
    ```diff
       (add-to-list
@@ -106,8 +106,8 @@ Good to know:
 1. Write your code
 1. Add tests if necessary
 1. Update documentation if necessary
-1. Pass `pnpm run lint`, `pnpm run test`, and `pnpm run vscode-test`
-1. Run `pnpm exec changeset add` to create a changeset if the change affects users
+1. Pass `vp check`, `vp test`, and `vp run vscode-test`
+1. Run `vp exec changeset add` to create a changeset if the change affects users
    - The summary should be in the following format:
      - For bug fixes: `fix: ...`
      - For new features: `feat: ...`

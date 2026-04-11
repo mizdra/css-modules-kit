@@ -1,5 +1,5 @@
 import { resolve } from '@css-modules-kit/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vite-plus/test';
 import { parseCLIArgs } from './cli.js';
 import { ParseCLIArgsError } from './error.js';
 

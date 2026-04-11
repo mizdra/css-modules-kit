@@ -1,5 +1,5 @@
 import type { Linter } from 'eslint';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { createESLint, formatLintResults } from '../test/eslint.js';
 import { createIFF } from '../test/fixture.js';
 

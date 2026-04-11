@@ -19,32 +19,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: 24
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
+          cache: true
+      - run: vp run build
       - name: set release variables
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%MZ')" >> $GITHUB_ENV
       - name: Create Release Pull Request or Publish to npm
         id: changesets
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e # v1.5.2
         with:
-          version: pnpm run version
-          publish: pnpm exec changeset publish
+          version: vp run version
+          publish: vp exec changeset publish
           createGithubReleases: aggregate
           githubReleaseName: Release ${{ env.date }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-      - run: pnpm exec vsce publish --no-git-tag-version --skip-duplicate
+      - run: vp exec vsce publish --no-git-tag-version --skip-duplicate
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-      - run: pnpm exec ovsx publish --skip-duplicate
+      - run: vp exec ovsx publish --skip-duplicate
         if: steps.changesets.outputs.hasChangesets == 'false'
         working-directory: packages/vscode
         env:

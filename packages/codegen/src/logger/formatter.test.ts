@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import ts from 'typescript';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { formatDiagnostics, formatTime } from './formatter.js';
 
 describe('formatDiagnostics', () => {

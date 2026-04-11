@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.js';
 
 const options: ParseCSSModuleOptions = { fileName: '/test.module.css', includeSyntaxError: true, keyframes: true };

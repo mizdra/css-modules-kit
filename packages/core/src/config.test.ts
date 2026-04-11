@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import ts from 'typescript';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import type { CMKConfig } from './config.js';
 import { readConfigFile } from './config.js';
 import { TsConfigFileNotFoundError } from './error.js';

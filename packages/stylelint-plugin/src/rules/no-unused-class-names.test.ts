@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import stylelint from 'stylelint';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { createIFF } from '../test/fixture.js';
 import { formatLinterResult } from '../test/stylelint.js';
 import { noUnusedClassNames } from './no-unused-class-names.js';

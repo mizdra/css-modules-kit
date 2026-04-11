@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { stripVTControlCharacters } from 'node:util';
 import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
-import { expect, test } from 'vitest';
+import { expect, test } from 'vite-plus/test';
 import { createIFF } from '../src/test/fixture.js';
 
 const binPath = join(import.meta.dirname, '../bin/cmk.js');
