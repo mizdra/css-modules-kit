@@ -751,12 +751,16 @@ describe('parseRule', () => {
     `);
   });
   test('collect class selectors containing special characters', () => {
+    const backslash = '\\';
     const rules = fakeRules(
-      fakeRoot(dedent`
-        .non-js-identifier {}
-        .\\backslash_1, .\'backslash_2, .\31 backslash_3 {}
-        /* comment */.class_selector_after_comment {}
-      `),
+      fakeRoot(
+        // dedent package has an issue where `\\` is not escaped correctly. Therefore, we define the source code without using dedent.
+        `
+.non-js-identifier {}
+.${backslash}${backslash}backslash_1, .${backslash}'backslash_2, .${backslash}31 backslash_3 {}
+/* comment */.class_selector_after_comment {}
+      `.trim(),
+      ),
     );
     const result = rules.map(parseRule);
     expect(result).toMatchInlineSnapshot(`
