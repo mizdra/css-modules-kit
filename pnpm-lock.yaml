@@ -80,6 +80,9 @@ importers:
       oxlint-tsgolint:
         specifier: ^0.20.0
         version: 0.20.0
+      rolldown:
+        specifier: 1.0.0-rc.13
+        version: 1.0.0-rc.13
       stylelint:
         specifier: ^17.6.0
         version: 17.6.0(typescript@6.0.2)

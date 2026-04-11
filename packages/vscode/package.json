@@ -23,7 +23,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc -b tsconfig.build.json",
-    "vscode:prepublish": "pnpm install --ignore-workspace --prod --no-lockfile --config.node-linker=hoisted"
+    "vscode:prepublish": "../../scripts/vscode-prepublish.sh"
   },
   "dependencies": {
     "@css-modules-kit/ts-plugin": "workspace:^"
