@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { createIFF } from './test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeDefinitions } from './test-util/tsserver.js';
 

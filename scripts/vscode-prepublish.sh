@@ -17,5 +17,5 @@ cd "$(dirname "$0")/.."
 
 rm -rf packages/vscode/node_modules
 jq '.dependencies["@css-modules-kit/ts-plugin"] = "*"' packages/vscode/package.json > tmp.json && mv tmp.json packages/vscode/package.json
-pnpm exec rolldown packages/ts-plugin/dist/index.cjs --file packages/vscode/node_modules/@css-modules-kit/ts-plugin/index.js --platform node --format cjs
+vp exec rolldown packages/ts-plugin/dist/index.cjs --file packages/vscode/node_modules/@css-modules-kit/ts-plugin/index.js --platform node --format cjs
 jq '{name, version}' packages/ts-plugin/package.json > packages/vscode/node_modules/@css-modules-kit/ts-plugin/package.json

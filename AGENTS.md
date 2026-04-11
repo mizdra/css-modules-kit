@@ -29,16 +29,16 @@ Package dependencies:
 ## Development Commands
 
 ```bash
-pnpm run build # Build all packages
+vp run build # Build all packages
 
-pnpm run lint  # Run all linting
-pnpm run lint-fix # Auto-fix linting issues
+vp check     # Run format, lint, and type checks
+vp check --fix # Auto-fix format and lint issues
 
-pnpm run test # Run all tests except VS Code extension tests
-pnpm exec vitest --run --project unit # Run only unit tests
-pnpm exec vitest --run --project e2e # Run only E2E tests
-pnpm exec vitest --run packages/core/src/parser/css-module-parser.test.ts # Run a specific test file
-pnpm run vscode-test # Run VS Code extension tests
+vp test # Run all tests except VS Code extension tests
+vp test --project unit # Run only unit tests
+vp test --project e2e # Run only E2E tests
+vp test packages/core/src/parser/css-module-parser.test.ts # Run a specific test file
+vp run vscode-test # Run VS Code extension tests
 ```
 
 ### Updating generated files in examples
@@ -46,7 +46,7 @@ pnpm run vscode-test # Run VS Code extension tests
 The examples directory contains generated type definition files produced by codegen as examples. If the generated type definition files change, these files must also be updated. You can update them with the following command:
 
 ```bash
-pnpm run update-generated-in-examples
+vp run update-generated-in-examples
 ```
 
 ## Coding Conventions
@@ -107,9 +107,7 @@ function myFunction() {
 ## Tech Stack
 
 - TypeScript
-- Vitest
-- Oxlint
-- Oxfmt
+- Vite+ (`vp`) — unified toolchain for test, lint, fmt
 - pnpm, pnpm workspaces
 - Changesets
 

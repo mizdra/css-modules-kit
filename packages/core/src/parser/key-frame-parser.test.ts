@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { fakeAtKeyframes, fakeRoot } from '../test/ast.js';
 import { parseAtKeyframes } from './key-frame-parser.js';
 

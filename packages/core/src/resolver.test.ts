@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { join } from './path.js';
 import { createResolver } from './resolver.js';
 import { createIFF } from './test/fixture.js';

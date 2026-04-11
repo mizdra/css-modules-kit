@@ -1,9 +1,9 @@
 import { execSync } from 'node:child_process';
-import type { TestProject } from 'vitest/node';
+import type { TestProject } from 'vite-plus/test/node';
 
 export default function setup(project: TestProject) {
-  execSync('pnpm run build', { stdio: 'inherit' });
+  execSync('vp run build', { stdio: 'inherit' });
   project.onTestsRerun(() => {
-    execSync('pnpm run build', { stdio: 'inherit' });
+    execSync('vp run build', { stdio: 'inherit' });
   });
 }

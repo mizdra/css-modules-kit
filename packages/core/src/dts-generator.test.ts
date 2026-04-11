@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { generateDts, type GenerateDtsOptions } from './dts-generator.js';
 import { readAndParseCSSModule } from './test/css-module.js';
 import { createIFF } from './test/fixture.js';

@@ -14,9 +14,10 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./.github/actions/setup-node-and-node-modules
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: 22
+          cache: true
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
@@ -25,6 +26,6 @@ jobs:
             tsconfig.tsbuildinfo
           key: check-generated-in-examples-${{ runner.arch }}-${{ runner.os }}-${{ github.sha }}
           restore-keys: check-generated-in-examples-${{ runner.arch }}-${{ runner.os }}
-      - run: pnpm run update-generated-in-examples
+      - run: vp run update-generated-in-examples
       - name: Check for uncommitted changes
         run: git diff --exit-code

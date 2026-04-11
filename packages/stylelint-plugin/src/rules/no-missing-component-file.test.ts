@@ -1,5 +1,5 @@
 import stylelint from 'stylelint';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { createIFF } from '../test/fixture.js';
 import { formatLinterResult } from '../test/stylelint.js';
 import { noMissingComponentFile } from './no-missing-component-file.js';

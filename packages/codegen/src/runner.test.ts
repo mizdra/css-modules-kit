@@ -1,7 +1,7 @@
 import { access, rm, writeFile } from 'node:fs/promises';
 import { platform } from 'node:process';
 import dedent from 'dedent';
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vite-plus/test';
 import { CMKDisabledError } from './error.js';
 import type { Watcher } from './runner.js';
 import { runCMK, runCMKInWatchMode } from './runner.js';

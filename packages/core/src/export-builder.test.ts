@@ -1,5 +1,5 @@
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import type { ExportBuilderHost } from './export-builder.js';
 import { createExportBuilder } from './export-builder.js';
 import { createResolver } from './resolver.js';

@@ -8,7 +8,7 @@
       "cwd": "${workspaceFolder}/examples/1-basic",
       "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/codegen",
+      "preLaunchTask": "vp: build - packages/codegen",
       "presentation": {
         "group": "codegen"
       }
@@ -21,7 +21,7 @@
       "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "args": ["--watch", "--preserveWatchOutput"],
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/codegen",
+      "preLaunchTask": "vp: build - packages/codegen",
       "presentation": {
         "group": "codegen"
       }
@@ -33,7 +33,7 @@
       "cwd": "${workspaceFolder}/examples/2-named-exports",
       "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/codegen",
+      "preLaunchTask": "vp: build - packages/codegen",
       "presentation": {
         "group": "codegen"
       }
@@ -45,7 +45,7 @@
       "cwd": "${workspaceFolder}/examples/3-import-alias",
       "program": "${workspaceFolder}/packages/codegen/bin/cmk.js",
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/codegen",
+      "preLaunchTask": "vp: build - packages/codegen",
       "presentation": {
         "group": "codegen"
       }
@@ -55,10 +55,10 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/1-basic",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "vp",
       "runtimeArgs": ["exec", "stylelint", "src/**/*.css"],
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/stylelint-plugin",
+      "preLaunchTask": "vp: build - packages/stylelint-plugin",
       "presentation": {
         "group": "stylelint-plugin"
       }
@@ -68,10 +68,10 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/examples/1-basic",
-      "runtimeExecutable": "pnpm",
+      "runtimeExecutable": "vp",
       "runtimeArgs": ["exec", "eslint", "src/**/*.css"],
       "console": "integratedTerminal",
-      "preLaunchTask": "pnpm: build - packages/eslint-plugin",
+      "preLaunchTask": "vp: build - packages/eslint-plugin",
       "presentation": {
         "group": "eslint-plugin"
       }
@@ -90,7 +90,7 @@
         "--folder-uri=${workspaceFolder}/examples/1-basic",
         "${workspaceFolder}/examples/1-basic/src/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }
@@ -109,7 +109,7 @@
         "--folder-uri=${workspaceFolder}/examples/2-named-exports",
         "${workspaceFolder}/examples/2-named-exports/src/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }
@@ -128,7 +128,7 @@
         "--folder-uri=${workspaceFolder}/examples/3-import-alias",
         "${workspaceFolder}/examples/3-import-alias/src/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }
@@ -147,7 +147,7 @@
         "--folder-uri=${workspaceFolder}/examples/4-multiple-tsconfig",
         "${workspaceFolder}/examples/4-multiple-tsconfig/src/dir-1/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }
@@ -166,7 +166,7 @@
         "--folder-uri=${workspaceFolder}/examples/5-normal-css",
         "${workspaceFolder}/examples/5-normal-css/src/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }
@@ -185,7 +185,7 @@
         "--folder-uri=${workspaceFolder}/examples/6-project-external-file",
         "${workspaceFolder}/examples/6-project-external-file/src/a.tsx"
       ],
-      "preLaunchTask": "pnpm: build - packages/vscode",
+      "preLaunchTask": "vp: build - packages/vscode",
       "env": {
         "TSS_DEBUG": "5859"
       }

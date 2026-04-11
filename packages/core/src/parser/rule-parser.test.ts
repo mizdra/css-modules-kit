@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import selectorParser from 'postcss-selector-parser';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { fakeRoot, fakeRules } from '../test/ast.js';
 import type { DiagnosticPosition } from '../type.js';
 import { calcDiagnosticsLocationForSelectorParserNodeForTest, parseRule } from './rule-parser.js';

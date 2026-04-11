@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import ts from 'typescript';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { PROPERTY_DOES_NOT_EXIST_ERROR_CODES } from '../src/language-service/feature/code-fix.js';
 import { createIFF } from './test-util/fixture.js';
 import {

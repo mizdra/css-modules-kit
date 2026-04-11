@@ -5,5 +5,5 @@ import { resolve } from 'node:path';
 const root = resolve(__dirname, '..');
 
 export function mochaGlobalSetup() {
-  execSync('pnpm run build', { stdio: 'inherit', cwd: root });
+  execSync('vp run build', { stdio: 'inherit', cwd: root });
 }

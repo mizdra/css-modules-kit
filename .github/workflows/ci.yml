@@ -17,18 +17,20 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./.github/actions/setup-node-and-node-modules
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: 22
-      - run: pnpm run lint
+          cache: true
+      - run: vp check
   build:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./.github/actions/setup-node-and-node-modules
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: 22
-      - run: pnpm run build
+          cache: true
+      - run: vp run build
   test:
     strategy:
       fail-fast: false
@@ -38,9 +40,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./.github/actions/setup-node-and-node-modules
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: ${{ matrix.node }}
+          cache: true
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
@@ -50,20 +53,16 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - run: pnpm run test
+      - run: vp test
   test-stylelint-v16:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: 22
-      - run: pnpm add -D -w stylelint@16
-      - uses: ./.github/actions/setup-node-and-node-modules
-        with:
-          node-version: 22
-      - run: pnpm run test -- packages/stylelint-plugin
+      - run: vp add -D -w stylelint@16
+      - run: vp test packages/stylelint-plugin
   vscode-test:
     strategy:
       fail-fast: false
@@ -73,9 +72,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: ./.github/actions/setup-node-and-node-modules
+      - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
           node-version: ${{ matrix.node }}
+          cache: true
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: |
@@ -89,7 +89,7 @@ jobs:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
 
-      - run: xvfb-run -a pnpm run vscode-test
+      - run: xvfb-run -a vp run vscode-test
         if: runner.os == 'Linux'
-      - run: pnpm run vscode-test
+      - run: vp run vscode-test
         if: runner.os != 'Linux'

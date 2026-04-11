@@ -1,6 +1,6 @@
 import { stripVTControlCharacters } from 'node:util';
 import { type Diagnostic, SystemError } from '@css-modules-kit/core';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test, vi } from 'vite-plus/test';
 import { ReadCSSModuleFileError } from '../error.js';
 import { createLogger } from './logger.js';
 

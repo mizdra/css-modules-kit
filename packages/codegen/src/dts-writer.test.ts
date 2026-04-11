@@ -1,6 +1,6 @@
 import { resolve } from '@css-modules-kit/core';
 import dedent from 'dedent';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from 'vite-plus/test';
 import { getDtsFilePath, writeDtsFile } from './dts-writer.js';
 import { WriteDtsFileError } from './error.js';
 import { createIFF } from './test/fixture.js';
