@@ -40,6 +40,7 @@ describe('Rename Symbol', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

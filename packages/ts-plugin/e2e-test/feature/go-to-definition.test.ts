@@ -39,6 +39,7 @@ describe('Go to Definition', async () => {
           "paths": { "@/*": ["./*"] }
         },
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

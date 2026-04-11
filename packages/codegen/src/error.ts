@@ -23,7 +23,7 @@ export class CMKDisabledError extends SystemError {
   constructor(config: CMKConfig) {
     super(
       'CMK_DISABLED_ERROR',
-      `css-modules-kit is disabled by configuration. Set \`"cmkOptions": { "enabled": true }\` in ${relative(config.basePath, config.configFileName)} to enable it.`,
+      `css-modules-kit is disabled for this project. Set \`"cmkOptions": { "enabled": true }\` in ${relative(config.basePath, config.configFileName)} to enable it.`,
     );
   }
 }

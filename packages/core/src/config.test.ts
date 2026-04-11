@@ -27,7 +27,7 @@ describe('readConfigFile', () => {
         namedExports: false,
         prioritizeNamedImports: false,
         keyframes: true,
-        enabled: undefined,
+        enabled: false,
         compilerOptions: expect.any(Object),
         wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
       }),

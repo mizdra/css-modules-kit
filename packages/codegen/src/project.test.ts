@@ -394,22 +394,6 @@ describe('getDiagnostics', () => {
     const diagnostics = project.getDiagnostics();
     expect(diagnostics).toEqual([]);
   });
-  test('returns warning when enabled is not specified', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': '{}',
-      'src/a.module.css': '.a_1 { color: red; }',
-    });
-    const project = createProject({ project: iff.rootDir });
-    const diagnostics = project.getDiagnostics();
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "warning",
-          "text": ""cmkOptions.enabled" will be required in a future version of css-modules-kit. Add \`"cmkOptions": { "enabled": true }\` to tsconfig.json. See https://github.com/mizdra/css-modules-kit/issues/289 for details.",
-        },
-      ]
-    `);
-  });
   test('returns project diagnostics', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": 1 } }',

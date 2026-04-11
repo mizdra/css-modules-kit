@@ -25,6 +25,7 @@ describe('Rename File', async () => {
           "paths": { "@/*": ["./*"] }
         },
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

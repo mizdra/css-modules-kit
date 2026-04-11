@@ -122,9 +122,11 @@ css-modules-kit uses `tsconfig.json` as its configuration file. This configurati
 
 ### `cmkOptions.enabled`
 
-Type: `boolean`, Default: `true`
+Type: `boolean`, Default: `false`
 
-Enables or disables css-modules-kit. When set to `false`, codegen will exit with an error. Currently, both codegen and the ts-plugin will work even if this option is omitted, but in the future, they will not work unless this option is set to `true`. For more details, see [#289](https://github.com/mizdra/css-modules-kit/issues/289).
+Enables or disables css-modules-kit. Language features in the ts-plugin and code generation in codegen are only activated when this option is set to `true`. When set to `false` or omitted, codegen will exit with an error and ts-plugin will not provide language features.
+
+All `cmkOptions.*` options (including this one) can be inherited via `extends` in `tsconfig.json`, so you can share settings across multiple projects by putting them in a base config.
 
 ```jsonc
 {

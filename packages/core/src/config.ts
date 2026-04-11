@@ -13,7 +13,7 @@ const DEFAULT_INCLUDE_SPEC = '**/*';
 export interface CMKConfig {
   includes: string[];
   excludes: string[];
-  enabled: boolean | undefined;
+  enabled: boolean;
   dtsOutDir: string;
   arbitraryExtensions: boolean;
   namedExports: boolean;
@@ -266,7 +266,7 @@ export function readConfigFile(project: string): CMKConfig {
     namedExports: parsedTsConfig.config.namedExports ?? false,
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
     keyframes: parsedTsConfig.config.keyframes ?? true,
-    enabled: parsedTsConfig.config.enabled,
+    enabled: parsedTsConfig.config.enabled ?? false,
     basePath,
     configFileName,
     compilerOptions: parsedTsConfig.compilerOptions,

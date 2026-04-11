@@ -31,6 +31,7 @@ describe('Completion', async () => {
           "types": ["${reactDtsPath}"]
         },
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

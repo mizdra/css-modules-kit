@@ -31,6 +31,7 @@ test('Semantic Diagnostics', async () => {
       {
         "compilerOptions": {},
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

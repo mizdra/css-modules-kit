@@ -40,6 +40,7 @@ describe('supports basic language features', async () => {
     'tsconfig.json': dedent`
       {
         "cmkOptions": {
+          "enabled": true,
           "namedExports": true
         }
       }
@@ -209,6 +210,7 @@ describe('supports completions', async () => {
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
+            "enabled": true,
             "namedExports": true
           }
         }
@@ -294,6 +296,7 @@ describe('supports completions', async () => {
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
+            "enabled": true,
             "namedExports": true,
             "prioritizeNamedImports": true
           }
@@ -354,6 +357,7 @@ describe('supports code fixes', async () => {
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
+            "enabled": true,
             "namedExports": true
           }
         }
@@ -415,6 +419,7 @@ describe('supports code fixes', async () => {
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
+            "enabled": true,
             "namedExports": true,
             "prioritizeNamedImports": true
           }
@@ -482,6 +487,7 @@ describe('supports code fixes', async () => {
       'tsconfig.json': dedent`
         {
           "cmkOptions": {
+            "enabled": true,
             "namedExports": true
           }
         }

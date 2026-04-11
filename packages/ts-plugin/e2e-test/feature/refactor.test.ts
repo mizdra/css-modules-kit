@@ -13,6 +13,7 @@ describe('Refactor', async () => {
       {
         "compilerOptions": { "jsx": "react-jsx" },
         "cmkOptions": {
+          "enabled": true,
           "dtsOutDir": "generated"
         }
       }

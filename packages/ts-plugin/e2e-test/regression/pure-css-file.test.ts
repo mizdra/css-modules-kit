@@ -10,7 +10,7 @@ test('ts-plugin does not process pure css files', async () => {
     'global.css': dedent`
       * { margin: 0; }
     `,
-    'tsconfig.json': '{}',
+    'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
   });
   await tsserver.sendUpdateOpen({
     openFiles: [{ file: iff.paths['tsconfig.json'] }],
