@@ -1,5 +1,3 @@
-/* oxlint-disable no-console */
-
 import type {
   CSSModulesKitDocumentLinkRequest,
   CSSModulesKitDocumentLinkResponse,

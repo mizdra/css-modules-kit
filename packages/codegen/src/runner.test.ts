@@ -115,7 +115,6 @@ describe('runCMKInWatchMode', () => {
   afterEach(async () => {
     if (watcher) {
       await watcher.close();
-      // oxlint-disable-next-line require-atomic-updates
       watcher = null;
     }
   });
@@ -311,7 +310,6 @@ describe('runCMKInWatchMode', () => {
     await watcher.close();
 
     const loggerSpy2 = createLoggerSpy();
-    // oxlint-disable-next-line require-atomic-updates
     watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, preserveWatchOutput: true }), loggerSpy2);
     expect(loggerSpy2.clearScreen).toHaveBeenCalledTimes(0);
   });

@@ -4,7 +4,6 @@ import { describe, expect, test } from 'vitest';
 import { createIFF } from '../test-util/fixture.js';
 import { launchTsserver, normalizeCompletionEntry } from '../test-util/tsserver.js';
 
-// oxlint-disable-next-line n/no-extraneous-require
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 
 describe('Completion', async () => {
