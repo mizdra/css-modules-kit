@@ -4,7 +4,7 @@ set -ue
 cd "$(dirname "$0")/.."
 
 # Update `version` field in package.json files
-npx changeset version
+pnpm exec changeset version
 
 # Sync zed extension version with the `version` field in crates/zed/package.json
 v=$(jq -r .version crates/zed/package.json)
@@ -16,5 +16,5 @@ else
   sed -i -E "s/^version = \".*\"/version = \"$v\"/" crates/zed/Cargo.toml
 fi
 
-# Update package-lock.json
-npm i
+# Update pnpm-lock.yaml
+pnpm install --lockfile-only

@@ -4,15 +4,6 @@
   "license": "MIT",
   "author": "mizdra <pp.mizdra@gmail.com>",
   "repository": "https://github.com/mizdra/css-modules-kit.git",
-  "workspaces": [
-    "packages/core",
-    "packages/codegen",
-    "packages/ts-plugin",
-    "packages/vscode",
-    "packages/stylelint-plugin",
-    "packages/eslint-plugin",
-    "crates/zed"
-  ],
   "type": "module",
   "scripts": {
     "version": "./scripts/version.sh",
@@ -22,7 +13,7 @@
     "lint:oxlint": "oxlint --type-aware --type-check",
     "lint-fix": "run-s -c lint-fix:*",
     "lint-fix:oxfmt": "oxfmt --write",
-    "lint-fix:oxlint": "npm run lint:oxlint -- --fix",
+    "lint-fix:oxlint": "pnpm run lint:oxlint --fix",
     "test": "vitest --run",
     "vscode-test": "vscode-test",
     "update-generated-in-examples": "./scripts/update-generated-in-examples.sh"
@@ -30,9 +21,12 @@
   "devDependencies": {
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
+    "@changesets/types": "^6.1.0",
+    "@css-modules-kit/codegen": "workspace:^",
     "@eslint/css": "^1.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
     "@mizdra/oxlint-config": "^0.3.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^25.3.0",
     "@types/postcss-safe-parser": "^5.0.4",
     "@types/react": "^19.2.14",
@@ -43,6 +37,7 @@
     "@vscode/vsce": "^3.7.1",
     "dedent": "^1.7.2",
     "eslint": "^10.2.0",
+    "mocha": "^11.7.5",
     "npm-run-all2": "^8.0.4",
     "ovsx": "^0.10.10",
     "oxfmt": "^0.44.0",
@@ -52,5 +47,6 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vitest": "^4.1.3"
-  }
+  },
+  "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }
