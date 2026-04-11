@@ -2,6 +2,7 @@
   "compilerOptions": {
     /* Projects */
     "incremental": true /* Save .tsbuildinfo files to allow for incremental compilation of projects. */,
+    "types": ["node"],
 
     /* JavaScript Support */
     "checkJs": true /* Enable error reporting in type-checked JavaScript files. */,
