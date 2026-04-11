@@ -16,7 +16,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: 22
@@ -37,11 +37,11 @@ jobs:
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             node_modules/.vite/vitest
@@ -54,9 +54,9 @@ jobs:
   test-stylelint-v16:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
       - run: pnpm add -D -w stylelint@16
@@ -72,11 +72,11 @@ jobs:
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-and-node-modules
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             packages/*/dist
@@ -84,7 +84,7 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}
