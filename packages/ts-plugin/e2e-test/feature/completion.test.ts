@@ -2,7 +2,7 @@ import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vitest';
 import { createIFF } from '../test-util/fixture.js';
-import { formatPath, launchTsserver, normalizeCompletionEntry } from '../test-util/tsserver.js';
+import { launchTsserver, normalizeCompletionEntry } from '../test-util/tsserver.js';
 
 // oxlint-disable-next-line n/no-extraneous-require
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
@@ -57,8 +57,8 @@ describe('Completion', async () => {
       line: 1,
       offset: 7,
       expected: [
-        { name: 'styles', sortText: '0', source: formatPath(iff.paths['a.module.css']) },
-        { name: 'styles', sortText: '16', source: formatPath(iff.paths['b.module.css']) },
+        { name: 'styles', sortText: '0', source: './a.module.css' },
+        { name: 'styles', sortText: '16', source: './b.module.css' },
       ],
     },
     {

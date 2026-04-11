@@ -231,7 +231,7 @@ describe('supports completions', async () => {
         file: iff.paths['index.ts'],
         line: 1,
         offset: 7,
-        expected: [{ name: 'styles', sortText: '16', source: formatPath(iff.paths['a.module.css']) }],
+        expected: [{ name: 'styles', sortText: '16', source: './a.module.css' }],
       },
       {
         name: 'a_1',
@@ -325,7 +325,7 @@ describe('supports completions', async () => {
         file: iff.paths['index.ts'],
         line: 2,
         offset: 4,
-        expected: [{ name: 'a_1', sortText: '16', source: formatPath(iff.paths['a.module.css']) }],
+        expected: [{ name: 'a_1', sortText: '16', source: './a.module.css' }],
       },
     ])('Completions for $name', async ({ entryName, file, line, offset, expected }) => {
       const res = await tsserver.sendCompletionInfo({
