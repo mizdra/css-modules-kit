@@ -127,7 +127,7 @@ describe('Rename Symbol', async () => {
       ],
     },
     {
-      name: 'a-2 in index.ts',
+      name: 'a-3 in index.ts',
       file: iff.paths['index.ts'],
       line: 5,
       offset: 9,
@@ -143,7 +143,7 @@ describe('Rename Symbol', async () => {
       ],
     },
     {
-      name: 'a-2 in a.module.css',
+      name: 'a-3 in a.module.css',
       file: iff.paths['a.module.css'],
       line: 6,
       offset: 2,
