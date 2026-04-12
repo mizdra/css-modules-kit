@@ -95,6 +95,11 @@ function myFunction() {
 - **Mapping**: An object that maintains the positional relationship between a `.d.ts` file and its corresponding .css file
   - Mapping enables language features such as Go to Definition, Find All References, Rename
 
+## Additional Documentation
+
+- [`docs/ts-plugin-internals.md`](./docs/ts-plugin-internals.md): Deep dive into the TS plugin internals
+  - Read this when working on `packages/ts-plugin` or `packages/core/src/dts-generator.ts` — especially when modifying Volar.js mappings, virtual code generation, or language service features (Go to Definition, Find References, Rename, etc.)
+
 ## Key Files
 
 - `packages/core/src/type.ts`: Main type definitions used by CSS Modules Kit

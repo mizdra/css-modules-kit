@@ -49,7 +49,7 @@ export default defineConfig({
   },
   fmt: {
     ...mizdraOxfmtConfig,
-    ignorePatterns: ['examples/*/generated', 'examples/*/src'],
+    ignorePatterns: ['examples/*/generated', 'examples/*/src', 'docs/ts-plugin-internals.md'],
   },
   test: {
     // On GitHub Actions, the Windows runner is slow and tests may fail with the default timeout.
