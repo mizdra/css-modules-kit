@@ -54,8 +54,8 @@ Generates:
 ```ts
 // @ts-nocheck
 declare const styles = {
-  a_1: '' as readonly string,
-  a_2: '' as readonly string,
+  'a_1': '' as readonly string,
+  'a_2': '' as readonly string,
 };
 export default styles;
 ```
@@ -111,9 +111,9 @@ Generates:
 
 ```ts
 declare const styles = {
-  b_1: (await import('./b.module.css')).default['b_1'],
-  b_2: (await import('./b.module.css')).default['b_2'],
-  aliased_c_1: (await import('./c.module.css')).default['c_1'],
+  'b_1': (await import('./b.module.css')).default['b_1'],
+  'b_2': (await import('./b.module.css')).default['b_2'],
+  'aliased_c_1': (await import('./c.module.css')).default['c_1'],
 };
 ```
 
@@ -164,7 +164,7 @@ a.module.css.d.ts:
 1 | // @ts-nocheck
 2 | declare const styles = {
 3 |   'a_1': '' as readonly string,
-      ^ generatedOffsets[0] = 27 (after the opening quote)
+       ^ generatedOffsets[0] = 27 (after the opening quote)
 ```
 
 Here, the **primary mapping** points to the token name inside the quotes:
@@ -295,7 +295,7 @@ Consider this generated code with a single mapping:
 
 ```ts
 declare const styles = {
-  a_1: string,
+  'a_1': string,
 };
 ```
 
@@ -393,7 +393,7 @@ Generates (default export mode):
 
 ```ts
 declare const styles = {
-  aliased_c_1: (await import('./c.module.css')).default['c_1'],
+  'aliased_c_1': (await import('./c.module.css')).default['c_1'],
 };
 ```
 
