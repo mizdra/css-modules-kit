@@ -98,6 +98,8 @@ In named exports mode, property names are **not quoted**.
 Generates:
 
 ```ts
+// @ts-nocheck
+function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
 declare const styles = {
   ...blockErrorType((await import('./b.module.css')).default),
 };
@@ -396,7 +398,7 @@ Generates (default export mode):
 
 ```ts
 declare const styles = {
-  aliased_c_1: (await import('./c.module.css')).default['c_1'],
+  'aliased_c_1': (await import('./c.module.css')).default['c_1'],
 };
 ```
 
@@ -459,24 +461,28 @@ The proxy in `packages/ts-plugin/src/language-service/proxy.ts` adds CSS-specifi
 | `findReferences`                                 | Merges duplicate `ReferencedSymbol`s caused by multiple mappings                       |
 | `getCompletionsAtPosition`                       | Prioritizes `styles` import, converts `className` to JSX format, filters named exports |
 | `getCompletionEntryDetails`                      | Converts default imports to namespace imports for CSS Modules                          |
-| `getSyntacticDiagnostics`                        | Reports CSS syntax errors from parsing                                                 |
+| `getSyntacticDiagnostics`                        | Reports parse-time diagnostics that do not overlap with the standard CSS LS            |
 | `getSemanticDiagnostics`                         | Reports CSS Modules validation errors (unknown tokens, unresolvable imports)           |
 | `getCodeFixesAtPosition`                         | Adds "Fix Missing CSS Rule" quick fix                                                  |
 | `getApplicableRefactors` / `getEditsForRefactor` | Adds "Create CSS Module File" refactor                                                 |
 
+In particular, `getSyntacticDiagnostics` does **not** report generic invalid CSS syntax. `parseCSSModule()` is called with `includeSyntaxError: false`, because the standard CSS Language Server already reports those errors. The diagnostics returned here are parse-time errors specific to CSS Modules syntax, such as malformed `:local` or `@value`.
+
 ### Protocol handlers
 
-Some features are implemented as custom protocol handlers rather than Language Service proxies, because they need to bypass Volar.js's automatic position translation:
+Some features are implemented as custom protocol handlers rather than relying only on the standard editor-to-LanguageService path. In VS Code, the extension forwards requests directly to tsserver using custom commands ("Request Forwarding to tsserver"), mainly to avoid conflicts with the standard CSS Language Server:
 
 | Handler                         | Purpose                                                                        |
 | ------------------------------- | ------------------------------------------------------------------------------ |
-| `_css-modules-kit:rename`       | Calls `findRenameLocations` directly (bypasses Volar.js for cross-file rename) |
+| `_css-modules-kit:rename`       | Calls `findRenameLocations` through tsserver for CSS rename                     |
 | `_css-modules-kit:renameInfo`   | Calls `getRenameInfo` directly                                                 |
 | `_css-modules-kit:documentLink` | Returns import specifier positions as document links                           |
 
-## Volar.js transform.ts: API-specific behavior
+These handlers do **not** bypass CSS Modules Kit's own proxied Language Service. They call `project.getLanguageService()`, and that service has already been wrapped by both Volar.js and CSS Modules Kit during plugin setup.
 
-The `@volar/typescript/lib/node/transform.ts` file contains the translation logic for each Language Service API. Key differences:
+## Volar.js proxyLanguageService.ts / transform.ts: API-specific behavior
+
+In Volar.js, `transform.ts` contains the low-level translation logic, while `proxyLanguageService.ts` decides how each Language Service API uses it. Key differences:
 
 ### fallbackToAnyMatch parameter
 
@@ -498,10 +504,10 @@ When Volar.js cannot find a valid mapping for a span, some APIs fall back to `{ 
 
 Each Language Service API uses a different filter function to select which mappings to search:
 
-- Navigation features (definition, references, rename): `data.navigation === true`
-- Completion: `data.completion === true` (or completion object)
-- Diagnostics: `data.verification === true`
-- Semantic features (hover, inlay hints): `data.semantic === true`
+- Navigation features (definition, references, rename): truthy `data.navigation`
+- Completion: truthy `data.completion`
+- Diagnostics: truthy `data.verification`
+- Semantic features (hover, inlay hints): truthy `data.semantic`
 
 CSS Modules Kit registers all mappings with `{ navigation: true }`, enabling them for navigation features only.
 
