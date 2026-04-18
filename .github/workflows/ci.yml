@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
-          node-version: 22
+          node-version: 24
           cache: true
       - run: vp check
   build:
@@ -28,14 +28,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
-          node-version: 22
+          node-version: 24
           cache: true
       - run: vp run build
   test:
     strategy:
       fail-fast: false
       matrix:
-        node: [22]
+        node: [22, 24]
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
@@ -60,14 +60,14 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@8ecb39174989ce55af90f45cf55b02738599831d # v1.6.0
         with:
-          node-version: 22
+          node-version: 24
       - run: vp add -D -w stylelint@16
       - run: vp test packages/stylelint-plugin
   vscode-test:
     strategy:
       fail-fast: false
       matrix:
-        node: [22]
+        node: [22, 24]
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
