@@ -52,7 +52,7 @@ export function createCSSLanguagePlugin(
         keyframes: config.keyframes,
       });
       // oxlint-disable-next-line prefer-const
-      let { text, mapping, linkedCodeMapping, secondaryMapping } = generateDts(cssModule, {
+      let { text, mapping, linkedCodeMapping } = generateDts(cssModule, {
         ...config,
         forTsPlugin: true,
       });
@@ -65,7 +65,7 @@ export function createCSSLanguagePlugin(
           getChangeRange: () => undefined,
         },
         // `mappings` are required to support navigation features such as "Go to Definition" and "Find all References".
-        mappings: [mapping, secondaryMapping]
+        mappings: [mapping]
           .filter((mapping) => mapping !== undefined)
           .map((mapping) => ({ ...mapping, data: { navigation: true } })),
         // `linkedCodeMappings` are required to support navigation features for the imported tokens.

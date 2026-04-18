@@ -172,28 +172,15 @@ a.module.css.d.ts:
        ^ generatedOffsets[0] = 27 (after the opening quote)
 ```
 
-Here, the **primary mapping** points to the token name inside the quotes:
+The mapping points to the token name inside the quotes; the surrounding quotes are not covered:
 
 ```
 mapping: { sourceOffsets: [1], generatedOffsets: [27], lengths: [3] }
 ```
 
-But there is also a **secondary mapping** that includes the quotes:
-
-```
-secondaryMapping: {
-  sourceOffsets: [1],
-  generatedOffsets: [26],   // Points to the opening quote
-  lengths: [3],
-  generatedLengths: [5],    // 'a_1' = 5 characters (quote + name + quote)
-}
-```
-
-The reason for having two mappings is explained in the [Single-Quote Span Problem](#the-single-quote-span-problem) section.
-
 ### Mapping registration with Volar.js
 
-Both mappings are registered with Volar.js through the `VirtualCode.mappings` array:
+The mapping is registered with Volar.js through the `VirtualCode.mappings` array:
 
 ```ts
 // packages/ts-plugin/src/language-plugin.ts
@@ -203,16 +190,12 @@ return {
   snapshot: {
     /* ... */
   },
-  mappings: [mapping, secondaryMapping]
-    .filter((mapping) => mapping !== undefined)
-    .map((mapping) => ({ ...mapping, data: { navigation: true } })),
+  mappings: [mapping].map((mapping) => ({ ...mapping, data: { navigation: true } })),
   linkedCodeMappings: [{ ...linkedCodeMapping, data: undefined }],
 };
 ```
 
-The `data: { navigation: true }` flag enables navigation features (Go to Definition, Find References, Rename) for these mappings.
-
-Volar.js searches mappings **in order**. The primary mapping (without quotes) is checked first; if it cannot resolve the position, the secondary mapping (with quotes) is used as fallback.
+The `data: { navigation: true }` flag enables navigation features (Go to Definition, Find References, Rename) for this mapping.
 
 ## How Volar.js Translates Positions
 
@@ -330,7 +313,7 @@ The issue is that `findReferences` returns the position of `a` (offset 27), whic
 
 ### Why overlapping mappings in a single object don't work
 
-Putting both mappings in the same CodeMapping object:
+Putting both ranges in the same CodeMapping object:
 
 ```
 Mapping: {
@@ -345,39 +328,41 @@ This doesn't work because Volar.js does not support overlapping ranges within a 
 
 Reference: https://github.com/volarjs/volar.js/issues/203
 
-### The solution: separate mapping objects with priority
+### The solution: a custom mapper that strips outer quotes on fallback
 
-CSS Modules Kit uses **two separate mapping objects**:
+As a rule, CSS Modules Kit registers mappings that **do not include the surrounding quotes**, and instead swaps Volar.js's default mapper for a custom one that retries with outer characters stripped when the direct lookup fails. The custom mapper is installed by overriding `language.mapperFactory`:
 
 ```ts
-// Primary mapping (checked first): maps the unquoted token name
-mapping: { generatedOffsets: [27], lengths: [3], sourceOffsets: [1] }
+// packages/ts-plugin/src/index.cts
+language.mapperFactory = (mappings) => new CustomSourceMap(mappings);
+```
 
-// Secondary mapping (fallback): maps the quoted token name
-secondaryMapping: {
-  generatedOffsets: [26],
-  lengths: [3],
-  sourceOffsets: [1],
-  generatedLengths: [5]
+`CustomSourceMap` extends `@volar/language-core`'s `SourceMap` and overrides only `toSourceRange`:
+
+```ts
+// packages/ts-plugin/src/source-map.ts
+export class CustomSourceMap extends SourceMap<CodeInformation> {
+  override *toSourceRange(start, end, fallbackToAnyMatch, filter) {
+    let matched = false;
+    for (const result of super.toSourceRange(start, end, fallbackToAnyMatch, filter)) {
+      matched = true;
+      yield result;
+    }
+    if (matched) return;
+
+    // The outer characters may be surrounding quotes (e.g. `'a_1'`).
+    // Retry with them stripped so the inner token name's mapping can match.
+    if (end - start >= 2) {
+      yield* super.toSourceRange(start + 1, end - 1, fallbackToAnyMatch, filter);
+    }
+  }
 }
 ```
 
-These are registered as separate entries in `VirtualCode.mappings`:
+For each API:
 
-```ts
-mappings: [mapping, secondaryMapping].filter((m) => m !== undefined).map((m) => ({ ...m, data: { navigation: true } }));
-```
-
-Volar.js searches mappings in array order. For each API:
-
-- **`findReferences`** (start=27): Primary mapping matches → `translateOffset(27, [27], [1], [3], [3])` → returns `1`. Correct!
-- **`getDefinitionAtPosition`** (start=26): Primary mapping doesn't match (26 < 27). Secondary mapping matches → `translateOffset(26, [26], [1], [5], [3])` → returns `1`. Correct!
-
-This approach works because:
-
-1. Non-overlapping mappings are checked independently
-2. The primary mapping handles `findReferences` and `findRenameLocations` correctly
-3. The secondary mapping handles `getDefinitionAtPosition` as a fallback
+- **`findReferences`** / **`findRenameLocations`** (start=27, length=3): the inner mapping matches directly → `translateOffset(27, [27], [1], [3], [3])` → returns `1`. Correct!
+- **`getDefinitionAtPosition`** (start=26, length=5): the inner mapping doesn't match (26 < 27). The fallback retries with `toSourceRange(27, 29, …)`, which matches → returns `1`. Correct!
 
 Reference: https://github.com/mizdra/volar-single-quote-span-problem
 
@@ -414,6 +399,8 @@ linkedCodeMapping: {
 ```
 
 Note: Despite the names `sourceOffsets` and `generatedOffsets`, both refer to positions within the same generated `.d.ts` file. The names are interchangeable for `linkedCodeMappings`.
+
+**Why the ranges include the surrounding quotes:** When `getDefinitionAtPosition` is invoked on a quoted property name, TypeScript returns a `textSpan` that includes the surrounding single quotes (see [The Single-Quote Span Problem](#the-single-quote-span-problem)). To resolve links between related positions, Volar.js feeds that raw `textSpan.start` into `LinkedCodeMap.getLinkedOffsets` — and this path does **not** go through `mapperFactory`, so the `CustomSourceMap` quote-strip fallback cannot help here. For the linked-code lookup to match, the offsets stored in `linkedCodeMappings` must themselves cover the opening quote.
 
 ### How LinkedCodeMap works
 
@@ -458,7 +445,7 @@ The proxy in `packages/ts-plugin/src/language-service/proxy.ts` adds CSS-specifi
 | Method                                           | Enhancement                                                                            |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------- |
 | `getDefinitionAndBoundSpan`                      | Adds `contextSpan` for Definition Preview (shows the full CSS rule)                    |
-| `findReferences`                                 | Merges duplicate `ReferencedSymbol`s caused by multiple mappings                       |
+| `findReferences`                                 | Merges `ReferencedSymbol`s that share the same definition                              |
 | `getCompletionsAtPosition`                       | Prioritizes `styles` import, converts `className` to JSX format, filters named exports |
 | `getCompletionEntryDetails`                      | Converts default imports to namespace imports for CSS Modules                          |
 | `getSyntacticDiagnostics`                        | Reports parse-time diagnostics that do not overlap with the standard CSS LS            |
@@ -479,64 +466,3 @@ Some features are implemented as custom protocol handlers rather than relying on
 | `_css-modules-kit:documentLink` | Returns import specifier positions as document links                           |
 
 These handlers do **not** bypass CSS Modules Kit's own proxied Language Service. They call `project.getLanguageService()`, and that service has already been wrapped by both Volar.js and CSS Modules Kit during plugin setup.
-
-## Volar.js proxyLanguageService.ts / transform.ts: API-specific behavior
-
-In Volar.js, `transform.ts` contains the low-level translation logic, while `proxyLanguageService.ts` decides how each Language Service API uses it. Key differences:
-
-### fallbackToAnyMatch parameter
-
-Different APIs use different strictness for mapping resolution:
-
-| API                        | fallbackToAnyMatch | Reason                                     |
-| -------------------------- | ------------------ | ------------------------------------------ |
-| `getDefinitionAtPosition`  | `true`             | Cross-file definitions need loose matching |
-| `findReferences`           | `true`             | References may span multiple mappings      |
-| `findRenameLocations`      | `false`            | Strict position matching for safety        |
-| `getCompletionsAtPosition` | `false`            | Precise position needed                    |
-| Diagnostics                | `true`             | Report even with loose mapping             |
-
-### Empty span fallback
-
-When Volar.js cannot find a valid mapping for a span, some APIs fall back to `{ start: 0, length: 0 }` instead of dropping the result entirely. This happens in `transformDocumentSpan` when `shouldFallback` is true (typically for cross-file definitions).
-
-### CodeInformation filters
-
-Each Language Service API uses a different filter function to select which mappings to search:
-
-- Navigation features (definition, references, rename): truthy `data.navigation`
-- Completion: truthy `data.completion`
-- Diagnostics: truthy `data.verification`
-- Semantic features (hover, inlay hints): truthy `data.semantic`
-
-CSS Modules Kit registers all mappings with `{ navigation: true }`, enabling them for navigation features only.
-
-## Summary of data flow
-
-### Go to Definition (from .ts file)
-
-```
-1. User triggers "Go to Definition" on `styles.a_1` in index.ts
-2. Volar.js receives the request with position in index.ts
-3. TypeScript LS returns definition span in generated .d.ts (e.g., { start: 26, length: 5 })
-4. Volar.js translates span back to .module.css using CodeMapping
-   - Tries primary mapping first (offset 27) → no match for start=26
-   - Falls back to secondary mapping (offset 26) → matches → source position 1
-5. Returns { fileName: 'a.module.css', textSpan: { start: 1, length: 3 } }
-6. CSS Modules Kit proxy adds contextSpan (full CSS rule range)
-7. Editor navigates to the CSS class definition
-```
-
-### Find All References (from .css file)
-
-```
-1. User triggers "Find References" on `.a_1` in a.module.css
-2. Volar.js translates CSS position to generated .d.ts position
-3. TypeScript LS returns references including:
-   - Definition in .d.ts: { start: 27, length: 3 }
-   - Usage in index.ts: { start: 44, length: 3 }
-4. Volar.js translates .d.ts position back to .module.css
-   - Primary mapping matches (offset 27) → source position 1
-5. CSS Modules Kit proxy merges duplicate ReferencedSymbols
-6. Returns references in both CSS and TypeScript files
-```
