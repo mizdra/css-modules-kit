@@ -10,39 +10,43 @@ export function getDefinitionAndBoundSpan(
     const result = languageService.getDefinitionAndBoundSpan(...args);
     if (!result) return;
     if (!result.definitions) return result;
+
+    const newDefinitions: ts.DefinitionInfo[] = [];
     for (const def of result.definitions) {
+      // Clicks on a module-level reference (e.g. `styles` in `import styles from '...'`
+      // or the module specifier itself) surface as a zero-length span at file start.
+      // Keep them as-is; they aren't tokens to be matched against `localTokens`.
+      if (def.textSpan.start === 0 && def.textSpan.length === 0) {
+        newDefinitions.push(def);
+        continue;
+      }
       const script = language.scripts.get(def.fileName);
-      if (!isCSSModuleScript(script)) continue;
-
+      if (!isCSSModuleScript(script)) {
+        newDefinitions.push(def);
+        continue;
+      }
       const cssModule = script.generated.root[CMK_DATA_KEY];
-
-      // Search tokens and set `contextSpan`. `contextSpan` is used for Definition Preview in editors.
       const defName = unquote(def.name);
+
+      // Keep only definitions that map to a token declared in this module's `localTokens`.
+      // Re-exports from `@value ... from '...'` aren't declarations here, so they're excluded —
+      // their real declaration lives in the target file.
       const localToken = cssModule.localTokens.find(
         (t) => t.name === defName && t.loc.start.offset === def.textSpan.start,
       );
-      if (localToken?.declarationLoc) {
+      if (!localToken) continue;
+
+      // Set `contextSpan` for local tokens. `contextSpan` is used for Definition Preview in editors.
+      if (localToken.declarationLoc) {
         def.contextSpan = {
           start: localToken.declarationLoc.start.offset,
           length: localToken.declarationLoc.end.offset - localToken.declarationLoc.start.offset,
         };
-        continue;
       }
-      const importedValue = cssModule.tokenImporters
-        .flatMap((i) => (i.type === 'value' ? i.values : []))
-        .find((v) => {
-          const localName = v.localName ?? v.name;
-          const localLoc = v.localLoc ?? v.loc;
-          return localName === defName && localLoc.start.offset === def.textSpan.start;
-        });
-      if (importedValue) {
-        const loc = importedValue.localLoc ?? importedValue.loc;
-        def.contextSpan = {
-          start: loc.start.offset,
-          length: loc.end.offset - loc.start.offset,
-        };
-      }
+
+      newDefinitions.push(def);
     }
+    result.definitions = newDefinitions;
     return result;
   };
 }

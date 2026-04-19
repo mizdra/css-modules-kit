@@ -226,16 +226,7 @@ describe.each([
           file: iff.paths['index.ts'],
           line: 7,
           offset: 8,
-          // NOTE: Ideally, only the definition from c.module.css should be returned.
-          // However, for simplicity of implementation, when `namedExports: false`, the definition from a.module.css is also returned.
           expected: [
-            !namedExports && {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 2, offset: 8 },
-              end: { line: 2, offset: 11 },
-              contextStart: { line: 2, offset: 8 },
-              contextEnd: { line: 2, offset: 11 },
-            },
             {
               file: formatPath(iff.paths['c.module.css']),
               start: { line: 1, offset: 8 },
@@ -243,23 +234,14 @@ describe.each([
               contextStart: { line: 1, offset: 1 },
               contextEnd: { line: 1, offset: 16 },
             },
-          ].filter((c) => c !== false),
+          ],
         },
         {
           name: 'c_1 in a.module.ts',
           file: iff.paths['a.module.css'],
           line: 2,
           offset: 8,
-          // NOTE: Ideally, only the definition from c.module.css should be returned.
-          // However, for simplicity of implementation, when `namedExports: false`, the definition from a.module.css is also returned.
           expected: [
-            !namedExports && {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 2, offset: 8 },
-              end: { line: 2, offset: 11 },
-              contextStart: { line: 2, offset: 8 },
-              contextEnd: { line: 2, offset: 11 },
-            },
             {
               file: formatPath(iff.paths['c.module.css']),
               start: { line: 1, offset: 8 },
@@ -267,23 +249,14 @@ describe.each([
               contextStart: { line: 1, offset: 1 },
               contextEnd: { line: 1, offset: 16 },
             },
-          ].filter((c) => c !== false),
+          ],
         },
         {
           name: 'c_alias in index.ts',
           file: iff.paths['index.ts'],
           line: 8,
           offset: 8,
-          // NOTE: Ideally, only the definition from c.module.css should be returned.
-          // However, for simplicity of implementation, when `namedExports: false`, the definition from a.module.css is also returned.
           expected: [
-            !namedExports && {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 2, offset: 20 },
-              end: { line: 2, offset: 27 },
-              contextStart: { line: 2, offset: 20 },
-              contextEnd: { line: 2, offset: 27 },
-            },
             {
               file: formatPath(iff.paths['c.module.css']),
               start: { line: 2, offset: 8 },
@@ -291,23 +264,14 @@ describe.each([
               contextStart: { line: 2, offset: 1 },
               contextEnd: { line: 2, offset: 16 },
             },
-          ].filter((c) => c !== false),
+          ],
         },
         {
           name: 'c_alias in a.module.css',
           file: iff.paths['a.module.css'],
           line: 2,
           offset: 20,
-          // NOTE: Ideally, only the definition from c.module.css should be returned.
-          // However, for simplicity of implementation, when `namedExports: false`, the definition from a.module.css is also returned.
           expected: [
-            !namedExports && {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 2, offset: 20 },
-              end: { line: 2, offset: 27 },
-              contextStart: { line: 2, offset: 20 },
-              contextEnd: { line: 2, offset: 27 },
-            },
             {
               file: formatPath(iff.paths['c.module.css']),
               start: { line: 2, offset: 8 },
@@ -315,7 +279,7 @@ describe.each([
               contextStart: { line: 2, offset: 1 },
               contextEnd: { line: 2, offset: 16 },
             },
-          ].filter((c) => c !== false),
+          ],
         },
         {
           name: 'c_2 in a.module.css',
