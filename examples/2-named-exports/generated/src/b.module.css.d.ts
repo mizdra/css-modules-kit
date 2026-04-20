@@ -1,2 +1,3 @@
 // @ts-nocheck
-export var b_1: string;
+var _token_0: string;
+export { _token_0 as 'b_1' };

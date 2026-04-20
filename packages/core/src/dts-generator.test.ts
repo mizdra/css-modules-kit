@@ -95,22 +95,26 @@ describe('generateDts', () => {
       'test.module.css': dedent`
         .local1 { color: red; }
         .local2 { color: red; }
+        .local2 { color: red; }
         @import './a.module.css';
         @value imported1, imported2 as aliasedImported2 from './b.module.css';
       `,
     });
     expect(generateDts(readAndParseCSSModule(iff.paths['test.module.css'])!, { ...options, namedExports: true }).text)
       .toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      export var local1: string;
-      export var local2: string;
-      export * from './a.module.css';
-      export {
-        imported1,
-        imported2 as aliasedImported2,
-      } from './b.module.css';
-      "
-    `);
+      	"// @ts-nocheck
+      	var _token_0: string;
+      	export { _token_0 as 'local1' };
+      	var _token_1: string;
+      	var _token_1: string;
+      	export { _token_1 as 'local2' };
+      	export * from './a.module.css';
+      	export {
+      	  'imported1' as 'imported1',
+      	  'imported2' as 'aliasedImported2',
+      	} from './b.module.css';
+      	"
+      `);
   });
   test('exports styles as default when `namedExports` and `forTsPlugin` are true, but `prioritizeNamedImports` is false', async () => {
     const iff = await createIFF({
@@ -125,7 +129,8 @@ describe('generateDts', () => {
       }).text,
     ).toMatchInlineSnapshot(`
       "// @ts-nocheck
-      export var local1: string;
+      var _token_0: string;
+      export { _token_0 as 'local1' };
       declare const styles: {};
       export default styles;
       "

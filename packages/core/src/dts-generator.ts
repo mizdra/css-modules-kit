@@ -115,7 +115,12 @@ function generateNamedExportsDts(
   tokenImporters: TokenImporter[],
   options: GenerateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
-  const mapping: CodeMapping = { sourceOffsets: [], lengths: [], generatedOffsets: [] };
+  const mapping: Required<CodeMapping> = {
+    sourceOffsets: [],
+    lengths: [],
+    generatedOffsets: [],
+    generatedLengths: [],
+  };
   const linkedCodeMapping: LinkedCodeMapping = {
     sourceOffsets: [],
     lengths: [],
@@ -130,31 +135,48 @@ function generateNamedExportsDts(
   // Therefore, `@ts-nocheck` is added to the generated type definition file.
   let text = `// @ts-nocheck\n`;
 
-  for (const token of localTokens) {
-    /**
-     * The mapping is created as follows:
-     * a.module.css:
-     * 1 | .a_1 { color: red; }
-     *   |  ^ mapping.sourceOffsets[0]
-     *   |
-     * 2 | .a_2 { color: blue; }
-     *   |  ^ mapping.sourceOffsets[1]
-     *   |
-     *
-     * a.module.css.d.ts:
-     * 1 | // @ts-nocheck
-     * 2 | export var a_1: string;
-     *   |            ^ mapping.generatedOffsets[0]
-     *   |
-     * 3 | export var a_2: string;
-     *   |            ^ mapping.generatedOffsets[1]
-     */
+  /**
+   * The mapping is created as follows:
+   * a.module.css:
+   * 1 | .a_1 { color: red; }
+   *   |  ^ mapping.sourceOffsets[0]
+   *   |
+   * 2 | .a_1 { color: blue; }
+   *   |  ^ mapping.sourceOffsets[1]
+   *   |
+   *
+   * a.module.css.d.ts:
+   * 1 | // @ts-nocheck
+   * 2 | var _token_0: string;
+   *   |     ^ mapping.generatedOffsets[0]
+   *   |
+   * 3 | var _token_0: string;
+   *   |     ^ mapping.generatedOffsets[1]
+   *   |
+   * 4 | export { _token_0 as 'a_1' };
+   *   |          ^           ^ linkedCodeMapping.generatedOffsets[0]
+   *   |          ^ linkedCodeMapping.sourceOffsets[0]
+   */
 
-    text += `export var `;
-    mapping.sourceOffsets.push(token.loc.start.offset);
-    mapping.generatedOffsets.push(text.length);
-    mapping.lengths.push(token.name.length);
-    text += `${token.name}: string;\n`;
+  const groupedLocalTokens = Object.groupBy(localTokens, (token) => token.name);
+  for (const [index, [name, tokens]] of Object.entries(groupedLocalTokens).entries()) {
+    if (tokens === undefined || tokens.length === 0) continue;
+    const internalName = `_token_${index}`;
+    for (const token of tokens) {
+      text += `var `;
+      mapping.sourceOffsets.push(token.loc.start.offset);
+      mapping.lengths.push(name.length);
+      mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths.push(internalName.length);
+      text += `${internalName}: string;\n`;
+    }
+    text += `export { `;
+    linkedCodeMapping.sourceOffsets.push(text.length);
+    linkedCodeMapping.lengths.push(internalName.length);
+    text += `${internalName} as `;
+    linkedCodeMapping.generatedOffsets.push(text.length);
+    linkedCodeMapping.generatedLengths.push(name.length + 2);
+    text += `'${name}' };\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'import') {
@@ -183,76 +205,68 @@ function generateNamedExportsDts(
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}';\n`;
     } else {
       /**
        * The mapping is created as follows:
        * a.module.css:
-       * 1 | @value b_1, b_2 from './b.module.css';
-       *   |        ^    ^        ^ mapping.sourceOffsets[2]
+       * 1 | @value b_1, b_2 as aliased_b_2 from './b.module.css';
+       *   |        ^    ^      ^                ^ mapping.sourceOffsets[3]
+       *   |        ^    ^      ^ mapping.sourceOffsets[2]
        *   |        ^    ^ mapping.sourceOffsets[1]
        *   |        ^ mapping.sourceOffsets[0]
-       *   |
-       * 2 | @value c_1 as aliased_c_1 from './c.module.css';
-       *   |        ^      ^                ^ mapping.sourceOffsets[5]
-       *   |        ^      ^ mapping.sourceOffsets[4]
-       *   |        ^ mapping.sourceOffsets[3]
        *   |
        *
        * a.module.css.d.ts:
        * 1 | // @ts-nocheck
        * 2 | export {
-       * 3 |   b_1,
-       *   |   ^ mapping.generatedOffsets[0]
+       * 3 |   'b_1' as 'b_1',
+       *   |   ^        ^^ mapping.generatedOffsets[0]
+       *   |   ^        ^ linkedCodeMapping.generatedOffsets[0]
+       *   |   ^ linkedCodeMapping.sourceOffsets[0]
        *   |
-       * 4 |   b_2,
-       *   |   ^ mapping.generatedOffsets[1]
+       * 4 |   'b_2' as 'aliased_b_2',
+       *   |   ^^       ^^ mapping.generatedOffsets[2]
+       *   |   ^^       ^ linkedCodeMapping.generatedOffsets[1]
+       *   |   ^^ mapping.generatedOffsets[1]
+       *   |   ^ linkedCodeMapping.sourceOffsets[1]
        *   |
        * 5 | } from './b.module.css';
-       *   |        ^ mapping.generatedOffsets[2]
-       *   |
-       * 6 | export {
-       * 7 |   c_1 as aliased_c_1,
-       *   |   ^      ^ mapping.generatedOffsets[4], linkedCodeMapping.sourceOffsets[0]
-       *   |   ^ mapping.generatedOffsets[3], linkedCodeMapping.generatedOffsets[0]
-       *   |
-       * 8 | } from './c.module.css';
-       *   |        ^ mapping.generatedOffsets[5]
+       *   |        ^ mapping.generatedOffsets[3]
        *
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
-       * NOTE: linkedCodeMapping is only generated for tokens that have a `localName` (i.e., aliased tokens).
        */
 
       text += `export {\n`;
-      // oxlint-disable-next-line no-loop-func
-      tokenImporter.values.forEach((value) => {
+      for (const value of tokenImporter.values) {
         const localName = value.localName ?? value.name;
         const localLoc = value.localLoc ?? value.loc;
         text += `  `;
+        linkedCodeMapping.sourceOffsets.push(text.length);
+        linkedCodeMapping.lengths.push(value.name.length + 2);
+        text += `'`;
         if ('localName' in value) {
           mapping.sourceOffsets.push(value.loc.start.offset);
           mapping.lengths.push(value.name.length);
           mapping.generatedOffsets.push(text.length);
-          linkedCodeMapping.generatedOffsets.push(text.length);
-          linkedCodeMapping.generatedLengths.push(value.name.length);
-          text += `${value.name} as `;
-          mapping.sourceOffsets.push(localLoc.start.offset);
-          mapping.lengths.push(localName.length);
-          mapping.generatedOffsets.push(text.length);
-          linkedCodeMapping.sourceOffsets.push(text.length);
-          linkedCodeMapping.lengths.push(localName.length);
-          text += `${localName},\n`;
-        } else {
-          mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(value.name.length);
-          mapping.generatedOffsets.push(text.length);
-          text += `${value.name},\n`;
+          mapping.generatedLengths.push(value.name.length);
         }
-      });
+        text += `${value.name}' as `;
+        linkedCodeMapping.generatedOffsets.push(text.length);
+        linkedCodeMapping.generatedLengths.push(localName.length + 2);
+        text += `'`;
+        mapping.sourceOffsets.push(localLoc.start.offset);
+        mapping.lengths.push(localName.length);
+        mapping.generatedOffsets.push(text.length);
+        mapping.generatedLengths.push(localName.length);
+        text += `${localName}',\n`;
+      }
       text += `} from `;
       mapping.sourceOffsets.push(tokenImporter.fromLoc.start.offset - 1);
       mapping.lengths.push(tokenImporter.from.length + 2);
       mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths.push(tokenImporter.from.length + 2);
       text += `'${tokenImporter.from}';\n`;
     }
   }

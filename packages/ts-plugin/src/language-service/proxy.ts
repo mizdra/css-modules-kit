@@ -52,7 +52,7 @@ export function proxyLanguageService(
   proxy.getCompletionsAtPosition = getCompletionsAtPosition(languageService, config);
   proxy.getCompletionEntryDetails = getCompletionEntryDetails(languageService, resolver, config);
   proxy.getCodeFixesAtPosition = getCodeFixesAtPosition(language, languageService, project, resolver, config);
-  proxy.getDefinitionAndBoundSpan = getDefinitionAndBoundSpan(language, languageService);
+  proxy.getDefinitionAndBoundSpan = getDefinitionAndBoundSpan(language, languageService, config);
   proxy.findReferences = findReferences(languageService);
 
   return proxy;

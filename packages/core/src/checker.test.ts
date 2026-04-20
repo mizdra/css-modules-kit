@@ -36,79 +36,6 @@ function prepareChecker(args?: Partial<CheckerArgs>): Checker {
 }
 
 describe('checkCSSModule', () => {
-  test('do not report diagnostics for invalid name as js identifier when namedExports is false', async () => {
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        .a-1 { color: red; }
-        @value b-1, b-2 as a-2 from './b.module.css';
-      `,
-      'b.module.css': dedent`
-        @value b-1: red;
-        @value b-2: red;
-      `,
-    });
-    const check = prepareChecker();
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`[]`);
-  });
-  test('report diagnostics for invalid name as js identifier when namedExports is true', async () => {
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        .a-1 { color: red; }
-        @value b-1, b-2 as a-2 from './b.module.css';
-      `,
-      'b.module.css': dedent`
-        @value b-1: red;
-        @value b-2: red;
-      `,
-    });
-    const check = prepareChecker({ config: fakeConfig({ namedExports: true }) });
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 3,
-          "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 3,
-          "start": {
-            "column": 8,
-            "line": 2,
-          },
-          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 3,
-          "start": {
-            "column": 13,
-            "line": 2,
-          },
-          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 3,
-          "start": {
-            "column": 20,
-            "line": 2,
-          },
-          "text": "Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-      ]
-    `);
-  });
   test('report diagnostics for "__proto__" name', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
@@ -205,7 +132,7 @@ describe('checkCSSModule', () => {
       ]
     `);
   });
-  test('report diagnostics for backslash in name when namedExports is false', async () => {
+  test('report diagnostics for backslash in name', async () => {
     // NOTE: The backslash is valid syntax in class selectors, but it is invalid syntax in `@value`.
     // Therefore, it is sufficient for diagnostics to be reported only for class selectors.
     const iff = await createIFF({
@@ -225,7 +152,7 @@ describe('checkCSSModule', () => {
             "column": 2,
             "line": 1,
           },
-          "text": "Backslash (\\) is not allowed in names when \`cmkOptions.namedExports\` is set to \`false\`.",
+          "text": "Backslash (\\) is not allowed in names.",
         },
       ]
     `);
