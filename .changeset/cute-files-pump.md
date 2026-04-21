@@ -2,4 +2,4 @@
 '@css-modules-kit/core': minor
 ---
 
-Support ${configDir}
+feat(core): support `${configDir}` in tsconfig options
