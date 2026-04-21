@@ -402,5 +402,30 @@ describe('readConfigFile', () => {
       expect(result.excludes).toEqual([iff.join('app/dist')]);
       expect(result.dtsOutDir).toBe(iff.join('app/generated'));
     });
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('does not replace ${configDir} if it is not at the start of the path', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': dedent`
+          {
+            "include": ["./\${configDir}/src"]
+          }
+        `,
+      });
+      const result = readConfigFile(iff.rootDir);
+      // oxlint-disable-next-line no-template-curly-in-string
+      expect(result.includes).toEqual([iff.join('${configDir}/src')]);
+    });
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('replaces ${configDir} case-insensitively', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': dedent`
+          {
+            "include": ["\${CONFIGDIR}/src"]
+          }
+        `,
+      });
+      const result = readConfigFile(iff.rootDir);
+      expect(result.includes).toEqual([iff.join('src')]);
+    });
   });
 });
