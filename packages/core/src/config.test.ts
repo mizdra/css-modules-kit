@@ -378,4 +378,24 @@ describe('readConfigFile', () => {
       ]);
     });
   });
+  describe('configDir template variable', () => {
+    test('correctly resolves configDir', async () => {
+      const iff = await createIFF({
+        'apps/app/tsconfig.json': dedent`
+          {
+            "extends": ["../../tsconfig.a.json"]
+          }
+        `,
+        'tsconfig.a.json': dedent`
+          {
+            "include": ["./types", "\${configDir}/src"],
+            "exclude": ["./dist", "\${configDir}/dist"]
+          }
+        `,
+      });
+      const result = readConfigFile(iff.join('apps/app'));
+      expect(result.includes).toEqual([iff.join('types'), iff.join('apps/app/src')]);
+      expect(result.excludes).toEqual([iff.join('dist'), iff.join('apps/app/dist')]);
+    });
+  });
 });
