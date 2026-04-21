@@ -268,6 +268,29 @@ describe('readConfigFile', () => {
         }),
       );
     });
+    // FIXME
+    test.fails('resolves relative paths against the defining tsconfig directory', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': dedent`
+          {
+            "include": ["src"],
+            "exclude": ["dist"],
+            "cmkOptions": {
+              "dtsOutDir": "generated"
+            }
+          }
+        `,
+        'app/tsconfig.json': dedent`
+          {
+            "extends": "../tsconfig.base.json"
+          }
+        `,
+      });
+      const result = readConfigFile(iff.join('app'));
+      expect(result.includes).toEqual([iff.join('src')]);
+      expect(result.excludes).toEqual([iff.join('dist')]);
+      expect(result.dtsOutDir).toBe(iff.join('generated'));
+    });
   });
   describe('diagnostics', () => {
     test('returns diagnostics and a config object with error values excluded if config file has semantic errors', async () => {
