@@ -268,6 +268,29 @@ describe('readConfigFile', () => {
         }),
       );
     });
+    // FIXME
+    test.fails('resolves relative paths against the defining tsconfig directory', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': dedent`
+          {
+            "include": ["src"],
+            "exclude": ["dist"],
+            "cmkOptions": {
+              "dtsOutDir": "generated"
+            }
+          }
+        `,
+        'app/tsconfig.json': dedent`
+          {
+            "extends": "../tsconfig.base.json"
+          }
+        `,
+      });
+      const result = readConfigFile(iff.join('app'));
+      expect(result.includes).toEqual([iff.join('src')]);
+      expect(result.excludes).toEqual([iff.join('dist')]);
+      expect(result.dtsOutDir).toBe(iff.join('generated'));
+    });
   });
   describe('diagnostics', () => {
     test('returns diagnostics and a config object with error values excluded if config file has semantic errors', async () => {
@@ -376,6 +399,56 @@ describe('readConfigFile', () => {
         { fileName: iff.join('src2'), recursive: true },
         { fileName: iff.join('src3'), recursive: false },
       ]);
+    });
+  });
+  describe('configDir template variable', () => {
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('resolve ${configDir} with the entry tsconfig directory', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': dedent`
+          {
+            "include": ["\${configDir}/src"],
+            "exclude": ["\${configDir}/dist"],
+            "cmkOptions": {
+              "dtsOutDir": "\${configDir}/generated"
+            }
+          }
+        `,
+        'app/tsconfig.json': dedent`
+          {
+            "extends": "../tsconfig.base.json",
+          }
+        `,
+      });
+      const result = readConfigFile(iff.join('app'));
+      expect(result.includes).toEqual([iff.join('app/src')]);
+      expect(result.excludes).toEqual([iff.join('app/dist')]);
+      expect(result.dtsOutDir).toBe(iff.join('app/generated'));
+    });
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('does not replace ${configDir} if it is not at the start of the path', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': dedent`
+          {
+            "include": ["./\${configDir}/src"]
+          }
+        `,
+      });
+      const result = readConfigFile(iff.rootDir);
+      // oxlint-disable-next-line no-template-curly-in-string
+      expect(result.includes).toEqual([iff.join('${configDir}/src')]);
+    });
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('replaces ${configDir} case-insensitively', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': dedent`
+          {
+            "include": ["\${CONFIGDIR}/src"]
+          }
+        `,
+      });
+      const result = readConfigFile(iff.rootDir);
+      expect(result.includes).toEqual([iff.join('src')]);
     });
   });
 });

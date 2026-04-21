@@ -229,6 +229,11 @@ function parseTsConfigFile(fileName: string) {
   };
 }
 
+// https://github.com/microsoft/TypeScript/blob/55423abe4d029017f19b6e4c32097591994836b4/src/compiler/commandLineParser.ts#L3299-L3328
+function getSubstitutedPath(path: string, basePath: string) {
+  return join(basePath, path.replace(/^\$\{configDir}/i, './'));
+}
+
 /**
  * Reads the `tsconfig.json` file and returns the normalized config.
  * Even if the `tsconfig.json` file contains syntax or semantic errors,
@@ -256,12 +261,15 @@ export function readConfigFile(project: string): CMKConfig {
   }
 
   const basePath = dirname(configFileName);
+
   return {
     // If `include` is not specified, fallback to the default include spec。
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
-    includes: (parsedTsConfig.config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((i) => join(basePath, i)),
-    excludes: (parsedTsConfig.config.excludes ?? []).map((e) => join(basePath, e)),
-    dtsOutDir: join(basePath, parsedTsConfig.config.dtsOutDir ?? 'generated'),
+    includes: (parsedTsConfig.config.includes ?? [DEFAULT_INCLUDE_SPEC]).map((path) =>
+      getSubstitutedPath(path, basePath),
+    ),
+    excludes: (parsedTsConfig.config.excludes ?? []).map((path) => getSubstitutedPath(path, basePath)),
+    dtsOutDir: getSubstitutedPath(parsedTsConfig.config.dtsOutDir ?? 'generated', basePath),
     arbitraryExtensions: parsedTsConfig.config.arbitraryExtensions ?? false,
     namedExports: parsedTsConfig.config.namedExports ?? false,
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
