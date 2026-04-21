@@ -379,27 +379,28 @@ describe('readConfigFile', () => {
     });
   });
   describe('configDir template variable', () => {
-    test('correctly resolves configDir', async () => {
+    // oxlint-disable-next-line no-template-curly-in-string
+    test('resolve ${configDir} with the entry tsconfig directory', async () => {
       const iff = await createIFF({
-        'apps/app/tsconfig.json': dedent`
+        'tsconfig.base.json': dedent`
           {
-            "extends": ["../../tsconfig.a.json"]
-          }
-        `,
-        'tsconfig.a.json': dedent`
-          {
-            "include": ["./types", "\${configDir}/src"],
-            "exclude": ["./dist", "\${configDir}/dist"],
+            "include": ["\${configDir}/src"],
+            "exclude": ["\${configDir}/dist"],
             "cmkOptions": {
               "dtsOutDir": "\${configDir}/generated"
             }
           }
         `,
+        'app/tsconfig.json': dedent`
+          {
+            "extends": "../tsconfig.base.json",
+          }
+        `,
       });
-      const result = readConfigFile(iff.join('apps/app'));
-      expect(result.includes).toEqual([iff.join('types'), iff.join('apps/app/src')]);
-      expect(result.excludes).toEqual([iff.join('dist'), iff.join('apps/app/dist')]);
-      expect(result.dtsOutDir).toBe(iff.join('apps/app/generated'));
+      const result = readConfigFile(iff.join('app'));
+      expect(result.includes).toEqual([iff.join('app/src')]);
+      expect(result.excludes).toEqual([iff.join('app/dist')]);
+      expect(result.dtsOutDir).toBe(iff.join('app/generated'));
     });
   });
 });
