@@ -1,6 +1,6 @@
 {
   "name": "@css-modules-kit/stylelint-plugin",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "private": false,
   "description": "A stylelint plugin for CSS Modules",
   "keywords": [
