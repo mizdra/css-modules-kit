@@ -389,13 +389,17 @@ describe('readConfigFile', () => {
         'tsconfig.a.json': dedent`
           {
             "include": ["./types", "\${configDir}/src"],
-            "exclude": ["./dist", "\${configDir}/dist"]
+            "exclude": ["./dist", "\${configDir}/dist"],
+            "cmkOptions": {
+              "dtsOutDir": "\${configDir}/generated"
+            }
           }
         `,
       });
       const result = readConfigFile(iff.join('apps/app'));
       expect(result.includes).toEqual([iff.join('types'), iff.join('apps/app/src')]);
       expect(result.excludes).toEqual([iff.join('dist'), iff.join('apps/app/dist')]);
+      expect(result.dtsOutDir).toBe(iff.join('apps/app/generated'));
     });
   });
 });

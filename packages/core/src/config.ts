@@ -269,7 +269,7 @@ export function readConfigFile(project: string): CMKConfig {
       getSubstitutedPath(path, basePath),
     ),
     excludes: (parsedTsConfig.config.excludes ?? []).map((path) => getSubstitutedPath(path, basePath)),
-    dtsOutDir: join(basePath, parsedTsConfig.config.dtsOutDir ?? 'generated'),
+    dtsOutDir: getSubstitutedPath(parsedTsConfig.config.dtsOutDir ?? 'generated', basePath),
     arbitraryExtensions: parsedTsConfig.config.arbitraryExtensions ?? false,
     namedExports: parsedTsConfig.config.namedExports ?? false,
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
