@@ -210,7 +210,7 @@ describe('readConfigFile', () => {
       const iff = await createIFF({
         'node_modules/some-pkg/tsconfig.json': dedent`
           {
-            "cmkOptions": { "dtsOutDir": "generated/cmk" }
+            "cmkOptions": { "dtsOutDir": "\${configDir}/generated/cmk" }
           }
         `,
         'tsconfig.json': dedent`
@@ -268,8 +268,7 @@ describe('readConfigFile', () => {
         }),
       );
     });
-    // FIXME
-    test.fails('resolves relative paths against the defining tsconfig directory', async () => {
+    test('resolves relative paths against the defining tsconfig directory', async () => {
       const iff = await createIFF({
         'tsconfig.base.json': dedent`
           {
