@@ -210,7 +210,7 @@ describe('readConfigFile', () => {
       const iff = await createIFF({
         'node_modules/some-pkg/tsconfig.json': dedent`
           {
-            "cmkOptions": { "dtsOutDir": "generated/cmk" }
+            "cmkOptions": { "dtsOutDir": "\${configDir}/generated/cmk" }
           }
         `,
         'tsconfig.json': dedent`
