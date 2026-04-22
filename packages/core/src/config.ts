@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import { TsConfigFileNotFoundError } from './error.js';
-import { basename, dirname, join, resolve } from './path.js';
+import { basename, dirname, join, relative, resolve } from './path.js';
 import type { Diagnostic } from './type.js';
 
 // https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3006
@@ -67,7 +67,7 @@ export interface CMKConfig {
 
 /**
  * The config loaded from `ts.ParsedCommandLine['raw']`.
- * This is unnormalized. Paths are relative, and some options may be omitted.
+ * This is unnormalized. Paths are relative from the entry tsconfig file (basePath), and some options may be omitted.
  */
 interface UnnormalizedRawConfig {
   includes?: string[];
@@ -100,7 +100,7 @@ function isTsConfigFileExists(fileName: string): boolean {
   return ts.findConfigFile(dirname(fileName), ts.sys.fileExists.bind(ts.sys), basename(fileName)) !== undefined;
 }
 
-function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): ParsedRawData {
+function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile, basePath: string): ParsedRawData {
   const result: ParsedRawData = {
     config: {},
     diagnostics: [],
@@ -137,7 +137,9 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
     }
     if ('dtsOutDir' in raw.cmkOptions) {
       if (typeof raw.cmkOptions.dtsOutDir === 'string') {
-        result.config.dtsOutDir = raw.cmkOptions.dtsOutDir;
+        result.config.dtsOutDir = startsWithConfigDirTemplate(raw.cmkOptions.dtsOutDir)
+          ? raw.cmkOptions.dtsOutDir
+          : relative(basePath, join(dirname(tsConfigSourceFile.fileName), raw.cmkOptions.dtsOutDir));
       } else {
         result.diagnostics.push({
           category: 'error',
@@ -193,7 +195,7 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile): 
   return result;
 }
 
-function parseTsConfigFile(fileName: string) {
+function parseTsConfigFile(fileName: string, basePath: string) {
   const tsConfigSourceFile = ts.readJsonConfigFile(fileName, ts.sys.readFile.bind(ts.sys));
   // MEMO: `tsConfigSourceFile.parseDiagnostics` (Internal API) contains a syntax error for `tsconfig.json`.
   // However, it is ignored so that ts-plugin will work even if `tsconfig.json` is somewhat broken.
@@ -216,7 +218,7 @@ function parseTsConfigFile(fileName: string) {
     ],
   );
   // Read options from `parsedCommandLine.raw`
-  const parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile);
+  const parsedRawData = parseRawData(parsedCommandLine.raw, tsConfigSourceFile, basePath);
 
   return {
     extendedSourceFiles: tsConfigSourceFile.extendedSourceFiles,
@@ -229,9 +231,15 @@ function parseTsConfigFile(fileName: string) {
   };
 }
 
+const configDirTemplate = /^\$\{configDir}/i;
+// https://github.com/microsoft/TypeScript/blob/7b8cb3bdf82f400642b73173f941335775d6f730/src/compiler/commandLineParser.ts#L3300
+function startsWithConfigDirTemplate(path: string) {
+  return configDirTemplate.test(path);
+}
+
 // https://github.com/microsoft/TypeScript/blob/55423abe4d029017f19b6e4c32097591994836b4/src/compiler/commandLineParser.ts#L3299-L3328
 function getSubstitutedPath(path: string, basePath: string) {
-  return join(basePath, path.replace(/^\$\{configDir}/i, './'));
+  return join(basePath, path.replace(configDirTemplate, './'));
 }
 
 /**
@@ -246,21 +254,20 @@ export function readConfigFile(project: string): CMKConfig {
   const configFileName = findTsConfigFile(project);
   if (!configFileName) throw new TsConfigFileNotFoundError();
 
-  const parsedTsConfig = parseTsConfigFile(configFileName);
+  const basePath = dirname(configFileName);
+  const parsedTsConfig = parseTsConfigFile(configFileName, basePath);
 
   // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
   // So here we read the options from those files and merge them into `parsedRawData`.
   if (parsedTsConfig.extendedSourceFiles) {
     for (const extendedSourceFile of parsedTsConfig.extendedSourceFiles) {
       if (isTsConfigFileExists(extendedSourceFile)) {
-        const base = parseTsConfigFile(extendedSourceFile);
+        const base = parseTsConfigFile(extendedSourceFile, basePath);
         parsedTsConfig.config = { ...base.config, ...parsedTsConfig.config };
         parsedTsConfig.diagnostics = [...base.diagnostics, ...parsedTsConfig.diagnostics];
       }
     }
   }
-
-  const basePath = dirname(configFileName);
 
   return {
     // If `include` is not specified, fallback to the default include spec。

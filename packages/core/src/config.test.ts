@@ -268,8 +268,7 @@ describe('readConfigFile', () => {
         }),
       );
     });
-    // FIXME
-    test.fails('resolves relative paths against the defining tsconfig directory', async () => {
+    test('resolves relative paths against the defining tsconfig directory', async () => {
       const iff = await createIFF({
         'tsconfig.base.json': dedent`
           {
