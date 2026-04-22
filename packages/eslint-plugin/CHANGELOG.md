@@ -1,5 +1,16 @@
 # @css-modules-kit/eslint-plugin
 
+## 1.0.0
+
+### Major Changes
+
+- [#362](https://github.com/mizdra/css-modules-kit/pull/362) [`e1f2983`](https://github.com/mizdra/css-modules-kit/commit/e1f2983c5040159ac97ba34f26c8b26f72d2f4ae) - Drop Node.js 20 support and require Node.js >=22.12.0.
+
+### Patch Changes
+
+- Updated dependencies [[`cc5f4c8`](https://github.com/mizdra/css-modules-kit/commit/cc5f4c8bd2c0cf49d582852150357669c1d9ea6b), [`d51cf0f`](https://github.com/mizdra/css-modules-kit/commit/d51cf0fdcb7f8f9677cf40fc3e8f621a6e16b501), [`e1f2983`](https://github.com/mizdra/css-modules-kit/commit/e1f2983c5040159ac97ba34f26c8b26f72d2f4ae), [`0f570c1`](https://github.com/mizdra/css-modules-kit/commit/0f570c17f698c7dd6239931ffcf6ae61ff40e867), [`f615cce`](https://github.com/mizdra/css-modules-kit/commit/f615cce4dc35f5b4c63215d57f98c05e13b4db47)]:
+  - @css-modules-kit/core@1.0.0
+
 ## 0.10.0
 
 ### Patch Changes

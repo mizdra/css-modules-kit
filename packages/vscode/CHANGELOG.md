@@ -1,5 +1,14 @@
 # css-modules-kit-vscode
 
+## 1.0.0
+
+### Patch Changes
+
+- [#349](https://github.com/mizdra/css-modules-kit/pull/349) [`7b1256e`](https://github.com/mizdra/css-modules-kit/commit/7b1256e7b9b7d3c323a34096d4de04f8075c7ddf) - chore(vscode): bundle ts-plugin dependencies instead of installing at publish time
+
+- Updated dependencies [[`cc5f4c8`](https://github.com/mizdra/css-modules-kit/commit/cc5f4c8bd2c0cf49d582852150357669c1d9ea6b), [`e1f2983`](https://github.com/mizdra/css-modules-kit/commit/e1f2983c5040159ac97ba34f26c8b26f72d2f4ae), [`ea5dfc9`](https://github.com/mizdra/css-modules-kit/commit/ea5dfc9d3c80d86cb9b974b9cc87640f4883bb8f)]:
+  - @css-modules-kit/ts-plugin@1.0.0
+
 ## 0.10.0
 
 ### Patch Changes

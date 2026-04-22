@@ -1,6 +1,6 @@
 {
   "name": "@css-modules-kit/eslint-plugin",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "private": false,
   "description": "A eslint plugin for CSS Modules",
   "keywords": [
