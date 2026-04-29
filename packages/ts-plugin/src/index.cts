@@ -9,6 +9,7 @@ import { proxyLanguageService } from './language-service/proxy.js';
 import { createDocumentLinkHandler } from './protocol-handler/documentLink.js';
 import { createRenameHandler } from './protocol-handler/rename.js';
 import { createRenameInfoHandler } from './protocol-handler/renameInfo.js';
+import { CustomSourceMap } from './source-map.js';
 
 const projectToLanguage = new WeakMap<ts.server.Project, Language<string>>();
 
@@ -67,6 +68,7 @@ const plugin = createLanguageServicePlugin((ts, info) => {
   return {
     languagePlugins: [createCSSLanguagePlugin(matchesPattern, config)],
     setup: (language) => {
+      language.mapperFactory = (mappings) => new CustomSourceMap(mappings);
       projectToLanguage.set(info.project, language);
       info.languageService = proxyLanguageService(
         language,
