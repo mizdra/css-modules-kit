@@ -68,9 +68,6 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violation: TokenNameViolation): Diagnostic {
   let text: string;
   switch (violation) {
-    case 'invalid-js-identifier':
-      text = `Token names must be valid JavaScript identifiers when \`cmkOptions.namedExports\` is set to \`true\`.`;
-      break;
     case 'proto-not-allowed':
       text = `\`__proto__\` is not allowed as names.`;
       break;
@@ -78,7 +75,7 @@ function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violatio
       text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
       break;
     case 'backslash-not-allowed':
-      text = `Backslash (\\) is not allowed in names when \`cmkOptions.namedExports\` is set to \`false\`.`;
+      text = `Backslash (\\) is not allowed in names.`;
       break;
     default:
       throw new Error('unreachable: unknown TokenNameViolation');

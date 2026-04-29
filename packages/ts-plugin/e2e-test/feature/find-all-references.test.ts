@@ -127,149 +127,147 @@ describe.each([
     await tsserver.sendUpdateOpen({
       openFiles: [{ file: iff.paths['index.ts'] }],
     });
-    test.each(
-      [
-        {
-          name: 'styles in index.ts',
-          file: iff.paths['index.ts'],
-          line: 1,
-          offset: stylesOffset,
-          expected: [
-            {
-              file: formatPath(iff.paths['index.ts']),
-              start: { line: 1, offset: stylesOffset },
-              end: { line: 1, offset: stylesOffset + 6 },
-            },
-            { file: formatPath(iff.paths['index.ts']), start: { line: 2, offset: 1 }, end: { line: 2, offset: 7 } },
-            { file: formatPath(iff.paths['index.ts']), start: { line: 3, offset: 1 }, end: { line: 3, offset: 7 } },
-            { file: formatPath(iff.paths['index.ts']), start: { line: 4, offset: 1 }, end: { line: 4, offset: 7 } },
-            { file: formatPath(iff.paths['index.ts']), start: { line: 5, offset: 1 }, end: { line: 5, offset: 7 } },
-            { file: formatPath(iff.paths['index.ts']), start: { line: 6, offset: 1 }, end: { line: 6, offset: 7 } },
-          ],
-        },
-        {
-          name: "'./a.module.css' in index.ts",
-          file: iff.paths['index.ts'],
-          line: 1,
-          offset: specifierOffset,
-          expected: [
-            {
-              file: formatPath(iff.paths['index.ts']),
-              start: { line: 1, offset: specifierOffset + 1 },
-              end: { line: 1, offset: specifierOffset + 15 },
-            },
-          ],
-        },
-        {
-          name: "'./b.module.css' in a.module.css",
-          file: iff.paths['a.module.css'],
-          line: 1,
-          offset: 9,
-          expected: [
-            {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 1, offset: 10 },
-              end: { line: 1, offset: 24 },
-            },
-          ],
-        },
-        {
-          name: "'./c.module.css' in a.module.css",
-          file: iff.paths['a.module.css'],
-          line: 2,
-          offset: 33,
-          expected: [
-            {
-              file: formatPath(iff.paths['a.module.css']),
-              start: { line: 2, offset: 34 },
-              end: { line: 2, offset: 48 },
-            },
-          ],
-        },
-        {
-          name: 'a_1 in index.ts',
-          file: a_1_in_index_ts.file,
-          ...a_1_in_index_ts.start,
-          expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
-        },
-        {
-          name: 'a_1 in a.module.css',
-          file: a_1_1_in_a_module_css.file,
-          ...a_1_1_in_a_module_css.start,
-          expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
-        },
-        !namedExports && {
-          name: 'a-2 in index.ts',
-          file: a_2_in_index_ts.file,
-          ...a_2_in_index_ts.start,
-          expected: [a_2_in_index_ts, a_2_in_a_module_css],
-        },
-        !namedExports && {
-          name: 'a-2 in a.module.css',
-          file: a_2_in_a_module_css.file,
-          ...a_2_in_a_module_css.start,
-          expected: [a_2_in_index_ts, a_2_in_a_module_css],
-        },
-        {
-          name: 'b_1 in index.ts',
-          file: b_1_in_index_ts.file,
-          ...b_1_in_index_ts.start,
-          expected: [b_1_in_index_ts, b_1_in_b_module_css],
-        },
-        {
-          name: 'b_1 in b.module.css',
-          file: b_1_in_b_module_css.file,
-          ...b_1_in_b_module_css.start,
-          expected: [b_1_in_index_ts, b_1_in_b_module_css],
-        },
-        {
-          name: 'c_1 in index.ts',
-          file: c_1_in_index_ts.file,
-          ...c_1_in_index_ts.start,
-          expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-        },
-        {
-          name: 'c_1 in a.module.css',
-          file: c_1_in_a_module_css.file,
-          ...c_1_in_a_module_css.start,
-          expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-        },
-        {
-          name: 'c_1 in c.module.css',
-          file: c_1_in_c_module_css.file,
-          ...c_1_in_c_module_css.start,
-          expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-        },
-        {
-          name: 'c_alias in index.ts',
-          file: c_alias_in_index_ts.file,
-          ...c_alias_in_index_ts.start,
-          // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-          // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
-          expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-        },
-        {
-          name: 'c_alias in a.module.css',
-          file: c_alias_in_a_module_css.file,
-          ...c_alias_in_a_module_css.start,
-          // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-          // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
-          expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-        },
-        {
-          name: 'c_2 in a.module.css',
-          file: c_2_in_a_module_css.file,
-          ...c_2_in_a_module_css.start,
-          expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-        },
-        {
-          name: 'c_2 in c.module.css',
-          file: c_2_in_c_module_css.file,
-          ...c_2_in_c_module_css.start,
-          expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-        },
-      ].filter((c) => c !== false),
-    )('Find All References for $name', async ({ file, line, offset, expected }) => {
+    test.each([
+      {
+        name: 'styles in index.ts',
+        file: iff.paths['index.ts'],
+        line: 1,
+        offset: stylesOffset,
+        expected: [
+          {
+            file: formatPath(iff.paths['index.ts']),
+            start: { line: 1, offset: stylesOffset },
+            end: { line: 1, offset: stylesOffset + 6 },
+          },
+          { file: formatPath(iff.paths['index.ts']), start: { line: 2, offset: 1 }, end: { line: 2, offset: 7 } },
+          { file: formatPath(iff.paths['index.ts']), start: { line: 3, offset: 1 }, end: { line: 3, offset: 7 } },
+          { file: formatPath(iff.paths['index.ts']), start: { line: 4, offset: 1 }, end: { line: 4, offset: 7 } },
+          { file: formatPath(iff.paths['index.ts']), start: { line: 5, offset: 1 }, end: { line: 5, offset: 7 } },
+          { file: formatPath(iff.paths['index.ts']), start: { line: 6, offset: 1 }, end: { line: 6, offset: 7 } },
+        ],
+      },
+      {
+        name: "'./a.module.css' in index.ts",
+        file: iff.paths['index.ts'],
+        line: 1,
+        offset: specifierOffset,
+        expected: [
+          {
+            file: formatPath(iff.paths['index.ts']),
+            start: { line: 1, offset: specifierOffset + 1 },
+            end: { line: 1, offset: specifierOffset + 15 },
+          },
+        ],
+      },
+      {
+        name: "'./b.module.css' in a.module.css",
+        file: iff.paths['a.module.css'],
+        line: 1,
+        offset: 9,
+        expected: [
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            start: { line: 1, offset: 10 },
+            end: { line: 1, offset: 24 },
+          },
+        ],
+      },
+      {
+        name: "'./c.module.css' in a.module.css",
+        file: iff.paths['a.module.css'],
+        line: 2,
+        offset: 33,
+        expected: [
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            start: { line: 2, offset: 34 },
+            end: { line: 2, offset: 48 },
+          },
+        ],
+      },
+      {
+        name: 'a_1 in index.ts',
+        file: a_1_in_index_ts.file,
+        ...a_1_in_index_ts.start,
+        expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
+      },
+      {
+        name: 'a_1 in a.module.css',
+        file: a_1_1_in_a_module_css.file,
+        ...a_1_1_in_a_module_css.start,
+        expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
+      },
+      {
+        name: 'a-2 in index.ts',
+        file: a_2_in_index_ts.file,
+        ...a_2_in_index_ts.start,
+        expected: [a_2_in_index_ts, a_2_in_a_module_css],
+      },
+      {
+        name: 'a-2 in a.module.css',
+        file: a_2_in_a_module_css.file,
+        ...a_2_in_a_module_css.start,
+        expected: [a_2_in_index_ts, a_2_in_a_module_css],
+      },
+      {
+        name: 'b_1 in index.ts',
+        file: b_1_in_index_ts.file,
+        ...b_1_in_index_ts.start,
+        expected: [b_1_in_index_ts, b_1_in_b_module_css],
+      },
+      {
+        name: 'b_1 in b.module.css',
+        file: b_1_in_b_module_css.file,
+        ...b_1_in_b_module_css.start,
+        expected: [b_1_in_index_ts, b_1_in_b_module_css],
+      },
+      {
+        name: 'c_1 in index.ts',
+        file: c_1_in_index_ts.file,
+        ...c_1_in_index_ts.start,
+        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      },
+      {
+        name: 'c_1 in a.module.css',
+        file: c_1_in_a_module_css.file,
+        ...c_1_in_a_module_css.start,
+        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      },
+      {
+        name: 'c_1 in c.module.css',
+        file: c_1_in_c_module_css.file,
+        ...c_1_in_c_module_css.start,
+        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
+      },
+      {
+        name: 'c_alias in index.ts',
+        file: c_alias_in_index_ts.file,
+        ...c_alias_in_index_ts.start,
+        // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
+        // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
+        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
+      },
+      {
+        name: 'c_alias in a.module.css',
+        file: c_alias_in_a_module_css.file,
+        ...c_alias_in_a_module_css.start,
+        // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
+        // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
+        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
+      },
+      {
+        name: 'c_2 in a.module.css',
+        file: c_2_in_a_module_css.file,
+        ...c_2_in_a_module_css.start,
+        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
+      },
+      {
+        name: 'c_2 in c.module.css',
+        file: c_2_in_c_module_css.file,
+        ...c_2_in_c_module_css.start,
+        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
+      },
+    ])('Find All References for $name', async ({ file, line, offset, expected }) => {
       const res = await tsserver.sendReferences({
         file,
         line,

@@ -1,10 +1,20 @@
+import type { CMKConfig } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
-import type ts from 'typescript';
+import ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../../language-plugin.js';
+
+function isModuleLevelDefinition(def: ts.DefinitionInfo, config: CMKConfig): boolean {
+  const isModuleOrScript =
+    def.kind === ts.ScriptElementKind.moduleElement || def.kind === ts.ScriptElementKind.scriptElement;
+  const isStylesConst = def.kind === ts.ScriptElementKind.constElement && def.name === 'styles';
+  const isZeroLengthSpan = def.textSpan.start === 0 && def.textSpan.length === 0;
+  return (isModuleOrScript || (!config.namedExports && isStylesConst)) && isZeroLengthSpan;
+}
 
 export function getDefinitionAndBoundSpan(
   language: Language<string>,
   languageService: ts.LanguageService,
+  config: CMKConfig,
 ): ts.LanguageService['getDefinitionAndBoundSpan'] {
   return (...args) => {
     const result = languageService.getDefinitionAndBoundSpan(...args);
@@ -13,27 +23,26 @@ export function getDefinitionAndBoundSpan(
 
     const newDefinitions: ts.DefinitionInfo[] = [];
     for (const def of result.definitions) {
-      // Clicks on a module-level reference (e.g. `styles` in `import styles from '...'`
-      // or the module specifier itself) surface as a zero-length span at file start.
-      // Keep them as-is; they aren't tokens to be matched against `localTokens`.
-      if (def.textSpan.start === 0 && def.textSpan.length === 0) {
-        newDefinitions.push(def);
-        continue;
-      }
       const script = language.scripts.get(def.fileName);
       if (!isCSSModuleScript(script)) {
         newDefinitions.push(def);
         continue;
       }
-      const cssModule = script.generated.root[CMK_DATA_KEY];
-      const defName = unquote(def.name);
 
-      // Keep only definitions that map to a token declared in this module's `localTokens`.
-      // Re-exports from `@value ... from '...'` aren't declarations here, so they're excluded —
-      // their real declaration lives in the target file.
-      const localToken = cssModule.localTokens.find(
-        (t) => t.name === defName && t.loc.start.offset === def.textSpan.start,
-      );
+      // Clicks on a module-level reference (e.g. `styles` in `import styles from '...'`
+      // or the module specifier itself) surface as a zero-length span at file start.
+      // Keep them as-is; they aren't tokens to be matched against `localTokens`.
+      if (isModuleLevelDefinition(def, config)) {
+        newDefinitions.push(def);
+        continue;
+      }
+
+      const cssModule = script.generated.root[CMK_DATA_KEY];
+
+      const localToken = cssModule.localTokens.find((t) => t.loc.start.offset === def.textSpan.start);
+
+      // Due to the structure of .d.ts files, tokens imported via `@value ... from ...` may be included in `result.definitions`.
+      // Since these are tokens imported from other modules, they should not be returned as definitions.
       if (!localToken) continue;
 
       // Set `contextSpan` for local tokens. `contextSpan` is used for Definition Preview in editors.
@@ -49,16 +58,4 @@ export function getDefinitionAndBoundSpan(
     result.definitions = newDefinitions;
     return result;
   };
-}
-
-/**
- * Removes surrounding single quotes from a string if present.
- * When `namedExport` is false, `def.name` is `"'tokenName'"` (with quotes),
- * but `token.name` is `"tokenName"` (without quotes).
- */
-function unquote(name: string): string {
-  if (name.length >= 2 && name.startsWith("'") && name.endsWith("'")) {
-    return name.slice(1, -1);
-  }
-  return name;
 }

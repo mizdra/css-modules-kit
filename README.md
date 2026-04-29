@@ -235,9 +235,6 @@ Due to implementation constraints and technical reasons, css-modules-kit has var
   - If you want to use Sass and Less, please use [happy-css-modules](https://github.com/mizdra/happy-css-modules). Although it does not offer as rich language features as css-modules-kit, it provides basic features such as code completion and Go to Definition.
 - Case conversion for [token](docs/glossary.md#token) names is not supported.
   - For example, if you have a CSS class `.foo-bar`, it will be exported as `styles['foo-bar']`, not `styles.fooBar` or `styles.foo_bar`.
-- The [token](docs/glossary.md#token) names must be valid JavaScript identifiers when `cmkOptions.namedExports` is `true`.
-  - For example, `.fooBar` and `.foo_bar` are supported, but `.foo-bar` is not supported.
-  - This restriction may be lifted in the future.
 - The specifiers in `@import '<specifier>'` and `@value ... from '<specifier>'` are resolved according to TypeScript's module resolution method.
   - This may differ from the resolution methods of bundlers like Turbopack or Vite.
   - If you want to use import aliases, use [`compilerOptions.paths`](https://www.typescriptlang.org/tsconfig/#paths) or [`imports`](https://nodejs.org/api/packages.html#imports) in `package.json`.
