@@ -1,5 +1,12 @@
 # css-modules-kit-vscode
 
+## 1.1.0
+
+### Patch Changes
+
+- Updated dependencies [[`cb89044`](https://github.com/mizdra/css-modules-kit/commit/cb890443d1bd1ec9985dca8e168e8ea0c1c12730), [`efe7e30`](https://github.com/mizdra/css-modules-kit/commit/efe7e304333b93a9295c35efc4af987f3ad8e62c)]:
+  - @css-modules-kit/ts-plugin@1.1.0
+
 ## 1.0.0
 
 ### Patch Changes

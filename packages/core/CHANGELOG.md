@@ -1,5 +1,17 @@
 # @css-modules-kit/core
 
+## 1.1.0
+
+### Minor Changes
+
+- [#367](https://github.com/mizdra/css-modules-kit/pull/367) [`cb89044`](https://github.com/mizdra/css-modules-kit/commit/cb890443d1bd1ec9985dca8e168e8ea0c1c12730) - feat(core, ts-plugin): support non-JavaScript identifier token in named export
+
+### Patch Changes
+
+- [#373](https://github.com/mizdra/css-modules-kit/pull/373) [`3da75ab`](https://github.com/mizdra/css-modules-kit/commit/3da75ab72251cd5c9465f4b7a92b9475b6436a39) - fix(core): resolve relative dtsOutDir against defining tsconfig directory
+
+- [#363](https://github.com/mizdra/css-modules-kit/pull/363) [`efe7e30`](https://github.com/mizdra/css-modules-kit/commit/efe7e304333b93a9295c35efc4af987f3ad8e62c) - refactor(core, ts-plugin): replace secondaryMapping with CustomSourceMap
+
 ## 1.0.0
 
 ### Major Changes
