@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { buildStylesImport, buildTSConfigJSON } from '../../test/builder.js';
+import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
 import { setupFixture } from '../test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeDefinitions } from '../test-util/tsserver.js';
 
