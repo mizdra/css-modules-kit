@@ -13,10 +13,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   describe('styles binding suggestion', () => {
     test('prioritizes the CSS module corresponding to the current component file', async () => {
       const { iff, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({
-          compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
-          cmkOptions: { namedExports },
-        }),
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.tsx': `styles;`,
         'a.module.css': '',
         'b.module.css': '',
