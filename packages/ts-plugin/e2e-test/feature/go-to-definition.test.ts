@@ -192,7 +192,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('returns all declarations when the same class is declared multiple times', async () => {
+    test('when the same class is declared multiple times', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
