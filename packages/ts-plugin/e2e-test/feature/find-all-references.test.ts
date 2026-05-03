@@ -1,279 +1,294 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { createIFF } from '../test-util/fixture.js';
+import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
+import { setupFixture } from '../test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeRefItems } from '../test-util/tsserver.js';
 
-describe.each([
-  {
-    namedExports: false,
-    importStatement: "import styles from './a.module.css';",
-    stylesOffset: 8,
-    specifierOffset: 20,
-  },
-  {
-    namedExports: true,
-    importStatement: "import * as styles from './a.module.css';",
-    stylesOffset: 13,
-    specifierOffset: 25,
-  },
-])(
-  'Find All References (namedExports: $namedExports)',
-  async ({ importStatement, namedExports, stylesOffset, specifierOffset }) => {
-    const tsserver = launchTsserver();
-    const iff = await createIFF({
-      'index.ts': dedent`
-        ${importStatement}
-        styles.a_1;
-        styles['a-2'];
-        styles.b_1;
-        styles.c_1;
-        styles.c_alias;
-      `,
-      'a.module.css': dedent`
-        @import './b.module.css';
-        @value c_1, c_2 as c_alias from './c.module.css';
-        .a_1 { color: red; }
-        .a_1 { color: red; }
-        .a-2 { color: red; }
-      `,
-      'b.module.css': dedent`
-        .b_1 { color: red; }
-      `,
-      'c.module.css': dedent`
-        @value c_1: red;
-        @value c_2: red;
-      `,
-      'tsconfig.json': dedent`
-        {
-          "compilerOptions": {},
-          "cmkOptions": {
-            "enabled": true,
-            "dtsOutDir": "generated",
-            "namedExports": ${namedExports}
-          }
-        }
-      `,
-    });
-    const a_1_in_index_ts = {
-      file: formatPath(iff.paths['index.ts']),
-      start: { line: 2, offset: 8 },
-      end: { line: 2, offset: 11 },
-    };
-    const a_1_1_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 3, offset: 2 },
-      end: { line: 3, offset: 5 },
-    };
-    const a_1_2_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 4, offset: 2 },
-      end: { line: 4, offset: 5 },
-    };
-    const a_2_in_index_ts = {
-      file: formatPath(iff.paths['index.ts']),
-      start: { line: 3, offset: 9 },
-      end: { line: 3, offset: 12 },
-    };
-    const a_2_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 5, offset: 2 },
-      end: { line: 5, offset: 5 },
-    };
-    const b_1_in_index_ts = {
-      file: formatPath(iff.paths['index.ts']),
-      start: { line: 4, offset: 8 },
-      end: { line: 4, offset: 11 },
-    };
-    const b_1_in_b_module_css = {
-      file: formatPath(iff.paths['b.module.css']),
-      start: { line: 1, offset: 2 },
-      end: { line: 1, offset: 5 },
-    };
-    const c_1_in_index_ts = {
-      file: formatPath(iff.paths['index.ts']),
-      start: { line: 5, offset: 8 },
-      end: { line: 5, offset: 11 },
-    };
-    const c_1_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 2, offset: 8 },
-      end: { line: 2, offset: 11 },
-    };
-    const c_1_in_c_module_css = {
-      file: formatPath(iff.paths['c.module.css']),
-      start: { line: 1, offset: 8 },
-      end: { line: 1, offset: 11 },
-    };
-    const c_alias_in_index_ts = {
-      file: formatPath(iff.paths['index.ts']),
-      start: { line: 6, offset: 8 },
-      end: { line: 6, offset: 15 },
-    };
-    const c_alias_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 2, offset: 20 },
-      end: { line: 2, offset: 27 },
-    };
-    const c_2_in_a_module_css = {
-      file: formatPath(iff.paths['a.module.css']),
-      start: { line: 2, offset: 13 },
-      end: { line: 2, offset: 16 },
-    };
-    const c_2_in_c_module_css = {
-      file: formatPath(iff.paths['c.module.css']),
-      start: { line: 2, offset: 8 },
-      end: { line: 2, offset: 11 },
-    };
-    await tsserver.sendUpdateOpen({
-      openFiles: [{ file: iff.paths['index.ts'] }],
-    });
-    test.each([
-      {
-        name: 'styles in index.ts',
-        file: iff.paths['index.ts'],
-        line: 1,
-        offset: stylesOffset,
-        expected: [
-          {
-            file: formatPath(iff.paths['index.ts']),
-            start: { line: 1, offset: stylesOffset },
-            end: { line: 1, offset: stylesOffset + 6 },
-          },
-          { file: formatPath(iff.paths['index.ts']), start: { line: 2, offset: 1 }, end: { line: 2, offset: 7 } },
-          { file: formatPath(iff.paths['index.ts']), start: { line: 3, offset: 1 }, end: { line: 3, offset: 7 } },
-          { file: formatPath(iff.paths['index.ts']), start: { line: 4, offset: 1 }, end: { line: 4, offset: 7 } },
-          { file: formatPath(iff.paths['index.ts']), start: { line: 5, offset: 1 }, end: { line: 5, offset: 7 } },
-          { file: formatPath(iff.paths['index.ts']), start: { line: 6, offset: 1 }, end: { line: 6, offset: 7 } },
-        ],
-      },
-      {
-        name: "'./a.module.css' in index.ts",
-        file: iff.paths['index.ts'],
-        line: 1,
-        offset: specifierOffset,
-        expected: [
-          {
-            file: formatPath(iff.paths['index.ts']),
-            start: { line: 1, offset: specifierOffset + 1 },
-            end: { line: 1, offset: specifierOffset + 15 },
-          },
-        ],
-      },
-      {
-        name: "'./b.module.css' in a.module.css",
-        file: iff.paths['a.module.css'],
-        line: 1,
-        offset: 9,
-        expected: [
-          {
-            file: formatPath(iff.paths['a.module.css']),
-            start: { line: 1, offset: 10 },
-            end: { line: 1, offset: 24 },
-          },
-        ],
-      },
-      {
-        name: "'./c.module.css' in a.module.css",
-        file: iff.paths['a.module.css'],
-        line: 2,
-        offset: 33,
-        expected: [
-          {
-            file: formatPath(iff.paths['a.module.css']),
-            start: { line: 2, offset: 34 },
-            end: { line: 2, offset: 48 },
-          },
-        ],
-      },
-      {
-        name: 'a_1 in index.ts',
-        file: a_1_in_index_ts.file,
-        ...a_1_in_index_ts.start,
-        expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
-      },
-      {
-        name: 'a_1 in a.module.css',
-        file: a_1_1_in_a_module_css.file,
-        ...a_1_1_in_a_module_css.start,
-        expected: [a_1_in_index_ts, a_1_1_in_a_module_css, a_1_2_in_a_module_css],
-      },
-      {
-        name: 'a-2 in index.ts',
-        file: a_2_in_index_ts.file,
-        ...a_2_in_index_ts.start,
-        expected: [a_2_in_index_ts, a_2_in_a_module_css],
-      },
-      {
-        name: 'a-2 in a.module.css',
-        file: a_2_in_a_module_css.file,
-        ...a_2_in_a_module_css.start,
-        expected: [a_2_in_index_ts, a_2_in_a_module_css],
-      },
-      {
-        name: 'b_1 in index.ts',
-        file: b_1_in_index_ts.file,
-        ...b_1_in_index_ts.start,
-        expected: [b_1_in_index_ts, b_1_in_b_module_css],
-      },
-      {
-        name: 'b_1 in b.module.css',
-        file: b_1_in_b_module_css.file,
-        ...b_1_in_b_module_css.start,
-        expected: [b_1_in_index_ts, b_1_in_b_module_css],
-      },
-      {
-        name: 'c_1 in index.ts',
-        file: c_1_in_index_ts.file,
-        ...c_1_in_index_ts.start,
-        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      },
-      {
-        name: 'c_1 in a.module.css',
-        file: c_1_in_a_module_css.file,
-        ...c_1_in_a_module_css.start,
-        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      },
-      {
-        name: 'c_1 in c.module.css',
-        file: c_1_in_c_module_css.file,
-        ...c_1_in_c_module_css.start,
-        expected: [c_1_in_index_ts, c_1_in_a_module_css, c_1_in_c_module_css],
-      },
-      {
-        name: 'c_alias in index.ts',
-        file: c_alias_in_index_ts.file,
-        ...c_alias_in_index_ts.start,
-        // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-        // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
-        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-      },
-      {
-        name: 'c_alias in a.module.css',
-        file: c_alias_in_a_module_css.file,
-        ...c_alias_in_a_module_css.start,
-        // NOTE: For simplicity of implementation, this is not the ideal behavior. The ideal behavior is as follows:
-        // expected: [c_alias_in_index_ts, c_alias_in_a_module_css],
-        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-      },
-      {
-        name: 'c_2 in a.module.css',
-        file: c_2_in_a_module_css.file,
-        ...c_2_in_a_module_css.start,
-        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-      },
-      {
-        name: 'c_2 in c.module.css',
-        file: c_2_in_c_module_css.file,
-        ...c_2_in_c_module_css.start,
-        expected: [c_alias_in_index_ts, c_alias_in_a_module_css, c_2_in_a_module_css, c_2_in_c_module_css],
-      },
-    ])('Find All References for $name', async ({ file, line, offset, expected }) => {
-      const res = await tsserver.sendReferences({
-        file,
-        line,
-        offset,
+const tsserver = launchTsserver();
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  describe('finds all references to the styles binding', () => {
+    test('from the styles binding in the import statement', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+          styles.a_2;
+        `,
+        'a.module.css': dedent`
+          .a_1 { color: red; }
+          .a_2 { color: red; }
+        `,
       });
-      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(normalizeRefItems(expected));
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'styles', 0),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'styles', 0) },
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'styles', 1) },
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'styles', 2) },
+        ]),
+      );
     });
-  },
-);
+  });
+
+  describe('finds all references to a local token', () => {
+    test('from styles.<token> access', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'a_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1') },
+        ]),
+      );
+    });
+
+    test('from styles[<kebab-case token>] access', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles['a-1'];
+        `,
+        'a.module.css': `.a-1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'a-1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a-1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a-1') },
+        ]),
+      );
+    });
+
+    test('when the same class is declared multiple times', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+        'a.module.css': dedent`
+          .a_1 { color: red; }
+          .a_1 { color: red; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'a_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 0) },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 1) },
+        ]),
+      );
+    });
+  });
+
+  describe('transitively resolves a re-export to its source declaration', () => {
+    test('class re-exported via @import', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_1;
+        `,
+        'a.module.css': `@import './b.module.css';`,
+        'b.module.css': `.b_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'b_1') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+
+    test('value re-exported via @value ... from', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_1;
+        `,
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'b_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+
+    // NOTE: Ideally only `b_alias` should be returned, but `b_1` is also returned for implementation simplicity.
+    test('aliased value re-exported via @value ... from', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_alias;
+        `,
+        'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_alias'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'b_alias') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_alias') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+  });
+
+  describe('finds all references from a CSS-side class declaration', () => {
+    test('from a .<token> declaration', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1') },
+        ]),
+      );
+    });
+  });
+
+  describe('finds all references from a CSS-side @value ... from binding', () => {
+    test('from the import binding', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+
+    // NOTE: Ideally only `b_alias` should be returned, but `b_1` is also returned for implementation simplicity.
+    test('from the alias name in `name as alias`', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_alias'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_alias') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+
+    // NOTE: Ideally only `b_1` should be returned, but `b_alias` is also returned for implementation simplicity.
+    test('from the source name in `name as alias`', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_alias') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
+        ]),
+      );
+    });
+  });
+});
