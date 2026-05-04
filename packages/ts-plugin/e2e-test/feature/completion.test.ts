@@ -132,50 +132,75 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 });
 
-describe('prioritizeNamedImports (namedExports: true)', () => {
-  test('omits the default styles binding from suggestions', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({
-        cmkOptions: { namedExports: true, prioritizeNamedImports: true },
-      }),
-      'index.ts': `styles;`,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-    await tsserver.sendConfigure({
-      preferences: { includeCompletionsForModuleExports: true },
-    });
+describe('named token completion (namedExports: true)', () => {
+  describe('prioritizeNamedImports: false (default)', () => {
+    test('omits named tokens from suggestions', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports: true } }),
+        'index.ts': `a_1;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendConfigure({
+        preferences: { includeCompletionsForModuleExports: true },
+      });
 
-    const res = await tsserver.sendCompletionInfo({
-      file: iff.paths['index.ts'],
-      ...getRange('index.ts', 'styles').end,
-    });
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['index.ts'],
+        ...getRange('index.ts', 'a_1').end,
+      });
 
-    expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? [])).toStrictEqual(
-      [],
-    );
+      expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'a_1') ?? [])).toStrictEqual(
+        [],
+      );
+    });
   });
 
-  test('suggests named token bindings', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({
-        cmkOptions: { namedExports: true, prioritizeNamedImports: true },
-      }),
-      'index.ts': `a_1;`,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-    await tsserver.sendConfigure({
-      preferences: { includeCompletionsForModuleExports: true },
+  describe('prioritizeNamedImports: true', () => {
+    test('omits the default styles binding from suggestions', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+        }),
+        'index.ts': `styles;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendConfigure({
+        preferences: { includeCompletionsForModuleExports: true },
+      });
+
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['index.ts'],
+        ...getRange('index.ts', 'styles').end,
+      });
+
+      expect(
+        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
+      ).toStrictEqual([]);
     });
 
-    const res = await tsserver.sendCompletionInfo({
-      file: iff.paths['index.ts'],
-      ...getRange('index.ts', 'a_1').end,
-    });
+    test('suggests named token bindings', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+        }),
+        'index.ts': `a_1;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendConfigure({
+        preferences: { includeCompletionsForModuleExports: true },
+      });
 
-    expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'a_1') ?? [])).toStrictEqual(
-      normalizeCompletionEntry([{ name: 'a_1', sortText: '16', source: './a.module.css' }]),
-    );
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['index.ts'],
+        ...getRange('index.ts', 'a_1').end,
+      });
+
+      expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'a_1') ?? [])).toStrictEqual(
+        normalizeCompletionEntry([{ name: 'a_1', sortText: '16', source: './a.module.css' }]),
+      );
+    });
   });
 });

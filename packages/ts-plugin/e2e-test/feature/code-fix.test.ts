@@ -165,68 +165,93 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 });
 
-describe('prioritizeNamedImports (namedExports: true)', () => {
-  test('omits the default styles binding code fix', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({
-        cmkOptions: { namedExports: true, prioritizeNamedImports: true },
-      }),
-      'index.ts': `styles;`,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+describe('named import code fix (namedExports: true)', () => {
+  describe('prioritizeNamedImports: false (default)', () => {
+    test('omits the named import code fix', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports: true } }),
+        'index.ts': `a_1;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
-    const range = getRange('index.ts', 'styles');
-    const res = await tsserver.sendGetCodeFixes({
-      errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
-      file: iff.paths['index.ts'],
-      startLine: range.start.line,
-      startOffset: range.start.offset,
-      endLine: range.end.line,
-      endOffset: range.end.offset,
-    });
+      const range = getRange('index.ts', 'a_1');
+      const res = await tsserver.sendGetCodeFixes({
+        errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
+        file: iff.paths['index.ts'],
+        startLine: range.start.line,
+        startOffset: range.start.offset,
+        endLine: range.end.line,
+        endOffset: range.end.offset,
+      });
 
-    expect(normalizeCodeFixActions(res.body!)).toStrictEqual([]);
+      expect(normalizeCodeFixActions(res.body!)).toStrictEqual([]);
+    });
   });
 
-  test('suggests a named import code fix', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({
-        cmkOptions: { namedExports: true, prioritizeNamedImports: true },
-      }),
-      'index.ts': `a_1;`,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+  describe('prioritizeNamedImports: true', () => {
+    test('omits the default styles binding code fix', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+        }),
+        'index.ts': `styles;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
-    const range = getRange('index.ts', 'a_1');
-    const res = await tsserver.sendGetCodeFixes({
-      errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
-      file: iff.paths['index.ts'],
-      startLine: range.start.line,
-      startOffset: range.start.offset,
-      endLine: range.end.line,
-      endOffset: range.end.offset,
+      const range = getRange('index.ts', 'styles');
+      const res = await tsserver.sendGetCodeFixes({
+        errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
+        file: iff.paths['index.ts'],
+        startLine: range.start.line,
+        startOffset: range.start.offset,
+        endLine: range.end.line,
+        endOffset: range.end.offset,
+      });
+
+      expect(normalizeCodeFixActions(res.body!)).toStrictEqual([]);
     });
 
-    expect(normalizeCodeFixActions(res.body!)).toStrictEqual(
-      normalizeCodeFixActions([
-        {
-          fixName: 'import',
-          changes: [
-            {
-              fileName: formatPath(iff.paths['index.ts']),
-              textChanges: [
-                {
-                  start: { line: 1, offset: 1 },
-                  end: { line: 1, offset: 1 },
-                  newText: `import { a_1 } from "./a.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
-                },
-              ],
-            },
-          ],
-        },
-      ]),
-    );
+    test('suggests a named import code fix', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+        }),
+        'index.ts': `a_1;`,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const range = getRange('index.ts', 'a_1');
+      const res = await tsserver.sendGetCodeFixes({
+        errorCodes: [CANNOT_FIND_NAME_ERROR_CODE],
+        file: iff.paths['index.ts'],
+        startLine: range.start.line,
+        startOffset: range.start.offset,
+        endLine: range.end.line,
+        endOffset: range.end.offset,
+      });
+
+      expect(normalizeCodeFixActions(res.body!)).toStrictEqual(
+        normalizeCodeFixActions([
+          {
+            fixName: 'import',
+            changes: [
+              {
+                fileName: formatPath(iff.paths['index.ts']),
+                textChanges: [
+                  {
+                    start: { line: 1, offset: 1 },
+                    end: { line: 1, offset: 1 },
+                    newText: `import { a_1 } from "./a.module.css";${ts.sys.newLine}${ts.sys.newLine}`,
+                  },
+                ],
+              },
+            ],
+          },
+        ]),
+      );
+    });
   });
 });
