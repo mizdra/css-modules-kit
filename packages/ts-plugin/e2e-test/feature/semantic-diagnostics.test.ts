@@ -32,9 +32,6 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     ]);
   });
 
-  // This test only verifies that a CSS-side diagnostic reaches tsserver via ts-plugin.
-  // Exhaustive coverage of every diagnostic kind lives in `packages/core/src/checker.test.ts`;
-  // an unresolvable `@import` is used here as a representative example.
   test('reports a semantic diagnostic on a CSS module file', async () => {
     const { iff, getRange } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),

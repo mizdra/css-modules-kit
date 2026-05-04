@@ -6,9 +6,6 @@ import { launchTsserver } from '../test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  // This test only verifies that a CSS-side syntactic diagnostic reaches tsserver via ts-plugin.
-  // Exhaustive coverage of every diagnostic kind lives in the parser tests under
-  // `packages/core/src/parser/`; `@value;` is used here as a representative example.
   test('reports a syntactic diagnostic on a CSS module file', async () => {
     const { iff, getRange } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
