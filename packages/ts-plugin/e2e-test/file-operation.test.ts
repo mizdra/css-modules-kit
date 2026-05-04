@@ -1,164 +1,141 @@
 import dedent from 'dedent';
-import { expect, test } from 'vite-plus/test';
-import { createIFF } from './test-util/fixture.js';
+import { describe, expect, test } from 'vite-plus/test';
+import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
 import { launchTsserver } from './test-util/tsserver.js';
 
-test('adding file', async () => {
-  const tsserver = launchTsserver();
-  const iff = await createIFF({
-    'index.ts': dedent`
-      import styles from './a.module.css';
-      styles.a_1;
-    `,
-    'tsconfig.json': dedent`
-      {
-        "compilerOptions": {},
-        "cmkOptions": { "enabled": true }
-      }
-    `,
-  });
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['index.ts'] }],
+const tsserver = launchTsserver();
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  describe('when adding a CSS module', () => {
+    test('reports a missing module diagnostic before the CSS module exists', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+
+      expect(res.body).toStrictEqual([
+        {
+          category: 'error',
+          code: 2307,
+          text: "Cannot find module './a.module.css' or its corresponding type declarations.",
+          ...getRange('index.ts', "'./a.module.css'"),
+        },
+      ]);
+    });
+
+    // NOTE: After `sendUpdateOpen` adds the CSS module, the diagnostic should ideally clear,
+    // but a tsserver caching bug keeps the original `Cannot find module` diagnostic in place.
+    test('retains the missing module diagnostic after the CSS module is added', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendUpdateOpen({
+        openFiles: [{ file: iff.join('a.module.css'), fileContent: '.a_1 { color: red; }' }],
+      });
+
+      const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+
+      expect(res.body).toStrictEqual([
+        {
+          category: 'error',
+          code: 2307,
+          text: "Cannot find module './a.module.css' or its corresponding type declarations.",
+          ...getRange('index.ts', "'./a.module.css'"),
+        },
+      ]);
+    });
   });
 
-  // If a.module.css does not exist, a diagnostic should be reported in index.ts
-  const res1 = await tsserver.sendSemanticDiagnosticsSync({
-    file: iff.paths['index.ts'],
-  });
-  expect(res1.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 2307,
-        "end": {
-          "line": 1,
-          "offset": 36,
-        },
-        "start": {
-          "line": 1,
-          "offset": 20,
-        },
-        "text": "Cannot find module './a.module.css' or its corresponding type declarations.",
-      },
-    ]
-  `);
-
-  // Add a.module.css
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.join('a.module.css'), fileContent: '.a_1 { color: red; }' }],
-  });
-
-  // If a.module.css exists, the diagnostic should disappear
-  const res2 = await tsserver.sendSemanticDiagnosticsSync({
-    file: iff.paths['index.ts'],
-  });
-  // TODO: This should become `[]`, but due to a bug in tsserver, it does not.
-  expect(res2.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 2307,
-        "end": {
-          "line": 1,
-          "offset": 36,
-        },
-        "start": {
-          "line": 1,
-          "offset": 20,
-        },
-        "text": "Cannot find module './a.module.css' or its corresponding type declarations.",
-      },
-    ]
-  `);
-});
-
-test('updating file', async () => {
-  const tsserver = launchTsserver();
-  const iff = await createIFF({
-    'index.ts': dedent`
-      import styles from './a.module.css';
-      styles.a_1;
-    `,
-    'a.module.css': '',
-    'tsconfig.json': dedent`
-      {
-        "compilerOptions": {},
-        "cmkOptions": { "enabled": true }
-      }
-    `,
-  });
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['index.ts'] }],
-  });
-
-  const res1 = await tsserver.sendSemanticDiagnosticsSync({
-    file: iff.paths['index.ts'],
-  });
-  expect(res1.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 2339,
-        "end": {
-          "line": 2,
-          "offset": 11,
-        },
-        "start": {
-          "line": 2,
-          "offset": 8,
-        },
-        "text": "Property 'a_1' does not exist on type '{}'.",
-      },
-    ]
-  `);
-
-  // Update a.module.css to have a semantic error
-  await tsserver.sendUpdateOpen({
-    changedFiles: [
-      {
-        fileName: iff.paths['a.module.css'],
-        textChanges: [
+  describe('when updating a CSS module', () => {
+    test('propagates new CSS-side diagnostics when the CSS module is modified', async () => {
+      const { iff } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+      await tsserver.sendUpdateOpen({
+        changedFiles: [
           {
-            start: { line: 1, offset: 1 },
-            end: { line: 1, offset: 1 },
-            newText: dedent`
-              @import './unresolvable.module.css';
-              .a_1 {}
-            `,
+            fileName: iff.paths['a.module.css'],
+            textChanges: [
+              {
+                start: { line: 1, offset: 1 },
+                end: { line: 1, offset: 1 },
+                newText: `@import './unresolvable.module.css';`,
+              },
+            ],
           },
         ],
-      },
-    ],
+      });
+
+      const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['a.module.css'] });
+
+      expect(res.body).toStrictEqual([
+        {
+          category: 'error',
+          code: 0,
+          source: 'css-modules-kit',
+          text: "Cannot import module './unresolvable.module.css'",
+          start: { line: 1, offset: 10 },
+          end: { line: 1, offset: 35 },
+        },
+      ]);
+    });
+
+    test('clears the unknown property diagnostic on the importer when the missing token is added', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+        'a.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const before = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+      expect(before.body).toStrictEqual([
+        {
+          category: 'error',
+          code: 2339,
+          ...getRange('index.ts', 'a_1'),
+          text: expect.any(String),
+        },
+      ]);
+
+      await tsserver.sendUpdateOpen({
+        changedFiles: [
+          {
+            fileName: iff.paths['a.module.css'],
+            textChanges: [
+              {
+                start: { line: 1, offset: 1 },
+                end: { line: 1, offset: 1 },
+                newText: `.a_1 {}`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const after = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+      expect(after.body).toStrictEqual([]);
+    });
   });
 
-  // The diagnostics in a.module.css are updated
-  const res2 = await tsserver.sendSemanticDiagnosticsSync({
-    file: iff.paths['a.module.css'],
+  describe('when removing a CSS module', () => {
+    test.todo('reports a missing module diagnostic on the importer after the CSS module is removed');
   });
-  expect(res2.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 1,
-          "offset": 35,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 1,
-          "offset": 10,
-        },
-        "text": "Cannot import module './unresolvable.module.css'",
-      },
-    ]
-  `);
-
-  // The diagnostics of files importing a.module.css are updated.
-  const res3 = await tsserver.sendSemanticDiagnosticsSync({
-    file: iff.paths['index.ts'],
-  });
-  expect(res3.body).toMatchInlineSnapshot(`[]`);
 });
-
-test.todo('removing file');
