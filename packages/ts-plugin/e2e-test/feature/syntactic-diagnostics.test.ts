@@ -6,7 +6,10 @@ import { launchTsserver } from '../test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  test('reports `@value` with no name as invalid syntax', async () => {
+  // This test only verifies that a CSS-side syntactic diagnostic reaches tsserver via ts-plugin.
+  // Exhaustive coverage of every diagnostic kind lives in the parser tests under
+  // `packages/core/src/parser/`; `@value;` is used here as a representative example.
+  test('reports a syntactic diagnostic on a CSS module file', async () => {
     const { iff, getRange } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@value;`,
@@ -22,46 +25,6 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         source: 'css-modules-kit',
         text: '`@value` is a invalid syntax.',
         ...getRange('a.module.css', '@value;'),
-      },
-    ]);
-  });
-
-  test('reports `:global(...)` inside `:local(...)` as not allowed', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'a.module.css': `:local(:global(.a_1)) { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
-
-    const res = await tsserver.sendSyntacticDiagnosticsSync({ file: iff.paths['a.module.css'] });
-
-    expect(res.body).toStrictEqual([
-      {
-        category: 'error',
-        code: 0,
-        source: 'css-modules-kit',
-        text: 'A `:global(...)` is not allowed inside of `:local(...)`.',
-        ...getRange('a.module.css', ':global(.a_1)'),
-      },
-    ]);
-  });
-
-  test('reports `:local` without parens as unsupported', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'a.module.css': `:local .a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
-
-    const res = await tsserver.sendSyntacticDiagnosticsSync({ file: iff.paths['a.module.css'] });
-
-    expect(res.body).toStrictEqual([
-      {
-        category: 'error',
-        code: 0,
-        source: 'css-modules-kit',
-        text: 'css-modules-kit does not support `:local`. Use `:local(...)` instead.',
-        ...getRange('a.module.css', ':local'),
       },
     ]);
   });
