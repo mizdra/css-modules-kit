@@ -13,7 +13,10 @@ const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('fixMissingCSSRule', () => {
-    test('inserts a new CSS rule into an empty CSS module', async () => {
+    test.each([
+      { errorCode: PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0] },
+      { errorCode: PROPERTY_DOES_NOT_EXIST_ERROR_CODES[1] },
+    ])('inserts a new CSS rule into an empty CSS module for diagnostic $errorCode', async ({ errorCode }) => {
       const { iff, getLoc } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -26,7 +29,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const loc = getLoc('index.ts', 'a_1');
       const res = await tsserver.sendGetCodeFixes({
-        errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
+        errorCodes: [errorCode],
         file: iff.paths['index.ts'],
         startLine: loc.line,
         startOffset: loc.offset,
