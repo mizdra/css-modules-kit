@@ -32,28 +32,11 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     ]);
   });
 
-  test('reports a missing exported token in @value ... from', async () => {
-    const { iff, getRange } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'a.module.css': `@value b_1, b_2 from './b.module.css';`,
-      'b.module.css': `@value b_1: red;`,
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
-
-    const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['a.module.css'] });
-
-    expect(res.body).toStrictEqual([
-      {
-        category: 'error',
-        code: 0,
-        source: 'css-modules-kit',
-        text: "Module './b.module.css' has no exported token 'b_2'.",
-        ...getRange('a.module.css', 'b_2'),
-      },
-    ]);
-  });
-
-  test('reports an unresolvable @import specifier', async () => {
+  // This test only verifies that a CSS-side diagnostic from the core checker reaches
+  // tsserver via ts-plugin. Exhaustive coverage of every diagnostic kind lives in
+  // `packages/core/src/checker.test.ts`; an unresolvable `@import` is used here as a
+  // representative example.
+  test('surfaces a representative core checker diagnostic on a CSS module', async () => {
     const { iff, getRange } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@import './unresolvable.module.css';`,
