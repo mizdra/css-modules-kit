@@ -92,6 +92,46 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
+
+    test('inserts the rule into the CSS module bound to the accessed identifier', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          ${buildStylesImport('./b.module.css', { namedExports, name: 'bStyles' })}
+          bStyles.b_1;
+        `,
+        'a.module.css': '',
+        'b.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const loc = getLoc('index.ts', 'b_1');
+      const res = await tsserver.sendGetCodeFixes({
+        errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
+        file: iff.paths['index.ts'],
+        startLine: loc.line,
+        startOffset: loc.offset,
+        endLine: loc.line,
+        endOffset: loc.offset,
+      });
+
+      expect(normalizeCodeFixActions(res.body!)).toStrictEqual(
+        normalizeCodeFixActions([
+          {
+            fixName: 'fixMissingCSSRule',
+            changes: [
+              {
+                fileName: formatPath(iff.paths['b.module.css']),
+                textChanges: [
+                  { start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 }, newText: '\n.b_1 {\n  \n}' },
+                ],
+              },
+            ],
+          },
+        ]),
+      );
+    });
   });
 
   describe('auto-import', () => {
@@ -113,9 +153,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         endOffset: range.end.offset,
       });
 
-      const importStatement = namedExports
-        ? `import * as styles from "./a.module.css";`
-        : `import styles from "./a.module.css";`;
+      const importStatement = buildStylesImport('./a.module.css', { namedExports, quote: 'double' });
       expect(normalizeCodeFixActions(res.body!)).toStrictEqual(
         normalizeCodeFixActions([
           {

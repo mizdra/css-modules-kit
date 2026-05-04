@@ -41,6 +41,36 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
+    test('excludes generated files from suggestions', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports, dtsOutDir: 'generated' },
+        }),
+        'a.tsx': `styles;`,
+        'a.module.css': '',
+        'generated/b.module.css.d.ts': dedent`
+          const styles: {};
+          export default styles;
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+      await tsserver.sendConfigure({
+        preferences: {
+          includeCompletionsForModuleExports: true,
+          quotePreference: 'single',
+        },
+      });
+
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['a.tsx'],
+        ...getRange('a.tsx', 'styles').end,
+      });
+
+      expect(
+        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
+      ).toStrictEqual(normalizeCompletionEntry([{ name: 'styles', sortText: '0', source: './a.module.css' }]));
+    });
+
     test('inserts the import statement when accepted', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
