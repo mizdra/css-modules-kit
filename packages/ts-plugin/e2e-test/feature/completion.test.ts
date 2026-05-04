@@ -133,10 +133,12 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 });
 
 describe('named token completion (namedExports: true)', () => {
-  describe('prioritizeNamedImports: false (default)', () => {
+  describe('prioritizeNamedImports: false', () => {
     test('omits named tokens from suggestions', async () => {
       const { iff, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports: true } }),
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: false },
+        }),
         'index.ts': `a_1;`,
         'a.module.css': `.a_1 { color: red; }`,
       });
