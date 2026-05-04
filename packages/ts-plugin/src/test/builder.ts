@@ -13,6 +13,14 @@ export function buildTSConfigJSON(args?: TSConfig): string {
   });
 }
 
-export function buildStylesImport(specifier: string, { namedExports }: { namedExports: boolean }): string {
-  return namedExports ? `import * as styles from '${specifier}';` : `import styles from '${specifier}';`;
+interface BuildStylesImportOptions {
+  namedExports: boolean;
+  quote?: 'single' | 'double';
+  name?: string;
+}
+
+export function buildStylesImport(specifier: string, options: BuildStylesImportOptions): string {
+  const { namedExports, quote = 'single', name = 'styles' } = options;
+  const q = quote === 'single' ? "'" : '"';
+  return namedExports ? `import * as ${name} from ${q}${specifier}${q};` : `import ${name} from ${q}${specifier}${q};`;
 }
