@@ -1,75 +1,73 @@
-import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { createIFF } from '../test-util/fixture.js';
+import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
+import { setupFixture } from '../test-util/fixture.js';
 import { formatPath, launchTsserver } from '../test-util/tsserver.js';
 
-describe('Rename File', async () => {
-  const tsserver = launchTsserver();
-  const iff = await createIFF({
-    'index.ts': dedent`
-      import styles from './a.module.css';
-    `,
-    'a.module.css': dedent`
-      @import './b.module.css';
-      @value c_1 from './c.module.css';
-    `,
-    'b.module.css': dedent`
-      .b_1 { color: red; }
-    `,
-    'c.module.css': dedent`
-      @value c_1: red;
-    `,
-    'tsconfig.json': dedent`
-      {
-        "compilerOptions": {
-          "paths": { "@/*": ["./*"] }
-        },
-        "cmkOptions": {
-          "enabled": true,
-          "dtsOutDir": "generated"
-        }
-      }
-    `,
-  });
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['index.ts'] }],
-  });
-  test.each([
-    {
-      name: 'a.module.css',
-      oldFilePath: iff.paths['a.module.css'],
-      newFilePath: iff.join('aa.module.css'),
-      expected: [
+const tsserver = launchTsserver();
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  describe('rewrites the import specifier when a CSS module is renamed', () => {
+    test('from `import ... from` in TS', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
+        'a.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendGetEditsForFileRename({
+        oldFilePath: iff.paths['a.module.css'],
+        newFilePath: iff.join('aa.module.css'),
+      });
+
+      expect(res.body).toStrictEqual([
         {
           fileName: formatPath(iff.paths['index.ts']),
-          textChanges: [{ start: { line: 1, offset: 21 }, end: { line: 1, offset: 35 }, newText: './aa.module.css' }],
+          textChanges: [{ ...getRange('index.ts', './a.module.css'), newText: './aa.module.css' }],
         },
-      ],
-    },
-    {
-      name: 'b.module.css',
-      oldFilePath: iff.paths['b.module.css'],
-      newFilePath: iff.join('bb.module.css'),
-      expected: [
+      ]);
+    });
+
+    test('from `@import` in CSS', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@import './b.module.css';`,
+        'b.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendGetEditsForFileRename({
+        oldFilePath: iff.paths['b.module.css'],
+        newFilePath: iff.join('bb.module.css'),
+      });
+
+      expect(res.body).toStrictEqual([
         {
           fileName: formatPath(iff.paths['a.module.css']),
-          textChanges: [{ start: { line: 1, offset: 10 }, end: { line: 1, offset: 24 }, newText: './bb.module.css' }],
+          textChanges: [{ ...getRange('a.module.css', './b.module.css'), newText: './bb.module.css' }],
         },
-      ],
-    },
-    {
-      name: 'c.module.css',
-      oldFilePath: iff.paths['c.module.css'],
-      newFilePath: iff.join('cc.module.css'),
-      expected: [
+      ]);
+    });
+
+    test('from `@value ... from` in CSS', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendGetEditsForFileRename({
+        oldFilePath: iff.paths['b.module.css'],
+        newFilePath: iff.join('bb.module.css'),
+      });
+
+      expect(res.body).toStrictEqual([
         {
           fileName: formatPath(iff.paths['a.module.css']),
-          textChanges: [{ start: { line: 2, offset: 18 }, end: { line: 2, offset: 32 }, newText: './cc.module.css' }],
+          textChanges: [{ ...getRange('a.module.css', './b.module.css'), newText: './bb.module.css' }],
         },
-      ],
-    },
-  ])('for $name', async ({ oldFilePath, newFilePath, expected }) => {
-    const res = await tsserver.sendGetEditsForFileRename({ oldFilePath, newFilePath });
-    expect(res.body).toStrictEqual(expected);
+      ]);
+    });
   });
 });
