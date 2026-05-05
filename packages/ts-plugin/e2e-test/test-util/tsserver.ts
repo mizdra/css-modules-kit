@@ -32,7 +32,6 @@ interface Tsserver {
     args: server.protocol.CompletionDetailsRequest['arguments'],
   ): Promise<server.protocol.CompletionDetailsResponse>;
   sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<server.protocol.CodeFixResponse>;
-  sendQuickInfo(args: server.protocol.QuickInfoRequest['arguments']): Promise<server.protocol.QuickInfoResponse>;
 }
 
 export function launchTsserver(): Tsserver {
@@ -83,7 +82,6 @@ export function launchTsserver(): Tsserver {
     sendCompletionInfo: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionInfo, args),
     sendCompletionDetails: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionDetails, args),
     sendGetCodeFixes: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetCodeFixes, args),
-    sendQuickInfo: async (args) => sendRequest(ts.server.protocol.CommandTypes.Quickinfo, args),
   };
 }
 
