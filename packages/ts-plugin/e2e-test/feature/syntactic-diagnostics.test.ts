@@ -1,76 +1,28 @@
-import dedent from 'dedent';
-import { expect, test } from 'vite-plus/test';
-import { createIFF } from '../test-util/fixture.js';
+import { describe, expect, test } from 'vite-plus/test';
+import { buildTSConfigJSON } from '../../src/test/builder.js';
+import { setupFixture } from '../test-util/fixture.js';
 import { launchTsserver } from '../test-util/tsserver.js';
 
-test('Syntactic Diagnostics', async () => {
-  const tsserver = launchTsserver();
-  const iff = await createIFF({
-    'a.module.css': dedent`
-      @value;
-      :local(:global(.a_1)) { color: red; }
-      :local .a_2 { color: red; }
-    `,
-    'tsconfig.json': dedent`
+const tsserver = launchTsserver();
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  test('reports a syntactic diagnostic on a CSS module file', async () => {
+    const { iff, getRange } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'a.module.css': `@value;`,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+    const res = await tsserver.sendSyntacticDiagnosticsSync({ file: iff.paths['a.module.css'] });
+
+    expect(res.body).toStrictEqual([
       {
-        "compilerOptions": {},
-        "cmkOptions": {
-          "enabled": true,
-          "dtsOutDir": "generated"
-        }
-      }
-    `,
-  });
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['a.module.css'] }],
-  });
-  const res1 = await tsserver.sendSyntacticDiagnosticsSync({
-    file: iff.paths['a.module.css'],
-  });
-  expect(res1.body).toMatchInlineSnapshot(`
-    [
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 1,
-          "offset": 8,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 1,
-          "offset": 1,
-        },
-        "text": "\`@value\` is a invalid syntax.",
+        category: 'error',
+        code: 0,
+        source: 'css-modules-kit',
+        text: '`@value` is a invalid syntax.',
+        ...getRange('a.module.css', '@value;'),
       },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 2,
-          "offset": 21,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 2,
-          "offset": 8,
-        },
-        "text": "A \`:global(...)\` is not allowed inside of \`:local(...)\`.",
-      },
-      {
-        "category": "error",
-        "code": 0,
-        "end": {
-          "line": 3,
-          "offset": 7,
-        },
-        "source": "css-modules-kit",
-        "start": {
-          "line": 3,
-          "offset": 1,
-        },
-        "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
-      },
-    ]
-  `);
+    ]);
+  });
 });
