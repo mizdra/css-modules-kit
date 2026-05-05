@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vite-plus/test';
-import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
-import { setupFixture } from '../test-util/fixture.js';
-import { formatPath, launchTsserver } from '../test-util/tsserver.js';
+import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
+import { formatPath, launchTsserver } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 

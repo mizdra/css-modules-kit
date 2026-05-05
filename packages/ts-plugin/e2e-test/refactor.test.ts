@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vite-plus/test';
-import { createCssModuleFileRefactor } from '../../src/language-service/feature/refactor.js';
-import { buildTSConfigJSON } from '../../src/test/builder.js';
-import { setupFixture } from '../test-util/fixture.js';
-import { launchTsserver } from '../test-util/tsserver.js';
+import { createCssModuleFileRefactor } from '../src/language-service/feature/refactor.js';
+import { buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
+import { launchTsserver } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 

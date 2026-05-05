@@ -4,10 +4,10 @@ import { describe, expect, test } from 'vite-plus/test';
 import {
   CANNOT_FIND_NAME_ERROR_CODE,
   PROPERTY_DOES_NOT_EXIST_ERROR_CODES,
-} from '../../src/language-service/feature/code-fix.js';
-import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
-import { setupFixture } from '../test-util/fixture.js';
-import { formatPath, launchTsserver, normalizeCodeFixActions } from '../test-util/tsserver.js';
+} from '../src/language-service/feature/code-fix.js';
+import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
+import { formatPath, launchTsserver, normalizeCodeFixActions } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 
