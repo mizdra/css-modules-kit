@@ -1,53 +1,58 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { createIFF } from './test-util/fixture.js';
+import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
 import { formatPath, launchTsserver, normalizeDefinitions } from './test-util/tsserver.js';
 
-describe('handle invalid syntax CSS without crashing', async () => {
-  const tsserver = launchTsserver();
-  const iff = await createIFF({
-    'index.ts': dedent`
-      import styles from './a.module.css';
-      styles.a_1;
-    `,
-    'a.module.css': dedent`
-      .a_1 { color: red; }
-      .a_2 {
-    `,
-    'tsconfig.json': dedent`
-      {
-        "compilerOptions": {},
-        "cmkOptions": {
-          "enabled": true,
-          "dtsOutDir": "generated"
-        }
-      }
-    `,
-  });
-  await tsserver.sendUpdateOpen({
-    openFiles: [{ file: iff.paths['index.ts'] }],
-  });
-  test('can get definition and bound span', async () => {
+const tsserver = launchTsserver();
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  test('resolves Go to Definition on a valid token even when later rules contain invalid syntax', async () => {
+    const { iff, getLoc, getRange } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'index.ts': dedent`
+        ${buildStylesImport('./a.module.css', { namedExports })}
+        styles.a_1;
+      `,
+      'a.module.css': dedent`
+        .a_1 { color: red; }
+        .a_2 {
+      `,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
     const res = await tsserver.sendDefinitionAndBoundSpan({
       file: iff.paths['index.ts'],
-      line: 2,
-      offset: 8,
+      ...getLoc('index.ts', 'a_1'),
     });
-    const expected = [
-      {
-        file: formatPath(iff.paths['a.module.css']),
-        start: { line: 1, offset: 2 },
-        end: { line: 1, offset: 5 },
-        contextStart: { line: 1, offset: 1 },
-        contextEnd: { line: 1, offset: 21 },
-      },
-    ];
-    expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(normalizeDefinitions(expected));
+
+    const { start: contextStart, end: contextEnd } = getRange('a.module.css', '.a_1 { color: red; }');
+    expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+      normalizeDefinitions([
+        {
+          file: formatPath(iff.paths['a.module.css']),
+          ...getRange('a.module.css', 'a_1'),
+          contextStart,
+          contextEnd,
+        },
+      ]),
+    );
   });
-  test('does not report syntactic diagnostics', async () => {
+
+  test('reports no syntactic diagnostics for a CSS module with parse errors', async () => {
+    const { iff } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'a.module.css': dedent`
+        .a_1 { color: red; }
+        .a_2 {
+      `,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
     const res = await tsserver.sendSyntacticDiagnosticsSync({
       file: iff.paths['a.module.css'],
     });
-    expect(res.body).toMatchInlineSnapshot(`[]`);
+
+    expect(res.body).toStrictEqual([]);
   });
 });
