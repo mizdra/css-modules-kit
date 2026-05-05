@@ -32,6 +32,23 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     ]);
   });
 
+  test('provides the .d.ts-generated type on the styles binding', async () => {
+    const { iff } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'index.ts': dedent`
+        ${buildStylesImport('./a.module.css', { namedExports })}
+        type Expected = { a_1: string };
+        const _t: Expected = styles;
+      `,
+      'a.module.css': `.a_1 { color: red; }`,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+    const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+
+    expect(res.body).toStrictEqual([]);
+  });
+
   test('reports a semantic diagnostic on a CSS module file', async () => {
     const { iff, getRange } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
