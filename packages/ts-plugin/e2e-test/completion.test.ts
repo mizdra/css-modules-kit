@@ -2,9 +2,9 @@ import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vite-plus/test';
-import { buildStylesImport, buildTSConfigJSON } from '../../src/test/builder.js';
-import { setupFixture } from '../test-util/fixture.js';
-import { launchTsserver, normalizeCompletionDetails, normalizeCompletionEntry } from '../test-util/tsserver.js';
+import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
+import { setupFixture } from './test-util/fixture.js';
+import { launchTsserver, normalizeCompletionDetails, normalizeCompletionEntry } from './test-util/tsserver.js';
 
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 const tsserver = launchTsserver();
