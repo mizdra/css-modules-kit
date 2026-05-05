@@ -5,7 +5,7 @@ import { launchTsserver } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 
-test('reports `Cannot find module` for an import whose source CSS is missing even when a generated .d.ts exists in rootDirs', async () => {
+test('excludes generated .d.ts files from module resolution even when listed in rootDirs', async () => {
   const { iff, getRange } = await setupFixture({
     'tsconfig.json': dedent`
       {
