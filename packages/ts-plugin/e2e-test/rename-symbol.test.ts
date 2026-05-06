@@ -86,7 +86,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from a CSS-side class declaration', async () => {
+    test('from a CSS-side token definition', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
