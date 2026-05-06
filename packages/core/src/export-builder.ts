@@ -34,7 +34,7 @@ export function createExportBuilder(host: ExportBuilderHost): ExportBuilder {
         result.allTokens.push(...importedResult.allTokens);
       } else {
         for (const entry of tokenImporter.entries) {
-          result.allTokens.push(entry.name);
+          result.allTokens.push(entry.localName ?? entry.name);
         }
       }
     }
