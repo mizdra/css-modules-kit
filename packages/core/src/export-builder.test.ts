@@ -82,6 +82,21 @@ describe('ExportBuilder', () => {
       }
     `);
   });
+  test('use the alias name when `@value ... as ... from ...` re-exports a token', async () => {
+    const iff = await createIFF({
+      'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
+      'b.module.css': `@value b_1: red;`,
+    });
+    const exportBuilder = prepareExportBuilder();
+    const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
+    expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
+      {
+        "allTokens": [
+          "b_alias",
+        ],
+      }
+    `);
+  });
   test('do not collect tokens from `@import` for unmatched or unresolvable modules', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
