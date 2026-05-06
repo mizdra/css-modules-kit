@@ -1,4 +1,4 @@
-import type { AllTokenImporter, NamedTokenImporter, NamedTokenImporterSpecifier, Token } from '../type.js';
+import type { AllTokenImporter, NamedTokenImporter, NamedTokenImporterEntry, Token } from '../type.js';
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
@@ -19,15 +19,13 @@ export function fakeNamedTokenImporter(args?: Omit<Partial<NamedTokenImporter>, 
   return {
     type: 'named',
     from: '/test.module.css',
-    specifiers: [],
+    entries: [],
     fromLoc: fakeLoc,
     ...args,
   };
 }
 
-export function fakeNamedTokenImporterSpecifier(
-  args?: Partial<NamedTokenImporterSpecifier>,
-): NamedTokenImporterSpecifier {
+export function fakeNamedTokenImporterEntry(args?: Partial<NamedTokenImporterEntry>): NamedTokenImporterEntry {
   return {
     name: 'name',
     loc: fakeLoc,

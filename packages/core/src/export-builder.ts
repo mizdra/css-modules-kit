@@ -33,8 +33,8 @@ export function createExportBuilder(host: ExportBuilderHost): ExportBuilder {
       if (tokenImporter.type === 'all') {
         result.allTokens.push(...importedResult.allTokens);
       } else {
-        for (const specifier of tokenImporter.specifiers) {
-          result.allTokens.push(specifier.name);
+        for (const entry of tokenImporter.entries) {
+          result.allTokens.push(entry.name);
         }
       }
     }

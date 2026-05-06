@@ -58,7 +58,7 @@ function collectTokens(ast: Root, keyframes: boolean) {
         localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
       } else if (atValue.type === 'valueImportDeclaration') {
         const { values, ...rest } = atValue;
-        tokenImporters.push({ ...rest, type: 'named', specifiers: values });
+        tokenImporters.push({ ...rest, type: 'named', entries: values });
       }
     } else if (keyframes && isAtKeyframesNode(node)) {
       const { keyframe, diagnostics } = parseAtKeyframes(node);

@@ -11,7 +11,7 @@ export {
   type AllTokenImporter,
   type TokenImporter,
   type NamedTokenImporter,
-  type NamedTokenImporterSpecifier,
+  type NamedTokenImporterEntry,
   type Resolver,
   type MatchesPattern,
   type ExportBuilder,

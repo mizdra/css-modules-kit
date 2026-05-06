@@ -54,8 +54,8 @@ export interface AllTokenImporter {
 /** A token importer that imports specific named tokens from another module. */
 export interface NamedTokenImporter {
   type: 'named';
-  /** The specifiers describing each imported token. */
-  specifiers: NamedTokenImporterSpecifier[];
+  /** The entries describing each imported token. */
+  entries: NamedTokenImporterEntry[];
   /**
    * The specifier of the file from which the tokens are imported.
    * This is a string before being resolved and unquoted.
@@ -67,7 +67,7 @@ export interface NamedTokenImporter {
 }
 
 /** A single token brought in by a {@link NamedTokenImporter}. */
-export interface NamedTokenImporterSpecifier {
+export interface NamedTokenImporterEntry {
   /**
    * The name of the token in the file from which it is imported.
    * @example `@value a from './a.module.css'` would have `name` as `'a'`.

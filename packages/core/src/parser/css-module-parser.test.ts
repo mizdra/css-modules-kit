@@ -520,20 +520,7 @@ describe('parseCSSModule', () => {
             "type": "all",
           },
           {
-            "from": "./a.module.css",
-            "fromLoc": {
-              "end": {
-                "column": 42,
-                "line": 2,
-                "offset": 67,
-              },
-              "start": {
-                "column": 28,
-                "line": 2,
-                "offset": 53,
-              },
-            },
-            "specifiers": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -578,6 +565,19 @@ describe('parseCSSModule', () => {
                 "name": "b",
               },
             ],
+            "from": "./a.module.css",
+            "fromLoc": {
+              "end": {
+                "column": 42,
+                "line": 2,
+                "offset": 67,
+              },
+              "start": {
+                "column": 28,
+                "line": 2,
+                "offset": 53,
+              },
+            },
             "type": "named",
           },
         ],

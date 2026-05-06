@@ -6,7 +6,7 @@ import type {
   Location,
   MatchesPattern,
   NamedTokenImporter,
-  NamedTokenImporterSpecifier,
+  NamedTokenImporterEntry,
   Resolver,
   TokenImporter,
 } from './type.js';
@@ -45,18 +45,18 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 
     if (tokenImporter.type === 'named') {
       const exportRecord = args.getExportRecord(imported);
-      for (const specifier of tokenImporter.specifiers) {
-        if (!exportRecord.allTokens.includes(specifier.name)) {
-          diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, specifier));
+      for (const entry of tokenImporter.entries) {
+        if (!exportRecord.allTokens.includes(entry.name)) {
+          diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, entry));
         }
-        const nameViolation = validateTokenName(specifier.name, { namedExports: config.namedExports });
+        const nameViolation = validateTokenName(entry.name, { namedExports: config.namedExports });
         if (nameViolation) {
-          diagnostics.push(createTokenNameDiagnostic(cssModule, specifier.loc, nameViolation));
+          diagnostics.push(createTokenNameDiagnostic(cssModule, entry.loc, nameViolation));
         }
-        if (specifier.localName) {
-          const localNameViolation = validateTokenName(specifier.localName, { namedExports: config.namedExports });
+        if (entry.localName) {
+          const localNameViolation = validateTokenName(entry.localName, { namedExports: config.namedExports });
           if (localNameViolation) {
-            diagnostics.push(createTokenNameDiagnostic(cssModule, specifier.localLoc!, localNameViolation));
+            diagnostics.push(createTokenNameDiagnostic(cssModule, entry.localLoc!, localNameViolation));
           }
         }
       }
@@ -102,13 +102,13 @@ function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter:
 function createModuleHasNoExportedTokenDiagnostic(
   cssModule: CSSModule,
   tokenImporter: NamedTokenImporter,
-  specifier: NamedTokenImporterSpecifier,
+  entry: NamedTokenImporterEntry,
 ): Diagnostic {
   return {
-    text: `Module '${tokenImporter.from}' has no exported token '${specifier.name}'.`,
+    text: `Module '${tokenImporter.from}' has no exported token '${entry.name}'.`,
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: specifier.loc.start.line, column: specifier.loc.start.column },
-    length: specifier.loc.end.offset - specifier.loc.start.offset,
+    start: { line: entry.loc.start.line, column: entry.loc.start.column },
+    length: entry.loc.end.offset - entry.loc.start.offset,
   };
 }

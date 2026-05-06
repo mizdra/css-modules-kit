@@ -53,10 +53,10 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
       if (tokenImporter.type === 'named') {
         return {
           ...tokenImporter,
-          specifiers: tokenImporter.specifiers.filter(
-            (specifier) =>
-              isValidTokenName(specifier.name, options) &&
-              (specifier.localName === undefined || isValidTokenName(specifier.localName, options)),
+          entries: tokenImporter.entries.filter(
+            (entry) =>
+              isValidTokenName(entry.name, options) &&
+              (entry.localName === undefined || isValidTokenName(entry.localName, options)),
           ),
         };
       } else {
@@ -239,20 +239,20 @@ function generateNamedExportsDts(
        */
 
       text += `export {\n`;
-      for (const specifier of tokenImporter.specifiers) {
-        const localName = specifier.localName ?? specifier.name;
-        const localLoc = specifier.localLoc ?? specifier.loc;
+      for (const entry of tokenImporter.entries) {
+        const localName = entry.localName ?? entry.name;
+        const localLoc = entry.localLoc ?? entry.loc;
         text += `  `;
         linkedCodeMapping.sourceOffsets.push(text.length);
-        linkedCodeMapping.lengths.push(specifier.name.length + 2);
+        linkedCodeMapping.lengths.push(entry.name.length + 2);
         text += `'`;
-        if ('localName' in specifier) {
-          mapping.sourceOffsets.push(specifier.loc.start.offset);
-          mapping.lengths.push(specifier.name.length);
+        if ('localName' in entry) {
+          mapping.sourceOffsets.push(entry.loc.start.offset);
+          mapping.lengths.push(entry.name.length);
           mapping.generatedOffsets.push(text.length);
-          mapping.generatedLengths.push(specifier.name.length);
+          mapping.generatedLengths.push(entry.name.length);
         }
-        text += `${specifier.name}' as `;
+        text += `${entry.name}' as `;
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(localName.length + 2);
         text += `'`;
@@ -410,9 +410,9 @@ function generateDefaultExportDts(
        */
 
       // oxlint-disable-next-line no-loop-func
-      tokenImporter.specifiers.forEach((specifier, i) => {
-        const localName = specifier.localName ?? specifier.name;
-        const localLoc = specifier.localLoc ?? specifier.loc;
+      tokenImporter.entries.forEach((entry, i) => {
+        const localName = entry.localName ?? entry.name;
+        const localLoc = entry.localLoc ?? entry.loc;
 
         text += `  '`;
         mapping.sourceOffsets.push(localLoc.start.offset);
@@ -427,14 +427,14 @@ function generateDefaultExportDts(
           mapping.generatedOffsets.push(text.length);
         }
         text += `'${tokenImporter.from}')).default['`;
-        if ('localName' in specifier) {
-          mapping.sourceOffsets.push(specifier.loc.start.offset);
-          mapping.lengths.push(specifier.name.length);
+        if ('localName' in entry) {
+          mapping.sourceOffsets.push(entry.loc.start.offset);
+          mapping.lengths.push(entry.name.length);
           mapping.generatedOffsets.push(text.length);
         }
         linkedCodeMapping.generatedOffsets.push(text.length - 1);
-        linkedCodeMapping.generatedLengths.push(specifier.name.length + 2);
-        text += `${specifier.name}'],\n`;
+        linkedCodeMapping.generatedLengths.push(entry.name.length + 2);
+        text += `${entry.name}'],\n`;
       });
     }
   }
