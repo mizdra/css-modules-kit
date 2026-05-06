@@ -517,7 +517,7 @@ describe('parseCSSModule', () => {
                 "offset": 9,
               },
             },
-            "type": "import",
+            "type": "all",
           },
           {
             "from": "./a.module.css",
@@ -533,8 +533,7 @@ describe('parseCSSModule', () => {
                 "offset": 53,
               },
             },
-            "type": "value",
-            "values": [
+            "specifiers": [
               {
                 "loc": {
                   "end": {
@@ -579,6 +578,7 @@ describe('parseCSSModule', () => {
                 "name": "b",
               },
             ],
+            "type": "named",
           },
         ],
       }

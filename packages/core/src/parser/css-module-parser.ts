@@ -48,7 +48,7 @@ function collectTokens(ast: Root, keyframes: boolean) {
     if (isAtImportNode(node)) {
       const parsed = parseAtImport(node);
       if (parsed !== undefined) {
-        tokenImporters.push({ type: 'import', ...parsed });
+        tokenImporters.push({ type: 'all', ...parsed });
       }
     } else if (isAtValueNode(node)) {
       const { atValue, diagnostics } = parseAtValue(node);
@@ -57,7 +57,8 @@ function collectTokens(ast: Root, keyframes: boolean) {
       if (atValue.type === 'valueDeclaration') {
         localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
       } else if (atValue.type === 'valueImportDeclaration') {
-        tokenImporters.push({ ...atValue, type: 'value' });
+        const { values, ...rest } = atValue;
+        tokenImporters.push({ ...rest, type: 'named', specifiers: values });
       }
     } else if (keyframes && isAtKeyframesNode(node)) {
       const { keyframe, diagnostics } = parseAtKeyframes(node);
