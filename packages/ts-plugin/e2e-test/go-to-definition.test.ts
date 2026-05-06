@@ -7,8 +7,8 @@ import { formatPath, launchTsserver, normalizeDefinitions } from './test-util/ts
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  describe('jumps to the top of a CSS module file', () => {
-    test('from the styles binding in the import statement', async () => {
+  describe('for a TS-side import statement', () => {
+    test('from the styles binding', async () => {
       const { iff, getLoc } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': buildStylesImport('./a.module.css', { namedExports }),
@@ -32,7 +32,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from the import specifier string', async () => {
+    test('from the import specifier', async () => {
       const { iff, getLoc } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': buildStylesImport('./a.module.css', { namedExports }),
@@ -55,86 +55,10 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
-
-    test('from the @import specifier string', async () => {
-      const { iff, getLoc } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
-        'a.module.css': `@import './b.module.css';`,
-        'b.module.css': '',
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', "'./b.module.css'"),
-      });
-
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            start: { line: 1, offset: 1 },
-            end: { line: 1, offset: 1 },
-          },
-        ]),
-      );
-    });
-
-    test('from the @value ... from specifier string', async () => {
-      const { iff, getLoc } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
-        'a.module.css': `@value b_1 from './b.module.css';`,
-        'b.module.css': `@value b_1: red;`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', "'./b.module.css'"),
-      });
-
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            start: { line: 1, offset: 1 },
-            end: { line: 1, offset: 1 },
-          },
-        ]),
-      );
-    });
-
-    // NOTE: It is strange that `(` has a definition, but we allow it to keep the implementation simple.
-    test('from inside the @import url(...) parenthesis', async () => {
-      const { iff, getLoc } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
-        'a.module.css': `@import url(./b.module.css);`,
-        'b.module.css': '',
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', '(./b.module.css)'),
-      });
-
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            start: { line: 1, offset: 1 },
-            end: { line: 1, offset: 1 },
-          },
-        ]),
-      );
-    });
   });
 
-  describe('jumps to a local token declaration', () => {
-    test('from styles.<token> access', async () => {
+  describe('for a token definition', () => {
+    test('from a TS-side styles.<token>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -163,7 +87,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from styles[<kebab-case token>] access', async () => {
+    test('from a TS-side styles[<kebab-case token>]', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -192,7 +116,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('when the same class is declared multiple times', async () => {
+    test('when the token is declared multiple times', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -230,102 +154,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
-  });
 
-  describe('transitively resolves a re-export to its source declaration', () => {
-    test('class re-exported via @import', async () => {
-      const { iff, getLoc, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': dedent`
-          ${buildStylesImport('./a.module.css', { namedExports })}
-          styles.b_1;
-        `,
-        'a.module.css': `@import './b.module.css';`,
-        'b.module.css': `.b_1 { color: red; }`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['index.ts'],
-        ...getLoc('index.ts', 'b_1'),
-      });
-
-      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '.b_1 { color: red; }');
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            ...getRange('b.module.css', 'b_1'),
-            contextStart,
-            contextEnd,
-          },
-        ]),
-      );
-    });
-
-    test('value re-exported via @value ... from', async () => {
-      const { iff, getLoc, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': dedent`
-          ${buildStylesImport('./a.module.css', { namedExports })}
-          styles.b_1;
-        `,
-        'a.module.css': `@value b_1 from './b.module.css';`,
-        'b.module.css': `@value b_1: red;`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['index.ts'],
-        ...getLoc('index.ts', 'b_1'),
-      });
-
-      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            ...getRange('b.module.css', 'b_1'),
-            contextStart,
-            contextEnd,
-          },
-        ]),
-      );
-    });
-
-    test('aliased value re-exported via @value ... from', async () => {
-      const { iff, getLoc, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': dedent`
-          ${buildStylesImport('./a.module.css', { namedExports })}
-          styles.b_alias;
-        `,
-        'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
-        'b.module.css': `@value b_1: red;`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const res = await tsserver.sendDefinitionAndBoundSpan({
-        file: iff.paths['index.ts'],
-        ...getLoc('index.ts', 'b_alias'),
-      });
-
-      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');
-      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-        normalizeDefinitions([
-          {
-            file: formatPath(iff.paths['b.module.css']),
-            ...getRange('b.module.css', 'b_1'),
-            contextStart,
-            contextEnd,
-          },
-        ]),
-      );
-    });
-  });
-
-  describe('jumps from a CSS-side class declaration', () => {
-    test('from a .<token> declaration', async () => {
+    test('from a CSS-side token definition', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -355,8 +185,176 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('jumps from a CSS-side @value ... from binding to its source declaration', () => {
-    test('from the import binding', async () => {
+  describe('for an all token importer', () => {
+    test('from a TS-side styles.<token>', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_1;
+        `,
+        'a.module.css': `@import './b.module.css';`,
+        'b.module.css': `.b_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_1'),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '.b_1 { color: red; }');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            ...getRange('b.module.css', 'b_1'),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+
+    test('from a CSS-side specifier', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
+        'a.module.css': `@import './b.module.css';`,
+        'b.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', "'./b.module.css'"),
+      });
+
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            start: { line: 1, offset: 1 },
+            end: { line: 1, offset: 1 },
+          },
+        ]),
+      );
+    });
+
+    // NOTE: It is strange that `(` has a definition, but we allow it to keep the implementation simple.
+    test('from inside a CSS-side url() specifier', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
+        'a.module.css': `@import url(./b.module.css);`,
+        'b.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', '(./b.module.css)'),
+      });
+
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            start: { line: 1, offset: 1 },
+            end: { line: 1, offset: 1 },
+          },
+        ]),
+      );
+    });
+  });
+
+  describe('for a named token importer', () => {
+    test('from a TS-side styles.<name>', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_1;
+        `,
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_1'),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            ...getRange('b.module.css', 'b_1'),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+
+    test('from a TS-side styles.<alias>', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.b_alias;
+        `,
+        'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['index.ts'],
+        ...getLoc('index.ts', 'b_alias'),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            ...getRange('b.module.css', 'b_1'),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+
+    test('from a CSS-side specifier', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': buildStylesImport('./a.module.css', { namedExports }),
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', "'./b.module.css'"),
+      });
+
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            start: { line: 1, offset: 1 },
+            end: { line: 1, offset: 1 },
+          },
+        ]),
+      );
+    });
+
+    test('from a CSS-side <name>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 from './b.module.css';`,
@@ -382,7 +380,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from the alias name in `name as alias`', async () => {
+    test('from a CSS-side <name> with alias', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
@@ -392,7 +390,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const res = await tsserver.sendDefinitionAndBoundSpan({
         file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', 'b_alias'),
+        ...getLoc('a.module.css', 'b_1'),
       });
 
       const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');
@@ -408,7 +406,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from the source name in `name as alias`', async () => {
+    test('from a CSS-side <alias>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
@@ -418,7 +416,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const res = await tsserver.sendDefinitionAndBoundSpan({
         file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', 'b_1'),
+        ...getLoc('a.module.css', 'b_alias'),
       });
 
       const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@value b_1: red');

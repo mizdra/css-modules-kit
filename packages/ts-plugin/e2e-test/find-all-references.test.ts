@@ -7,8 +7,8 @@ import { formatPath, launchTsserver, normalizeRefItems } from './test-util/tsser
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  describe('finds all references to the styles binding', () => {
-    test('from the styles binding in the import statement', async () => {
+  describe('for a TS-side import statement', () => {
+    test('from the styles binding', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -38,8 +38,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('finds all references to a local token', () => {
-    test('from styles.<token> access', async () => {
+  describe('for a token definition', () => {
+    test('from a TS-side styles.<token>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -63,7 +63,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from styles[<kebab-case token>] access', async () => {
+    test('from a TS-side styles[<kebab-case token>]', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -87,7 +87,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('when the same class is declared multiple times', async () => {
+    test('when the token is declared multiple times', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -114,10 +114,34 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
+
+    test('from a CSS-side token definition', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'index.ts': dedent`
+          ${buildStylesImport('./a.module.css', { namedExports })}
+          styles.a_1;
+        `,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a_1') },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1') },
+        ]),
+      );
+    });
   });
 
-  describe('transitively resolves a re-export to its source declaration', () => {
-    test('class re-exported via @import', async () => {
+  describe('for an all token importer', () => {
+    test('from a TS-side styles.<token>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -141,8 +165,10 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
+  });
 
-    test('value re-exported via @value ... from', async () => {
+  describe('for a named token importer', () => {
+    test('from a TS-side styles.<name>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -169,7 +195,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
 
     // NOTE: Ideally only `b_alias` should be returned, but `b_1` is also returned for implementation simplicity.
-    test('aliased value re-exported via @value ... from', async () => {
+    test('from a TS-side styles.<alias>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -195,36 +221,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         ]),
       );
     });
-  });
 
-  describe('finds all references from a CSS-side class declaration', () => {
-    test('from a .<token> declaration', async () => {
-      const { iff, getLoc, getRange } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': dedent`
-          ${buildStylesImport('./a.module.css', { namedExports })}
-          styles.a_1;
-        `,
-        'a.module.css': `.a_1 { color: red; }`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
-
-      const res = await tsserver.sendReferences({
-        file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', 'a_1'),
-      });
-
-      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
-        normalizeRefItems([
-          { file: formatPath(iff.paths['index.ts']), ...getRange('index.ts', 'a_1') },
-          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1') },
-        ]),
-      );
-    });
-  });
-
-  describe('finds all references from a CSS-side @value ... from binding', () => {
-    test('from the import binding', async () => {
+    test('from a CSS-side <name>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 from './b.module.css';`,
@@ -245,8 +243,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    // NOTE: Ideally only `b_alias` should be returned, but `b_1` is also returned for implementation simplicity.
-    test('from the alias name in `name as alias`', async () => {
+    // NOTE: Ideally only `b_1` should be returned, but `b_alias` is also returned for implementation simplicity.
+    test('from a CSS-side <name> with alias', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
@@ -256,7 +254,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const res = await tsserver.sendReferences({
         file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', 'b_alias'),
+        ...getLoc('a.module.css', 'b_1'),
       });
 
       expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
@@ -268,8 +266,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    // NOTE: Ideally only `b_1` should be returned, but `b_alias` is also returned for implementation simplicity.
-    test('from the source name in `name as alias`', async () => {
+    // NOTE: Ideally only `b_alias` should be returned, but `b_1` is also returned for implementation simplicity.
+    test('from a CSS-side <alias>', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
@@ -279,7 +277,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const res = await tsserver.sendReferences({
         file: iff.paths['a.module.css'],
-        ...getLoc('a.module.css', 'b_1'),
+        ...getLoc('a.module.css', 'b_alias'),
       });
 
       expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
