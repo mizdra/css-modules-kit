@@ -38,7 +38,10 @@ export interface Token {
   declarationLoc?: Location;
 }
 
-/** A token importer that imports all tokens from another module. */
+/**
+ * A token importer that imports all tokens from another module.
+ * @example `@import './a.module.css'`
+ */
 export interface AllTokenImporter {
   type: 'all';
   /**
@@ -51,7 +54,10 @@ export interface AllTokenImporter {
   fromLoc: Location;
 }
 
-/** A token importer that imports specific named tokens from another module. */
+/**
+ * A token importer that imports specific named tokens from another module.
+ * @example `@value a, b as c from './a.module.css'`
+ */
 export interface NamedTokenImporter {
   type: 'named';
   /** The entries describing each imported token. */
@@ -66,7 +72,7 @@ export interface NamedTokenImporter {
   fromLoc: Location;
 }
 
-/** A single token brought in by a {@link NamedTokenImporter}. */
+/** A single token imported by a {@link NamedTokenImporter}. */
 export interface NamedTokenImporterEntry {
   /**
    * The name of the token in the file from which it is imported.
