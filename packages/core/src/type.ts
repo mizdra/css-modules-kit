@@ -39,14 +39,13 @@ export interface Token {
 }
 
 /**
- * A token importer using `@import '...'`.
- * `@import` imports all tokens from the file. Therefore, it does not have
- * the name of the imported token unlike {@link AtValueTokenImporter}.
+ * A token importer that imports all tokens from another module.
+ * @example `@import './a.module.css'`
  */
-export interface AtImportTokenImporter {
-  type: 'import';
+export interface AllTokenImporter {
+  type: 'all';
   /**
-   * The specifier of the file from which the token is imported.
+   * The specifier of the file from which the tokens are imported.
    * This is a string before being resolved and unquoted.
    * @example `@import './a.module.css'` would have `from` as `'./a.module.css'`.
    */
@@ -55,13 +54,16 @@ export interface AtImportTokenImporter {
   fromLoc: Location;
 }
 
-/** A token importer using `@value ... from '...'`. */
-export interface AtValueTokenImporter {
-  type: 'value';
-  /** The values imported from the file. */
-  values: AtValueTokenImporterValue[];
+/**
+ * A token importer that imports specific named tokens from another module.
+ * @example `@value a, b as c from './a.module.css'`
+ */
+export interface NamedTokenImporter {
+  type: 'named';
+  /** The entries describing each imported token. */
+  entries: NamedTokenImporterEntry[];
   /**
-   * The specifier of the file from which the token is imported.
+   * The specifier of the file from which the tokens are imported.
    * This is a string before being resolved and unquoted.
    * @example `@value a from './a.module.css'` would have `from` as `'./a.module.css'`.
    */
@@ -70,8 +72,8 @@ export interface AtValueTokenImporter {
   fromLoc: Location;
 }
 
-/** A value imported from a CSS module file using `@value ... from '...'`. */
-export interface AtValueTokenImporterValue {
+/** A single token imported by a {@link NamedTokenImporter}. */
+export interface NamedTokenImporterEntry {
   /**
    * The name of the token in the file from which it is imported.
    * @example `@value a from './a.module.css'` would have `name` as `'a'`.
@@ -93,7 +95,7 @@ export interface AtValueTokenImporterValue {
   localLoc?: Location;
 }
 
-export type TokenImporter = AtImportTokenImporter | AtValueTokenImporter;
+export type TokenImporter = AllTokenImporter | NamedTokenImporter;
 
 export interface CSSModule {
   /** Absolute path of the file */

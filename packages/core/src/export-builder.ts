@@ -30,11 +30,11 @@ export function createExportBuilder(host: ExportBuilderHost): ExportBuilder {
       if (!imported) continue;
 
       const importedResult = build(imported);
-      if (tokenImporter.type === 'import') {
+      if (tokenImporter.type === 'all') {
         result.allTokens.push(...importedResult.allTokens);
       } else {
-        for (const value of tokenImporter.values) {
-          result.allTokens.push(value.name);
+        for (const entry of tokenImporter.entries) {
+          result.allTokens.push(entry.name);
         }
       }
     }

@@ -1,12 +1,12 @@
 import type { CMKConfig } from './config.js';
 import type {
-  AtValueTokenImporter,
-  AtValueTokenImporterValue,
   CSSModule,
   Diagnostic,
   ExportRecord,
   Location,
   MatchesPattern,
+  NamedTokenImporter,
+  NamedTokenImporterEntry,
   Resolver,
   TokenImporter,
 } from './type.js';
@@ -43,20 +43,20 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
     const imported = args.getCSSModule(from);
     if (!imported) throw new Error('unreachable: `imported` is undefined');
 
-    if (tokenImporter.type === 'value') {
+    if (tokenImporter.type === 'named') {
       const exportRecord = args.getExportRecord(imported);
-      for (const value of tokenImporter.values) {
-        if (!exportRecord.allTokens.includes(value.name)) {
-          diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, value));
+      for (const entry of tokenImporter.entries) {
+        if (!exportRecord.allTokens.includes(entry.name)) {
+          diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, entry));
         }
-        const nameViolation = validateTokenName(value.name, { namedExports: config.namedExports });
+        const nameViolation = validateTokenName(entry.name, { namedExports: config.namedExports });
         if (nameViolation) {
-          diagnostics.push(createTokenNameDiagnostic(cssModule, value.loc, nameViolation));
+          diagnostics.push(createTokenNameDiagnostic(cssModule, entry.loc, nameViolation));
         }
-        if (value.localName) {
-          const localNameViolation = validateTokenName(value.localName, { namedExports: config.namedExports });
+        if (entry.localName) {
+          const localNameViolation = validateTokenName(entry.localName, { namedExports: config.namedExports });
           if (localNameViolation) {
-            diagnostics.push(createTokenNameDiagnostic(cssModule, value.localLoc!, localNameViolation));
+            diagnostics.push(createTokenNameDiagnostic(cssModule, entry.localLoc!, localNameViolation));
           }
         }
       }
@@ -101,14 +101,14 @@ function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter:
 
 function createModuleHasNoExportedTokenDiagnostic(
   cssModule: CSSModule,
-  tokenImporter: AtValueTokenImporter,
-  value: AtValueTokenImporterValue,
+  tokenImporter: NamedTokenImporter,
+  entry: NamedTokenImporterEntry,
 ): Diagnostic {
   return {
-    text: `Module '${tokenImporter.from}' has no exported token '${value.name}'.`,
+    text: `Module '${tokenImporter.from}' has no exported token '${entry.name}'.`,
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: value.loc.start.line, column: value.loc.start.column },
-    length: value.loc.end.offset - value.loc.start.offset,
+    start: { line: entry.loc.start.line, column: entry.loc.start.column },
+    length: entry.loc.end.offset - entry.loc.start.offset,
   };
 }

@@ -1,4 +1,4 @@
-import type { AtImportTokenImporter, AtValueTokenImporter, AtValueTokenImporterValue, Token } from '../type.js';
+import type { AllTokenImporter, NamedTokenImporter, NamedTokenImporterEntry, Token } from '../type.js';
 
 const fakeLoc = { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } };
 
@@ -6,26 +6,26 @@ export function fakeToken(args?: Partial<Token>): Token {
   return { name: 'name', loc: fakeLoc, ...args };
 }
 
-export function fakeAtImportTokenImporter(args?: Omit<Partial<AtImportTokenImporter>, 'type'>): AtImportTokenImporter {
+export function fakeAllTokenImporter(args?: Omit<Partial<AllTokenImporter>, 'type'>): AllTokenImporter {
   return {
-    type: 'import',
+    type: 'all',
     from: '/test.module.css',
     fromLoc: fakeLoc,
     ...args,
   };
 }
 
-export function fakeAtValueTokenImporter(args?: Omit<Partial<AtValueTokenImporter>, 'type'>): AtValueTokenImporter {
+export function fakeNamedTokenImporter(args?: Omit<Partial<NamedTokenImporter>, 'type'>): NamedTokenImporter {
   return {
-    type: 'value',
+    type: 'named',
     from: '/test.module.css',
-    values: [],
+    entries: [],
     fromLoc: fakeLoc,
     ...args,
   };
 }
 
-export function fakeAtValueTokenImporterValue(args?: Partial<AtValueTokenImporterValue>): AtValueTokenImporterValue {
+export function fakeNamedTokenImporterEntry(args?: Partial<NamedTokenImporterEntry>): NamedTokenImporterEntry {
   return {
     name: 'name',
     loc: fakeLoc,

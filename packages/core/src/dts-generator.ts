@@ -50,13 +50,13 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
-      if (tokenImporter.type === 'value') {
+      if (tokenImporter.type === 'named') {
         return {
           ...tokenImporter,
-          values: tokenImporter.values.filter(
-            (value) =>
-              isValidTokenName(value.name, options) &&
-              (value.localName === undefined || isValidTokenName(value.localName, options)),
+          entries: tokenImporter.entries.filter(
+            (entry) =>
+              isValidTokenName(entry.name, options) &&
+              (entry.localName === undefined || isValidTokenName(entry.localName, options)),
           ),
         };
       } else {
@@ -179,7 +179,7 @@ function generateNamedExportsDts(
     text += `'${name}' };\n`;
   }
   for (const tokenImporter of tokenImporters) {
-    if (tokenImporter.type === 'import') {
+    if (tokenImporter.type === 'all') {
       /**
        * The mapping is created as follows:
        * a.module.css:
@@ -239,20 +239,20 @@ function generateNamedExportsDts(
        */
 
       text += `export {\n`;
-      for (const value of tokenImporter.values) {
-        const localName = value.localName ?? value.name;
-        const localLoc = value.localLoc ?? value.loc;
+      for (const entry of tokenImporter.entries) {
+        const localName = entry.localName ?? entry.name;
+        const localLoc = entry.localLoc ?? entry.loc;
         text += `  `;
         linkedCodeMapping.sourceOffsets.push(text.length);
-        linkedCodeMapping.lengths.push(value.name.length + 2);
+        linkedCodeMapping.lengths.push(entry.name.length + 2);
         text += `'`;
-        if ('localName' in value) {
-          mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(value.name.length);
+        if ('localName' in entry) {
+          mapping.sourceOffsets.push(entry.loc.start.offset);
+          mapping.lengths.push(entry.name.length);
           mapping.generatedOffsets.push(text.length);
-          mapping.generatedLengths.push(value.name.length);
+          mapping.generatedLengths.push(entry.name.length);
         }
-        text += `${value.name}' as `;
+        text += `${entry.name}' as `;
         linkedCodeMapping.generatedOffsets.push(text.length);
         linkedCodeMapping.generatedLengths.push(localName.length + 2);
         text += `'`;
@@ -306,7 +306,7 @@ function generateDefaultExportDts(
   // However, the import type for an unresolvable specifier becomes a special `any` type called `errorType`.
   // The technique from https://stackoverflow.com/a/55541672 does not work with `errorType`.
   // Therefore, this combines it with the approach from https://github.com/microsoft/TypeScript/issues/62972.
-  if (tokenImporters.some((importer) => importer.type === 'import')) {
+  if (tokenImporters.some((importer) => importer.type === 'all')) {
     text += `function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;\n`;
   }
 
@@ -340,7 +340,7 @@ function generateDefaultExportDts(
     text += `${token.name}': '' as readonly string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
-    if (tokenImporter.type === 'import') {
+    if (tokenImporter.type === 'all') {
       /**
        * The mapping is created as follows:
        * a.module.css:
@@ -410,9 +410,9 @@ function generateDefaultExportDts(
        */
 
       // oxlint-disable-next-line no-loop-func
-      tokenImporter.values.forEach((value, i) => {
-        const localName = value.localName ?? value.name;
-        const localLoc = value.localLoc ?? value.loc;
+      tokenImporter.entries.forEach((entry, i) => {
+        const localName = entry.localName ?? entry.name;
+        const localLoc = entry.localLoc ?? entry.loc;
 
         text += `  '`;
         mapping.sourceOffsets.push(localLoc.start.offset);
@@ -427,14 +427,14 @@ function generateDefaultExportDts(
           mapping.generatedOffsets.push(text.length);
         }
         text += `'${tokenImporter.from}')).default['`;
-        if ('localName' in value) {
-          mapping.sourceOffsets.push(value.loc.start.offset);
-          mapping.lengths.push(value.name.length);
+        if ('localName' in entry) {
+          mapping.sourceOffsets.push(entry.loc.start.offset);
+          mapping.lengths.push(entry.name.length);
           mapping.generatedOffsets.push(text.length);
         }
         linkedCodeMapping.generatedOffsets.push(text.length - 1);
-        linkedCodeMapping.generatedLengths.push(value.name.length + 2);
-        text += `${value.name}'],\n`;
+        linkedCodeMapping.generatedLengths.push(entry.name.length + 2);
+        text += `${entry.name}'],\n`;
       });
     }
   }
