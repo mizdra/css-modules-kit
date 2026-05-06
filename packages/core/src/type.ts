@@ -38,12 +38,7 @@ export interface Token {
   declarationLoc?: Location;
 }
 
-/**
- * A token importer that re-exports all tokens from another module without
- * enumerating their names. The closest analog in ESM is `export * from 'mod'`
- * (`ExportAllDeclaration` in ESTree). In CSS Modules this corresponds to
- * `@import '...'`.
- */
+/** A token importer that imports all tokens from another module. */
 export interface AllTokenImporter {
   type: 'all';
   /**
@@ -56,12 +51,7 @@ export interface AllTokenImporter {
   fromLoc: Location;
 }
 
-/**
- * A token importer that re-exports specific named tokens from another module.
- * The closest analog in ESM is `export { a, b as c } from 'mod'`
- * (`ExportNamedDeclaration` in ESTree). In CSS Modules this corresponds to
- * `@value ... from '...'`.
- */
+/** A token importer that imports specific named tokens from another module. */
 export interface NamedTokenImporter {
   type: 'named';
   /** The specifiers describing each imported token. */
