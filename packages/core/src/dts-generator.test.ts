@@ -52,10 +52,10 @@ describe('generates an empty .d.ts file when the CSS module has no tokens', () =
 
 describe('creates an entry for each local token declaration', () => {
   const source = dedent`
-      .a_1 { color: red; }
-      .a_2 { color: red; }
-      .a_2 { color: red; }
-    `;
+    .a_1 { color: red; }
+    .a_2 { color: red; }
+    .a_2 { color: red; }
+  `;
   test('default export', async () => {
     expect(await run(source, defaultExportOptions)).toMatchInlineSnapshot(`
     	"=== source ===
@@ -262,9 +262,9 @@ describe('re-exports tokens from a named token importer', () => {
 
 describe('omits importers whose specifier is a URL', () => {
   const source = dedent`
-      @import 'https://example.com/b.module.css';
-      @value c_1 from 'https://example.com/c.module.css';
-    `;
+    @import 'https://example.com/b.module.css';
+    @value c_1 from 'https://example.com/c.module.css';
+  `;
   test('default export', async () => {
     expect(await run(source, defaultExportOptions)).toMatchInlineSnapshot(`
     	"=== source ===
@@ -294,10 +294,10 @@ describe('omits importers whose specifier is a URL', () => {
 
 describe('omits tokens whose name fails validateTokenName', () => {
   const source = dedent`
-      .__proto__ { color: red; }
-      @value __proto__ from './b.module.css';
-      @value b_1 as __proto__ from './b.module.css';
-    `;
+    .__proto__ { color: red; }
+    @value __proto__ from './b.module.css';
+    @value b_1 as __proto__ from './b.module.css';
+  `;
   test('default export', async () => {
     expect(await run(source, defaultExportOptions)).toMatchInlineSnapshot(`
     	"=== source ===
