@@ -70,6 +70,28 @@ describe('no-unused-class-names', () => {
       ]
     `);
   });
+  test('does not warn names referenced via animation-name in the same CSS', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .local1 {}
+        .local2 { animation-name: local1; }
+      `,
+      'a.tsx': dedent`
+        import styles from './a.module.css';
+        styles.local2;
+      `,
+    });
+    const eslint = createESLint(iff.rootDir, config);
+    const results = await eslint.lintFiles(iff.rootDir);
+    expect(formatLintResults(results, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "filePath": "<rootDir>/a.module.css",
+          "messages": [],
+        },
+      ]
+    `);
+  });
   test('does not warn if ts file is not found', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`

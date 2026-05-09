@@ -1,4 +1,11 @@
-import { basename, findComponentFile, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import {
+  basename,
+  findComponentFile,
+  findUsedTokenNames,
+  isCSSModuleFile,
+  parseCSSModule,
+  parseRule,
+} from '@css-modules-kit/core';
 import type { Rule, RuleMeta } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
@@ -28,7 +35,12 @@ const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {
     // assumed that all class names are used.
     if (componentFile === undefined) return;
 
-    const usedTokenNames = findUsedTokenNames(componentFile.text);
+    const cssModule = parseCSSModule(root.toString(), {
+      fileName,
+      includeSyntaxError: false,
+      keyframes: true,
+    });
+    const usedTokenNames = findUsedTokenNames(componentFile.text, cssModule);
 
     root.walkRules((rule) => {
       const { classSelectors } = parseRule(rule);

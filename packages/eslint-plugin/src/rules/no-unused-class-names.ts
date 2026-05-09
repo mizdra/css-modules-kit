@@ -1,4 +1,11 @@
-import { basename, findComponentFileSync, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import {
+  basename,
+  findComponentFileSync,
+  findUsedTokenNames,
+  isCSSModuleFile,
+  parseCSSModule,
+  parseRule,
+} from '@css-modules-kit/core';
 import type { Rule } from 'eslint';
 import safeParser from 'postcss-safe-parser';
 import { readFile } from '../util.js';
@@ -27,7 +34,12 @@ export const noUnusedClassNames: Rule.RuleModule = {
     // assumed that all class names are used.
     if (componentFile === undefined) return {};
 
-    const usedTokenNames = findUsedTokenNames(componentFile.text);
+    const cssModule = parseCSSModule(context.sourceCode.text, {
+      fileName,
+      includeSyntaxError: false,
+      keyframes: true,
+    });
+    const usedTokenNames = findUsedTokenNames(componentFile.text, cssModule);
 
     const root = safeParser(context.sourceCode.text, { from: fileName });
     root.walkRules((rule) => {

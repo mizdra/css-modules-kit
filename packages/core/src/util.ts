@@ -1,3 +1,5 @@
+import type { CSSModule } from './type.js';
+
 export function isPosixRelativePath(path: string): boolean {
   return path.startsWith(`./`) || path.startsWith(`../`);
 }
@@ -34,11 +36,15 @@ export function validateTokenName(name: string, options: ValidateTokenNameOption
 const TOKEN_CONSUMER_PATTERN =
   /styles(?:\.([$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*)|\['([^']*?)'\]|\["([^"]*?)"\])/gu;
 
-export function findUsedTokenNames(componentText: string): Set<string> {
+/** Returns the set of token names that are considered used. */
+export function findUsedTokenNames(componentText: string, cssModule: CSSModule): Set<string> {
   const usedClassNames = new Set<string>();
   for (const match of componentText.matchAll(TOKEN_CONSUMER_PATTERN)) {
     const name = match[1] ?? match[2] ?? match[3];
     if (name) usedClassNames.add(name);
+  }
+  for (const reference of cssModule.tokenReferences) {
+    usedClassNames.add(reference.name);
   }
   return usedClassNames;
 }

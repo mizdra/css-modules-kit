@@ -1,4 +1,4 @@
-import type { AtRule, Node, Root, Rule } from 'postcss';
+import type { AtRule, Declaration, Node, Root, Rule } from 'postcss';
 import { CssSyntaxError, parse } from 'postcss';
 import safeParser from 'postcss-safe-parser';
 import type {
@@ -7,7 +7,9 @@ import type {
   DiagnosticWithLocation,
   Token,
   TokenImporter,
+  TokenReference,
 } from '../type.js';
+import { isAnimationNameProp, parseAnimationNameProp } from './animation-parser.js';
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
 import { parseAtKeyframes } from './key-frame-parser.js';
@@ -37,6 +39,10 @@ function isRuleNode(node: Node): node is Rule {
   return node.type === 'rule';
 }
 
+function isDeclarationNode(node: Node): node is Declaration {
+  return node.type === 'decl';
+}
+
 /**
  * Collect tokens from the AST.
  */
@@ -44,6 +50,7 @@ function collectTokens(ast: Root, keyframes: boolean) {
   const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
+  const tokenReferences: TokenReference[] = [];
   ast.walk((node) => {
     if (isAtImportNode(node)) {
       const parsed = parseAtImport(node);
@@ -72,9 +79,13 @@ function collectTokens(ast: Root, keyframes: boolean) {
       for (const classSelector of classSelectors) {
         localTokens.push(classSelector);
       }
+    } else if (keyframes && isDeclarationNode(node) && isAnimationNameProp(node.prop)) {
+      const { references, diagnostics } = parseAnimationNameProp(node);
+      allDiagnostics.push(...diagnostics);
+      tokenReferences.push(...references);
     }
   });
-  return { localTokens, tokenImporters, diagnostics: allDiagnostics };
+  return { localTokens, tokenImporters, tokenReferences, diagnostics: allDiagnostics };
 }
 
 export interface ParseCSSModuleOptions {
@@ -116,13 +127,14 @@ export function parseCSSModule(
     ast = safeParser(text, { from: fileName });
   }
 
-  const { localTokens, tokenImporters, diagnostics } = collectTokens(ast, keyframes);
+  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, keyframes);
   allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
   return {
     fileName,
     text,
     localTokens,
     tokenImporters,
+    tokenReferences,
     diagnostics: allDiagnostics,
   };
 }

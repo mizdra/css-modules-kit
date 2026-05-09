@@ -97,6 +97,23 @@ export interface NamedTokenImporterEntry {
 
 export type TokenImporter = AllTokenImporter | NamedTokenImporter;
 
+/**
+ * A reference to a token from a CSS Module file.
+ *
+ * For example, `animation-name: foo;` references the `foo` token. The token
+ * itself may be defined in the same file (e.g. by `@keyframes foo {...}`) or
+ * imported from another file (e.g. via `@import`). Token references connect
+ * the usage site to the declaration site so that language features (Go to
+ * Definition, Find All References, Rename) work consistently across
+ * `@keyframes` definitions and `animation-name` references.
+ */
+export interface TokenReference {
+  /** The referenced token name. */
+  name: string;
+  /** The location of the reference name in the source file. */
+  loc: Location;
+}
+
 export interface CSSModule {
   /** Absolute path of the file */
   fileName: string;
@@ -118,6 +135,8 @@ export interface CSSModule {
    * Token importer is a statement that imports tokens from another file.
    */
   tokenImporters: TokenImporter[];
+  /** List of token references in this file. */
+  tokenReferences: TokenReference[];
   /** Diagnostics found during parsing. */
   diagnostics: DiagnosticWithLocation[];
 }

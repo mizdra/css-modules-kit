@@ -8,12 +8,13 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
     text: '',
     localTokens: [],
     tokenImporters: [],
+    tokenReferences: [],
     diagnostics: [],
     ...args,
   };
 }
 
-export function readAndParseCSSModule(path: string): CSSModule | undefined {
+export function readAndParseCSSModule(path: string, options?: { keyframes?: boolean }): CSSModule | undefined {
   let text: string;
   try {
     text = readFileSync(path, 'utf-8');
@@ -23,6 +24,6 @@ export function readAndParseCSSModule(path: string): CSSModule | undefined {
   return parseCSSModule(text, {
     fileName: path,
     includeSyntaxError: false,
-    keyframes: false,
+    keyframes: options?.keyframes ?? true,
   });
 }

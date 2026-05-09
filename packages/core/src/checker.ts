@@ -9,6 +9,7 @@ import type {
   NamedTokenImporterEntry,
   Resolver,
   TokenImporter,
+  TokenReference,
 } from './type.js';
 import { isURLSpecifier, type TokenNameViolation, validateTokenName } from './util.js';
 
@@ -62,6 +63,13 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
       }
     }
   }
+
+  const exportRecord = args.getExportRecord(cssModule);
+  for (const reference of cssModule.tokenReferences) {
+    if (!exportRecord.allTokens.includes(reference.name)) {
+      diagnostics.push(createTokenNotFoundDiagnostic(cssModule, reference));
+    }
+  }
   return diagnostics;
 }
 
@@ -110,5 +118,15 @@ function createModuleHasNoExportedTokenDiagnostic(
     file: { fileName: cssModule.fileName, text: cssModule.text },
     start: { line: entry.loc.start.line, column: entry.loc.start.column },
     length: entry.loc.end.offset - entry.loc.start.offset,
+  };
+}
+
+function createTokenNotFoundDiagnostic(cssModule: CSSModule, reference: TokenReference): Diagnostic {
+  return {
+    text: `Cannot find token '${reference.name}'.`,
+    category: 'error',
+    file: { fileName: cssModule.fileName, text: cssModule.text },
+    start: { line: reference.loc.start.line, column: reference.loc.start.column },
+    length: reference.loc.end.offset - reference.loc.start.offset,
   };
 }

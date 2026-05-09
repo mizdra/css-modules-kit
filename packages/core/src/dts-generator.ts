@@ -1,4 +1,5 @@
-import type { CSSModule, Token, TokenImporter } from './type.js';
+import { basename } from './path.js';
+import type { CSSModule, Token, TokenImporter, TokenReference } from './type.js';
 import type { ValidateTokenNameOptions } from './util.js';
 import { isURLSpecifier, validateTokenName } from './util.js';
 
@@ -47,6 +48,7 @@ export interface GenerateDtsResult {
 export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
   const localTokens = cssModule.localTokens.filter((token) => isValidTokenName(token.name, options));
+  const tokenReferences = cssModule.tokenReferences.filter((ref) => isValidTokenName(ref.name, options));
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
@@ -103,16 +105,18 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
     });
 
   if (options.namedExports) {
-    return generateNamedExportsDts(localTokens, tokenImporters, options);
+    return generateNamedExportsDts(cssModule.fileName, localTokens, tokenImporters, tokenReferences, options);
   } else {
-    return generateDefaultExportDts(localTokens, tokenImporters);
+    return generateDefaultExportDts(localTokens, tokenImporters, tokenReferences);
   }
 }
 
 /** Generate a d.ts file with named exports. */
 function generateNamedExportsDts(
+  fileName: string,
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  tokenReferences: TokenReference[],
   options: GenerateDtsOptions,
 ): { text: string; mapping: CodeMapping; linkedCodeMapping: LinkedCodeMapping } {
   const mapping: Required<CodeMapping> = {
@@ -276,6 +280,30 @@ function generateNamedExportsDts(
   if (noModuleSyntax) {
     text += 'export {};\n';
   }
+
+  /**
+   * The mapping is created as follows:
+   * a.module.css:
+   * 1 | @keyframes a_1 { ... }
+   * 2 | .a_2 { animation-name: a_1; }
+   *   |                        ^ mapping.sourceOffsets[0]
+   *
+   * a.module.css.d.ts:
+   * 1 | declare const __self: typeof import('./<self-filename>');
+   * 2 | __self['a_1'];
+   *   |             ^ mapping.generatedOffsets[0]
+   */
+  if (tokenReferences.length > 0) {
+    text += `declare const __self: typeof import('./${basename(fileName)}');\n`;
+    for (const ref of tokenReferences) {
+      text += `__self['`;
+      mapping.sourceOffsets.push(ref.loc.start.offset);
+      mapping.lengths.push(ref.name.length);
+      mapping.generatedOffsets.push(text.length);
+      mapping.generatedLengths.push(ref.name.length);
+      text += `${ref.name}'];\n`;
+    }
+  }
   if (options.forTsPlugin && !options.prioritizeNamedImports) {
     // Export `styles` to appear in code completion suggestions
     text += 'declare const styles: {};\nexport default styles;\n';
@@ -287,6 +315,7 @@ function generateNamedExportsDts(
 function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
+  tokenReferences: TokenReference[],
 ): {
   text: string;
   mapping: CodeMapping;
@@ -444,7 +473,27 @@ function generateDefaultExportDts(
       });
     }
   }
-  text += `};\nexport default ${STYLES_EXPORT_NAME};\n`;
+  text += `};\n`;
+
+  /**
+   * The mapping is created as follows:
+   * a.module.css:
+   * 1 | @keyframes a_1 { ... }
+   * 2 | .a_2 { animation-name: a_1; }
+   *   |                        ^ mapping.sourceOffsets[0]
+   *
+   * a.module.css.d.ts:
+   * 1 | styles['a_1'];
+   *   |         ^ mapping.generatedOffsets[0]
+   */
+  for (const ref of tokenReferences) {
+    text += `${STYLES_EXPORT_NAME}['`;
+    mapping.sourceOffsets.push(ref.loc.start.offset);
+    mapping.lengths.push(ref.name.length);
+    mapping.generatedOffsets.push(text.length);
+    text += `${ref.name}'];\n`;
+  }
+  text += `export default ${STYLES_EXPORT_NAME};\n`;
   return { text, mapping, linkedCodeMapping };
 }
 

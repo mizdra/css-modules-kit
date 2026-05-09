@@ -289,4 +289,56 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
   });
+
+  describe('for a token reference', () => {
+    test('from a token definition', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @keyframes a_1 { from {} to {} }
+          .a_2 { animation-name: a_1; }
+          .a_3 { animation-name: a_1; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1', 0),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 0) },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 1) },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 2) },
+        ]),
+      );
+    });
+
+    test('from a token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @keyframes a_1 { from {} to {} }
+          .a_2 { animation-name: a_1; }
+          .a_3 { animation-name: a_1; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1', 1),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 0) },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 1) },
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 2) },
+        ]),
+      );
+    });
+  });
 });
