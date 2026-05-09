@@ -6,6 +6,9 @@
   0% { transform: translateY(0); }
   100% { transform: translateY(-100%); }
 }
+.a_5 {
+  animation-name: a_4;
+}
 
 @import './b.module.css';
 @value c_1, c_2 as c_alias from './c.module.css';

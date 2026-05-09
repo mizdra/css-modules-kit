@@ -301,3 +301,42 @@ CSS Modules Kit ではこの問題を、
 これにより `getDefinitionAtPosition` の `{ start: 27, length: 5 }` も、内側の `{ start: 28, length: 3 }` で再試行することで mapping にマッチするようになります。
 
 参考: [mizdra/volar-single-quote-span-problem](https://github.com/mizdra/volar-single-quote-span-problem)
+
+### Token References (`animation-name`) のサポート
+
+CSS では `@keyframes foo {...}` で定義したアニメーション名を `animation-name: foo;` で参照できます。CSS Modules Kit はこの参照を Volar.js の mapping を介して定義側と結びつけ、Go to Definition / Find All References / Rename を一貫して動作させます。
+
+仕組みとしては、生成する `.d.ts` の末尾に「参照の式」を埋め込みます。default export の場合は `styles['<name>'];` という bracket access の式文として、named export の場合は自モジュールへの self-import (`declare const __self: typeof import('./<self-basename>');`) を 1 度生成した上で `__self['<name>'];` という bracket access として吐きます。各参照式のクオート内側部分には CSS 側の参照位置の mapping を張ります。
+
+例えば、次のような CSS モジュールがあるとします:
+
+`src/a.module.css`:
+
+```css
+@keyframes a_1 {}
+.a_2 { animation-name: a_1; }
+```
+
+default export の場合、次のような型定義が生成されます:
+
+```ts
+declare const styles = {
+  'a_1': '' as readonly string,
+  'a_2': '' as readonly string,
+};
+styles['a_1'];
+export default styles;
+```
+
+このようにすることで、`animation-name: a_1;` の `a_1` に対して Go to Definition をした時に、`.d.ts` 上の `styles['a_1']` から CSS 上の `@keyframes a_1` へとジャンプできるようになります。また、`@keyframes a_1 {}` の `a_1` に対して Find All References をした時に、`@keyframes a_1` と `animation-name: a_1;` の両方が返されるようになります。
+
+ちなみに named export の場合、次のような型定義が生成されます:
+
+```ts
+var _token_0: string;
+export { _token_0 as 'a_1' };
+var _token_1: string;
+export { _token_1 as 'a_2' };
+declare const __self: typeof import('./a.module.css');
+__self['a_1'];
+```
