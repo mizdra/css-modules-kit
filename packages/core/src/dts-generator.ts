@@ -35,7 +35,7 @@ interface LinkedCodeMapping extends CodeMapping {
   generatedLengths: number[];
 }
 
-interface GenerateDtsResult {
+export interface GenerateDtsResult {
   text: string;
   mapping: CodeMapping;
   linkedCodeMapping: LinkedCodeMapping;
