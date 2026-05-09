@@ -335,25 +335,23 @@ describe('omits tokens whose name fails validateTokenName', () => {
   });
 });
 
-describe('keeps the default styles export so completion suggestions show up', () => {
-  test('named export with forTsPlugin and !prioritizeNamedImports', async () => {
-    const source = `.a_1 { color: red; }`;
-    expect(await run(source, { namedExports: true, prioritizeNamedImports: false, forTsPlugin: true }))
-      .toMatchInlineSnapshot(`
-      	"=== source ===
-      	.a_1 { color: red; }
-      	 ^^^ mapping[0]
+test('appends a default styles export so completion suggestions show up when forTsPlugin and namedExports are on without prioritizeNamedImports', async () => {
+  const source = `.a_1 { color: red; }`;
+  expect(await run(source, { namedExports: true, prioritizeNamedImports: false, forTsPlugin: true }))
+    .toMatchInlineSnapshot(`
+    	"=== source ===
+    	.a_1 { color: red; }
+    	 ^^^ mapping[0]
 
-      	=== generated ===
-      	// @ts-nocheck
-      	var _token_0: string;
-      	    ^^^^^^^^ mapping[0]
-      	export { _token_0 as 'a_1' };
-      	                     ^^^^^ linkedCodeMapping[0]
-      	         ^^^^^^^^ linkedCodeMapping[0]
-      	declare const styles: {};
-      	export default styles;
-      	"
-      `);
-  });
+    	=== generated ===
+    	// @ts-nocheck
+    	var _token_0: string;
+    	    ^^^^^^^^ mapping[0]
+    	export { _token_0 as 'a_1' };
+    	                     ^^^^^ linkedCodeMapping[0]
+    	         ^^^^^^^^ linkedCodeMapping[0]
+    	declare const styles: {};
+    	export default styles;
+    	"
+    `);
 });
