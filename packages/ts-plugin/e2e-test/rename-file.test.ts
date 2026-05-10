@@ -6,6 +6,27 @@ import { formatPath, launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  test('reports `fileToRename` so editors can initiate a file rename from a CSS specifier', async () => {
+    const { iff, getLoc } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'a.module.css': `@import './b.module.css';`,
+      'b.module.css': '',
+    });
+    await tsserver.sendConfigure({ preferences: { allowRenameOfImportPath: true } });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+    const res = await tsserver.sendRename({
+      file: iff.paths['a.module.css'],
+      ...getLoc('a.module.css', 'b.module.css'),
+    });
+
+    expect(res.body?.info).toMatchObject({
+      canRename: true,
+      kind: 'module',
+      fileToRename: formatPath(iff.paths['b.module.css']),
+    });
+  });
+
   describe('rewrites the import specifier when a CSS module is renamed', () => {
     test('from `import ... from` in TS', async () => {
       const { iff, getRange } = await setupFixture({
