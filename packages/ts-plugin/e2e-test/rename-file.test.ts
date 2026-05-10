@@ -6,24 +6,47 @@ import { formatPath, launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  test('reports `fileToRename` so editors can initiate a file rename from a CSS specifier', async () => {
-    const { iff, getLoc } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'a.module.css': `@import './b.module.css';`,
-      'b.module.css': '',
-    });
-    await tsserver.sendConfigure({ preferences: { allowRenameOfImportPath: true } });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+  describe('reports `fileToRename` so editors can initiate a file rename from a CSS specifier', () => {
+    test('from all token importer', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@import './b.module.css';`,
+        'b.module.css': '',
+      });
+      await tsserver.sendConfigure({ preferences: { allowRenameOfImportPath: true } });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
 
-    const res = await tsserver.sendRename({
-      file: iff.paths['a.module.css'],
-      ...getLoc('a.module.css', 'b.module.css'),
+      const res = await tsserver.sendRename({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b.module.css'),
+      });
+
+      expect(res.body?.info).toMatchObject({
+        canRename: true,
+        kind: 'module',
+        fileToRename: formatPath(iff.paths['b.module.css']),
+      });
     });
 
-    expect(res.body?.info).toMatchObject({
-      canRename: true,
-      kind: 'module',
-      fileToRename: formatPath(iff.paths['b.module.css']),
+    test('from named token importer', async () => {
+      const { iff, getLoc } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `@value b_1 from './b.module.css';`,
+        'b.module.css': `@value b_1: red;`,
+      });
+      await tsserver.sendConfigure({ preferences: { allowRenameOfImportPath: true } });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendRename({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b.module.css'),
+      });
+
+      expect(res.body?.info).toMatchObject({
+        canRename: true,
+        kind: 'module',
+        fileToRename: formatPath(iff.paths['b.module.css']),
+      });
     });
   });
 
@@ -49,7 +72,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
 
-    test('from `@import` in CSS', async () => {
+    test('from all token importer', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@import './b.module.css';`,
@@ -70,7 +93,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
 
-    test('from `@value ... from` in CSS', async () => {
+    test('from named token importer', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': `@value b_1 from './b.module.css';`,
