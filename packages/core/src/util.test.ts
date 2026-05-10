@@ -1,6 +1,6 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { fakeCSSModule } from './test/css-module.js';
+import { fakeRoot } from './test/ast.js';
 import { findUsedTokenNames, validateTokenName } from './util.js';
 
 describe('validateTokenName', () => {
@@ -40,15 +40,10 @@ describe('findUsedTokenNames', () => {
       styles;
     `;
     const expected = new Set(['a_1', 'a_2', 'a-3', 'a-4', 'a_6']);
-    expect(findUsedTokenNames(text, fakeCSSModule())).toEqual(expected);
+    expect(findUsedTokenNames(text, fakeRoot(''))).toEqual(expected);
   });
-  test('collects token names referenced from token references in the CSS module', () => {
-    const cssModule = fakeCSSModule({
-      tokenReferences: [
-        { name: 'a_1', loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } } },
-        { name: 'a_2', loc: { start: { line: 1, column: 1, offset: 0 }, end: { line: 1, column: 1, offset: 0 } } },
-      ],
-    });
-    expect(findUsedTokenNames('styles.a_3;', cssModule)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
+  test('collects token names referenced from animation-name in the CSS module', () => {
+    const root = fakeRoot('.a_3 { animation-name: a_1, a_2; }');
+    expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
   });
 });
