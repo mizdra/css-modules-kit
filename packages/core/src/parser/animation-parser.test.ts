@@ -1,3 +1,4 @@
+import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { fakeDeclaration } from '../test/ast.js';
 import { isAnimationNameProp, parseAnimationNameProp } from './animation-parser.js';
@@ -201,6 +202,64 @@ describe('parseAnimationNameProp', () => {
     	    },
     	  ],
     	  "references": [],
+    	}
+    `);
+  });
+
+  test('handles references on lines after the declaration start', () => {
+    const decl = fakeDeclaration(dedent`
+      .a_1 {
+        animation-name:
+          a_2,
+          local(a_3),
+          local(a_4 a_5);
+      }
+    `);
+    expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
+    	{
+    	  "diagnostics": [
+    	    {
+    	      "category": "error",
+    	      "length": 14,
+    	      "start": {
+    	        "column": 5,
+    	        "line": 5,
+    	      },
+    	      "text": "\`local(...)\` must contain exactly one identifier.",
+    	    },
+    	  ],
+    	  "references": [
+    	    {
+    	      "loc": {
+    	        "end": {
+    	          "column": 8,
+    	          "line": 3,
+    	          "offset": 32,
+    	        },
+    	        "start": {
+    	          "column": 5,
+    	          "line": 3,
+    	          "offset": 29,
+    	        },
+    	      },
+    	      "name": "a_2",
+    	    },
+    	    {
+    	      "loc": {
+    	        "end": {
+    	          "column": 14,
+    	          "line": 4,
+    	          "offset": 47,
+    	        },
+    	        "start": {
+    	          "column": 11,
+    	          "line": 4,
+    	          "offset": 44,
+    	        },
+    	      },
+    	      "name": "a_3",
+    	    },
+    	  ],
     	}
     `);
   });

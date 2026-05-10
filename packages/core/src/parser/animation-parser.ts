@@ -53,13 +53,10 @@ function unwrapLocalCall(fn: postcssValueParser.FunctionNode): postcssValueParse
 
 function calcLoc(decl: Declaration, animationNameNode: postcssValueParser.WordNode): Location {
   const baseLength = decl.prop.length + decl.raws.between!.length;
-  const start = decl.source!.start!;
-  const startOffset = start.offset + baseLength + animationNameNode.sourceIndex;
-  const startColumn = start.column + baseLength + animationNameNode.sourceIndex;
-  const length = animationNameNode.value.length;
+  const startIndex = baseLength + animationNameNode.sourceIndex;
   return {
-    start: { line: start.line, column: startColumn, offset: startOffset },
-    end: { line: start.line, column: startColumn + length, offset: startOffset + length },
+    start: decl.positionBy({ index: startIndex }),
+    end: decl.positionBy({ index: startIndex + animationNameNode.value.length }),
   };
 }
 
@@ -68,15 +65,11 @@ function createInvalidLocalCallDiagnostic(
   fn: postcssValueParser.FunctionNode,
 ): DiagnosticWithDetachedLocation {
   const baseLength = decl.prop.length + decl.raws.between!.length;
-  const start = decl.source!.start!;
-  const length = postcssValueParser.stringify(fn).length;
+  const start = decl.positionBy({ index: baseLength + fn.sourceIndex });
   return {
     text: '`local(...)` must contain exactly one identifier.',
     category: 'error',
-    start: {
-      line: start.line,
-      column: start.column + baseLength + fn.sourceIndex,
-    },
-    length,
+    start: { line: start.line, column: start.column },
+    length: postcssValueParser.stringify(fn).length,
   };
 }
