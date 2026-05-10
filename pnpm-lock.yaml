@@ -30,6 +30,12 @@ importers:
       '@css-modules-kit/codegen':
         specifier: workspace:^
         version: link:packages/codegen
+      '@css-modules-kit/eslint-plugin':
+        specifier: workspace:^
+        version: link:packages/eslint-plugin
+      '@css-modules-kit/stylelint-plugin':
+        specifier: workspace:^
+        version: link:packages/stylelint-plugin
       '@eslint/css':
         specifier: ^1.1.0
         version: 1.1.0
