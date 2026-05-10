@@ -14,7 +14,7 @@
 import * as assert from 'node:assert/strict';
 import { before, describe, it } from 'mocha';
 import * as vscode from 'vscode';
-import { toObject } from './util.js';
+import { createFixture, toObject } from './util.js';
 
 const workspaceRoot = vscode.workspace.workspaceFolders![0]!.uri;
 const aModuleCSS1Path = vscode.Uri.joinPath(workspaceRoot, 'src/dir-1/a.module.css');
@@ -152,6 +152,42 @@ describe('Go to Definition for specifiers with import alias', () => {
     assert.deepEqual(
       toObject(links[1]!.range),
       toObject(new vscode.Range(2, 9, 2, 33)), // `@/src/dir-1/b.module.css`
+    );
+  });
+});
+
+describe('Renaming a CSS module via import specifier', () => {
+  it('renames the file and rewrites the import while preserving the `./` prefix', async () => {
+    // Create a fresh, isolated fixture per run so the on-disk file rename does not pollute the
+    // workspace fixture committed under `examples/`.
+    const iff = await createFixture({
+      'tsconfig.json': JSON.stringify({ cmkOptions: { enabled: true } }),
+      'd.module.css': `@import './e.module.css';\n`,
+      'e.module.css': `.e_1 { color: red; }\n`,
+    });
+    const dModuleCSSPath = vscode.Uri.file(iff.paths['d.module.css']);
+    const renamedEModuleCSSPath = vscode.Uri.file(iff.join('ee.module.css'));
+
+    const dModuleCSSDocument = await vscode.workspace.openTextDocument(dModuleCSSPath);
+    // Cursor on `e` in `@import './e.module.css';`
+    const position = new vscode.Position(0, 11);
+
+    const workspaceEdit = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+      'vscode.executeDocumentRenameProvider',
+      dModuleCSSPath,
+      position,
+      'ee.module.css',
+    );
+    const success = await vscode.workspace.applyEdit(workspaceEdit);
+    assert.ok(success);
+
+    // The CSS file itself should have been renamed.
+    await vscode.workspace.fs.stat(renamedEModuleCSSPath);
+
+    // The `@import` line should keep its `./` prefix and only swap the basename.
+    assert.ok(
+      dModuleCSSDocument.getText().includes(`@import './ee.module.css';`),
+      `Expected import to preserve the './' prefix, got:\n${dModuleCSSDocument.getText()}`,
     );
   });
 });
