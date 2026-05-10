@@ -12,28 +12,24 @@ import type {
 } from '@css-modules-kit/ts-plugin/type';
 import * as vscode from 'vscode';
 
-async function buildFileRenameEdit(oldFilePath: string, newName: string): Promise<vscode.WorkspaceEdit> {
+async function buildFileRenameEdit(oldFilePath: string, newName: string): Promise<vscode.WorkspaceEdit | undefined> {
   const newFilePath = join(dirname(oldFilePath), newName);
-  const edit = new vscode.WorkspaceEdit();
-  edit.renameFile(vscode.Uri.file(oldFilePath), vscode.Uri.file(newFilePath));
-
-  // Wrap tsserver's `getEditsForFileRename` in a custom protocol handler — `typescript.tsserverRequest`
-  // silently drops built-in commands like `getEditsForFileRename`, so the same "request forwarding" trick
-  // used for rename / renameInfo is required to reach it.
   const editsRes = await vscode.commands.executeCommand<CSSModulesKitGetEditsForFileRenameResponse>(
     'typescript.tsserverRequest',
     '_css-modules-kit:getEditsForFileRename',
     { oldFilePath, newFilePath } satisfies CSSModulesKitGetEditsForFileRenameRequest['arguments'],
   );
-  if (editsRes.success && editsRes.body?.result) {
-    for (const fileEdit of editsRes.body.result) {
-      // oxlint-disable-next-line no-await-in-loop
-      const targetDoc = await vscode.workspace.openTextDocument(fileEdit.fileName);
-      for (const change of fileEdit.textChanges) {
-        const start = targetDoc.positionAt(change.span.start);
-        const end = targetDoc.positionAt(change.span.start + change.span.length);
-        edit.replace(vscode.Uri.file(fileEdit.fileName), new vscode.Range(start, end), change.newText);
-      }
+  if (!editsRes.success || !editsRes.body?.result) return undefined;
+
+  const edit = new vscode.WorkspaceEdit();
+  edit.renameFile(vscode.Uri.file(oldFilePath), vscode.Uri.file(newFilePath));
+  for (const fileEdit of editsRes.body.result) {
+    // oxlint-disable-next-line no-await-in-loop
+    const targetDoc = await vscode.workspace.openTextDocument(fileEdit.fileName);
+    for (const change of fileEdit.textChanges) {
+      const start = targetDoc.positionAt(change.span.start);
+      const end = targetDoc.positionAt(change.span.start + change.span.length);
+      edit.replace(vscode.Uri.file(fileEdit.fileName), new vscode.Range(start, end), change.newText);
     }
   }
   return edit;
