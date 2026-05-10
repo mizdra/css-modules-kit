@@ -45,6 +45,7 @@ describe('generates an empty .d.ts file when the CSS module has no tokens', () =
 
     	=== generated ===
     	// @ts-nocheck
+    	export {};
     	"
     `);
   });
@@ -287,6 +288,7 @@ describe('omits importers whose specifier is a URL', () => {
 
     	=== generated ===
     	// @ts-nocheck
+    	export {};
     	"
     `);
   });

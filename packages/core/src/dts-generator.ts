@@ -270,6 +270,12 @@ function generateNamedExportsDts(
       text += `'${tokenImporter.from}';\n`;
     }
   }
+  // Ensure the generated file is treated as a module even when no other
+  // top-level export/import is emitted (e.g. an empty CSS Module file).
+  const noModuleSyntax = localTokens.length === 0 && tokenImporters.length === 0;
+  if (noModuleSyntax) {
+    text += 'export {};\n';
+  }
   if (options.forTsPlugin && !options.prioritizeNamedImports) {
     // Export `styles` to appear in code completion suggestions
     text += 'declare const styles: {};\nexport default styles;\n';
