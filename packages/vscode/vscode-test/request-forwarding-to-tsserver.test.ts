@@ -158,8 +158,6 @@ describe('Go to Definition for specifiers with import alias', () => {
 
 describe('Renaming a CSS module via import specifier', () => {
   it('renames the file and rewrites the import while preserving the `./` prefix', async () => {
-    // Create a fresh, isolated fixture per run so the on-disk file rename does not pollute the
-    // workspace fixture committed under `examples/`.
     const iff = await createFixture({
       'tsconfig.json': JSON.stringify({ cmkOptions: { enabled: true } }),
       'd.module.css': `@import './e.module.css';\n`,
