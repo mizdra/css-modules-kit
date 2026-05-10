@@ -7,6 +7,7 @@ import type ts from 'typescript';
 import { createCSSLanguagePlugin } from './language-plugin.js';
 import { proxyLanguageService } from './language-service/proxy.js';
 import { createDocumentLinkHandler } from './protocol-handler/documentLink.js';
+import { createGetEditsForFileRenameHandler } from './protocol-handler/getEditsForFileRename.js';
 import { createRenameHandler } from './protocol-handler/rename.js';
 import { createRenameInfoHandler } from './protocol-handler/renameInfo.js';
 import { CustomSourceMap } from './source-map.js';
@@ -97,6 +98,10 @@ const plugin = createLanguageServicePlugin((ts, info) => {
           info.session.addProtocolHandler(
             '_css-modules-kit:renameInfo',
             createRenameInfoHandler(info.project.projectService),
+          );
+          info.session.addProtocolHandler(
+            '_css-modules-kit:getEditsForFileRename',
+            createGetEditsForFileRenameHandler(info.project.projectService),
           );
           info.session.addProtocolHandler(
             '_css-modules-kit:documentLink',

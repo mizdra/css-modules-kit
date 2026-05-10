@@ -1,12 +1,43 @@
+// oxlint-disable-next-line no-restricted-imports
+import { dirname, join } from 'node:path';
 import type {
   CSSModulesKitDocumentLinkRequest,
   CSSModulesKitDocumentLinkResponse,
+  CSSModulesKitGetEditsForFileRenameRequest,
+  CSSModulesKitGetEditsForFileRenameResponse,
   CSSModulesKitRenameInfoRequest,
   CSSModulesKitRenameInfoResponse,
   CSSModulesKitRenameRequest,
   CSSModulesKitRenameResponse,
 } from '@css-modules-kit/ts-plugin/type';
 import * as vscode from 'vscode';
+
+async function buildFileRenameEdit(oldFilePath: string, newName: string): Promise<vscode.WorkspaceEdit> {
+  const newFilePath = join(dirname(oldFilePath), newName);
+  const edit = new vscode.WorkspaceEdit();
+  edit.renameFile(vscode.Uri.file(oldFilePath), vscode.Uri.file(newFilePath));
+
+  // Wrap tsserver's `getEditsForFileRename` in a custom protocol handler — `typescript.tsserverRequest`
+  // silently drops built-in commands like `getEditsForFileRename`, so the same "request forwarding" trick
+  // used for rename / renameInfo is required to reach it.
+  const editsRes = await vscode.commands.executeCommand<CSSModulesKitGetEditsForFileRenameResponse>(
+    'typescript.tsserverRequest',
+    '_css-modules-kit:getEditsForFileRename',
+    { oldFilePath, newFilePath } satisfies CSSModulesKitGetEditsForFileRenameRequest['arguments'],
+  );
+  if (editsRes.success && editsRes.body?.result) {
+    for (const fileEdit of editsRes.body.result) {
+      // oxlint-disable-next-line no-await-in-loop
+      const targetDoc = await vscode.workspace.openTextDocument(fileEdit.fileName);
+      for (const change of fileEdit.textChanges) {
+        const start = targetDoc.positionAt(change.span.start);
+        const end = targetDoc.positionAt(change.span.start + change.span.length);
+        edit.replace(vscode.Uri.file(fileEdit.fileName), new vscode.Range(start, end), change.newText);
+      }
+    }
+  }
+  return edit;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('[css-modules-kit-vscode] Activated');
@@ -27,6 +58,22 @@ export function activate(context: vscode.ExtensionContext) {
       { scheme: 'file', language: 'css' },
       {
         async provideRenameEdits(document, position, newName, _token) {
+          // Detect a file rename (renaming a CSS module via its `@import` / `@value ... from` specifier).
+          // When the language service reports `fileToRename`, the editor must perform a file rename plus a
+          // `getEditsForFileRename`-driven import update.
+          const infoRes = await vscode.commands.executeCommand<CSSModulesKitRenameInfoResponse>(
+            'typescript.tsserverRequest',
+            '_css-modules-kit:renameInfo',
+            {
+              fileName: document.fileName,
+              position: document.offsetAt(position),
+            } satisfies CSSModulesKitRenameInfoRequest['arguments'],
+          );
+          const info = infoRes.success ? infoRes.body?.result : undefined;
+          if (info?.canRename && info.fileToRename) {
+            return buildFileRenameEdit(info.fileToRename, newName);
+          }
+
           const res = await vscode.commands.executeCommand<CSSModulesKitRenameResponse>(
             'typescript.tsserverRequest',
             '_css-modules-kit:rename',
