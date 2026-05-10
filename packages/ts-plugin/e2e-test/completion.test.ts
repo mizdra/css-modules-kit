@@ -120,6 +120,33 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         },
       ]);
     });
+
+    test('suggests the styles entry with an import-alias source', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          compilerOptions: { paths: { '@/*': ['./*'] } },
+          cmkOptions: { namedExports },
+        }),
+        'index.ts': `styles;`,
+        'a.module.css': '',
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendConfigure({
+        preferences: {
+          includeCompletionsForModuleExports: true,
+          importModuleSpecifierPreference: 'non-relative',
+        },
+      });
+
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['index.ts'],
+        ...getRange('index.ts', 'styles').end,
+      });
+
+      expect(
+        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
+      ).toStrictEqual(normalizeCompletionEntry([{ name: 'styles', sortText: '16', source: '@/a.module.css' }]));
+    });
   });
 
   describe('className attribute snippet', () => {
