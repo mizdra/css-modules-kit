@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  VSCODE_VERSION: '1.103.0'
+  VSCODE_VERSION: '1.119.0'
 
 jobs:
   lint:
