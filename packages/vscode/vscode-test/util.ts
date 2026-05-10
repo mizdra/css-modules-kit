@@ -1,5 +1,16 @@
 import { AssertionError } from 'node:assert';
+import { randomUUID } from 'node:crypto';
+import { tmpdir } from 'node:os';
+// oxlint-disable-next-line no-restricted-imports
+import { join } from 'node:path';
 import { setTimeout } from 'node:timers/promises';
+import { defineIFFCreator } from '@mizdra/inline-fixture-files';
+
+const fixtureRoot = join(tmpdir(), 'css-modules-kit-vscode-test');
+export const createFixture = defineIFFCreator({
+  generateRootDir: () => join(fixtureRoot, randomUUID()),
+  unixStylePath: true,
+});
 
 export function toObject<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));

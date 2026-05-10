@@ -24,6 +24,18 @@ export interface CSSModulesKitRenameInfoResponse extends ts.server.protocol.Resp
   readonly body: CSSModulesKitRenameInfoHandlerResponse['response'];
 }
 
+export interface CSSModulesKitGetEditsForFileRenameRequest extends ts.server.protocol.Request {
+  command: '_css-modules-kit:getEditsForFileRename';
+  arguments: { oldFilePath: string; newFilePath: string };
+}
+export interface CSSModulesKitGetEditsForFileRenameHandlerResponse extends ts.server.HandlerResponse {
+  response?: { result: ReturnType<ts.LanguageService['getEditsForFileRename']> };
+}
+export interface CSSModulesKitGetEditsForFileRenameResponse extends ts.server.protocol.Response {
+  command: '_css-modules-kit:getEditsForFileRename';
+  readonly body: CSSModulesKitGetEditsForFileRenameHandlerResponse['response'];
+}
+
 export interface DocumentLink {
   fileName: string;
   textSpan: ts.TextSpan;
@@ -51,6 +63,12 @@ declare module 'typescript' {
       addProtocolHandler(
         command: '_css-modules-kit:renameInfo',
         handler: (request: CSSModulesKitRenameInfoRequest) => CSSModulesKitRenameInfoHandlerResponse,
+      ): void;
+      addProtocolHandler(
+        command: '_css-modules-kit:getEditsForFileRename',
+        handler: (
+          request: CSSModulesKitGetEditsForFileRenameRequest,
+        ) => CSSModulesKitGetEditsForFileRenameHandlerResponse,
       ): void;
       addProtocolHandler(
         command: '_css-modules-kit:documentLink',
