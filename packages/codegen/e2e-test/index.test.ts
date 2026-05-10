@@ -79,6 +79,35 @@ test('generates .d.ts', async () => {
   expect(tsc.status).toBe(0);
 });
 
+test('generated .d.ts is recognized as a module in named exports mode when CSS is empty', async () => {
+  const iff = await createIFF({
+    'src/a.module.css': ``,
+    'src/a.ts': `import * as styles from './a.module.css';`,
+    'tsconfig.json': dedent`
+      {
+        "compilerOptions": {
+          "lib": ["ES2015"],
+          "module": "Preserve",
+          "moduleResolution": "bundler",
+          "noEmit": true,
+          "rootDirs": [".", "generated"]
+        },
+        "cmkOptions": { "enabled": true, "namedExports": true }
+      }
+    `,
+  });
+  const cmk = spawnSync('node', [binPath], { cwd: iff.rootDir });
+  expect(cmk.error).toBeUndefined();
+  expect(cmk.stderr.toString()).toBe('');
+  expect(cmk.status).toBe(0);
+
+  // Check if the generated .d.ts passes the type check
+  const tsc = spawnSync('node', [tscPath], { cwd: iff.rootDir });
+  expect(tsc.error).toBeUndefined();
+  expect(tsc.stdout.toString()).toBe('');
+  expect(tsc.status).toBe(0);
+});
+
 test('prints help text', () => {
   const cmk = spawnSync('node', [binPath, '--help']);
   expect(cmk.error).toBeUndefined();
