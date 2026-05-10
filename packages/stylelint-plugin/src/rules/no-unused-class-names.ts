@@ -28,7 +28,7 @@ const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {
     // assumed that all class names are used.
     if (componentFile === undefined) return;
 
-    const usedTokenNames = findUsedTokenNames(componentFile.text);
+    const usedTokenNames = findUsedTokenNames(componentFile.text, root);
 
     root.walkRules((rule) => {
       const { classSelectors } = parseRule(rule);

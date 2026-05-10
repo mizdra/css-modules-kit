@@ -1,4 +1,4 @@
-import type { AtRule, Root, Rule } from 'postcss';
+import type { AtRule, Declaration, Root, Rule } from 'postcss';
 import { parse } from 'postcss';
 import type { ClassName } from 'postcss-selector-parser';
 import selectorParser from 'postcss-selector-parser';
@@ -51,4 +51,13 @@ export function fakeAtKeyframes(root: Root): AtRule[] {
     results.push(atKeyframes);
   });
   return results;
+}
+
+export function fakeDeclaration(css: string): Declaration {
+  const root = fakeRoot(css);
+  const rule = root.first;
+  if (rule === undefined || rule.type !== 'rule') throw new Error('expected a rule');
+  const decl = rule.first;
+  if (decl === undefined || decl.type !== 'decl') throw new Error('expected a declaration');
+  return decl;
 }

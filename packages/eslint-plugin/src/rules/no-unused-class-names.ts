@@ -27,9 +27,9 @@ export const noUnusedClassNames: Rule.RuleModule = {
     // assumed that all class names are used.
     if (componentFile === undefined) return {};
 
-    const usedTokenNames = findUsedTokenNames(componentFile.text);
-
     const root = safeParser(context.sourceCode.text, { from: fileName });
+    const usedTokenNames = findUsedTokenNames(componentFile.text, root);
+
     root.walkRules((rule) => {
       const { classSelectors } = parseRule(rule);
 

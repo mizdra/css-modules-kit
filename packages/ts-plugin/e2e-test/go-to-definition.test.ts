@@ -432,4 +432,135 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
   });
+
+  describe('for a token reference', () => {
+    test('from a token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @keyframes a_1 { from {} to {} }
+          .a_2 { animation-name: a_1; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1', 1),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('a.module.css', '@keyframes a_1 { from {} to {} }');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            ...getRange('a.module.css', 'a_1', 0),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+
+    test('from each <name> in a multi-value token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @keyframes a_1 { from {} to {} }
+          @keyframes a_2 { from {} to {} }
+          .a_3 { animation-name: a_1, a_2; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const a1Res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_1', 1),
+      });
+      expect(normalizeDefinitions(a1Res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            ...getRange('a.module.css', 'a_1', 0),
+            ...(({ start, end }) => ({ contextStart: start, contextEnd: end }))(
+              getRange('a.module.css', '@keyframes a_1 { from {} to {} }'),
+            ),
+          },
+        ]),
+      );
+
+      const a2Res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a_2', 1),
+      });
+      expect(normalizeDefinitions(a2Res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            ...getRange('a.module.css', 'a_2', 0),
+            ...(({ start, end }) => ({ contextStart: start, contextEnd: end }))(
+              getRange('a.module.css', '@keyframes a_2 { from {} to {} }'),
+            ),
+          },
+        ]),
+      );
+    });
+
+    test('from a kebab-case token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @keyframes a-1 { from {} to {} }
+          .a_2 { animation-name: a-1; }
+        `,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'a-1', 1),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('a.module.css', '@keyframes a-1 { from {} to {} }');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['a.module.css']),
+            ...getRange('a.module.css', 'a-1', 0),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+
+    test('from a token reference whose target is imported', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': dedent`
+          @import './b.module.css';
+          .a_1 { animation-name: b_1; }
+        `,
+        'b.module.css': `@keyframes b_1 { from {} to {} }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_1'),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@keyframes b_1 { from {} to {} }');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            ...getRange('b.module.css', 'b_1'),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+  });
 });

@@ -304,3 +304,42 @@ The fallback is implemented in `CustomSourceMap` in [packages/ts-plugin/src/sour
 With this, `getDefinitionAtPosition`'s `{ start: 27, length: 5 }` also matches the mapping by retrying with the inner `{ start: 28, length: 3 }`.
 
 Reference: [mizdra/volar-single-quote-span-problem](https://github.com/mizdra/volar-single-quote-span-problem)
+
+### Token References (`animation-name`) Support
+
+In CSS, an animation name defined with `@keyframes foo {...}` can be referenced by `animation-name: foo;`. CSS Modules Kit links such references to their definitions via Volar.js mappings, making Go to Definition / Find All References / Rename work consistently.
+
+The mechanism is to embed "reference expressions" at the end of the generated `.d.ts`. For default export, it is emitted as a bracket access expression statement like `styles['<name>'];`. For named export, after emitting a self-import (`declare const __self: typeof import('./<self-basename>');`) once, it is emitted as a bracket access like `__self['<name>'];`. A mapping is attached to the inside-of-quotes part of each reference expression, pointing to the reference position in the CSS.
+
+For example, suppose we have the following CSS module:
+
+`src/a.module.css`:
+
+```css
+@keyframes a_1 {}
+.a_2 { animation-name: a_1; }
+```
+
+For default export, the following type definition is generated:
+
+```ts
+declare const styles = {
+  'a_1': '' as readonly string,
+  'a_2': '' as readonly string,
+};
+styles['a_1'];
+export default styles;
+```
+
+With this, when Go to Definition is invoked on `a_1` in `animation-name: a_1;`, it can jump from `styles['a_1']` in the `.d.ts` to `@keyframes a_1` in the CSS. Similarly, when Find All References is invoked on `a_1` in `@keyframes a_1 {}`, both `@keyframes a_1` and `animation-name: a_1;` are returned.
+
+For named export, the following type definition is generated:
+
+```ts
+var _token_0: string;
+export { _token_0 as 'a_1' };
+var _token_1: string;
+export { _token_1 as 'a_2' };
+declare const __self: typeof import('./a.module.css');
+__self['a_1'];
+```

@@ -261,6 +261,63 @@ describe('re-exports tokens from a named token importer', () => {
   });
 });
 
+describe('creates a reference for a token reference', () => {
+  const source = dedent`
+    @keyframes a_1 {}
+    .a_2 { animation-name: a_1; }
+  `;
+  test('default export', async () => {
+    expect(await run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+    	"=== source ===
+    	@keyframes a_1 {}
+    	           ^^^ mapping[0]
+    	.a_2 { animation-name: a_1; }
+    	                       ^^^ mapping[2]
+    	 ^^^ mapping[1]
+
+    	=== generated ===
+    	// @ts-nocheck
+    	declare const styles = {
+    	  'a_1': '' as readonly string,
+    	   ^^^ mapping[0]
+    	  'a_2': '' as readonly string,
+    	   ^^^ mapping[1]
+    	};
+    	styles['a_1'];
+    	        ^^^ mapping[2]
+    	export default styles;
+    	"
+    `);
+  });
+  test('named export', async () => {
+    expect(await run(source, namedExportOptions)).toMatchInlineSnapshot(`
+    	"=== source ===
+    	@keyframes a_1 {}
+    	           ^^^ mapping[0]
+    	.a_2 { animation-name: a_1; }
+    	                       ^^^ mapping[2]
+    	 ^^^ mapping[1]
+
+    	=== generated ===
+    	// @ts-nocheck
+    	var _token_0: string;
+    	    ^^^^^^^^ mapping[0]
+    	export { _token_0 as 'a_1' };
+    	                     ^^^^^ linkedCodeMapping[0]
+    	         ^^^^^^^^ linkedCodeMapping[0]
+    	var _token_1: string;
+    	    ^^^^^^^^ mapping[1]
+    	export { _token_1 as 'a_2' };
+    	                     ^^^^^ linkedCodeMapping[1]
+    	         ^^^^^^^^ linkedCodeMapping[1]
+    	declare const __self: typeof import('./a.module.css');
+    	__self['a_1'];
+    	        ^^^ mapping[2]
+    	"
+    `);
+  });
+});
+
 describe('omits importers whose specifier is a URL', () => {
   const source = dedent`
     @import 'https://example.com/b.module.css';

@@ -78,6 +78,27 @@ describe('no-unused-class-names', () => {
       ]
     `);
   });
+  test('does not warn names referenced via animation-name in the same CSS', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        .local1 {}
+        .local2 { animation-name: local1; }
+      `,
+      'a.tsx': dedent`
+        import styles from './a.module.css';
+        styles.local2;
+      `,
+    });
+    const results = await lint(iff.rootDir);
+    expect(formatLinterResult(results, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "source": "<rootDir>/a.module.css",
+          "warnings": [],
+        },
+      ]
+    `);
+  });
   test('does not warn if ts file is not found', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`

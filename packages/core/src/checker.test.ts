@@ -264,4 +264,40 @@ describe('checkCSSModule', () => {
     // TODO: Report diagnostics
     expect(diagnostics).toEqual([]);
   });
+  test('report diagnostics for references to undefined tokens', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @keyframes a_1 {}
+        .a_2 { animation-name: a_1, a_3; }
+      `,
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+    	[
+    	  {
+    	    "category": "error",
+    	    "fileName": "<rootDir>/a.module.css",
+    	    "length": 3,
+    	    "start": {
+    	      "column": 29,
+    	      "line": 2,
+    	    },
+    	    "text": "Cannot find token 'a_3'.",
+    	  },
+    	]
+    `);
+  });
+  test('do not report diagnostics for references to tokens imported via @import', async () => {
+    const iff = await createIFF({
+      'a.module.css': dedent`
+        @import './b.module.css';
+        .a_1 { animation-name: b_1; }
+      `,
+      'b.module.css': '@keyframes b_1 {}',
+    });
+    const check = prepareChecker();
+    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
+    expect(diagnostics).toEqual([]);
+  });
 });
