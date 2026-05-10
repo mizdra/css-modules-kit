@@ -19,6 +19,8 @@
     "@changesets/cli": "^2.30.0",
     "@changesets/types": "^6.1.0",
     "@css-modules-kit/codegen": "workspace:^",
+    "@css-modules-kit/eslint-plugin": "workspace:^",
+    "@css-modules-kit/stylelint-plugin": "workspace:^",
     "@eslint/css": "^1.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
     "@mizdra/oxfmt-config": "^0.2.0",
