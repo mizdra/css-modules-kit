@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { stripVTControlCharacters } from 'node:util';
 import { join } from '@css-modules-kit/core';
 import dedent from 'dedent';
-import { expect, test } from 'vite-plus/test';
+import { describe, expect, test } from 'vite-plus/test';
 import { createIFF } from '../src/test/fixture.js';
 
 const binPath = join(import.meta.dirname, '../bin/cmk.js');
@@ -45,31 +45,31 @@ test('generates .d.ts', async () => {
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
-    declare const styles = {
-      'a1': '' as readonly string,
-      ...blockErrorType((await import('./b.module.css')).default),
-      ...blockErrorType((await import('./unmatched.module.css')).default),
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
+  	declare const styles = {
+  	  'a1': '' as string,
+  	  ...blockErrorType((await import('./b.module.css')).default),
+  	  ...blockErrorType((await import('./unmatched.module.css')).default),
+  	} as const;
+  	export default styles;
+  	"
   `);
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    declare const styles = {
-      'b1': '' as readonly string,
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	declare const styles = {
+  	  'b1': '' as string,
+  	} as const;
+  	export default styles;
+  	"
   `);
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    declare const styles = {
-      'c1': '' as readonly string,
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	declare const styles = {
+  	  'c1': '' as string,
+  	} as const;
+  	export default styles;
+  	"
   `);
 
   // Check if the generated .d.ts passes the type check
@@ -184,34 +184,34 @@ test('generates .d.ts with circular import', async () => {
   expect(cmk.stderr.toString()).toBe('');
   expect(cmk.status).toBe(0);
   expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
-    declare const styles = {
-      'a1': '' as readonly string,
-      ...blockErrorType((await import('./b.module.css')).default),
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
+  	declare const styles = {
+  	  'a1': '' as string,
+  	  ...blockErrorType((await import('./b.module.css')).default),
+  	} as const;
+  	export default styles;
+  	"
   `);
   expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
-    declare const styles = {
-      'b1': '' as readonly string,
-      ...blockErrorType((await import('./a.module.css')).default),
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
+  	declare const styles = {
+  	  'b1': '' as string,
+  	  ...blockErrorType((await import('./a.module.css')).default),
+  	} as const;
+  	export default styles;
+  	"
   `);
   expect(await iff.readFile('generated/src/c.module.css.d.ts')).toMatchInlineSnapshot(`
-    "// @ts-nocheck
-    function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
-    declare const styles = {
-      'c1': '' as readonly string,
-      ...blockErrorType((await import('./c.module.css')).default),
-    };
-    export default styles;
-    "
+  	"// @ts-nocheck
+  	function blockErrorType<T>(val: T): [0] extends [(1 & T)] ? {} : T;
+  	declare const styles = {
+  	  'c1': '' as string,
+  	  ...blockErrorType((await import('./c.module.css')).default),
+  	} as const;
+  	export default styles;
+  	"
   `);
 
   // Check if the generated .d.ts passes the type check
@@ -219,4 +219,52 @@ test('generates .d.ts with circular import', async () => {
   expect(tsc.error).toBeUndefined();
   expect(tsc.stdout.toString()).toBe('');
   expect(tsc.status).toBe(0);
+});
+
+describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+  test('tsc reports `Cannot assign to read-only property` on styles.<token>', async () => {
+    const stylesImport = namedExports
+      ? `import * as styles from './a.module.css';`
+      : `import styles from './a.module.css';`;
+    const iff = await createIFF({
+      'src/a.module.css': dedent`
+          @import './b.module.css';
+          @value c_1 from './c.module.css';
+          .a_1 { color: red; }
+        `,
+      'src/b.module.css': `.b_1 { color: red; }`,
+      'src/c.module.css': `@value c_1: red;`,
+      'src/a.ts': dedent`
+          ${stylesImport}
+          // @ts-expect-error -- local token
+          styles.a_1 = '';
+          // @ts-expect-error -- token from all token importer
+          styles.b_1 = '';
+          // @ts-expect-error -- token from named token importer
+          styles.c_1 = '';
+        `,
+      'tsconfig.json': dedent`
+          {
+            "compilerOptions": {
+              "lib": ["ES2015"],
+              "module": "Preserve",
+              "moduleResolution": "bundler",
+              "noEmit": true,
+              "rootDirs": [".", "generated"]
+            },
+            "cmkOptions": { "enabled": true, "namedExports": ${namedExports} }
+          }
+        `,
+    });
+
+    const cmk = spawnSync('node', [binPath], { cwd: iff.rootDir });
+    expect(cmk.error).toBeUndefined();
+    expect(cmk.stderr.toString()).toBe('');
+    expect(cmk.status).toBe(0);
+
+    const tsc = spawnSync('node', [tscPath], { cwd: iff.rootDir });
+    expect(tsc.error).toBeUndefined();
+    expect(tsc.stdout.toString()).toBe('');
+    expect(tsc.status).toBe(0);
+  });
 });

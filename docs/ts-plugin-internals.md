@@ -324,9 +324,9 @@ For default export, the following type definition is generated:
 
 ```ts
 declare const styles = {
-  'a_1': '' as readonly string,
-  'a_2': '' as readonly string,
-};
+  'a_1': '' as string,
+  'a_2': '' as string,
+} as const;
 styles['a_1'];
 export default styles;
 ```

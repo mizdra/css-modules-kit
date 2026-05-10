@@ -28,20 +28,20 @@ describe('runCMK', () => {
     });
     await runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'a_1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'a_1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'b_1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'b_1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
   });
   test('reports diagnostics if errors are found', async () => {
@@ -130,20 +130,20 @@ describe('runCMKInWatchMode', () => {
     });
     watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy());
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'a_1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'a_1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'b_1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'b_1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
   });
   test('reports diagnostics if errors are found', async () => {

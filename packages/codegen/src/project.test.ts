@@ -195,12 +195,12 @@ describe('updateFile', () => {
     // New .d.ts file is emitted
     await project.emitDtsFiles();
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'a_1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'a_1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
 
     // New semantic diagnostics are reported
@@ -519,20 +519,20 @@ describe('emitDtsFiles', () => {
     const project = createProject({ project: iff.rootDir });
     await project.emitDtsFiles();
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'a1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'a1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
     expect(await iff.readFile('generated/src/b.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'b1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'b1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
   });
   test('does not emit .d.ts files for files not matched by `pattern`', async () => {
@@ -544,12 +544,12 @@ describe('emitDtsFiles', () => {
     const project = createProject({ project: iff.rootDir });
     await project.emitDtsFiles();
     expect(await iff.readFile('generated/src/a.module.css.d.ts')).toMatchInlineSnapshot(`
-      "// @ts-nocheck
-      declare const styles = {
-        'a1': '' as readonly string,
-      };
-      export default styles;
-      "
+    	"// @ts-nocheck
+    	declare const styles = {
+    	  'a1': '' as string,
+    	} as const;
+    	export default styles;
+    	"
     `);
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
