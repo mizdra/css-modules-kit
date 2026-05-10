@@ -33,7 +33,7 @@ describe('generates an empty .d.ts file when the CSS module has no tokens', () =
     	=== generated ===
     	// @ts-nocheck
     	declare const styles = {
-    	};
+    	} as const;
     	export default styles;
     	"
     `);
@@ -70,13 +70,13 @@ describe('creates an entry for each local token declaration', () => {
     	=== generated ===
     	// @ts-nocheck
     	declare const styles = {
-    	  'a_1': '' as readonly string,
+    	  'a_1': '' as string,
     	   ^^^ mapping[0]
-    	  'a_2': '' as readonly string,
+    	  'a_2': '' as string,
     	   ^^^ mapping[1]
-    	  'a_2': '' as readonly string,
+    	  'a_2': '' as string,
     	   ^^^ mapping[2]
-    	};
+    	} as const;
     	export default styles;
     	"
     `);
@@ -136,7 +136,7 @@ describe('re-exports tokens from an all token importer', () => {
     	                                  ^^^^^^^^^^^^^^^^ mapping[1]
     	  ...blockErrorType((await import('./c.module.css')).default),
     	                                  ^^^^^^^^^^^^^^^^ mapping[2]
-    	};
+    	} as const;
     	export default styles;
     	"
     `);
@@ -208,7 +208,7 @@ describe('re-exports tokens from a named token importer', () => {
     	                       ^^^^^^^^^^^^^^^^ mapping[7]
     	   ^^^ mapping[6]
     	  ^^^^^ linkedCodeMapping[3]
-    	};
+    	} as const;
     	export default styles;
     	"
     `);
@@ -278,11 +278,11 @@ describe('creates a reference for a token reference', () => {
     	=== generated ===
     	// @ts-nocheck
     	declare const styles = {
-    	  'a_1': '' as readonly string,
+    	  'a_1': '' as string,
     	   ^^^ mapping[0]
-    	  'a_2': '' as readonly string,
+    	  'a_2': '' as string,
     	   ^^^ mapping[1]
-    	};
+    	} as const;
     	styles['a_1'];
     	        ^^^ mapping[2]
     	export default styles;
@@ -332,7 +332,7 @@ describe('omits importers whose specifier is a URL', () => {
     	=== generated ===
     	// @ts-nocheck
     	declare const styles = {
-    	};
+    	} as const;
     	export default styles;
     	"
     `);
@@ -367,7 +367,7 @@ describe('omits tokens whose name fails validateTokenName', () => {
     	=== generated ===
     	// @ts-nocheck
     	declare const styles = {
-    	};
+    	} as const;
     	export default styles;
     	"
     `);

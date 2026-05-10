@@ -83,10 +83,10 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
        * // generated/src/a.module.css.d.ts
        * // @ts-nocheck
        * declare const styles = {
-       *   a_1: '' as readonly string,
+       *   a_1: '' as string,
        *   ...(await import('./unresolved.module.css')).default,
        *   ...(await import('./unmatched.css')).default,
-       * };
+       * } as const;
        * ```
        *
        * Even if `./unresolved.module.css` or `./unmatched.css` does not exist, the same type definitions are
@@ -359,20 +359,20 @@ function generateDefaultExportDts(
      *
      * a.module.css.d.ts:
      * 1 | declare const styles = {
-     * 2 |   'a_1': '' as readonly string,
+     * 2 |   'a_1': '' as string,
      *   |    ^ mapping.generatedOffsets[0]
      *   |
-     * 3 |   'a_2': '' as readonly string,
+     * 3 |   'a_2': '' as string,
      *   |    ^ mapping.generatedOffsets[1]
      *   |
-     * 4 | };
+     * 4 | } as const;
      */
 
     text += `  '`;
     mapping.sourceOffsets.push(token.loc.start.offset);
     mapping.lengths.push(token.name.length);
     mapping.generatedOffsets.push(text.length);
-    text += `${token.name}': '' as readonly string,\n`;
+    text += `${token.name}': '' as string,\n`;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'all') {
@@ -394,7 +394,7 @@ function generateDefaultExportDts(
        * 3 |   ...blockErrorType((await import('./c.module.css')).default),
        *   |                                   ^ mapping.generatedOffsets[1]
        *   |
-       * 4 | };
+       * 4 | } as const;
        *
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
        */
@@ -439,7 +439,7 @@ function generateDefaultExportDts(
        *   |   ^^ mapping.generatedOffsets[3]
        *   |   ^ linkedCodeMapping.sourceOffsets[2]
        *   |
-       * 5 | };
+       * 5 | } as const;
        *
        * NOTE: Not only the specifier but also the surrounding quotes are included in the mapping.
        */
@@ -473,7 +473,7 @@ function generateDefaultExportDts(
       });
     }
   }
-  text += `};\n`;
+  text += `} as const;\n`;
 
   /**
    * The mapping is created as follows:
