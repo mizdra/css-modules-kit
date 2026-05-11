@@ -1,5 +1,52 @@
 # @css-modules-kit/core
 
+## 1.2.0
+
+### Minor Changes
+
+- [#389](https://github.com/mizdra/css-modules-kit/pull/389) [`ab602bf`](https://github.com/mizdra/css-modules-kit/commit/ab602bf9f4b8e82bcaf3d951b0cb7bb94719ee83) - feat(core, ts-plugin, eslint-plugin, stylelint-plugin): support animation-name property
+
+  `animation-name: foo;` is now linked back to the `@keyframes foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Comma-separated names (`animation-name: foo, bar;`), `local()` / `global()` notation, and vendor prefixes (`-webkit-animation-name`) are all supported. References to `@keyframes` defined in another file via `@import` are resolved as well.
+
+  Two diagnostics are also emitted for invalid usage:
+  - Parse phase: malformed `local(...)` calls (empty, multiple identifiers, or non-identifier nodes such as a nested function) are reported.
+  - Check phase: token references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
+
+  The `no-unused-class-names` rule in eslint-plugin and stylelint-plugin now treats names referenced via `animation-name` from within the same CSS as used, so they are no longer reported as unused.
+
+### Patch Changes
+
+- [#399](https://github.com/mizdra/css-modules-kit/pull/399) [`f758c23`](https://github.com/mizdra/css-modules-kit/commit/f758c23836878624553dcd44a920a76c5505b4d6) - refactor(core, codegen): do not emit token reference statements in generated `.d.ts` files
+
+  Statements like `styles['a_1'];` and `__self['a_1'];` (emitted for `animation-name` references to `@keyframes`) used to appear in the `.d.ts` files written by codegen. These statements exist solely to wire up editor language features such as Go to Definition, Find All References, and Rename, and are not needed at compile time. The visible types exported by these files are unchanged, but codegen output is no longer cluttered with statements that look meaningless to a reader of the type definition file. The statements are still emitted by the TS plugin, where the language features are actually served.
+
+- [#395](https://github.com/mizdra/css-modules-kit/pull/395) [`2d672a6`](https://github.com/mizdra/css-modules-kit/commit/2d672a68296d88922d1294268cee2eddcb62115b) - fix(core): make default-export `styles` type-readonly via `as const`
+
+  The default-export `.d.ts` previously emitted each token as `'<name>': '' as readonly string,`. The `readonly` modifier is only valid on array/tuple types, so this was a TypeScript syntax error silently suppressed by `@ts-nocheck` — `styles` was not actually readonly and writes like `styles.foo = '...'` were accepted by `tsc`. The generator now emits `'<name>': '' as string,` per token and closes the object literal with `} as const`, so `typeof styles` is `Readonly<{ ... }>` and writes to it are now correctly reported as type errors.
+
+- [#386](https://github.com/mizdra/css-modules-kit/pull/386) [`bf028b1`](https://github.com/mizdra/css-modules-kit/commit/bf028b15fd2503fa3596fb079755ea0138406e97) - fix(core): use the alias name when collecting re-exported tokens via `@value ... as ... from ...`
+
+  `createExportBuilder` was recording the source-side name (`entry.name`) into the importing module's `ExportRecord` instead of the alias the importing module actually exposes (`entry.localName`). This caused downstream consumers to look up the wrong name, e.g. `checkCSSModule` would emit a false "no exported token" diagnostic for an aliased token re-imported from another module.
+
+- [#390](https://github.com/mizdra/css-modules-kit/pull/390) [`feff13f`](https://github.com/mizdra/css-modules-kit/commit/feff13f30419511dc736594269425d2924c189f4) - fix(core): ensure the `.d.ts` generated in named exports mode is always treated as a module
+
+  When a CSS Module file had no exported tokens or importers (e.g. an empty file), the generated `.d.ts` in named exports mode contained no top-level `export`/`import`, so TypeScript treated it as a global script and reported `TS2306` on `import * as styles from './a.module.css'`. The generator now appends `export {};` whenever it does not emit any other top-level `export` / `import`, so the generated `.d.ts` is always treated as a module.
+
+- [#384](https://github.com/mizdra/css-modules-kit/pull/384) [`d0c1750`](https://github.com/mizdra/css-modules-kit/commit/d0c17500bf51450a3d722b13b0159a96890c786d) - refactor(core): rename TokenImporter variants to ESTree-style names
+
+  Rename the public types so they describe the abstract shape of the import
+  (matching ESTree's `ExportAllDeclaration` / `ExportNamedDeclaration`)
+  rather than the CSS syntax that produced them:
+  - `AtImportTokenImporter` → `AllTokenImporter` (`type: 'all'`)
+  - `AtValueTokenImporter` → `NamedTokenImporter` (`type: 'named'`)
+  - `AtValueTokenImporterValue` → `NamedTokenImporterEntry`
+  - `NamedTokenImporter.values` → `NamedTokenImporter.entries`
+
+  The `core` package is an internal building block — end users interact
+  with CSS Modules Kit through `ts-plugin`, `codegen`, `eslint-plugin`,
+  and `stylelint-plugin`, none of which reference the renamed names. This
+  change is therefore released as a patch.
+
 ## 1.1.0
 
 ### Minor Changes

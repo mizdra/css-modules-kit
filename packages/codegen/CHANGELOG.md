@@ -1,5 +1,16 @@
 # @css-modules-kit/codegen
 
+## 1.2.0
+
+### Patch Changes
+
+- [#399](https://github.com/mizdra/css-modules-kit/pull/399) [`f758c23`](https://github.com/mizdra/css-modules-kit/commit/f758c23836878624553dcd44a920a76c5505b4d6) - refactor(core, codegen): do not emit token reference statements in generated `.d.ts` files
+
+  Statements like `styles['a_1'];` and `__self['a_1'];` (emitted for `animation-name` references to `@keyframes`) used to appear in the `.d.ts` files written by codegen. These statements exist solely to wire up editor language features such as Go to Definition, Find All References, and Rename, and are not needed at compile time. The visible types exported by these files are unchanged, but codegen output is no longer cluttered with statements that look meaningless to a reader of the type definition file. The statements are still emitted by the TS plugin, where the language features are actually served.
+
+- Updated dependencies [[`f758c23`](https://github.com/mizdra/css-modules-kit/commit/f758c23836878624553dcd44a920a76c5505b4d6), [`2d672a6`](https://github.com/mizdra/css-modules-kit/commit/2d672a68296d88922d1294268cee2eddcb62115b), [`bf028b1`](https://github.com/mizdra/css-modules-kit/commit/bf028b15fd2503fa3596fb079755ea0138406e97), [`ab602bf`](https://github.com/mizdra/css-modules-kit/commit/ab602bf9f4b8e82bcaf3d951b0cb7bb94719ee83), [`feff13f`](https://github.com/mizdra/css-modules-kit/commit/feff13f30419511dc736594269425d2924c189f4), [`d0c1750`](https://github.com/mizdra/css-modules-kit/commit/d0c17500bf51450a3d722b13b0159a96890c786d)]:
+  - @css-modules-kit/core@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
