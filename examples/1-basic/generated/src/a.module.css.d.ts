@@ -11,5 +11,4 @@ declare const styles = {
   'c_1': (await import('./c.module.css')).default['c_1'],
   'c_alias': (await import('./c.module.css')).default['c_2'],
 } as const;
-styles['a_4'];
 export default styles;

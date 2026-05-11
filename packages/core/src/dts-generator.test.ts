@@ -261,13 +261,63 @@ describe('re-exports tokens from a named token importer', () => {
   });
 });
 
-describe('creates a reference for a token reference', () => {
+describe('omits token reference statements when forTsPlugin is false', () => {
   const source = dedent`
     @keyframes a_1 {}
     .a_2 { animation-name: a_1; }
   `;
   test('default export', async () => {
     expect(await run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+    	"=== source ===
+    	@keyframes a_1 {}
+    	           ^^^ mapping[0]
+    	.a_2 { animation-name: a_1; }
+    	 ^^^ mapping[1]
+
+    	=== generated ===
+    	// @ts-nocheck
+    	declare const styles = {
+    	  'a_1': '' as string,
+    	   ^^^ mapping[0]
+    	  'a_2': '' as string,
+    	   ^^^ mapping[1]
+    	} as const;
+    	export default styles;
+    	"
+    `);
+  });
+  test('named export', async () => {
+    expect(await run(source, namedExportOptions)).toMatchInlineSnapshot(`
+    	"=== source ===
+    	@keyframes a_1 {}
+    	           ^^^ mapping[0]
+    	.a_2 { animation-name: a_1; }
+    	 ^^^ mapping[1]
+
+    	=== generated ===
+    	// @ts-nocheck
+    	var _token_0: string;
+    	    ^^^^^^^^ mapping[0]
+    	export { _token_0 as 'a_1' };
+    	                     ^^^^^ linkedCodeMapping[0]
+    	         ^^^^^^^^ linkedCodeMapping[0]
+    	var _token_1: string;
+    	    ^^^^^^^^ mapping[1]
+    	export { _token_1 as 'a_2' };
+    	                     ^^^^^ linkedCodeMapping[1]
+    	         ^^^^^^^^ linkedCodeMapping[1]
+    	"
+    `);
+  });
+});
+
+describe('emits token reference statements when forTsPlugin is true', () => {
+  const source = dedent`
+    @keyframes a_1 {}
+    .a_2 { animation-name: a_1; }
+  `;
+  test('default export', async () => {
+    expect(await run(source, { ...defaultExportOptions, forTsPlugin: true })).toMatchInlineSnapshot(`
     	"=== source ===
     	@keyframes a_1 {}
     	           ^^^ mapping[0]
@@ -290,7 +340,7 @@ describe('creates a reference for a token reference', () => {
     `);
   });
   test('named export', async () => {
-    expect(await run(source, namedExportOptions)).toMatchInlineSnapshot(`
+    expect(await run(source, { ...namedExportOptions, forTsPlugin: true })).toMatchInlineSnapshot(`
     	"=== source ===
     	@keyframes a_1 {}
     	           ^^^ mapping[0]
@@ -313,6 +363,8 @@ describe('creates a reference for a token reference', () => {
     	declare const __self: typeof import('./a.module.css');
     	__self['a_1'];
     	        ^^^ mapping[2]
+    	declare const styles: {};
+    	export default styles;
     	"
     `);
   });
