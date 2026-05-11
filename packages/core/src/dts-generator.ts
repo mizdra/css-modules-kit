@@ -107,7 +107,7 @@ export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): 
   if (options.namedExports) {
     return generateNamedExportsDts(cssModule.fileName, localTokens, tokenImporters, tokenReferences, options);
   } else {
-    return generateDefaultExportDts(localTokens, tokenImporters, tokenReferences);
+    return generateDefaultExportDts(localTokens, tokenImporters, tokenReferences, options);
   }
 }
 
@@ -293,7 +293,7 @@ function generateNamedExportsDts(
    * 2 | __self['a_1'];
    *   |             ^ mapping.generatedOffsets[0]
    */
-  if (tokenReferences.length > 0) {
+  if (options.forTsPlugin && tokenReferences.length > 0) {
     text += `declare const __self: typeof import('./${basename(fileName)}');\n`;
     for (const ref of tokenReferences) {
       text += `__self['`;
@@ -316,6 +316,7 @@ function generateDefaultExportDts(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
   tokenReferences: TokenReference[],
+  options: GenerateDtsOptions,
 ): {
   text: string;
   mapping: CodeMapping;
@@ -486,12 +487,14 @@ function generateDefaultExportDts(
    * 1 | styles['a_1'];
    *   |         ^ mapping.generatedOffsets[0]
    */
-  for (const ref of tokenReferences) {
-    text += `${STYLES_EXPORT_NAME}['`;
-    mapping.sourceOffsets.push(ref.loc.start.offset);
-    mapping.lengths.push(ref.name.length);
-    mapping.generatedOffsets.push(text.length);
-    text += `${ref.name}'];\n`;
+  if (options.forTsPlugin) {
+    for (const ref of tokenReferences) {
+      text += `${STYLES_EXPORT_NAME}['`;
+      mapping.sourceOffsets.push(ref.loc.start.offset);
+      mapping.lengths.push(ref.name.length);
+      mapping.generatedOffsets.push(text.length);
+      text += `${ref.name}'];\n`;
+    }
   }
   text += `export default ${STYLES_EXPORT_NAME};\n`;
   return { text, mapping, linkedCodeMapping };
