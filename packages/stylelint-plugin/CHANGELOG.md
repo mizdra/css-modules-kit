@@ -1,5 +1,22 @@
 # @css-modules-kit/stylelint-plugin
 
+## 1.2.0
+
+### Patch Changes
+
+- [#389](https://github.com/mizdra/css-modules-kit/pull/389) [`ab602bf`](https://github.com/mizdra/css-modules-kit/commit/ab602bf9f4b8e82bcaf3d951b0cb7bb94719ee83) - feat(core, ts-plugin, eslint-plugin, stylelint-plugin): support animation-name property
+
+  `animation-name: foo;` is now linked back to the `@keyframes foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Comma-separated names (`animation-name: foo, bar;`), `local()` / `global()` notation, and vendor prefixes (`-webkit-animation-name`) are all supported. References to `@keyframes` defined in another file via `@import` are resolved as well.
+
+  Two diagnostics are also emitted for invalid usage:
+  - Parse phase: malformed `local(...)` calls (empty, multiple identifiers, or non-identifier nodes such as a nested function) are reported.
+  - Check phase: token references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
+
+  The `no-unused-class-names` rule in eslint-plugin and stylelint-plugin now treats names referenced via `animation-name` from within the same CSS as used, so they are no longer reported as unused.
+
+- Updated dependencies [[`f758c23`](https://github.com/mizdra/css-modules-kit/commit/f758c23836878624553dcd44a920a76c5505b4d6), [`2d672a6`](https://github.com/mizdra/css-modules-kit/commit/2d672a68296d88922d1294268cee2eddcb62115b), [`bf028b1`](https://github.com/mizdra/css-modules-kit/commit/bf028b15fd2503fa3596fb079755ea0138406e97), [`ab602bf`](https://github.com/mizdra/css-modules-kit/commit/ab602bf9f4b8e82bcaf3d951b0cb7bb94719ee83), [`feff13f`](https://github.com/mizdra/css-modules-kit/commit/feff13f30419511dc736594269425d2924c189f4), [`d0c1750`](https://github.com/mizdra/css-modules-kit/commit/d0c17500bf51450a3d722b13b0159a96890c786d)]:
+  - @css-modules-kit/core@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes

@@ -1,5 +1,18 @@
 # css-modules-kit-vscode
 
+## 1.2.0
+
+### Patch Changes
+
+- [#397](https://github.com/mizdra/css-modules-kit/pull/397) [`53793dd`](https://github.com/mizdra/css-modules-kit/commit/53793dda894291224bc94f7b51c96a4cb2b749c4) - fix(vscode, ts-plugin): support file rename from a CSS module `@import` / `@value ... from` specifier
+
+  Renaming a CSS module via the import specifier in VS Code (e.g. invoking Rename Symbol on `b.module.css` inside `@import './b.module.css';`) now performs a real file rename and updates every importer of the renamed file. Previously the located text span was blindly replaced with the user's input, which dropped the path prefix (`'./b.module.css'` became `'bb.module.css'`) and left the file on disk unchanged.
+
+  ts-plugin exposes a new internal protocol handler `_css-modules-kit:getEditsForFileRename` that wraps the standard tsserver `getEditsForFileRename` so the request can be reached through `typescript.tsserverRequest`.
+
+- Updated dependencies [[`53793dd`](https://github.com/mizdra/css-modules-kit/commit/53793dda894291224bc94f7b51c96a4cb2b749c4), [`ab602bf`](https://github.com/mizdra/css-modules-kit/commit/ab602bf9f4b8e82bcaf3d951b0cb7bb94719ee83)]:
+  - @css-modules-kit/ts-plugin@1.2.0
+
 ## 1.1.0
 
 ### Patch Changes
