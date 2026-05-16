@@ -40,6 +40,8 @@
     "ovsx": "^0.10.10",
     "rolldown": "1.0.0-rc.13",
     "stylelint": "^17.6.0",
+    "stylelint-16": "npm:stylelint@^16.0.0",
+    "stylelint-17": "npm:stylelint@^17.6.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
     "vite-plus": "catalog:",

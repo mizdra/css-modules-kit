@@ -71,6 +71,7 @@ export default defineConfig({
         resolve: {
           alias: {
             '@css-modules-kit/core': resolve('packages/core/src/index.ts'),
+            ...(process.env['STYLELINT_VERSION'] ? { stylelint: `stylelint-${process.env['STYLELINT_VERSION']}` } : {}),
           },
         },
       },
