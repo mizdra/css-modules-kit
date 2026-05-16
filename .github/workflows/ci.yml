@@ -37,6 +37,11 @@ jobs:
       matrix:
         node: [22, 24]
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
+        stylelint-version: ['17']
+        include:
+          - node: 24
+            os: ubuntu-24.04-arm
+            stylelint-version: '16'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -51,18 +56,11 @@ jobs:
             packages/*/dist
             packages/*/tsconfig.build.tsbuildinfo
             tsconfig.tsbuildinfo
-          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
-          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
+          key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}-${{ github.sha }}
+          restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}
       - run: vp test
-  test-stylelint-v16:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
-        with:
-          node-version: 24
-      - run: vp add -D -w stylelint@16
-      - run: vp test packages/stylelint-plugin
+        env:
+          STYLELINT_VERSION: ${{ matrix.stylelint-version }}
   vscode-test:
     strategy:
       fail-fast: false
