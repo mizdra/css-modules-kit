@@ -153,7 +153,7 @@ describe.each([{ namedExports: false }])('namedExports: $namedExports', ({ named
     test.each([{ quotePreference: 'double' as const }])(
       'completes as className={$$1} with quotePreference: $quotePreference',
       async ({ quotePreference }) => {
-        console.log(quotePreference, new Date().toLocaleDateString(), 0);
+        console.log(quotePreference, new Date().toLocaleString(), 0);
         const { iff, getRange } = await setupFixture({
           'tsconfig.json': buildTSConfigJSON({
             compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
@@ -165,9 +165,9 @@ describe.each([{ namedExports: false }])('namedExports: $namedExports', ({ named
           `,
           'a.module.css': '',
         });
-        console.log(quotePreference, new Date().toLocaleDateString(), 1);
+        console.log(quotePreference, new Date().toLocaleString(), 1);
         await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
-        console.log(quotePreference, new Date().toLocaleDateString(), 2);
+        console.log(quotePreference, new Date().toLocaleString(), 2);
         await tsserver.sendConfigure({
           preferences: {
             includeCompletionsWithSnippetText: true,
@@ -177,19 +177,19 @@ describe.each([{ namedExports: false }])('namedExports: $namedExports', ({ named
           },
         });
 
-        console.log(quotePreference, new Date().toLocaleDateString(), 3);
+        console.log(quotePreference, new Date().toLocaleString(), 3);
         const res = await tsserver.sendCompletionInfo({
           file: iff.paths['a.tsx'],
           ...getRange('a.tsx', 'className').end,
         });
 
-        console.log(quotePreference, new Date().toLocaleDateString(), 4);
+        console.log(quotePreference, new Date().toLocaleString(), 4);
         expect(
           normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'className') ?? []),
         ).toStrictEqual(
           normalizeCompletionEntry([{ name: 'className', insertText: 'className={$1}', sortText: expect.anything() }]),
         );
-        console.log(quotePreference, new Date().toLocaleDateString(), 5);
+        console.log(quotePreference, new Date().toLocaleString(), 5);
       },
     );
   });
