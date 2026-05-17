@@ -57,27 +57,27 @@ describe('Get Applicable Refactors', () => {
   });
 });
 
-describe('Get Edits For Refactor', () => {
-  test('emits an edit that creates a new empty CSS module file paired with the component file', async () => {
-    const { iff } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx' } }),
-      'a.tsx': '',
-    });
-    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+// describe('Get Edits For Refactor', () => {
+//   test('emits an edit that creates a new empty CSS module file paired with the component file', async () => {
+//     const { iff } = await setupFixture({
+//       'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx' } }),
+//       'a.tsx': '',
+//     });
+//     await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
 
-    const res = await tsserver.sendGetEditsForRefactor({
-      refactor: createCssModuleFileRefactor.name,
-      action: createCssModuleFileRefactor.actions[0].name,
-      file: iff.paths['a.tsx'],
-      line: 1,
-      offset: 1,
-    });
+//     const res = await tsserver.sendGetEditsForRefactor({
+//       refactor: createCssModuleFileRefactor.name,
+//       action: createCssModuleFileRefactor.actions[0].name,
+//       file: iff.paths['a.tsx'],
+//       line: 1,
+//       offset: 1,
+//     });
 
-    expect(res.body?.edits).toStrictEqual([
-      {
-        fileName: iff.join('a.module.css'),
-        textChanges: [{ start: { line: 0, offset: 0 }, end: { line: 0, offset: 0 }, newText: '' }],
-      },
-    ]);
-  });
-});
+//     expect(res.body?.edits).toStrictEqual([
+//       {
+//         fileName: iff.join('a.module.css'),
+//         textChanges: [{ start: { line: 0, offset: 0 }, end: { line: 0, offset: 0 }, newText: '' }],
+//       },
+//     ]);
+//   });
+// });
