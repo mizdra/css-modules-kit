@@ -43,6 +43,10 @@ jobs:
           - node: 24
             os: ubuntu-24.04-arm
             stylelint-version: '17'
+          # Configuration for Node.js 24/Windows
+          - node: 24
+            os: windows-11-arm
+            stylelint-version: '17'
           # Configuration for Node.js 22
           - node: 22
             os: ubuntu-24.04-arm
