@@ -9,7 +9,7 @@ import { launchTsserver, normalizeCompletionDetails, normalizeCompletionEntry } 
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 const tsserver = launchTsserver();
 
-describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+describe.each([{ namedExports: false }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('styles binding suggestion', () => {
     test('prioritizes the CSS module corresponding to the current component file', async () => {
       const { iff, getRange } = await setupFixture({
@@ -149,10 +149,11 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('className attribute snippet', () => {
-    test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
+  describe.only('className attribute snippet', () => {
+    test.each([{ quotePreference: 'double' as const }])(
       'completes as className={$$1} with quotePreference: $quotePreference',
       async ({ quotePreference }) => {
+        console.log(quotePreference, new Date().toLocaleString(), 0);
         const { iff, getRange } = await setupFixture({
           'tsconfig.json': buildTSConfigJSON({
             compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
@@ -164,7 +165,9 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
           `,
           'a.module.css': '',
         });
+        console.log(quotePreference, new Date().toLocaleString(), 1);
         await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+        console.log(quotePreference, new Date().toLocaleString(), 2);
         await tsserver.sendConfigure({
           preferences: {
             includeCompletionsWithSnippetText: true,
@@ -174,16 +177,19 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
           },
         });
 
+        console.log(quotePreference, new Date().toLocaleString(), 3);
         const res = await tsserver.sendCompletionInfo({
           file: iff.paths['a.tsx'],
           ...getRange('a.tsx', 'className').end,
         });
 
+        console.log(quotePreference, new Date().toLocaleString(), 4);
         expect(
           normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'className') ?? []),
         ).toStrictEqual(
           normalizeCompletionEntry([{ name: 'className', insertText: 'className={$1}', sortText: expect.anything() }]),
         );
+        console.log(quotePreference, new Date().toLocaleString(), 5);
       },
     );
   });

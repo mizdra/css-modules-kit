@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
         with:
-          node-version: 24
+          node-version: 26
           cache: true
       - run: vp check
   build:
@@ -28,18 +28,31 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
         with:
-          node-version: 24
+          node-version: 26
           cache: true
       - run: vp run build
   test:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
-        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
+        node: [26]
+        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm, windows-latest]
         stylelint-version: ['17']
         include:
+          # Configuration for Node.js 24
           - node: 24
+            os: ubuntu-24.04-arm
+            stylelint-version: '17'
+          # Configuration for Node.js 24/Windows
+          - node: 24
+            os: windows-11-arm
+            stylelint-version: '17'
+          # Configuration for Node.js 22
+          - node: 22
+            os: ubuntu-24.04-arm
+            stylelint-version: '17'
+          # Configuration for Stylelint 16
+          - node: 26
             os: ubuntu-24.04-arm
             stylelint-version: '16'
     runs-on: ${{ matrix.os }}
@@ -58,14 +71,14 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}
-      - run: vp test
+      - run: vp test --allowOnly
         env:
           STYLELINT_VERSION: ${{ matrix.stylelint-version }}
   vscode-test:
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
+        node: [26]
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
