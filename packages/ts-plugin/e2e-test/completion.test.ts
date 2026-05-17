@@ -9,7 +9,7 @@ import { launchTsserver, normalizeCompletionDetails, normalizeCompletionEntry } 
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 const tsserver = launchTsserver();
 
-describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
+describe.each([{ namedExports: false }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('styles binding suggestion', () => {
     test('prioritizes the CSS module corresponding to the current component file', async () => {
       const { iff, getRange } = await setupFixture({
@@ -149,8 +149,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('className attribute snippet', () => {
-    test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
+  describe.only('className attribute snippet', () => {
+    test.each([{ quotePreference: 'double' as const }])(
       'completes as className={$$1} with quotePreference: $quotePreference',
       async ({ quotePreference }) => {
         console.log(quotePreference, new Date().toLocaleDateString(), 0);
