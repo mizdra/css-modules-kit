@@ -71,7 +71,7 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}
-      - run: vp test
+      - run: vp test --allowOnly
         env:
           STYLELINT_VERSION: ${{ matrix.stylelint-version }}
   vscode-test:
