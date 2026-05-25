@@ -24,7 +24,7 @@
     "@eslint/css": "^1.1.0",
     "@mizdra/inline-fixture-files": "^2.1.1",
     "@mizdra/oxfmt-config": "^0.2.0",
-    "@mizdra/oxlint-config": "^0.3.0",
+    "@mizdra/oxlint-config": "^0.5.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^25.3.0",
     "@types/postcss-safe-parser": "^5.0.4",

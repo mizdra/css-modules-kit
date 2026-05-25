@@ -40,8 +40,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0(oxfmt@0.48.0)
       '@mizdra/oxlint-config':
-        specifier: ^0.3.0
-        version: 0.3.0(oxlint-tsgolint@0.22.1)(oxlint@1.63.0(oxlint-tsgolint@0.22.1))
+        specifier: ^0.5.0
+        version: 0.5.0(oxlint-tsgolint@0.22.1)(oxlint@1.63.0(oxlint-tsgolint@0.22.1))
       '@types/mocha':
         specifier: ^10.0.10
         version: 10.0.10
@@ -678,11 +678,11 @@ packages:
     peerDependencies:
       oxfmt: '>=0.41.0'
 
-  '@mizdra/oxlint-config@0.3.0':
-    resolution: {integrity: sha512-Kn87TOFF7Yyngu13DrOgsKdq4DLWftUw9/PiNY5qxfS8qDHOSJlJ+h5ZYHa8lFHV7mtQaSB2oLmoT8BgpJVZMQ==, tarball: https://registry.npmjs.org/@mizdra/oxlint-config/-/oxlint-config-0.3.0.tgz}
+  '@mizdra/oxlint-config@0.5.0':
+    resolution: {integrity: sha512-ign/Dwkjlj/uphNMpU9Y0reGcXCSDhcE2TB+kDTAdPoEWUZOyYkapif5lPNAUq/vv9GpJmJUs06Y6tsZG70nsQ==, tarball: https://registry.npmjs.org/@mizdra/oxlint-config/-/oxlint-config-0.5.0.tgz}
     peerDependencies:
-      oxlint: '>=1.55.0'
-      oxlint-tsgolint: '>=0.16.0'
+      oxlint: '>=1.63.0'
+      oxlint-tsgolint: '>=0.22.1'
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==, tarball: https://registry.npmjs.org/@napi-rs/wasm-runtime/-/wasm-runtime-0.2.12.tgz}
@@ -1082,6 +1082,10 @@ packages:
 
   '@oxlint/plugins@1.61.0':
     resolution: {integrity: sha512-nkOyZEF1vH527CkdQtOp1HMrVFEM4ResURvI2JFeGoup+h+43J/k/FgdOR9b9Isxg+Yae7qVDa7y3nssE8b3TQ==, tarball: https://registry.npmjs.org/@oxlint/plugins/-/plugins-1.61.0.tgz}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+
+  '@oxlint/plugins@1.66.0':
+    resolution: {integrity: sha512-dVw9+y1tB9rDObtjzsDhxRsreZrEoKohujt+w/sZ09+kmA5yI/ORQJFPR/xSC+jpw0TWmE6gnb6N1lD/z7uElA==, tarball: https://registry.npmjs.org/@oxlint/plugins/-/plugins-1.66.0.tgz}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
   '@pkgjs/parseargs@0.11.0':
@@ -4147,8 +4151,9 @@ snapshots:
     dependencies:
       oxfmt: 0.48.0
 
-  '@mizdra/oxlint-config@0.3.0(oxlint-tsgolint@0.22.1)(oxlint@1.63.0(oxlint-tsgolint@0.22.1))':
+  '@mizdra/oxlint-config@0.5.0(oxlint-tsgolint@0.22.1)(oxlint@1.63.0(oxlint-tsgolint@0.22.1))':
     dependencies:
+      '@oxlint/plugins': 1.66.0
       oxlint: 1.63.0(oxlint-tsgolint@0.22.1)
       oxlint-tsgolint: 0.22.1
 
@@ -4378,6 +4383,8 @@ snapshots:
     optional: true
 
   '@oxlint/plugins@1.61.0': {}
+
+  '@oxlint/plugins@1.66.0': {}
 
   '@pkgjs/parseargs@0.11.0':
     optional: true

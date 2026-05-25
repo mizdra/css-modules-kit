@@ -7,6 +7,8 @@ allowBuilds:
   keytar: false
 blockExoticSubdeps: true
 minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - '@mizdra/*'
 overrides:
   vite: '$vite'
   vitest: '$vitest'
