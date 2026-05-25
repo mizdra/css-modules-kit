@@ -7,13 +7,9 @@ allowBuilds:
   keytar: false
 blockExoticSubdeps: true
 minimumReleaseAge: 4320
-catalog:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-  vite-plus: latest
 overrides:
-  vite: 'catalog:'
-  vitest: 'catalog:'
+  vite: '$vite'
+  vitest: '$vitest'
 peerDependencyRules:
   allowAny:
     - vite
