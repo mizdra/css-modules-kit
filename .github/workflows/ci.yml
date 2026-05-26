@@ -35,13 +35,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # NOTE: We would like to test with Node.js 26 as well, but we are limited to Node.js 24 due to test failures on Windows.
-        # On Windows we additionally pin to 24.15.0 (see `node-version` below): Node.js 24.16.0+ bundles libuv 1.52.x, which hits the same bug.
-        # ref: https://github.com/libuv/libuv/issues/5010
-        node: [24]
-        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
+        node: [26]
+        os: [ubuntu-24.04-arm, macos-latest]
         stylelint-version: ['17']
         include:
+          # Windows is pinned to Node.js 24.15.0 because Node.js 24.16+ and 26.x bundle libuv 1.52.x,
+          # which has a Windows file-watching bug.
+          # ref: https://github.com/libuv/libuv/issues/5010
+          - node: '24.15.0'
+            os: windows-11-arm
+            stylelint-version: '17'
+          # Configuration for Node.js 24
+          - node: 24
+            os: ubuntu-24.04-arm
+            stylelint-version: '17'
           # Configuration for Node.js 22
           - node: 22
             os: ubuntu-24.04-arm
@@ -55,7 +62,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
         with:
-          node-version: ${{ matrix.os == 'windows-11-arm' && '24.15.0' || matrix.node }}
+          node-version: ${{ matrix.node }}
           cache: true
       - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
