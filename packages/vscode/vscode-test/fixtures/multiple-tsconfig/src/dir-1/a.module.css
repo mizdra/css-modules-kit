@@ -1,0 +1,3 @@
+.a_1 { color: red; }
+
+@import '@/src/dir-1/b.module.css';

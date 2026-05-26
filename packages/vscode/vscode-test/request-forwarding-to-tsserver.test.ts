@@ -6,7 +6,7 @@
  * - https://github.com/mizdra/css-modules-kit/issues/121
  * - https://github.com/mizdra/css-modules-kit/issues/206
  *
- * The workspace used is `examples/4-multiple-tsconfig` to ensure that these issues do not occur in a workspace
+ * The workspace used is the `multiple-tsconfig` fixture to ensure that these issues do not occur in a workspace
  * with multiple tsconfig.json files.
  *
  */
