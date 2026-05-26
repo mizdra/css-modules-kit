@@ -231,7 +231,7 @@ function parseTsConfigFile(fileName: string, basePath: string) {
   };
 }
 
-const configDirTemplate = /^\$\{configDir}/i;
+const configDirTemplate = /^\$\{configDir\}/iu;
 // https://github.com/microsoft/TypeScript/blob/7b8cb3bdf82f400642b73173f941335775d6f730/src/compiler/commandLineParser.ts#L3300
 function startsWithConfigDirTemplate(path: string) {
   return configDirTemplate.test(path);

@@ -228,33 +228,33 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       : `import styles from './a.module.css';`;
     const iff = await createIFF({
       'src/a.module.css': dedent`
-          @import './b.module.css';
-          @value c_1 from './c.module.css';
-          .a_1 { color: red; }
-        `,
+        @import './b.module.css';
+        @value c_1 from './c.module.css';
+        .a_1 { color: red; }
+      `,
       'src/b.module.css': `.b_1 { color: red; }`,
       'src/c.module.css': `@value c_1: red;`,
       'src/a.ts': dedent`
-          ${stylesImport}
-          // @ts-expect-error -- local token
-          styles.a_1 = '';
-          // @ts-expect-error -- token from all token importer
-          styles.b_1 = '';
-          // @ts-expect-error -- token from named token importer
-          styles.c_1 = '';
-        `,
+        ${stylesImport}
+        // @ts-expect-error -- local token
+        styles.a_1 = '';
+        // @ts-expect-error -- token from all token importer
+        styles.b_1 = '';
+        // @ts-expect-error -- token from named token importer
+        styles.c_1 = '';
+      `,
       'tsconfig.json': dedent`
-          {
-            "compilerOptions": {
-              "lib": ["ES2015"],
-              "module": "Preserve",
-              "moduleResolution": "bundler",
-              "noEmit": true,
-              "rootDirs": [".", "generated"]
-            },
-            "cmkOptions": { "enabled": true, "namedExports": ${namedExports} }
-          }
-        `,
+        {
+          "compilerOptions": {
+            "lib": ["ES2015"],
+            "module": "Preserve",
+            "moduleResolution": "bundler",
+            "noEmit": true,
+            "rootDirs": [".", "generated"]
+          },
+          "cmkOptions": { "enabled": true, "namedExports": ${namedExports} }
+        }
+      `,
     });
 
     const cmk = spawnSync('node', [binPath], { cwd: iff.rootDir });

@@ -24,7 +24,7 @@ function findAllMatches(content: string, search: string): number[] {
 
 function offsetToLoc(content: string, offset: number): Loc {
   const before = content.slice(0, offset);
-  const newlineCount = (before.match(/\n/g) ?? []).length;
+  const newlineCount = (before.match(/\n/gu) ?? []).length;
   const lastNewline = before.lastIndexOf('\n');
   return {
     line: newlineCount + 1,

@@ -12,14 +12,14 @@ describe('no-unused-class-names', () => {
   test('warns unused class names', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
-      .local1 {}
-      .local2 {}
-      .local3 {}
-    `,
+        .local1 {}
+        .local2 {}
+        .local3 {}
+      `,
       'a.tsx': dedent`
-      import styles from './a.module.css';
-      styles.local1;
-    `,
+        import styles from './a.module.css';
+        styles.local1;
+      `,
     });
     const eslint = createESLint(iff.rootDir, config);
     const results = await eslint.lintFiles(iff.rootDir);
