@@ -10,7 +10,7 @@ export default defineConfig({
   },
   lint: {
     extends: [mizdraOxlintConfig.base, mizdraOxlintConfig.typescript, mizdraOxlintConfig.node],
-    ignorePatterns: ['**/dist', 'examples', 'crates', 'target', '.vscode-test'],
+    ignorePatterns: ['examples', 'crates', 'packages/vscode/vscode-test/fixtures'],
     rules: {
       'no-restricted-globals': [
         'error',
@@ -54,6 +54,7 @@ export default defineConfig({
       'examples/*/src',
       'docs/ts-plugin-internals.md',
       'docs/ts-plugin-internals.ja.md',
+      'packages/vscode/vscode-test/fixtures',
     ],
   },
   test: {

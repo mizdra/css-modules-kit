@@ -1,0 +1,3 @@
+.c_1 { background: url('https://test.example/image.png'); }
+
+@import '@/src/dir-1/b.module.css';
