@@ -32,8 +32,8 @@ before(async () => {
   await cmkExtension.activate();
 });
 
-describe('Renaming class in .module.css', () => {
-  it('affects corresponding .tsx file', async () => {
+describe('Rename Symbol in a CSS module', () => {
+  it('renames a class across the CSS module and the importing TS file', async () => {
     const aModuleCSSDocument = await vscode.workspace.openTextDocument(aModuleCSS1Path);
     const aTSXDocument = await vscode.workspace.openTextDocument(aTSX1Path);
     const position = new vscode.Position(0, 1); // `a_1`
@@ -60,7 +60,7 @@ describe('Renaming class in .module.css', () => {
     assert.ok(aModuleCSSDocument.getText().includes('.a_1_renamed'));
     assert.ok(aTSXDocument.getText().includes('a_1_renamed'));
   });
-  it('works in other projects', async () => {
+  it('renames a class regardless of which tsconfig project the CSS module belongs to', async () => {
     const aModuleCSSDocument = await vscode.workspace.openTextDocument(aModuleCSS2Path);
     const aTSXDocument = await vscode.workspace.openTextDocument(aTSX2Path);
     const position = new vscode.Position(0, 1); // `a_1`
@@ -87,7 +87,7 @@ describe('Renaming class in .module.css', () => {
     assert.ok(aModuleCSSDocument.getText().includes('.a_1_renamed'));
     assert.ok(aTSXDocument.getText().includes('a_1_renamed'));
   });
-  it('can rename by standard CSS Language Server', async () => {
+  it('falls back to the standard CSS Language Server for non-class symbols (e.g. CSS properties)', async () => {
     const aModuleCSSDocument = await vscode.workspace.openTextDocument(aModuleCSS1Path);
     const position = new vscode.Position(0, 7); // `color`
 
@@ -106,8 +106,8 @@ describe('Renaming class in .module.css', () => {
   });
 });
 
-describe('Go to Definition for specifiers with import alias', () => {
-  it('resolves to the correct .module.css file', async () => {
+describe('Document Link for an import specifier in a CSS module', () => {
+  it('resolves a path-aliased import specifier to the target CSS module', async () => {
     await vscode.workspace.openTextDocument(aModuleCSS1Path);
     const links = await vscode.commands.executeCommand<vscode.DocumentLink[]>(
       'vscode.executeLinkProvider',
@@ -121,7 +121,7 @@ describe('Go to Definition for specifiers with import alias', () => {
       toObject(new vscode.Range(2, 9, 2, 33)), // `@/src/dir-1/b.module.css`
     );
   });
-  it('works in other projects', async () => {
+  it('resolves a path-aliased import specifier regardless of which tsconfig project the importer belongs to', async () => {
     await vscode.workspace.openTextDocument(aModuleCSS2Path);
     const links = await vscode.commands.executeCommand<vscode.DocumentLink[]>(
       'vscode.executeLinkProvider',
@@ -135,7 +135,7 @@ describe('Go to Definition for specifiers with import alias', () => {
       toObject(new vscode.Range(2, 9, 2, 33)), // `@/src/dir-2/b.module.css`
     );
   });
-  it('`executeLinkProvider` also returns links from standard CSS Language Server', async () => {
+  it('coexists with URL links provided by the standard CSS Language Server', async () => {
     await vscode.workspace.openTextDocument(cModuleCSS1Path);
     const links = await vscode.commands.executeCommand<vscode.DocumentLink[]>(
       'vscode.executeLinkProvider',
@@ -156,8 +156,8 @@ describe('Go to Definition for specifiers with import alias', () => {
   });
 });
 
-describe('Renaming a CSS module via import specifier', () => {
-  it('renames the file and rewrites the import while preserving the `./` prefix', async () => {
+describe('Rename Symbol on an import specifier in a CSS module', () => {
+  it('renames the imported file and updates the import path while preserving the relative prefix', async () => {
     const iff = await createFixture({
       'tsconfig.json': JSON.stringify({ cmkOptions: { enabled: true } }),
       'd.module.css': `@import './e.module.css';\n`,
