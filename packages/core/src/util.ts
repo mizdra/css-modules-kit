@@ -1,5 +1,6 @@
 import type { Root } from 'postcss';
 import { isAnimationNameProp, parseAnimationNameProp } from './parser/animation-parser.js';
+import { isComposesProp, parseComposesProp } from './parser/composes-parser.js';
 
 export function isPosixRelativePath(path: string): boolean {
   return path.startsWith(`./`) || path.startsWith(`../`);
@@ -42,9 +43,9 @@ const TOKEN_CONSUMER_PATTERN =
  *
  * A token name is considered used if it is referenced from the component file
  * (via a `styles.<name>` style pattern) or from within the CSS module itself
- * (e.g. via `animation-name: <name>`). The latter is collected by walking
- * `root` so that callers can pass an already-parsed PostCSS AST to avoid an
- * extra parse.
+ * (e.g. via `animation-name: <name>` or `composes: <name>`). The latter is
+ * collected by walking `root` so that callers can pass an already-parsed
+ * PostCSS AST to avoid an extra parse.
  */
 export function findUsedTokenNames(componentText: string, root: Root): Set<string> {
   const usedClassNames = new Set<string>();
@@ -53,8 +54,14 @@ export function findUsedTokenNames(componentText: string, root: Root): Set<strin
     if (name) usedClassNames.add(name);
   }
   root.walkDecls((decl) => {
-    if (!isAnimationNameProp(decl.prop)) return;
-    const { references } = parseAnimationNameProp(decl);
+    let references;
+    if (isAnimationNameProp(decl.prop)) {
+      ({ references } = parseAnimationNameProp(decl));
+    } else if (isComposesProp(decl.prop)) {
+      ({ references } = parseComposesProp(decl));
+    } else {
+      return;
+    }
     for (const reference of references) {
       usedClassNames.add(reference.name);
     }

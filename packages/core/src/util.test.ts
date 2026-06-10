@@ -46,4 +46,8 @@ describe('findUsedTokenNames', () => {
     const root = fakeRoot('.a_3 { animation-name: a_1, a_2; }');
     expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
   });
+  test('collects token names referenced from composes in the CSS module', () => {
+    const root = fakeRoot('.a_3 { composes: a_1 a_2; }');
+    expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
+  });
 });
