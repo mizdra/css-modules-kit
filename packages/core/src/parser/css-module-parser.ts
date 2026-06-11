@@ -12,6 +12,7 @@ import type {
 import { isAnimationNameProp, parseAnimationNameProp } from './animation-parser.js';
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
+import { isComposesProp, parseComposesProp } from './composes-parser.js';
 import { parseAtKeyframes } from './key-frame-parser.js';
 import { parseRule } from './rule-parser.js';
 
@@ -81,6 +82,10 @@ function collectTokens(ast: Root, keyframes: boolean) {
       }
     } else if (keyframes && isDeclarationNode(node) && isAnimationNameProp(node.prop)) {
       const { references, diagnostics } = parseAnimationNameProp(node);
+      allDiagnostics.push(...diagnostics);
+      tokenReferences.push(...references);
+    } else if (isDeclarationNode(node) && isComposesProp(node.prop)) {
+      const { references, diagnostics } = parseComposesProp(node);
       allDiagnostics.push(...diagnostics);
       tokenReferences.push(...references);
     }

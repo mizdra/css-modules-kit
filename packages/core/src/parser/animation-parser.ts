@@ -1,6 +1,7 @@
 import type { Declaration } from 'postcss';
 import postcssValueParser from 'postcss-value-parser';
-import type { DiagnosticWithDetachedLocation, Location, TokenReference } from '../type.js';
+import type { DiagnosticWithDetachedLocation, TokenReference } from '../type.js';
+import { calcDeclValueLoc } from './decl-value-location.js';
 
 const ANIMATION_NAME_PROP_RE = /^(?:-(?:webkit|moz|o|ms)-)?animation-name$/iu;
 
@@ -29,12 +30,15 @@ export function parseAnimationNameProp(decl: Declaration): ParseAnimationResult 
         diagnostics.push(createInvalidLocalCallDiagnostic(decl, node));
         continue;
       }
-      references.push({ name: nameNodeOrError.value, loc: calcLoc(decl, nameNodeOrError) });
+      references.push({
+        name: nameNodeOrError.value,
+        loc: calcDeclValueLoc(decl, nameNodeOrError.sourceIndex, nameNodeOrError.value.length),
+      });
       continue;
     }
     if (node.type !== 'word') continue;
     if (COMMON_RESERVED_KEYWORDS.has(node.value.toLowerCase())) continue;
-    references.push({ name: node.value, loc: calcLoc(decl, node) });
+    references.push({ name: node.value, loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length) });
   }
   return { references, diagnostics };
 }
@@ -51,25 +55,16 @@ function unwrapLocalCall(fn: postcssValueParser.FunctionNode): postcssValueParse
   return 'invalid';
 }
 
-function calcLoc(decl: Declaration, animationNameNode: postcssValueParser.WordNode): Location {
-  const baseLength = decl.prop.length + decl.raws.between!.length;
-  const startIndex = baseLength + animationNameNode.sourceIndex;
-  return {
-    start: decl.positionBy({ index: startIndex }),
-    end: decl.positionBy({ index: startIndex + animationNameNode.value.length }),
-  };
-}
-
 function createInvalidLocalCallDiagnostic(
   decl: Declaration,
   fn: postcssValueParser.FunctionNode,
 ): DiagnosticWithDetachedLocation {
-  const baseLength = decl.prop.length + decl.raws.between!.length;
-  const start = decl.positionBy({ index: baseLength + fn.sourceIndex });
+  const length = fn.sourceEndIndex - fn.sourceIndex;
+  const { start } = calcDeclValueLoc(decl, fn.sourceIndex, length);
   return {
     text: '`local(...)` must contain exactly one identifier.',
     category: 'error',
     start: { line: start.line, column: start.column },
-    length: postcssValueParser.stringify(fn).length,
+    length,
   };
 }

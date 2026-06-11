@@ -677,6 +677,34 @@ describe('parseCSSModule', () => {
     	}
     `);
   });
+  test('collects token references from composes declarations', () => {
+    const parsed = parseCSSModule(
+      dedent`
+        .a_1 { color: red; }
+        .a_2 { composes: a_1; }
+      `,
+      options,
+    );
+    expect(parsed.tokenReferences).toMatchInlineSnapshot(`
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 2,
+              "offset": 41,
+            },
+            "start": {
+              "column": 18,
+              "line": 2,
+              "offset": 38,
+            },
+          },
+          "name": "a_1",
+        },
+      ]
+    `);
+  });
   test('collects diagnostics', () => {
     const parsed = parseCSSModule(
       dedent`
