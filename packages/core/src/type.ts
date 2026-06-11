@@ -98,21 +98,54 @@ export interface NamedTokenImporterEntry {
 export type TokenImporter = AllTokenImporter | NamedTokenImporter;
 
 /**
- * A reference to a token from a CSS Module file.
+ * A reference to a token available in the current file.
  *
- * For example, `animation-name: foo;` references the `foo` token. The token
- * itself may be defined in the same file (e.g. by `@keyframes foo {...}`) or
- * imported from another file (e.g. via `@import`). Token references connect
- * the usage site to the declaration site so that language features (Go to
- * Definition, Find All References, Rename) work consistently across
- * `@keyframes` definitions and `animation-name` references.
+ * For example, `animation-name: foo;` and `composes: foo;` reference the
+ * `foo` token. The token itself may be defined in the same file (e.g. by
+ * `@keyframes foo {...}`) or imported from another file (e.g. via `@import`).
  */
-export interface TokenReference {
+export interface LocalTokenReference {
+  type: 'local';
   /** The referenced token name. */
   name: string;
   /** The location of the reference name in the source file. */
   loc: Location;
 }
+
+/**
+ * A reference to tokens exported by another CSS Module file.
+ * @example `composes: foo bar from './a.module.css'` references the `foo` and `bar` tokens of `./a.module.css`.
+ */
+export interface ExternalTokenReference {
+  type: 'external';
+  /** The entries describing each referenced token. */
+  entries: ExternalTokenReferenceEntry[];
+  /**
+   * The specifier of the file from which the tokens are referenced.
+   * This is a string before being resolved and unquoted.
+   * @example `composes: foo from './a.module.css'` would have `from` as `'./a.module.css'`.
+   */
+  from: string;
+  /** The location of the `from` in *.module.css file. */
+  fromLoc: Location;
+}
+
+/** A single token referenced by an {@link ExternalTokenReference}. */
+export interface ExternalTokenReferenceEntry {
+  /** The referenced token name. */
+  name: string;
+  /** The location of the reference name in the source file. */
+  loc: Location;
+}
+
+/**
+ * A reference to a token from a CSS Module file.
+ *
+ * Token references connect the usage site to the declaration site so that
+ * language features (Go to Definition, Find All References, Rename) work
+ * consistently across token definitions and their usages.
+ */
+export type TokenReference = LocalTokenReference | ExternalTokenReference;
 
 export interface CSSModule {
   /** Absolute path of the file */

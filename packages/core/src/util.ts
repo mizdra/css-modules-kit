@@ -58,11 +58,14 @@ export function findUsedTokenNames(componentText: string, root: Root): Set<strin
     if (isAnimationNameProp(decl.prop)) {
       ({ references } = parseAnimationNameProp(decl));
     } else if (isComposesProp(decl.prop)) {
-      ({ references } = parseComposesProp(decl));
+      references = parseComposesProp(decl);
     } else {
       return;
     }
     for (const reference of references) {
+      // External references point to tokens of another file, so they do not
+      // mark same-named tokens of the current file as used.
+      if (reference.type !== 'local') continue;
       usedClassNames.add(reference.name);
     }
   });

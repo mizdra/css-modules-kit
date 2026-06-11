@@ -595,86 +595,87 @@ describe('parseCSSModule', () => {
       options,
     );
     expect(parsed).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "fileName": "/test.module.css",
-    	  "localTokens": [
-    	    {
-    	      "declarationLoc": {
-    	        "end": {
-    	          "column": 18,
-    	          "line": 1,
-    	          "offset": 17,
-    	        },
-    	        "start": {
-    	          "column": 1,
-    	          "line": 1,
-    	          "offset": 0,
-    	        },
-    	      },
-    	      "loc": {
-    	        "end": {
-    	          "column": 15,
-    	          "line": 1,
-    	          "offset": 14,
-    	        },
-    	        "start": {
-    	          "column": 12,
-    	          "line": 1,
-    	          "offset": 11,
-    	        },
-    	      },
-    	      "name": "a_1",
-    	    },
-    	    {
-    	      "declarationLoc": {
-    	        "end": {
-    	          "column": 30,
-    	          "line": 2,
-    	          "offset": 47,
-    	        },
-    	        "start": {
-    	          "column": 1,
-    	          "line": 2,
-    	          "offset": 18,
-    	        },
-    	      },
-    	      "loc": {
-    	        "end": {
-    	          "column": 5,
-    	          "line": 2,
-    	          "offset": 22,
-    	        },
-    	        "start": {
-    	          "column": 2,
-    	          "line": 2,
-    	          "offset": 19,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	  ],
-    	  "text": "@keyframes a_1 {}
-    	.a_2 { animation-name: a_1; }",
-    	  "tokenImporters": [],
-    	  "tokenReferences": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 27,
-    	          "line": 2,
-    	          "offset": 44,
-    	        },
-    	        "start": {
-    	          "column": 24,
-    	          "line": 2,
-    	          "offset": 41,
-    	        },
-    	      },
-    	      "name": "a_1",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 18,
+                "line": 1,
+                "offset": 17,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 15,
+                "line": 1,
+                "offset": 14,
+              },
+              "start": {
+                "column": 12,
+                "line": 1,
+                "offset": 11,
+              },
+            },
+            "name": "a_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 30,
+                "line": 2,
+                "offset": 47,
+              },
+              "start": {
+                "column": 1,
+                "line": 2,
+                "offset": 18,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 5,
+                "line": 2,
+                "offset": 22,
+              },
+              "start": {
+                "column": 2,
+                "line": 2,
+                "offset": 19,
+              },
+            },
+            "name": "a_2",
+          },
+        ],
+        "text": "@keyframes a_1 {}
+      .a_2 { animation-name: a_1; }",
+        "tokenImporters": [],
+        "tokenReferences": [
+          {
+            "loc": {
+              "end": {
+                "column": 27,
+                "line": 2,
+                "offset": 44,
+              },
+              "start": {
+                "column": 24,
+                "line": 2,
+                "offset": 41,
+              },
+            },
+            "name": "a_1",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
   test('collects token references from composes declarations', () => {
@@ -701,6 +702,7 @@ describe('parseCSSModule', () => {
             },
           },
           "name": "a_1",
+          "type": "local",
         },
       ]
     `);

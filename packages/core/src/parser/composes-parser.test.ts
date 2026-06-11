@@ -18,220 +18,383 @@ describe('isComposesProp', () => {
 });
 
 describe('parseComposesProp', () => {
-  test('extracts a single class name', () => {
+  test('extracts a local reference from a single class name', () => {
     const decl = fakeDeclaration('.a_1 { composes: a_2 }');
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [
-          {
-            "loc": {
-              "end": {
-                "column": 21,
-                "line": 1,
-                "offset": 20,
-              },
-              "start": {
-                "column": 18,
-                "line": 1,
-                "offset": 17,
-              },
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 1,
+              "offset": 20,
             },
-            "name": "a_2",
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
           },
-        ],
-      }
+          "name": "a_2",
+          "type": "local",
+        },
+      ]
     `);
   });
 
-  test('extracts space-separated class names', () => {
+  test('extracts a local reference for each space-separated class name', () => {
     const decl = fakeDeclaration('.a_1 { composes: a_2 a_3 }');
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [
-          {
-            "loc": {
-              "end": {
-                "column": 21,
-                "line": 1,
-                "offset": 20,
-              },
-              "start": {
-                "column": 18,
-                "line": 1,
-                "offset": 17,
-              },
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 1,
+              "offset": 20,
             },
-            "name": "a_2",
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 25,
-                "line": 1,
-                "offset": 24,
-              },
-              "start": {
-                "column": 22,
-                "line": 1,
-                "offset": 21,
-              },
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
             },
-            "name": "a_3",
           },
-        ],
-      }
+          "name": "a_2",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 25,
+              "line": 1,
+              "offset": 24,
+            },
+            "start": {
+              "column": 22,
+              "line": 1,
+              "offset": 21,
+            },
+          },
+          "name": "a_3",
+          "type": "local",
+        },
+      ]
     `);
   });
 
-  test('extracts comma-separated class names', () => {
+  test('extracts a local reference for each comma-separated class name', () => {
     const decl = fakeDeclaration('.a_1 { composes: a_2, a_3 }');
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [
-          {
-            "loc": {
-              "end": {
-                "column": 21,
-                "line": 1,
-                "offset": 20,
-              },
-              "start": {
-                "column": 18,
-                "line": 1,
-                "offset": 17,
-              },
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 1,
+              "offset": 20,
             },
-            "name": "a_2",
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 26,
-                "line": 1,
-                "offset": 25,
-              },
-              "start": {
-                "column": 23,
-                "line": 1,
-                "offset": 22,
-              },
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
             },
-            "name": "a_3",
           },
-        ],
-      }
+          "name": "a_2",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 26,
+              "line": 1,
+              "offset": 25,
+            },
+            "start": {
+              "column": 23,
+              "line": 1,
+              "offset": 22,
+            },
+          },
+          "name": "a_3",
+          "type": "local",
+        },
+      ]
     `);
   });
 
   test('skips class name inside global()', () => {
     const decl = fakeDeclaration('.a_1 { composes: global(a_2) }');
-    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [],
-      }
-    `);
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`[]`);
   });
 
-  test('skips items with from global', () => {
+  test('skips items with `from global`', () => {
     const decl = fakeDeclaration('.a_1 { composes: a_2 a_3 from global }');
-    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [],
-      }
-    `);
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`[]`);
   });
 
-  test('skips items with from specifier', () => {
+  test('extracts an external reference from an item with a `from` specifier', () => {
     const decl = fakeDeclaration(`.a_1 { composes: a_2 from './a.module.css' }`);
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [],
-      }
+      [
+        {
+          "entries": [
+            {
+              "loc": {
+                "end": {
+                  "column": 21,
+                  "line": 1,
+                  "offset": 20,
+                },
+                "start": {
+                  "column": 18,
+                  "line": 1,
+                  "offset": 17,
+                },
+              },
+              "name": "a_2",
+            },
+          ],
+          "from": "./a.module.css",
+          "fromLoc": {
+            "end": {
+              "column": 42,
+              "line": 1,
+              "offset": 41,
+            },
+            "start": {
+              "column": 28,
+              "line": 1,
+              "offset": 27,
+            },
+          },
+          "type": "external",
+        },
+      ]
     `);
   });
 
-  test('extracts class names only from items without a from clause', () => {
+  test('extracts an external reference with an entry for each class name', () => {
+    const decl = fakeDeclaration(`.a_1 { composes: a_2 a_3 from './a.module.css' }`);
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
+      [
+        {
+          "entries": [
+            {
+              "loc": {
+                "end": {
+                  "column": 21,
+                  "line": 1,
+                  "offset": 20,
+                },
+                "start": {
+                  "column": 18,
+                  "line": 1,
+                  "offset": 17,
+                },
+              },
+              "name": "a_2",
+            },
+            {
+              "loc": {
+                "end": {
+                  "column": 25,
+                  "line": 1,
+                  "offset": 24,
+                },
+                "start": {
+                  "column": 22,
+                  "line": 1,
+                  "offset": 21,
+                },
+              },
+              "name": "a_3",
+            },
+          ],
+          "from": "./a.module.css",
+          "fromLoc": {
+            "end": {
+              "column": 46,
+              "line": 1,
+              "offset": 45,
+            },
+            "start": {
+              "column": 32,
+              "line": 1,
+              "offset": 31,
+            },
+          },
+          "type": "external",
+        },
+      ]
+    `);
+  });
+
+  test('extracts local and external references according to the `from` clause of each item', () => {
     const decl = fakeDeclaration(`.a_1 { composes: a_2, a_3 from './a.module.css', a_4 from global, a_5 }`);
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [
-          {
-            "loc": {
-              "end": {
-                "column": 21,
-                "line": 1,
-                "offset": 20,
-              },
-              "start": {
-                "column": 18,
-                "line": 1,
-                "offset": 17,
-              },
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 1,
+              "offset": 20,
             },
-            "name": "a_2",
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 70,
-                "line": 1,
-                "offset": 69,
-              },
-              "start": {
-                "column": 67,
-                "line": 1,
-                "offset": 66,
-              },
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
             },
-            "name": "a_5",
           },
-        ],
-      }
+          "name": "a_2",
+          "type": "local",
+        },
+        {
+          "entries": [
+            {
+              "loc": {
+                "end": {
+                  "column": 26,
+                  "line": 1,
+                  "offset": 25,
+                },
+                "start": {
+                  "column": 23,
+                  "line": 1,
+                  "offset": 22,
+                },
+              },
+              "name": "a_3",
+            },
+          ],
+          "from": "./a.module.css",
+          "fromLoc": {
+            "end": {
+              "column": 47,
+              "line": 1,
+              "offset": 46,
+            },
+            "start": {
+              "column": 33,
+              "line": 1,
+              "offset": 32,
+            },
+          },
+          "type": "external",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 70,
+              "line": 1,
+              "offset": 69,
+            },
+            "start": {
+              "column": 67,
+              "line": 1,
+              "offset": 66,
+            },
+          },
+          "name": "a_5",
+          "type": "local",
+        },
+      ]
     `);
   });
 
-  test('reports a diagnostic for from clause without quoted specifier or global keyword (unquoted specifier, empty, non-global word)', () => {
-    const decl = fakeDeclaration('.a_1 { composes: a_2 from ./a.module.css, a_3 from, a_4 from b_1 }');
+  test('extracts local references from an item where `from` is not preceded by class names', () => {
+    const decl = fakeDeclaration('.a_1 { composes: from global }');
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [
-          {
-            "category": "error",
-            "length": 19,
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 22,
+              "line": 1,
+              "offset": 21,
+            },
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
+          },
+          "name": "from",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 29,
+              "line": 1,
+              "offset": 28,
+            },
+            "start": {
+              "column": 23,
+              "line": 1,
+              "offset": 22,
+            },
+          },
+          "name": "global",
+          "type": "local",
+        },
+      ]
+    `);
+  });
+
+  test('extracts local references from an item whose `from` clause is invalid', () => {
+    const decl = fakeDeclaration('.a_1 { composes: a_2 from a_3 }');
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 21,
+              "line": 1,
+              "offset": 20,
+            },
+            "start": {
+              "column": 18,
+              "line": 1,
+              "offset": 17,
+            },
+          },
+          "name": "a_2",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 26,
+              "line": 1,
+              "offset": 25,
+            },
             "start": {
               "column": 22,
               "line": 1,
+              "offset": 21,
             },
-            "text": "\`from\` must be followed by a quoted specifier or \`global\`.",
           },
-          {
-            "category": "error",
-            "length": 4,
-            "start": {
-              "column": 47,
+          "name": "from",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 30,
               "line": 1,
+              "offset": 29,
             },
-            "text": "\`from\` must be followed by a quoted specifier or \`global\`.",
-          },
-          {
-            "category": "error",
-            "length": 8,
             "start": {
-              "column": 57,
+              "column": 27,
               "line": 1,
+              "offset": 26,
             },
-            "text": "\`from\` must be followed by a quoted specifier or \`global\`.",
           },
-        ],
-        "references": [],
-      }
+          "name": "a_3",
+          "type": "local",
+        },
+      ]
     `);
   });
 
@@ -245,41 +408,40 @@ describe('parseComposesProp', () => {
       }
     `);
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
-      {
-        "diagnostics": [],
-        "references": [
-          {
-            "loc": {
-              "end": {
-                "column": 8,
-                "line": 3,
-                "offset": 26,
-              },
-              "start": {
-                "column": 5,
-                "line": 3,
-                "offset": 23,
-              },
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 8,
+              "line": 3,
+              "offset": 26,
             },
-            "name": "a_2",
-          },
-          {
-            "loc": {
-              "end": {
-                "column": 8,
-                "line": 5,
-                "offset": 56,
-              },
-              "start": {
-                "column": 5,
-                "line": 5,
-                "offset": 53,
-              },
+            "start": {
+              "column": 5,
+              "line": 3,
+              "offset": 23,
             },
-            "name": "a_4",
           },
-        ],
-      }
+          "name": "a_2",
+          "type": "local",
+        },
+        {
+          "loc": {
+            "end": {
+              "column": 8,
+              "line": 5,
+              "offset": 56,
+            },
+            "start": {
+              "column": 5,
+              "line": 5,
+              "offset": 53,
+            },
+          },
+          "name": "a_4",
+          "type": "local",
+        },
+      ]
     `);
   });
 });

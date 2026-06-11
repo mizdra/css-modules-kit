@@ -290,7 +290,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('for a token reference', () => {
+  describe('for a local token reference', () => {
     test('from a token definition', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
@@ -316,7 +316,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from a token reference', async () => {
+    test('from a local token reference', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': dedent`
@@ -337,6 +337,29 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
           { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 0) },
           { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 1) },
           { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'a_1', 2) },
+        ]),
+      );
+    });
+  });
+
+  describe('for an external token reference', () => {
+    test('from an external token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `.a_1 { composes: b_1 from './b.module.css'; }`,
+        'b.module.css': `.b_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendReferences({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_1'),
+      });
+
+      expect(normalizeRefItems(res.body?.refs ?? [])).toStrictEqual(
+        normalizeRefItems([
+          { file: formatPath(iff.paths['a.module.css']), ...getRange('a.module.css', 'b_1') },
+          { file: formatPath(iff.paths['b.module.css']), ...getRange('b.module.css', 'b_1') },
         ]),
       );
     });

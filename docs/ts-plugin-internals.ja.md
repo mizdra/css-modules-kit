@@ -302,9 +302,9 @@ CSS Modules Kit ではこの問題を、
 
 参考: [mizdra/volar-single-quote-span-problem](https://github.com/mizdra/volar-single-quote-span-problem)
 
-### Token References (`animation-name`) のサポート
+### Local Token References (`animation-name`, `composes`) のサポート
 
-CSS では `@keyframes foo {...}` で定義したアニメーション名を `animation-name: foo;` で参照できます。CSS Modules Kit はこの参照を Volar.js の mapping を介して定義側と結びつけ、Go to Definition / Find All References / Rename を一貫して動作させます。
+CSS では `@keyframes foo {...}` で定義したアニメーション名を `animation-name: foo;` で参照できます。また CSS Modules では `composes: foo;` で同一ファイル内の別のクラス名を参照できます。CSS Modules Kit はこうした現在のファイルで利用可能なトークンへの参照 (local token reference) を Volar.js の mapping を介して定義側と結びつけ、Go to Definition / Find All References / Rename を一貫して動作させます。
 
 仕組みとしては、生成する `.d.ts` の末尾に「参照の式」を埋め込みます。default export の場合は `styles['<name>'];` という bracket access の式文として、named export の場合は自モジュールへの self-import (`declare const __self: typeof import('./<self-basename>');`) を 1 度生成した上で `__self['<name>'];` という bracket access として吐きます。各参照式のクオート内側部分には CSS 側の参照位置の mapping を張ります。
 
@@ -339,4 +339,36 @@ var _token_1: string;
 export { _token_1 as 'a_2' };
 declare const __self: typeof import('./a.module.css');
 __self['a_1'];
+```
+
+### External Token References (`composes: ... from '<specifier>'`) のサポート
+
+CSS Modules では `composes: b_1 b_2 from './b.module.css';` のように、`from` 句で指定した別ファイルのトークンを参照できます。CSS Modules Kit はこうした別ファイルがエクスポートするトークンへの参照 (external token reference) も、local token reference と同じく参照式と mapping によって定義側と結びつけます。
+
+例えば、次のような CSS モジュールがあるとします:
+
+`src/a.module.css`:
+
+```css
+.a_1 { composes: b_1 b_2 from './b.module.css'; }
+```
+
+default export の場合、次のような型定義が生成されます:
+
+```ts
+declare const styles = {
+  'a_1': '' as string,
+} as const;
+(await import('./b.module.css')).default['b_1'];
+(await import('./b.module.css')).default['b_2'];
+export default styles;
+```
+
+named export の場合、次のような型定義が生成されます:
+
+```ts
+var _token_0: string;
+export { _token_0 as 'a_1' };
+(await import('./b.module.css'))['b_1'];
+(await import('./b.module.css'))['b_2'];
 ```

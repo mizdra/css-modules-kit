@@ -370,6 +370,90 @@ describe('emits token reference statements when forTsPlugin is true', () => {
   });
 });
 
+describe('emits external token reference statements when forTsPlugin is true', () => {
+  // `b_1` and `b_2` share one `from` clause. The `from` clause of `b_3` has the same specifier
+  // as the first one, but is a separate clause.
+  const source = `.a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }`;
+  test('default export', async () => {
+    expect(await run(source, { ...defaultExportOptions, forTsPlugin: true })).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }
+                                                               ^^^^^^^^^^^^^^^^ mapping[4]
+                                                      ^^^ mapping[5]
+                                    ^^^^^^^^^^^^^^^^ mapping[1]
+                           ^^^ mapping[3]
+                       ^^^ mapping[2]
+       ^^^ mapping[0]
+
+      === generated ===
+      // @ts-nocheck
+      declare const styles = {
+        'a_1': '' as string,
+         ^^^ mapping[0]
+      } as const;
+      (await import('./b.module.css')).default['b_1'];
+                                                ^^^ mapping[2]
+                    ^^^^^^^^^^^^^^^^ mapping[1]
+      (await import('./b.module.css')).default['b_2'];
+                                                ^^^ mapping[3]
+      (await import('./b.module.css')).default['b_3'];
+                                                ^^^ mapping[5]
+                    ^^^^^^^^^^^^^^^^ mapping[4]
+      export default styles;
+      "
+    `);
+  });
+  test('named export', async () => {
+    expect(await run(source, { ...namedExportOptions, forTsPlugin: true })).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }
+                                                               ^^^^^^^^^^^^^^^^ mapping[4]
+                                                      ^^^ mapping[5]
+                                    ^^^^^^^^^^^^^^^^ mapping[1]
+                           ^^^ mapping[3]
+                       ^^^ mapping[2]
+       ^^^ mapping[0]
+
+      === generated ===
+      // @ts-nocheck
+      var _token_0: string;
+          ^^^^^^^^ mapping[0]
+      export { _token_0 as 'a_1' };
+                           ^^^^^ linkedCodeMapping[0]
+               ^^^^^^^^ linkedCodeMapping[0]
+      (await import('./b.module.css'))['b_1'];
+                                        ^^^ mapping[2]
+                    ^^^^^^^^^^^^^^^^ mapping[1]
+      (await import('./b.module.css'))['b_2'];
+                                        ^^^ mapping[3]
+      (await import('./b.module.css'))['b_3'];
+                                        ^^^ mapping[5]
+                    ^^^^^^^^^^^^^^^^ mapping[4]
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+test('omits external token reference statements whose specifier is a URL', async () => {
+  const source = `.a_1 { composes: b_1 from 'https://example.com/b.module.css'; }`;
+  expect(await run(source, { ...defaultExportOptions, forTsPlugin: true })).toMatchInlineSnapshot(`
+    "=== source ===
+    .a_1 { composes: b_1 from 'https://example.com/b.module.css'; }
+     ^^^ mapping[0]
+
+    === generated ===
+    // @ts-nocheck
+    declare const styles = {
+      'a_1': '' as string,
+       ^^^ mapping[0]
+    } as const;
+    export default styles;
+    "
+  `);
+});
+
 describe('omits importers whose specifier is a URL', () => {
   const source = dedent`
     @import 'https://example.com/b.module.css';

@@ -4,12 +4,9 @@ import type {
   Diagnostic,
   ExportRecord,
   Location,
+  LocalTokenReference,
   MatchesPattern,
-  NamedTokenImporter,
-  NamedTokenImporterEntry,
   Resolver,
-  TokenImporter,
-  TokenReference,
 } from './type.js';
 import { isURLSpecifier, type TokenNameViolation, validateTokenName } from './util.js';
 
@@ -37,7 +34,7 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
     if (isURLSpecifier(tokenImporter.from)) continue;
     const from = args.resolver(tokenImporter.from, { request: cssModule.fileName });
     if (!from) {
-      diagnostics.push(createCannotImportModuleDiagnostic(cssModule, tokenImporter));
+      diagnostics.push(createCannotImportModuleDiagnostic(cssModule, tokenImporter.from, tokenImporter.fromLoc));
       continue;
     }
     if (!args.matchesPattern(from)) continue;
@@ -48,7 +45,9 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
       const exportRecord = args.getExportRecord(imported);
       for (const entry of tokenImporter.entries) {
         if (!exportRecord.allTokens.includes(entry.name)) {
-          diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter, entry));
+          diagnostics.push(
+            createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter.from, entry.name, entry.loc),
+          );
         }
         const nameViolation = validateTokenName(entry.name, { namedExports: config.namedExports });
         if (nameViolation) {
@@ -66,8 +65,26 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
 
   const exportRecord = args.getExportRecord(cssModule);
   for (const reference of cssModule.tokenReferences) {
-    if (!exportRecord.allTokens.includes(reference.name)) {
-      diagnostics.push(createTokenNotFoundDiagnostic(cssModule, reference));
+    if (reference.type === 'local') {
+      if (!exportRecord.allTokens.includes(reference.name)) {
+        diagnostics.push(createTokenNotFoundDiagnostic(cssModule, reference));
+      }
+      continue;
+    }
+    // Unlike `@import`, URL specifiers are not skipped because css-loader fails to resolve them in `composes`.
+    const from = args.resolver(reference.from, { request: cssModule.fileName });
+    if (!from) {
+      diagnostics.push(createCannotImportModuleDiagnostic(cssModule, reference.from, reference.fromLoc));
+      continue;
+    }
+    if (!args.matchesPattern(from)) continue;
+    const imported = args.getCSSModule(from);
+    if (!imported) throw new Error('unreachable: `imported` is undefined');
+    const importedExportRecord = args.getExportRecord(imported);
+    for (const entry of reference.entries) {
+      if (!importedExportRecord.allTokens.includes(entry.name)) {
+        diagnostics.push(createModuleHasNoExportedTokenDiagnostic(cssModule, reference.from, entry.name, entry.loc));
+      }
     }
   }
   return diagnostics;
@@ -97,31 +114,32 @@ function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violatio
   };
 }
 
-function createCannotImportModuleDiagnostic(cssModule: CSSModule, tokenImporter: TokenImporter): Diagnostic {
+function createCannotImportModuleDiagnostic(cssModule: CSSModule, from: string, fromLoc: Location): Diagnostic {
   return {
-    text: `Cannot import module '${tokenImporter.from}'`,
+    text: `Cannot import module '${from}'`,
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: tokenImporter.fromLoc.start.line, column: tokenImporter.fromLoc.start.column },
-    length: tokenImporter.fromLoc.end.offset - tokenImporter.fromLoc.start.offset,
+    start: { line: fromLoc.start.line, column: fromLoc.start.column },
+    length: fromLoc.end.offset - fromLoc.start.offset,
   };
 }
 
 function createModuleHasNoExportedTokenDiagnostic(
   cssModule: CSSModule,
-  tokenImporter: NamedTokenImporter,
-  entry: NamedTokenImporterEntry,
+  from: string,
+  name: string,
+  loc: Location,
 ): Diagnostic {
   return {
-    text: `Module '${tokenImporter.from}' has no exported token '${entry.name}'.`,
+    text: `Module '${from}' has no exported token '${name}'.`,
     category: 'error',
     file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: entry.loc.start.line, column: entry.loc.start.column },
-    length: entry.loc.end.offset - entry.loc.start.offset,
+    start: { line: loc.start.line, column: loc.start.column },
+    length: loc.end.offset - loc.start.offset,
   };
 }
 
-function createTokenNotFoundDiagnostic(cssModule: CSSModule, reference: TokenReference): Diagnostic {
+function createTokenNotFoundDiagnostic(cssModule: CSSModule, reference: LocalTokenReference): Diagnostic {
   return {
     text: `Cannot find token '${reference.name}'.`,
     category: 'error',
