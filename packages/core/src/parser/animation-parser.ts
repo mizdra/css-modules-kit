@@ -59,7 +59,7 @@ function createInvalidLocalCallDiagnostic(
   decl: Declaration,
   fn: postcssValueParser.FunctionNode,
 ): DiagnosticWithDetachedLocation {
-  const length = postcssValueParser.stringify(fn).length;
+  const length = fn.sourceEndIndex - fn.sourceIndex;
   const { start } = calcDeclValueLoc(decl, fn.sourceIndex, length);
   return {
     text: '`local(...)` must contain exactly one identifier.',

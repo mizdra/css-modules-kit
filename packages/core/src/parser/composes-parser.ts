@@ -66,8 +66,7 @@ function createInvalidFromClauseDiagnostic(
 ): DiagnosticWithDetachedLocation {
   const fromNode = item[fromIndex]!;
   const lastNode = item[item.length - 1]!;
-  const endIndex = lastNode.sourceIndex + postcssValueParser.stringify(lastNode).length;
-  const length = endIndex - fromNode.sourceIndex;
+  const length = lastNode.sourceEndIndex - fromNode.sourceIndex;
   const { start } = calcDeclValueLoc(decl, fromNode.sourceIndex, length);
   return {
     text: '`from` must be followed by a quoted specifier or `global`.',
