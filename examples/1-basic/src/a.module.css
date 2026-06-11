@@ -7,6 +7,7 @@
   100% { transform: translateY(-100%); }
 }
 .a_5 {
+  composes: a_1;
   animation-name: a_4;
 }
 
