@@ -49,7 +49,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "basic",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -80,7 +80,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "withoutColon",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -111,7 +111,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "empty",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -142,7 +142,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "comment",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -173,27 +173,13 @@ describe('parseAtValue', () => {
               },
             },
             "name": "complex",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
         {
           "atValue": {
-            "from": "test.css",
-            "fromLoc": {
-              "end": {
-                "column": 29,
-                "line": 6,
-                "offset": 155,
-              },
-              "start": {
-                "column": 21,
-                "line": 6,
-                "offset": 147,
-              },
-            },
-            "type": "valueImportDeclaration",
-            "values": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -210,26 +196,26 @@ describe('parseAtValue', () => {
                 "name": "import",
               },
             ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 29,
+                "line": 6,
+                "offset": 155,
+              },
+              "start": {
+                "column": 21,
+                "line": 6,
+                "offset": 147,
+              },
+            },
+            "type": "importer",
           },
           "diagnostics": [],
         },
         {
           "atValue": {
-            "from": "test.css",
-            "fromLoc": {
-              "end": {
-                "column": 39,
-                "line": 7,
-                "offset": 196,
-              },
-              "start": {
-                "column": 31,
-                "line": 7,
-                "offset": 188,
-              },
-            },
-            "type": "valueImportDeclaration",
-            "values": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -261,26 +247,26 @@ describe('parseAtValue', () => {
                 "name": "import2",
               },
             ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 39,
+                "line": 7,
+                "offset": 196,
+              },
+              "start": {
+                "column": 31,
+                "line": 7,
+                "offset": 188,
+              },
+            },
+            "type": "importer",
           },
           "diagnostics": [],
         },
         {
           "atValue": {
-            "from": "test.css",
-            "fromLoc": {
-              "end": {
-                "column": 40,
-                "line": 8,
-                "offset": 238,
-              },
-              "start": {
-                "column": 32,
-                "line": 8,
-                "offset": 230,
-              },
-            },
-            "type": "valueImportDeclaration",
-            "values": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -310,6 +296,20 @@ describe('parseAtValue', () => {
                 "name": "import3",
               },
             ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 40,
+                "line": 8,
+                "offset": 238,
+              },
+              "start": {
+                "column": 32,
+                "line": 8,
+                "offset": 230,
+              },
+            },
+            "type": "importer",
           },
           "diagnostics": [],
         },
@@ -340,27 +340,13 @@ describe('parseAtValue', () => {
               },
             },
             "name": "withSpace1",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
         {
           "atValue": {
-            "from": "test.css",
-            "fromLoc": {
-              "end": {
-                "column": 63,
-                "line": 10,
-                "offset": 332,
-              },
-              "start": {
-                "column": 55,
-                "line": 10,
-                "offset": 324,
-              },
-            },
-            "type": "valueImportDeclaration",
-            "values": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -405,6 +391,20 @@ describe('parseAtValue', () => {
                 "name": "withSpace3",
               },
             ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 63,
+                "line": 10,
+                "offset": 332,
+              },
+              "start": {
+                "column": 55,
+                "line": 10,
+                "offset": 324,
+              },
+            },
+            "type": "importer",
           },
           "diagnostics": [],
         },
@@ -446,21 +446,7 @@ describe('parseAtValue', () => {
         },
         {
           "atValue": {
-            "from": "test.css",
-            "fromLoc": {
-              "end": {
-                "column": 27,
-                "line": 2,
-                "offset": 34,
-              },
-              "start": {
-                "column": 19,
-                "line": 2,
-                "offset": 26,
-              },
-            },
-            "type": "valueImportDeclaration",
-            "values": [
+            "entries": [
               {
                 "loc": {
                   "end": {
@@ -492,6 +478,20 @@ describe('parseAtValue', () => {
                 "name": "b",
               },
             ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 27,
+                "line": 2,
+                "offset": 34,
+              },
+              "start": {
+                "column": 19,
+                "line": 2,
+                "offset": 26,
+              },
+            },
+            "type": "importer",
           },
           "diagnostics": [
             {
@@ -532,7 +532,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "\\\\c",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -563,7 +563,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "\\'d",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
@@ -594,7 +594,7 @@ describe('parseAtValue', () => {
               },
             },
             "name": "\\31",
-            "type": "valueDeclaration",
+            "type": "declaration",
           },
           "diagnostics": [],
         },
