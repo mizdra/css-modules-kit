@@ -62,11 +62,11 @@ function collectTokens(ast: Root, keyframes: boolean) {
       const { atValue, diagnostics } = parseAtValue(node);
       allDiagnostics.push(...diagnostics);
       if (atValue === undefined) return;
-      if (atValue.type === 'valueDeclaration') {
+      if (atValue.type === 'declaration') {
         localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
-      } else if (atValue.type === 'valueImportDeclaration') {
-        const { values, ...rest } = atValue;
-        tokenImporters.push({ ...rest, type: 'named', entries: values });
+      } else if (atValue.type === 'importer') {
+        const { type: _, ...rest } = atValue;
+        tokenImporters.push({ ...rest, type: 'named' });
       }
     } else if (keyframes && isAtKeyframesNode(node)) {
       const { keyframe, diagnostics } = parseAtKeyframes(node);

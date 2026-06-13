@@ -3,9 +3,8 @@ import postcssValueParser from 'postcss-value-parser';
 import type { DiagnosticWithDetachedLocation, Location } from '../type.js';
 
 interface ValueDeclaration {
-  type: 'valueDeclaration';
+  type: 'declaration';
   name: string;
-  // value: string; // unused
   loc: Location;
   /**
    * NOTE: The `declarationLoc` for value declaration does not include the trailing semicolon.
@@ -14,9 +13,9 @@ interface ValueDeclaration {
   declarationLoc: Location;
 }
 
-interface ValueImportDeclaration {
-  type: 'valueImportDeclaration';
-  values: {
+interface ValueImporter {
+  type: 'importer';
+  entries: {
     name: string;
     loc: Location;
     localName?: string;
@@ -26,7 +25,7 @@ interface ValueImportDeclaration {
   fromLoc: Location;
 }
 
-type ParsedAtValue = ValueDeclaration | ValueImportDeclaration;
+type ParsedAtValue = ValueDeclaration | ValueImporter;
 
 interface ParseAtValueResult {
   atValue?: ParsedAtValue;
@@ -41,17 +40,17 @@ interface ParseAtValueResult {
  */
 export function parseAtValue(atValue: AtRule): ParseAtValueResult {
   const nodes = postcssValueParser(atValue.params).nodes;
-  if (isValueImport(nodes)) {
-    return parseValueImport(atValue, nodes);
+  if (isValueImporter(nodes)) {
+    return parseValueImporter(atValue, nodes);
   }
   return parseValueDeclaration(atValue, nodes);
 }
 
 /**
- * Check that the params form a value import: one or more nodes followed by `from`
+ * Check that the params form a value importer: one or more nodes followed by `from`
  * and a single quoted specifier (e.g. `'./test.module.css'`).
  */
-function isValueImport(nodes: postcssValueParser.Node[]): boolean {
+function isValueImporter(nodes: postcssValueParser.Node[]): boolean {
   const fromIndex = findFromKeywordIndex(nodes);
   if (fromIndex < 1) return false;
   const tail = nodes.slice(fromIndex + 1).filter((node) => node.type !== 'space');
@@ -62,11 +61,11 @@ function findFromKeywordIndex(nodes: postcssValueParser.Node[]): number {
   return nodes.findLastIndex((node) => node.type === 'word' && node.value === 'from');
 }
 
-function parseValueImport(atValue: AtRule, nodes: postcssValueParser.Node[]): ParseAtValueResult {
+function parseValueImporter(atValue: AtRule, nodes: postcssValueParser.Node[]): ParseAtValueResult {
   const fromIndex = findFromKeywordIndex(nodes);
   const specifierNode = nodes.slice(fromIndex + 1).find((node) => node.type === 'string')!;
 
-  const values: ValueImportDeclaration['values'] = [];
+  const entries: ValueImporter['entries'] = [];
   const diagnostics: DiagnosticWithDetachedLocation[] = [];
   for (const item of splitByComma(nodes.slice(0, fromIndex))) {
     const words = item.nodes.filter((node) => node.type === 'word');
@@ -82,21 +81,21 @@ function parseValueImport(atValue: AtRule, nodes: postcssValueParser.Node[]): Pa
       });
       continue;
     }
-    const value: ValueImportDeclaration['values'][number] = {
+    const entry: ValueImporter['entries'][number] = {
       name: nameNode.value,
       loc: calcAtValueParamsLoc(atValue, nameNode.sourceIndex, nameNode.value.length),
     };
     const localNode = words[1]?.value === 'as' ? words[2] : undefined;
     if (localNode !== undefined) {
-      value.localName = localNode.value;
-      value.localLoc = calcAtValueParamsLoc(atValue, localNode.sourceIndex, localNode.value.length);
+      entry.localName = localNode.value;
+      entry.localLoc = calcAtValueParamsLoc(atValue, localNode.sourceIndex, localNode.value.length);
     }
-    values.push(value);
+    entries.push(entry);
   }
 
-  const parsedAtValue: ValueImportDeclaration = {
-    type: 'valueImportDeclaration',
-    values,
+  const parsedAtValue: ValueImporter = {
+    type: 'importer',
+    entries,
     from: specifierNode.value,
     // The location of the specifier without quotes.
     fromLoc: calcAtValueParamsLoc(atValue, specifierNode.sourceIndex + 1, specifierNode.value.length),
@@ -122,7 +121,7 @@ function parseValueDeclaration(atValue: AtRule, nodes: postcssValueParser.Node[]
     };
   }
   const parsedAtValue: ValueDeclaration = {
-    type: 'valueDeclaration',
+    type: 'declaration',
     name: nameNode.value,
     loc: calcAtValueParamsLoc(atValue, nameNode.sourceIndex, nameNode.value.length),
     declarationLoc: {

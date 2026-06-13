@@ -30,18 +30,13 @@ function convertParsedAtImport(
 ): ParsedAtImport {
   // The length of the `@import  ` part in `@import  '...'`
   const baseLength = 7 + (atImport.raws.afterName?.length ?? 0);
-  const start = {
-    line: atImport.source!.start!.line,
-    column: atImport.source!.start!.column + baseLength + node.sourceIndex + (node.type === 'string' ? 1 : 0),
-    offset: atImport.source!.start!.offset + baseLength + node.sourceIndex + (node.type === 'string' ? 1 : 0),
-  };
-  const end = {
-    line: start.line,
-    column: start.column + node.value.length,
-    offset: start.offset + node.value.length,
-  };
+  // For string nodes, skip the leading quote to point at the specifier itself.
+  const startIndex = baseLength + node.sourceIndex + (node.type === 'string' ? 1 : 0);
   return {
     from: node.value,
-    fromLoc: { start, end },
+    fromLoc: {
+      start: atImport.positionBy({ index: startIndex }),
+      end: atImport.positionBy({ index: startIndex + node.value.length }),
+    },
   };
 }
