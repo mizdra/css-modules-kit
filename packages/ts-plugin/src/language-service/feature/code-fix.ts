@@ -1,8 +1,9 @@
 import type { CMKConfig, Resolver } from '@css-modules-kit/core';
 import { isCSSModuleFile } from '@css-modules-kit/core';
 import type { Language } from '@volar/language-core';
-import ts from 'typescript';
+import type ts from 'typescript';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
+import { getPropertyAccessExpressionAtPosition } from '../ast.js';
 
 // ref: https://github.com/microsoft/TypeScript/blob/220706eb0320ff46fad8bf80a5e99db624ee7dfb/src/compiler/diagnosticMessages.json
 export const CANNOT_FIND_NAME_ERROR_CODE = 2304;
@@ -113,20 +114,6 @@ function getTokenConsumerAtPosition(
     }
   }
   return undefined;
-}
-
-/** Get the property access expression at the specified position. (e.g. `obj.foo`, `styles.foo`) */
-function getPropertyAccessExpressionAtPosition(
-  sourceFile: ts.SourceFile,
-  position: number,
-): ts.PropertyAccessExpression | undefined {
-  function getPropertyAccessExpressionImpl(node: ts.Node): ts.PropertyAccessExpression | undefined {
-    if (node.pos <= position && position <= node.end && ts.isPropertyAccessExpression(node)) {
-      return node;
-    }
-    return ts.forEachChild(node, getPropertyAccessExpressionImpl);
-  }
-  return getPropertyAccessExpressionImpl(sourceFile);
 }
 
 function createInsertRuleFileChange(

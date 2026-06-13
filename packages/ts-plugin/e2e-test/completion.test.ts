@@ -189,9 +189,9 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 });
 
-describe('named token completion (namedExports: true)', () => {
+describe('prioritizeNamedImports (namedExports: true)', () => {
   describe('prioritizeNamedImports: false', () => {
-    test('omits named tokens from suggestions', async () => {
+    test('omits named token auto-imports', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: false },
@@ -213,10 +213,36 @@ describe('named token completion (namedExports: true)', () => {
         [],
       );
     });
+
+    test('omits the default export from namespace member completion', async () => {
+      const { iff, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({
+          cmkOptions: { namedExports: true, prioritizeNamedImports: false },
+        }),
+        'index.ts': dedent`
+          import * as styles from './a.module.css';
+          styles.a_1;
+        `,
+        'a.module.css': `.a_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
+      await tsserver.sendConfigure({
+        preferences: { includeCompletionsForModuleExports: true },
+      });
+
+      const res = await tsserver.sendCompletionInfo({
+        file: iff.paths['index.ts'],
+        ...getRange('index.ts', 'a_1').start,
+      });
+
+      const names = res.body?.entries.map((entry) => entry.name) ?? [];
+      expect(names).toContain('a_1');
+      expect(names).not.toContain('default');
+    });
   });
 
   describe('prioritizeNamedImports: true', () => {
-    test('omits the default styles binding from suggestions', async () => {
+    test('omits the styles binding auto-import', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: true },
@@ -239,7 +265,7 @@ describe('named token completion (namedExports: true)', () => {
       ).toStrictEqual([]);
     });
 
-    test('suggests named token bindings', async () => {
+    test('suggests named token auto-imports', async () => {
       const { iff, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: true },
