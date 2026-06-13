@@ -5,7 +5,6 @@ import type { DiagnosticWithDetachedLocation, Location } from '../type.js';
 interface ValueDeclaration {
   type: 'declaration';
   name: string;
-  // value: string; // unused
   loc: Location;
   /**
    * NOTE: The `declarationLoc` for value declaration does not include the trailing semicolon.
@@ -41,17 +40,17 @@ interface ParseAtValueResult {
  */
 export function parseAtValue(atValue: AtRule): ParseAtValueResult {
   const nodes = postcssValueParser(atValue.params).nodes;
-  if (isValueImport(nodes)) {
-    return parseValueImport(atValue, nodes);
+  if (isValueImporter(nodes)) {
+    return parseValueImporter(atValue, nodes);
   }
   return parseValueDeclaration(atValue, nodes);
 }
 
 /**
- * Check that the params form a value import: one or more nodes followed by `from`
+ * Check that the params form a value importer: one or more nodes followed by `from`
  * and a single quoted specifier (e.g. `'./test.module.css'`).
  */
-function isValueImport(nodes: postcssValueParser.Node[]): boolean {
+function isValueImporter(nodes: postcssValueParser.Node[]): boolean {
   const fromIndex = findFromKeywordIndex(nodes);
   if (fromIndex < 1) return false;
   const tail = nodes.slice(fromIndex + 1).filter((node) => node.type !== 'space');
@@ -62,7 +61,7 @@ function findFromKeywordIndex(nodes: postcssValueParser.Node[]): number {
   return nodes.findLastIndex((node) => node.type === 'word' && node.value === 'from');
 }
 
-function parseValueImport(atValue: AtRule, nodes: postcssValueParser.Node[]): ParseAtValueResult {
+function parseValueImporter(atValue: AtRule, nodes: postcssValueParser.Node[]): ParseAtValueResult {
   const fromIndex = findFromKeywordIndex(nodes);
   const specifierNode = nodes.slice(fromIndex + 1).find((node) => node.type === 'string')!;
 
