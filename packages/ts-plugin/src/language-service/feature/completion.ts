@@ -2,6 +2,9 @@ import type { CMKConfig, Resolver } from '@css-modules-kit/core';
 import { getCssModuleFileName, isComponentFileName, isCSSModuleFile, STYLES_EXPORT_NAME } from '@css-modules-kit/core';
 import ts from 'typescript';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
+import { getPropertyAccessExpressionAtPosition } from '../ast.js';
+
+const DEFAULT_EXPORT_NAME = 'default';
 
 export function getCompletionsAtPosition(
   languageService: ts.LanguageService,
@@ -44,9 +47,41 @@ export function getCompletionsAtPosition(
       // ```
       // Therefore, completion for tokens like `button` is disabled.
       prior.entries = prior.entries.filter((entry) => !isNamedExportedTokenEntry(entry));
+
+      // The d.ts adds `export default styles` so that the `styles` binding appears as an auto-import
+      // suggestion. As a side effect, the default export leaks into namespace member completions
+      // (`import * as styles from './a.module.css'; styles.|`) as a `default` member. The `default`
+      // member is not a token of the CSS module, so it is removed.
+      if (
+        prior.isMemberCompletion &&
+        prior.entries.some((entry) => entry.name === DEFAULT_EXPORT_NAME) &&
+        isCSSModuleNamespaceAccess(languageService, fileName, position)
+      ) {
+        prior.entries = prior.entries.filter((entry) => entry.name !== DEFAULT_EXPORT_NAME);
+      }
     }
     return prior;
   };
+}
+
+/**
+ * Check if the completion position accesses a member of a namespace import of a CSS module
+ * (e.g. the `styles.|` position in `import * as styles from './a.module.css'; styles.|`).
+ */
+function isCSSModuleNamespaceAccess(languageService: ts.LanguageService, fileName: string, position: number): boolean {
+  const sourceFile = languageService.getProgram()?.getSourceFile(fileName);
+  if (!sourceFile) return false;
+
+  const propertyAccess = getPropertyAccessExpressionAtPosition(sourceFile, position);
+  if (!propertyAccess) return false;
+
+  // Resolve the accessed expression (e.g. `styles` in `styles.foo`) to its CSS module file.
+  // The first definition points to the `styles` binding of `import * as styles from './a.module.css'`
+  // in this file, and the second resolves that binding to the CSS module file.
+  const [binding] = languageService.getDefinitionAtPosition(fileName, propertyAccess.expression.getStart()) ?? [];
+  if (!binding) return false;
+  const [moduleDefinition] = languageService.getDefinitionAtPosition(binding.fileName, binding.textSpan.start) ?? [];
+  return moduleDefinition !== undefined && isCSSModuleFile(moduleDefinition.fileName);
 }
 
 type DefaultExportedStylesEntry = ts.CompletionEntry & {
