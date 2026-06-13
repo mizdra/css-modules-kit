@@ -4,7 +4,7 @@ import { fakeAtValues, fakeRoot } from '../test/ast.js';
 import { parseAtValue } from './at-value-parser.js';
 
 describe('parseAtValue', () => {
-  test('valid', () => {
+  test('parses syntax supported by css-loader', () => {
     const atValues = fakeAtValues(
       fakeRoot(dedent`
         @value basic: #000;
@@ -411,10 +411,14 @@ describe('parseAtValue', () => {
       ]
     `);
   });
-  test('invalid', () => {
-    // NOTE: These test cases are invalid as the syntax of @value. The behavior when using
-    // these syntaxes is undefined. A diagnostic like "`@value` is a invalid syntax." may
-    // or may not be reported.
+  test('parses syntax unsupported by css-loader', () => {
+    // NOTE: These syntaxes are not supported by css-loader, so css-modules-kit does not
+    // guarantee any specific behavior for them. The snapshots below document how the current
+    // implementation parses them rather than a behavior we commit to.
+    //
+    // The `@value \31 e` case is tokenized as `\31` and `e` instead of a single ident `1e`,
+    // because postcss-value-parser does not interpret CSS escape sequences in identifiers.
+    // This is a known bug: https://github.com/postcss/postcss-value-parser/issues/64
     const atValues = fakeAtValues(
       fakeRoot(dedent`
         @value;
@@ -494,7 +498,7 @@ describe('parseAtValue', () => {
               "category": "error",
               "length": 0,
               "start": {
-                "column": 8,
+                "column": 10,
                 "line": 2,
               },
               "text": "\`\` is invalid syntax.",
@@ -502,30 +506,66 @@ describe('parseAtValue', () => {
           ],
         },
         {
-          "diagnostics": [
-            {
-              "category": "error",
-              "length": 17,
+          "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 17,
+                "line": 3,
+                "offset": 53,
+              },
               "start": {
                 "column": 1,
                 "line": 3,
+                "offset": 37,
               },
-              "text": "\`@value \\\\c: #000\` is a invalid syntax.",
             },
-          ],
+            "loc": {
+              "end": {
+                "column": 11,
+                "line": 3,
+                "offset": 47,
+              },
+              "start": {
+                "column": 8,
+                "line": 3,
+                "offset": 44,
+              },
+            },
+            "name": "\\\\c",
+            "type": "valueDeclaration",
+          },
+          "diagnostics": [],
         },
         {
-          "diagnostics": [
-            {
-              "category": "error",
-              "length": 17,
+          "atValue": {
+            "declarationLoc": {
+              "end": {
+                "column": 17,
+                "line": 4,
+                "offset": 71,
+              },
               "start": {
                 "column": 1,
                 "line": 4,
+                "offset": 55,
               },
-              "text": "\`@value \\'d: #000\` is a invalid syntax.",
             },
-          ],
+            "loc": {
+              "end": {
+                "column": 11,
+                "line": 4,
+                "offset": 65,
+              },
+              "start": {
+                "column": 8,
+                "line": 4,
+                "offset": 62,
+              },
+            },
+            "name": "\\'d",
+            "type": "valueDeclaration",
+          },
+          "diagnostics": [],
         },
         {
           "atValue": {
@@ -543,17 +583,17 @@ describe('parseAtValue', () => {
             },
             "loc": {
               "end": {
-                "column": 13,
+                "column": 11,
                 "line": 5,
-                "offset": 85,
+                "offset": 83,
               },
               "start": {
-                "column": 12,
+                "column": 8,
                 "line": 5,
-                "offset": 84,
+                "offset": 80,
               },
             },
-            "name": "e",
+            "name": "\\31",
             "type": "valueDeclaration",
           },
           "diagnostics": [],
