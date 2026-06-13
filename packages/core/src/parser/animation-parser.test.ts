@@ -22,93 +22,97 @@ describe('parseAnimationNameProp', () => {
   test('extracts a single ident', () => {
     const decl = fakeDeclaration('.a_1 { animation-name: a_2 }');
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "references": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 27,
-    	          "line": 1,
-    	          "offset": 26,
-    	        },
-    	        "start": {
-    	          "column": 24,
-    	          "line": 1,
-    	          "offset": 23,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 27,
+                "line": 1,
+                "offset": 26,
+              },
+              "start": {
+                "column": 24,
+                "line": 1,
+                "offset": 23,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
 
   test('extracts comma-separated idents', () => {
     const decl = fakeDeclaration('.a_1 { animation-name: a_2, a_3 }');
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "references": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 27,
-    	          "line": 1,
-    	          "offset": 26,
-    	        },
-    	        "start": {
-    	          "column": 24,
-    	          "line": 1,
-    	          "offset": 23,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 32,
-    	          "line": 1,
-    	          "offset": 31,
-    	        },
-    	        "start": {
-    	          "column": 29,
-    	          "line": 1,
-    	          "offset": 28,
-    	        },
-    	      },
-    	      "name": "a_3",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 27,
+                "line": 1,
+                "offset": 26,
+              },
+              "start": {
+                "column": 24,
+                "line": 1,
+                "offset": 23,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 32,
+                "line": 1,
+                "offset": 31,
+              },
+              "start": {
+                "column": 29,
+                "line": 1,
+                "offset": 28,
+              },
+            },
+            "name": "a_3",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
 
   test('extracts ident from local()', () => {
     const decl = fakeDeclaration('.a_1 { animation-name: local(a_2) }');
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "references": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 33,
-    	          "line": 1,
-    	          "offset": 32,
-    	        },
-    	        "start": {
-    	          "column": 30,
-    	          "line": 1,
-    	          "offset": 29,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 1,
+                "offset": 32,
+              },
+              "start": {
+                "column": 30,
+                "line": 1,
+                "offset": 29,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
 
@@ -145,26 +149,27 @@ describe('parseAnimationNameProp', () => {
   test('skips reserved keywords (none, revert, revert-layer)', () => {
     const decl = fakeDeclaration('.a_1 { animation-name: revert, a_2, none }');
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "references": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 35,
-    	          "line": 1,
-    	          "offset": 34,
-    	        },
-    	        "start": {
-    	          "column": 32,
-    	          "line": 1,
-    	          "offset": 31,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 35,
+                "line": 1,
+                "offset": 34,
+              },
+              "start": {
+                "column": 32,
+                "line": 1,
+                "offset": 31,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
 
@@ -216,51 +221,53 @@ describe('parseAnimationNameProp', () => {
       }
     `);
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [
-    	    {
-    	      "category": "error",
-    	      "length": 14,
-    	      "start": {
-    	        "column": 5,
-    	        "line": 5,
-    	      },
-    	      "text": "\`local(...)\` must contain exactly one identifier.",
-    	    },
-    	  ],
-    	  "references": [
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 8,
-    	          "line": 3,
-    	          "offset": 32,
-    	        },
-    	        "start": {
-    	          "column": 5,
-    	          "line": 3,
-    	          "offset": 29,
-    	        },
-    	      },
-    	      "name": "a_2",
-    	    },
-    	    {
-    	      "loc": {
-    	        "end": {
-    	          "column": 14,
-    	          "line": 4,
-    	          "offset": 47,
-    	        },
-    	        "start": {
-    	          "column": 11,
-    	          "line": 4,
-    	          "offset": 44,
-    	        },
-    	      },
-    	      "name": "a_3",
-    	    },
-    	  ],
-    	}
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "length": 14,
+            "start": {
+              "column": 5,
+              "line": 5,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+        ],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 8,
+                "line": 3,
+                "offset": 32,
+              },
+              "start": {
+                "column": 5,
+                "line": 3,
+                "offset": 29,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 14,
+                "line": 4,
+                "offset": 47,
+              },
+              "start": {
+                "column": 11,
+                "line": 4,
+                "offset": 44,
+              },
+            },
+            "name": "a_3",
+            "type": "local",
+          },
+        ],
+      }
     `);
   });
 });

@@ -433,8 +433,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('for a token reference', () => {
-    test('from a token reference', async () => {
+  describe('for a local token reference', () => {
+    test('from a local token reference', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': dedent`
@@ -462,7 +462,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from each <name> in a multi-value token reference', async () => {
+    test('from each <name> in a multi-value local token reference', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': dedent`
@@ -506,7 +506,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from a kebab-case token reference', async () => {
+    test('from a kebab-case local token reference', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': dedent`
@@ -534,7 +534,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       );
     });
 
-    test('from a token reference whose target is imported', async () => {
+    test('from a local token reference whose target is imported', async () => {
       const { iff, getLoc, getRange } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.module.css': dedent`
@@ -551,6 +551,34 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       });
 
       const { start: contextStart, end: contextEnd } = getRange('b.module.css', '@keyframes b_1 { from {} to {} }');
+      expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
+        normalizeDefinitions([
+          {
+            file: formatPath(iff.paths['b.module.css']),
+            ...getRange('b.module.css', 'b_1'),
+            contextStart,
+            contextEnd,
+          },
+        ]),
+      );
+    });
+  });
+
+  describe('for an external token reference', () => {
+    test('from an external token reference', async () => {
+      const { iff, getLoc, getRange } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+        'a.module.css': `.a_1 { composes: b_1 from './b.module.css'; }`,
+        'b.module.css': `.b_1 { color: red; }`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+      const res = await tsserver.sendDefinitionAndBoundSpan({
+        file: iff.paths['a.module.css'],
+        ...getLoc('a.module.css', 'b_1'),
+      });
+
+      const { start: contextStart, end: contextEnd } = getRange('b.module.css', '.b_1 { color: red; }');
       expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
         normalizeDefinitions([
           {

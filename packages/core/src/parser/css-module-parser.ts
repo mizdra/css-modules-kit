@@ -85,9 +85,7 @@ function collectTokens(ast: Root, keyframes: boolean) {
       allDiagnostics.push(...diagnostics);
       tokenReferences.push(...references);
     } else if (isDeclarationNode(node) && isComposesProp(node.prop)) {
-      const { references, diagnostics } = parseComposesProp(node);
-      allDiagnostics.push(...diagnostics);
-      tokenReferences.push(...references);
+      tokenReferences.push(...parseComposesProp(node));
     }
   });
   return { localTokens, tokenImporters, tokenReferences, diagnostics: allDiagnostics };

@@ -31,6 +31,7 @@ export function parseAnimationNameProp(decl: Declaration): ParseAnimationResult 
         continue;
       }
       references.push({
+        type: 'local',
         name: nameNodeOrError.value,
         loc: calcDeclValueLoc(decl, nameNodeOrError.sourceIndex, nameNodeOrError.value.length),
       });
@@ -38,7 +39,11 @@ export function parseAnimationNameProp(decl: Declaration): ParseAnimationResult 
     }
     if (node.type !== 'word') continue;
     if (COMMON_RESERVED_KEYWORDS.has(node.value.toLowerCase())) continue;
-    references.push({ name: node.value, loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length) });
+    references.push({
+      type: 'local',
+      name: node.value,
+      loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length),
+    });
   }
   return { references, diagnostics };
 }

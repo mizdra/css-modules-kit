@@ -87,7 +87,9 @@ function myFunction() {
 ## Glossary
 
 - **Token**: A generic term for things exported by CSS Modules, such as class names, `@value` definitions, and `@keyframes` names.
-- **Token reference**: A usage of a token elsewhere in the CSS. Currently produced for `animation-name: <name>`. The referenced token may be defined in the same file (e.g. `@keyframes`) or imported via `@import` / `@value ... from`.
+- **Token reference**: A usage of a token elsewhere in the CSS. Currently produced for `animation-name: <name>` and `composes: <name>`. There are two kinds:
+  - **Local token reference**: References a token available in the current file. The token may be defined in the same file (e.g. `@keyframes`) or imported via `@import` / `@value ... from`.
+  - **External token reference**: References tokens exported by another file, like `composes: <name> ... from '<specifier>'`. One reference corresponds to one `from` clause and holds an entry per referenced token.
 - **Diagnostic**: An object representing errors or warnings
 - **Parse phase**: The phase that parses CSS Modules files and extracts token information
 - **Check phase**: The phase that validates CSS Modules files

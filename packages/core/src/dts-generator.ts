@@ -48,7 +48,19 @@ export interface GenerateDtsResult {
 export function generateDts(cssModule: CSSModule, options: GenerateDtsOptions): GenerateDtsResult {
   // Exclude invalid tokens
   const localTokens = cssModule.localTokens.filter((token) => isValidTokenName(token.name, options));
-  const tokenReferences = cssModule.tokenReferences.filter((ref) => isValidTokenName(ref.name, options));
+  const tokenReferences = cssModule.tokenReferences
+    // Exclude invalid referenced tokens
+    .map((ref) => {
+      if (ref.type === 'external') {
+        return { ...ref, entries: ref.entries.filter((entry) => isValidTokenName(entry.name, options)) };
+      }
+      return ref;
+    })
+    .filter((ref) => {
+      if (ref.type === 'local') return isValidTokenName(ref.name, options);
+      // Like token importers, external references with URL specifiers are excluded
+      return !isURLSpecifier(ref.from);
+    });
   const tokenImporters = cssModule.tokenImporters
     // Exclude invalid imported tokens
     .map((tokenImporter) => {
@@ -209,14 +221,34 @@ function generateNamedExportsDts(
   }
 
   if (options.forTsPlugin && tokenReferences.length > 0) {
-    text += `declare const __self: typeof import('./${basename(fileName)}');\n`;
+    if (tokenReferences.some((ref) => ref.type === 'local')) {
+      text += `declare const __self: typeof import('./${basename(fileName)}');\n`;
+    }
     for (const ref of tokenReferences) {
-      text += `__self['`;
-      mapping.sourceOffsets.push(ref.loc.start.offset);
-      mapping.lengths.push(ref.name.length);
-      mapping.generatedOffsets.push(text.length);
-      mapping.generatedLengths.push(ref.name.length);
-      text += `${ref.name}'];\n`;
+      if (ref.type === 'local') {
+        text += `__self['`;
+        mapping.sourceOffsets.push(ref.loc.start.offset);
+        mapping.lengths.push(ref.name.length);
+        mapping.generatedOffsets.push(text.length);
+        mapping.generatedLengths.push(ref.name.length);
+        text += `${ref.name}'];\n`;
+        continue;
+      }
+      for (const [i, entry] of ref.entries.entries()) {
+        text += `(await import(`;
+        if (i === 0) {
+          mapping.sourceOffsets.push(ref.fromLoc.start.offset - 1);
+          mapping.lengths.push(ref.from.length + 2);
+          mapping.generatedOffsets.push(text.length);
+          mapping.generatedLengths.push(ref.from.length + 2);
+        }
+        text += `'${ref.from}'))['`;
+        mapping.sourceOffsets.push(entry.loc.start.offset);
+        mapping.lengths.push(entry.name.length);
+        mapping.generatedOffsets.push(text.length);
+        mapping.generatedLengths.push(entry.name.length);
+        text += `${entry.name}'];\n`;
+      }
     }
   }
   if (options.forTsPlugin && !options.prioritizeNamedImports) {
@@ -310,11 +342,27 @@ function generateDefaultExportDts(
 
   if (options.forTsPlugin) {
     for (const ref of tokenReferences) {
-      text += `${STYLES_EXPORT_NAME}['`;
-      mapping.sourceOffsets.push(ref.loc.start.offset);
-      mapping.lengths.push(ref.name.length);
-      mapping.generatedOffsets.push(text.length);
-      text += `${ref.name}'];\n`;
+      if (ref.type === 'local') {
+        text += `${STYLES_EXPORT_NAME}['`;
+        mapping.sourceOffsets.push(ref.loc.start.offset);
+        mapping.lengths.push(ref.name.length);
+        mapping.generatedOffsets.push(text.length);
+        text += `${ref.name}'];\n`;
+        continue;
+      }
+      for (const [i, entry] of ref.entries.entries()) {
+        text += `(await import(`;
+        if (i === 0) {
+          mapping.sourceOffsets.push(ref.fromLoc.start.offset - 1);
+          mapping.lengths.push(ref.from.length + 2);
+          mapping.generatedOffsets.push(text.length);
+        }
+        text += `'${ref.from}')).default['`;
+        mapping.sourceOffsets.push(entry.loc.start.offset);
+        mapping.lengths.push(entry.name.length);
+        mapping.generatedOffsets.push(text.length);
+        text += `${entry.name}'];\n`;
+      }
     }
   }
   text += `export default ${STYLES_EXPORT_NAME};\n`;

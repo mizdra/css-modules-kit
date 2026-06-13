@@ -50,4 +50,8 @@ describe('findUsedTokenNames', () => {
     const root = fakeRoot('.a_3 { composes: a_1 a_2; }');
     expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
   });
+  test('does not collect token names referenced from composes with a `from` specifier', () => {
+    const root = fakeRoot(`.a_2 { composes: a_1 from './b.module.css'; }`);
+    expect(findUsedTokenNames('styles.a_2;', root)).toEqual(new Set(['a_2']));
+  });
 });
