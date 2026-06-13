@@ -221,7 +221,7 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
         }),
         'index.ts': dedent`
           import * as styles from './a.module.css';
-          styles.a_1;
+          styles.
         `,
         'a.module.css': `.a_1 { color: red; }`,
       });
@@ -232,7 +232,7 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
 
       const res = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'a_1').start,
+        ...getRange('index.ts', 'styles.').end,
       });
 
       const names = res.body?.entries.map((entry) => entry.name) ?? [];
