@@ -1,7 +1,12 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { fakeDeclaration } from '../test/ast.js';
-import { isAnimationNameProp, parseAnimationNameProp } from './animation-parser.js';
+import {
+  isAnimationNameProp,
+  isAnimationProp,
+  parseAnimationNameProp,
+  parseAnimationProp,
+} from './animation-parser.js';
 
 describe('isAnimationNameProp', () => {
   test.each([
@@ -174,40 +179,51 @@ describe('parseAnimationNameProp', () => {
   });
 
   test('reports a diagnostic and skips references for invalid local() shapes (multiple idents, non-identifier node, empty)', () => {
-    const decl = fakeDeclaration('.a_1 { animation-name: local(a_2, a_3), local(a_4, local(a_5)), local() }');
+    const decl = fakeDeclaration(
+      '.a_1 { animation-name: local(a_2, a_3), local(a_4, local(a_5)), local(), local("a_6") }',
+    );
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [
-    	    {
-    	      "category": "error",
-    	      "length": 15,
-    	      "start": {
-    	        "column": 24,
-    	        "line": 1,
-    	      },
-    	      "text": "\`local(...)\` must contain exactly one identifier.",
-    	    },
-    	    {
-    	      "category": "error",
-    	      "length": 22,
-    	      "start": {
-    	        "column": 41,
-    	        "line": 1,
-    	      },
-    	      "text": "\`local(...)\` must contain exactly one identifier.",
-    	    },
-    	    {
-    	      "category": "error",
-    	      "length": 7,
-    	      "start": {
-    	        "column": 65,
-    	        "line": 1,
-    	      },
-    	      "text": "\`local(...)\` must contain exactly one identifier.",
-    	    },
-    	  ],
-    	  "references": [],
-    	}
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "length": 15,
+            "start": {
+              "column": 24,
+              "line": 1,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+          {
+            "category": "error",
+            "length": 22,
+            "start": {
+              "column": 41,
+              "line": 1,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+          {
+            "category": "error",
+            "length": 7,
+            "start": {
+              "column": 65,
+              "line": 1,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+          {
+            "category": "error",
+            "length": 12,
+            "start": {
+              "column": 74,
+              "line": 1,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+        ],
+        "references": [],
+      }
     `);
   });
 
@@ -261,6 +277,296 @@ describe('parseAnimationNameProp', () => {
                 "column": 11,
                 "line": 4,
                 "offset": 44,
+              },
+            },
+            "name": "a_3",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+});
+
+describe('isAnimationProp', () => {
+  test.each([
+    ['animation', true],
+    ['-webkit-animation', true],
+    ['-moz-animation', true],
+    ['-o-animation', true],
+    ['-ms-animation', true],
+    ['Animation', true],
+    ['animation-name', false],
+    ['color', false],
+  ])('%s -> %s', (prop, expected) => {
+    expect(isAnimationProp(prop)).toBe(expected);
+  });
+});
+
+describe('parseAnimationProp', () => {
+  test('extracts a keyframes name and skips times and longhand keywords', () => {
+    const decl = fakeDeclaration('.a_1 { animation: a_2 1s linear infinite }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 22,
+                "line": 1,
+                "offset": 21,
+              },
+              "start": {
+                "column": 19,
+                "line": 1,
+                "offset": 18,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+
+  // `auto` is reserved (animation-duration/timeline) and is skipped. This differs from css-loader,
+  // which does not know `auto` and treats it as a `<keyframes-name>`.
+  test('extracts a dashed-ident name and skips auto and numbers', () => {
+    const decl = fakeDeclaration('.a_1 { animation: a_2 auto --foo 2 }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 22,
+                "line": 1,
+                "offset": 21,
+              },
+              "start": {
+                "column": 19,
+                "line": 1,
+                "offset": 18,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 33,
+                "line": 1,
+                "offset": 32,
+              },
+              "start": {
+                "column": 28,
+                "line": 1,
+                "offset": 27,
+              },
+            },
+            "name": "--foo",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+
+  test('extracts a name from each comma-separated segment', () => {
+    const decl = fakeDeclaration('.a_1 { animation: 1s a_2, 2s linear a_3 }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 25,
+                "line": 1,
+                "offset": 24,
+              },
+              "start": {
+                "column": 22,
+                "line": 1,
+                "offset": 21,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 40,
+                "line": 1,
+                "offset": 39,
+              },
+              "start": {
+                "column": 37,
+                "line": 1,
+                "offset": 36,
+              },
+            },
+            "name": "a_3",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+
+  // Per the CSS spec this declaration is invalid because a segment has a single `<keyframes-name>` slot,
+  // but for simplicity—and to match css-loader—every custom-ident is extracted.
+  test('extracts every custom-ident in a comma-less segment', () => {
+    const decl = fakeDeclaration('.a_1 { animation: a_2 a_3 }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 22,
+                "line": 1,
+                "offset": 21,
+              },
+              "start": {
+                "column": 19,
+                "line": 1,
+                "offset": 18,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 26,
+                "line": 1,
+                "offset": 25,
+              },
+              "start": {
+                "column": 23,
+                "line": 1,
+                "offset": 22,
+              },
+            },
+            "name": "a_3",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+
+  // css-loader counts keyword occurrences and treats a repeated keyword as a name (the 2nd `infinite`).
+  // We do not count occurrences, so every reserved keyword is always skipped.
+  test('skips repeated reserved keywords without occurrence counting', () => {
+    const decl = fakeDeclaration('.a_1 { animation: infinite infinite }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [],
+      }
+    `);
+  });
+
+  test('skips none', () => {
+    const decl = fakeDeclaration('.a_1 { animation: none }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [],
+      }
+    `);
+  });
+
+  test('extracts ident from local() and skips global() and var()', () => {
+    const decl = fakeDeclaration('.a_1 { animation: local(a_2), global(a_3), var(--a_4) a_5 }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 28,
+                "line": 1,
+                "offset": 27,
+              },
+              "start": {
+                "column": 25,
+                "line": 1,
+                "offset": 24,
+              },
+            },
+            "name": "a_2",
+            "type": "local",
+          },
+          {
+            "loc": {
+              "end": {
+                "column": 58,
+                "line": 1,
+                "offset": 57,
+              },
+              "start": {
+                "column": 55,
+                "line": 1,
+                "offset": 54,
+              },
+            },
+            "name": "a_5",
+            "type": "local",
+          },
+        ],
+      }
+    `);
+  });
+
+  test('reports a diagnostic and skips references for invalid local() shapes', () => {
+    const decl = fakeDeclaration('.a_1 { animation: local(a_2, a_3) }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "length": 15,
+            "start": {
+              "column": 19,
+              "line": 1,
+            },
+            "text": "\`local(...)\` must contain exactly one identifier.",
+          },
+        ],
+        "references": [],
+      }
+    `);
+  });
+
+  // The CSS spec allows `<string>` as a `<keyframes-name>`, but it is intentionally not detected, matching css-loader.
+  test('skips string-form keyframes names', () => {
+    const decl = fakeDeclaration('.a_1 { animation: "a_2" a_3 }');
+    expect(parseAnimationProp(decl)).toMatchInlineSnapshot(`
+      {
+        "diagnostics": [],
+        "references": [
+          {
+            "loc": {
+              "end": {
+                "column": 28,
+                "line": 1,
+                "offset": 27,
+              },
+              "start": {
+                "column": 25,
+                "line": 1,
+                "offset": 24,
               },
             },
             "name": "a_3",

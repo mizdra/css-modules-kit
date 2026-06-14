@@ -302,9 +302,9 @@ CSS Modules Kit ではこの問題を、
 
 参考: [mizdra/volar-single-quote-span-problem](https://github.com/mizdra/volar-single-quote-span-problem)
 
-### Local Token References (`animation-name`, `composes`) のサポート
+### Local Token References (`animation-name`, `animation`, `composes`) のサポート
 
-CSS では `@keyframes foo {...}` で定義したアニメーション名を `animation-name: foo;` で参照できます。また CSS Modules では `composes: foo;` で同一ファイル内の別のクラス名を参照できます。CSS Modules Kit はこうした現在のファイルで利用可能なトークンへの参照 (local token reference) を Volar.js の mapping を介して定義側と結びつけ、Go to Definition / Find All References / Rename を一貫して動作させます。
+CSS では `@keyframes foo {...}` で定義したアニメーション名を `animation-name: foo;` や `animation` 一括指定 (例: `animation: foo 1s;`) で参照できます。また CSS Modules では `composes: foo;` で同一ファイル内の別のクラス名を参照できます。CSS Modules Kit はこうした現在のファイルで利用可能なトークンへの参照 (local token reference) を Volar.js の mapping を介して定義側と結びつけ、Go to Definition / Find All References / Rename を一貫して動作させます。
 
 仕組みとしては、生成する `.d.ts` の末尾に「参照の式」を埋め込みます。default export の場合は `styles['<name>'];` という bracket access の式文として、named export の場合は自モジュールへの self-import (`declare const __self: typeof import('./<self-basename>');`) を 1 度生成した上で `__self['<name>'];` という bracket access として吐きます。各参照式のクオート内側部分には CSS 側の参照位置の mapping を張ります。
 

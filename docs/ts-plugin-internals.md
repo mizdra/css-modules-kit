@@ -305,9 +305,9 @@ With this, `getDefinitionAtPosition`'s `{ start: 27, length: 5 }` also matches t
 
 Reference: [mizdra/volar-single-quote-span-problem](https://github.com/mizdra/volar-single-quote-span-problem)
 
-### Local Token References (`animation-name`, `composes`) Support
+### Local Token References (`animation-name`, `animation`, `composes`) Support
 
-In CSS, an animation name defined with `@keyframes foo {...}` can be referenced by `animation-name: foo;`. In CSS Modules, `composes: foo;` can also reference another class name in the same file. CSS Modules Kit links such references to tokens available in the current file (local token references) to their definitions via Volar.js mappings, making Go to Definition / Find All References / Rename work consistently.
+In CSS, an animation name defined with `@keyframes foo {...}` can be referenced by `animation-name: foo;` or by the `animation` shorthand (e.g. `animation: foo 1s;`). In CSS Modules, `composes: foo;` can also reference another class name in the same file. CSS Modules Kit links such references to tokens available in the current file (local token references) to their definitions via Volar.js mappings, making Go to Definition / Find All References / Rename work consistently.
 
 The mechanism is to embed "reference expressions" at the end of the generated `.d.ts`. For default export, it is emitted as a bracket access expression statement like `styles['<name>'];`. For named export, after emitting a self-import (`declare const __self: typeof import('./<self-basename>');`) once, it is emitted as a bracket access like `__self['<name>'];`. A mapping is attached to the inside-of-quotes part of each reference expression, pointing to the reference position in the CSS.
 
