@@ -9,6 +9,7 @@
 .a_5 {
   composes: a_1, b_1 from './b.module.css';
   animation-name: a_4;
+  animation: a_4 1s linear;
 }
 
 @import './b.module.css';

@@ -707,6 +707,35 @@ describe('parseCSSModule', () => {
       ]
     `);
   });
+  test('collects token references from animation shorthand declarations', () => {
+    const parsed = parseCSSModule(
+      dedent`
+        @keyframes a_1 {}
+        .a_2 { animation: a_1 1s linear; }
+      `,
+      options,
+    );
+    expect(parsed.tokenReferences).toMatchInlineSnapshot(`
+      [
+        {
+          "loc": {
+            "end": {
+              "column": 22,
+              "line": 2,
+              "offset": 39,
+            },
+            "start": {
+              "column": 19,
+              "line": 2,
+              "offset": 36,
+            },
+          },
+          "name": "a_1",
+          "type": "local",
+        },
+      ]
+    `);
+  });
   test('collects diagnostics', () => {
     const parsed = parseCSSModule(
       dedent`

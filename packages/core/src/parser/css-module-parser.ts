@@ -9,7 +9,12 @@ import type {
   TokenImporter,
   TokenReference,
 } from '../type.js';
-import { isAnimationNameProp, parseAnimationNameProp } from './animation-parser.js';
+import {
+  isAnimationNameProp,
+  isAnimationProp,
+  parseAnimationNameProp,
+  parseAnimationProp,
+} from './animation-parser.js';
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
 import { isComposesProp, parseComposesProp } from './composes-parser.js';
@@ -82,6 +87,10 @@ function collectTokens(ast: Root, keyframes: boolean) {
       }
     } else if (keyframes && isDeclarationNode(node) && isAnimationNameProp(node.prop)) {
       const { references, diagnostics } = parseAnimationNameProp(node);
+      allDiagnostics.push(...diagnostics);
+      tokenReferences.push(...references);
+    } else if (keyframes && isDeclarationNode(node) && isAnimationProp(node.prop)) {
+      const { references, diagnostics } = parseAnimationProp(node);
       allDiagnostics.push(...diagnostics);
       tokenReferences.push(...references);
     } else if (isDeclarationNode(node) && isComposesProp(node.prop)) {
