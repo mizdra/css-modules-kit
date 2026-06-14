@@ -40,10 +40,10 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "postcss": "^8.5.9",
-    "postcss-safe-parser": "^7.0.1",
-    "postcss-selector-parser": "^7.1.1",
-    "postcss-value-parser": "^4.2.0"
+    "css-tree": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/css-tree": "^2.3.11"
   },
   "peerDependencies": {
     "typescript": ">=5.7.3"

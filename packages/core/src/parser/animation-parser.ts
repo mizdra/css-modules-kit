@@ -1,7 +1,6 @@
-import type { Declaration } from 'postcss';
-import postcssValueParser from 'postcss-value-parser';
+import type { Declaration, FunctionNode, Identifier } from 'css-tree';
 import type { DiagnosticWithDetachedLocation, TokenReference } from '../type.js';
-import { calcDeclValueLoc } from './decl-value-location.js';
+import { toLocation } from './csstree.js';
 
 const ANIMATION_NAME_PROP_RE = /^(?:-(?:webkit|moz|o|ms)-)?animation-name$/iu;
 const ANIMATION_PROP_RE = /^(?:-(?:webkit|moz|o|ms)-)?animation$/iu;
@@ -83,35 +82,27 @@ export function parseAnimationProp(decl: Declaration): ParseAnimationResult {
 /**
  * Walk the top-level value nodes and collect token references. `local(...)` is unwrapped
  * to a single reference, while `global(...)`, `var()`, and other functions are skipped.
- * Word nodes are turned into references only when `isReference` returns `true`.
+ * Identifiers are turned into references only when `isReference` returns `true`.
  */
 function collectAnimationReferences(decl: Declaration, isReference: (word: string) => boolean): ParseAnimationResult {
   const references: TokenReference[] = [];
   const diagnostics: DiagnosticWithDetachedLocation[] = [];
-  const parsed = postcssValueParser(decl.value);
-  for (const node of parsed.nodes) {
-    if (node.type === 'function') {
+  if (decl.value.type !== 'Value') return { references, diagnostics };
+  for (const node of decl.value.children) {
+    if (node.type === 'Function') {
       // `global(name)`, `var(...)`, `env(...)`, and any other function are skipped.
-      if (node.value !== 'local') continue;
+      if (node.name !== 'local') continue;
       const nameNodeOrError = unwrapLocalCall(node);
       if (nameNodeOrError === 'invalid') {
-        diagnostics.push(createInvalidLocalCallDiagnostic(decl, node));
+        diagnostics.push(createInvalidLocalCallDiagnostic(node));
         continue;
       }
-      references.push({
-        type: 'local',
-        name: nameNodeOrError.value,
-        loc: calcDeclValueLoc(decl, nameNodeOrError.sourceIndex, nameNodeOrError.value.length),
-      });
+      references.push({ type: 'local', name: nameNodeOrError.name, loc: toLocation(nameNodeOrError.loc!) });
       continue;
     }
-    if (node.type !== 'word') continue;
-    if (!isReference(node.value)) continue;
-    references.push({
-      type: 'local',
-      name: node.value,
-      loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length),
-    });
+    if (node.type !== 'Identifier') continue;
+    if (!isReference(node.name)) continue;
+    references.push({ type: 'local', name: node.name, loc: toLocation(node.loc!) });
   }
   return { references, diagnostics };
 }
@@ -131,24 +122,20 @@ function isKeyframesName(word: string): boolean {
  * Inspect a `local(...)` call and return its single identifier, or `'invalid'`
  * for any other shape (empty, multiple words, nested functions, strings, etc.).
  */
-function unwrapLocalCall(fn: postcssValueParser.FunctionNode): postcssValueParser.WordNode | 'invalid' {
-  const words = fn.nodes.filter((n) => n.type !== 'space');
-  if (words.length === 1 && words[0]!.type === 'word') {
-    return words[0]!;
+function unwrapLocalCall(fn: FunctionNode): Identifier | 'invalid' {
+  const nodes = fn.children.toArray();
+  if (nodes.length === 1 && nodes[0]!.type === 'Identifier') {
+    return nodes[0];
   }
   return 'invalid';
 }
 
-function createInvalidLocalCallDiagnostic(
-  decl: Declaration,
-  fn: postcssValueParser.FunctionNode,
-): DiagnosticWithDetachedLocation {
-  const length = fn.sourceEndIndex - fn.sourceIndex;
-  const { start } = calcDeclValueLoc(decl, fn.sourceIndex, length);
+function createInvalidLocalCallDiagnostic(fn: FunctionNode): DiagnosticWithDetachedLocation {
+  const loc = fn.loc!;
   return {
     text: '`local(...)` must contain exactly one identifier.',
     category: 'error',
-    start: { line: start.line, column: start.column },
-    length,
+    start: { line: loc.start.line, column: loc.start.column },
+    length: loc.end.offset - loc.start.offset,
   };
 }

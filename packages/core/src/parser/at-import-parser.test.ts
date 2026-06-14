@@ -4,16 +4,15 @@ import { fakeAtImports, fakeRoot } from '../test/ast.js';
 import { parseAtImport } from './at-import-parser.js';
 
 test('parseAtImport', () => {
-  const atImports = fakeAtImports(
-    fakeRoot(dedent`
-      @import;
-      @import "test.css";
-      @import url("test.css");
-      @import url(test.css);
-      @import "test.css" print;
-    `),
-  );
-  expect(atImports.map(parseAtImport)).toMatchInlineSnapshot(`
+  const text = dedent`
+    @import;
+    @import "test.css";
+    @import url("test.css");
+    @import url(test.css);
+    @import "test.css" print;
+  `;
+  const atImports = fakeAtImports(fakeRoot(text));
+  expect(atImports.map((atImport) => parseAtImport(atImport, text))).toMatchInlineSnapshot(`
     [
       undefined,
       {

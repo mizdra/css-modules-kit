@@ -1,6 +1,4 @@
-import type { Root } from 'postcss';
-import { isAnimationNameProp, parseAnimationNameProp } from './parser/animation-parser.js';
-import { isComposesProp, parseComposesProp } from './parser/composes-parser.js';
+import type { CSSModule } from './type.js';
 
 export function isPosixRelativePath(path: string): boolean {
   return path.startsWith(`./`) || path.startsWith(`../`);
@@ -44,31 +42,20 @@ const TOKEN_CONSUMER_PATTERN =
  * A token name is considered used if it is referenced from the component file
  * (via a `styles.<name>` style pattern) or from within the CSS module itself
  * (e.g. via `animation-name: <name>` or `composes: <name>`). The latter is
- * collected by walking `root` so that callers can pass an already-parsed
- * PostCSS AST to avoid an extra parse.
+ * read from the local token references of an already-parsed {@link CSSModule}.
  */
-export function findUsedTokenNames(componentText: string, root: Root): Set<string> {
+export function findUsedTokenNames(componentText: string, cssModule: CSSModule): Set<string> {
   const usedClassNames = new Set<string>();
   for (const match of componentText.matchAll(TOKEN_CONSUMER_PATTERN)) {
     const name = match[1] ?? match[2] ?? match[3];
     if (name) usedClassNames.add(name);
   }
-  root.walkDecls((decl) => {
-    let references;
-    if (isAnimationNameProp(decl.prop)) {
-      ({ references } = parseAnimationNameProp(decl));
-    } else if (isComposesProp(decl.prop)) {
-      references = parseComposesProp(decl);
-    } else {
-      return;
-    }
-    for (const reference of references) {
-      // External references point to tokens of another file, so they do not
-      // mark same-named tokens of the current file as used.
-      if (reference.type !== 'local') continue;
-      usedClassNames.add(reference.name);
-    }
-  });
+  for (const reference of cssModule.tokenReferences) {
+    // External references point to tokens of another file, so they do not
+    // mark same-named tokens of the current file as used.
+    if (reference.type !== 'local') continue;
+    usedClassNames.add(reference.name);
+  }
   return usedClassNames;
 }
 

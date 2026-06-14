@@ -1,12 +1,11 @@
-import type { Declaration } from 'postcss';
-import postcssValueParser from 'postcss-value-parser';
+import type { CssNode, Declaration, StringNode } from 'css-tree';
 import type {
   ExternalTokenReference,
   ExternalTokenReferenceEntry,
   LocalTokenReference,
   TokenReference,
 } from '../type.js';
-import { calcDeclValueLoc } from './decl-value-location.js';
+import { stringInnerLocation, toLocation } from './csstree.js';
 
 const COMPOSES_PROP_RE = /^composes$/iu;
 
@@ -16,88 +15,75 @@ export function isComposesProp(prop: string): boolean {
 
 /** Parse a `composes` declaration and extract token references. */
 export function parseComposesProp(decl: Declaration): TokenReference[] {
+  if (decl.value.type !== 'Value') return [];
   const references: TokenReference[] = [];
-  for (const item of splitByComma(postcssValueParser(decl.value).nodes)) {
-    if (hasFromClause(item)) {
+  for (const item of splitByComma(decl.value.children.toArray())) {
+    const fromIndex = findFromKeywordIndex(item);
+    if (fromIndex >= 1 && isValidFromClauseTail(item.slice(fromIndex + 1))) {
       const specifierNode = item.at(-1)!;
       // Items with `from global` do not produce token references.
-      if (specifierNode.type !== 'string') continue;
-      const head = item.slice(0, findFromKeywordIndex(item));
-      const externalReference = createExternalReference(decl, head, specifierNode);
+      if (specifierNode.type !== 'String') continue;
+      const externalReference = createExternalReference(item.slice(0, fromIndex), specifierNode);
       if (externalReference.entries.length > 0) references.push(externalReference);
       continue;
     }
     // Items without a `from` clause consist of plain class names.
-    references.push(...createLocalReferences(decl, item));
+    references.push(...createLocalReferences(item));
   }
   return references;
 }
 
-/**
- * Check that the item forms a `from` clause: one or more nodes followed by `from`
- * and a quoted specifier (e.g. `'./a.module.css'`) or the keyword `global`.
- */
-function hasFromClause(item: postcssValueParser.Node[]): boolean {
-  const fromIndex = findFromKeywordIndex(item);
-  return fromIndex >= 1 && isValidFromClauseTail(item.slice(fromIndex + 1));
-}
-
-function findFromKeywordIndex(item: postcssValueParser.Node[]): number {
-  return item.findLastIndex((node) => node.type === 'word' && node.value === 'from');
+function findFromKeywordIndex(item: CssNode[]): number {
+  for (let i = item.length - 1; i >= 0; i--) {
+    const node = item[i]!;
+    if (node.type === 'Identifier' && node.name === 'from') return i;
+  }
+  return -1;
 }
 
 /**
  * Check that the nodes after `from` represent a valid import source: a single
  * quoted specifier (e.g. `'./a.module.css'`) or the keyword `global`.
  */
-function isValidFromClauseTail(tail: postcssValueParser.Node[]): boolean {
+function isValidFromClauseTail(tail: CssNode[]): boolean {
   if (tail.length !== 1) return false;
   const node = tail[0]!;
-  return node.type === 'string' || (node.type === 'word' && node.value === 'global');
+  return node.type === 'String' || (node.type === 'Identifier' && node.name === 'global');
 }
 
 /** Create a local token reference for each class name in `nodes`. */
-function createLocalReferences(decl: Declaration, nodes: postcssValueParser.Node[]): LocalTokenReference[] {
+function createLocalReferences(nodes: CssNode[]): LocalTokenReference[] {
   const references: LocalTokenReference[] = [];
   for (const node of nodes) {
     // `global(name)` and any other function are skipped.
-    if (node.type !== 'word') continue;
-    references.push({
-      type: 'local',
-      name: node.value,
-      loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length),
-    });
+    if (node.type !== 'Identifier') continue;
+    references.push({ type: 'local', name: node.name, loc: toLocation(node.loc!) });
   }
   return references;
 }
 
 /** Create an external token reference with an entry for each class name in `nodes`. */
-function createExternalReference(
-  decl: Declaration,
-  nodes: postcssValueParser.Node[],
-  specifierNode: postcssValueParser.StringNode,
-): ExternalTokenReference {
+function createExternalReference(nodes: CssNode[], specifierNode: StringNode): ExternalTokenReference {
   const entries: ExternalTokenReferenceEntry[] = [];
   for (const node of nodes) {
-    if (node.type !== 'word') continue;
-    entries.push({ name: node.value, loc: calcDeclValueLoc(decl, node.sourceIndex, node.value.length) });
+    if (node.type !== 'Identifier') continue;
+    entries.push({ name: node.name, loc: toLocation(node.loc!) });
   }
   return {
     type: 'external',
     entries,
     from: specifierNode.value,
-    // The location of the specifier without quotes.
-    fromLoc: calcDeclValueLoc(decl, specifierNode.sourceIndex + 1, specifierNode.value.length),
+    fromLoc: stringInnerLocation(specifierNode.loc!),
   };
 }
 
-/** Split the value nodes by top-level commas. Space nodes are dropped. */
-function splitByComma(nodes: postcssValueParser.Node[]): postcssValueParser.Node[][] {
-  const items: postcssValueParser.Node[][] = [[]];
+/** Split the value nodes by top-level commas. */
+function splitByComma(nodes: CssNode[]): CssNode[][] {
+  const items: CssNode[][] = [[]];
   for (const node of nodes) {
-    if (node.type === 'div' && node.value === ',') {
+    if (node.type === 'Operator' && node.value === ',') {
       items.push([]);
-    } else if (node.type !== 'space') {
+    } else {
       items.at(-1)!.push(node);
     }
   }

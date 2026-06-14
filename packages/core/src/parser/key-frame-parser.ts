@@ -1,5 +1,6 @@
-import type { AtRule } from 'postcss';
+import type { Atrule, Raw } from 'css-tree';
 import type { DiagnosticWithDetachedLocation, Location } from '../type.js';
+import { toLocation } from './csstree.js';
 
 interface KeyframeDeclaration {
   name: string;
@@ -21,55 +22,43 @@ interface ParseAtKeyframesResult {
  *
  * CSS Modules treat keyframes as local tokens by default, similar to class names.
  * This parser extracts the keyframe name and its location for type generation.
- *
- * @param atKeyframes The @keyframes at-rule to parse
- * @returns Parsed keyframe information and diagnostics
  */
-export function parseAtKeyframes(atKeyframes: AtRule): ParseAtKeyframesResult {
-  // Extract keyframe name from params
-  // e.g., "@keyframes fadeIn { ... }" -> keyframeName = "fadeIn"
-  // e.g., "@keyframes :local(slideOut) { ... }" -> keyframeName = ":local(slideOut)"
-  const keyframeName = atKeyframes.params;
+export function parseAtKeyframes(atKeyframes: Atrule): ParseAtKeyframesResult {
+  const prelude = atKeyframes.prelude;
+  // Ignore empty keyframe names.
+  if (prelude === null) return { diagnostics: [] };
 
-  // Ignore empty keyframe names
-  if (keyframeName === '') {
-    return { diagnostics: [] };
+  const declarationLoc = toLocation(atKeyframes.loc!);
+
+  // css-tree leaves `:local(...)`/`:global(...)` wrappers unparsed as a `Raw` prelude.
+  if (prelude.type === 'Raw') {
+    return parseWrappedName(prelude);
   }
 
-  const keyframeNameLoc = {
-    start: atKeyframes.positionBy({ index: `@keyframes${atKeyframes.raws.afterName!}`.length }),
-    end: atKeyframes.positionBy({ index: `@keyframes${atKeyframes.raws.afterName!}${keyframeName}`.length }),
+  const nameNode = prelude.children.first;
+  if (nameNode === null || nameNode.type !== 'Identifier') return { diagnostics: [] };
+  return {
+    keyframe: { name: nameNode.name, loc: toLocation(nameNode.loc!), declarationLoc },
+    diagnostics: [],
   };
+}
 
-  // Handle :local() and :global() wrappers
-  if (keyframeName.startsWith(':local(') && keyframeName.endsWith(')')) {
+function parseWrappedName(prelude: Raw): ParseAtKeyframesResult {
+  const name = prelude.value;
+  const loc = prelude.loc!;
+  if (name.startsWith(':local(') && name.endsWith(')')) {
     // For simplicity of implementation, css-modules-kit does not support `:local(...)`.
     return {
       diagnostics: [
         {
           category: 'error',
-          start: keyframeNameLoc.start,
-          length: keyframeName.length,
-          text: `css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes ${keyframeName} {...}\` instead.`,
+          start: { line: loc.start.line, column: loc.start.column },
+          length: name.length,
+          text: `css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes ${name} {...}\` instead.`,
         },
       ],
     };
-  } else if (keyframeName.startsWith(':global(') && keyframeName.endsWith(')')) {
-    // Ignore keyframes wrapped in :global()
-    return { diagnostics: [] };
   }
-
-  return {
-    keyframe: {
-      name: keyframeName,
-      loc: keyframeNameLoc,
-      declarationLoc: {
-        start: atKeyframes.source!.start!,
-        end: atKeyframes.positionBy({
-          index: atKeyframes.toString().length,
-        }),
-      },
-    },
-    diagnostics: [],
-  };
+  // Ignore keyframes wrapped in `:global()` and any other unparsed prelude.
+  return { diagnostics: [] };
 }

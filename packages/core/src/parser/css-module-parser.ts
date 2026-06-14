@@ -1,8 +1,7 @@
-import type { AtRule, Declaration, Node, Root, Rule } from 'postcss';
-import { CssSyntaxError, parse } from 'postcss';
-import safeParser from 'postcss-safe-parser';
+import type { CssNode, SyntaxParseError } from 'css-tree';
 import type {
   CSSModule,
+  DiagnosticSourceFile,
   DiagnosticWithDetachedLocation,
   DiagnosticWithLocation,
   Token,
@@ -18,86 +17,104 @@ import {
 import { parseAtImport } from './at-import-parser.js';
 import { parseAtValue } from './at-value-parser.js';
 import { isComposesProp, parseComposesProp } from './composes-parser.js';
+import { offsetToPosition, parseCss, walk } from './csstree.js';
 import { parseAtKeyframes } from './key-frame-parser.js';
-import { parseRule } from './rule-parser.js';
-
-type AtImport = AtRule & { name: 'import' };
-type AtValue = AtRule & { name: 'value' };
-type AtKeyframes = AtRule & { name: 'keyframes' };
-
-function isAtRuleNode(node: Node): node is AtRule {
-  return node.type === 'atrule';
-}
-
-function isAtImportNode(node: Node): node is AtImport {
-  return isAtRuleNode(node) && node.name === 'import';
-}
-
-function isAtValueNode(node: Node): node is AtValue {
-  return isAtRuleNode(node) && node.name === 'value';
-}
-
-function isAtKeyframesNode(node: Node): node is AtKeyframes {
-  return isAtRuleNode(node) && node.name === 'keyframes';
-}
-
-function isRuleNode(node: Node): node is Rule {
-  return node.type === 'rule';
-}
-
-function isDeclarationNode(node: Node): node is Declaration {
-  return node.type === 'decl';
-}
+import { type ClassSelector, parseRule } from './rule-parser.js';
 
 /**
  * Collect tokens from the AST.
  */
-function collectTokens(ast: Root, keyframes: boolean) {
+function collectTokens(ast: CssNode, text: string, keyframes: boolean) {
   const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
   const tokenReferences: TokenReference[] = [];
-  ast.walk((node) => {
-    if (isAtImportNode(node)) {
-      const parsed = parseAtImport(node);
-      if (parsed !== undefined) {
-        tokenImporters.push({ type: 'all', ...parsed });
+  walk(ast, (node) => {
+    if (node.type === 'Atrule') {
+      if (node.name === 'import') {
+        const parsed = parseAtImport(node, text);
+        if (parsed !== undefined) {
+          tokenImporters.push({ type: 'all', ...parsed });
+        }
+      } else if (node.name === 'value') {
+        const { atValue, diagnostics } = parseAtValue(node);
+        allDiagnostics.push(...diagnostics);
+        if (atValue === undefined) return;
+        if (atValue.type === 'declaration') {
+          localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
+        } else if (atValue.type === 'importer') {
+          const { type: _, ...rest } = atValue;
+          tokenImporters.push({ ...rest, type: 'named' });
+        }
+      } else if (keyframes && node.name === 'keyframes') {
+        const { keyframe, diagnostics } = parseAtKeyframes(node);
+        allDiagnostics.push(...diagnostics);
+        if (keyframe) {
+          localTokens.push({ name: keyframe.name, loc: keyframe.loc, declarationLoc: keyframe.declarationLoc });
+        }
       }
-    } else if (isAtValueNode(node)) {
-      const { atValue, diagnostics } = parseAtValue(node);
-      allDiagnostics.push(...diagnostics);
-      if (atValue === undefined) return;
-      if (atValue.type === 'declaration') {
-        localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
-      } else if (atValue.type === 'importer') {
-        const { type: _, ...rest } = atValue;
-        tokenImporters.push({ ...rest, type: 'named' });
-      }
-    } else if (keyframes && isAtKeyframesNode(node)) {
-      const { keyframe, diagnostics } = parseAtKeyframes(node);
-      allDiagnostics.push(...diagnostics);
-      if (keyframe) {
-        localTokens.push({ name: keyframe.name, loc: keyframe.loc, declarationLoc: keyframe.declarationLoc });
-      }
-    } else if (isRuleNode(node)) {
+    } else if (node.type === 'Rule') {
       const { classSelectors, diagnostics } = parseRule(node);
       allDiagnostics.push(...diagnostics);
       for (const classSelector of classSelectors) {
         localTokens.push(classSelector);
       }
-    } else if (keyframes && isDeclarationNode(node) && isAnimationNameProp(node.prop)) {
-      const { references, diagnostics } = parseAnimationNameProp(node);
-      allDiagnostics.push(...diagnostics);
-      tokenReferences.push(...references);
-    } else if (keyframes && isDeclarationNode(node) && isAnimationProp(node.prop)) {
-      const { references, diagnostics } = parseAnimationProp(node);
-      allDiagnostics.push(...diagnostics);
-      tokenReferences.push(...references);
-    } else if (isDeclarationNode(node) && isComposesProp(node.prop)) {
-      tokenReferences.push(...parseComposesProp(node));
+    } else if (node.type === 'Declaration') {
+      if (keyframes && isAnimationNameProp(node.property)) {
+        const { references, diagnostics } = parseAnimationNameProp(node);
+        allDiagnostics.push(...diagnostics);
+        tokenReferences.push(...references);
+      } else if (keyframes && isAnimationProp(node.property)) {
+        const { references, diagnostics } = parseAnimationProp(node);
+        allDiagnostics.push(...diagnostics);
+        tokenReferences.push(...references);
+      } else if (isComposesProp(node.property)) {
+        tokenReferences.push(...parseComposesProp(node));
+      }
     }
   });
   return { localTokens, tokenImporters, tokenReferences, diagnostics: allDiagnostics };
+}
+
+/**
+ * css-tree silently auto-closes an unclosed block at EOF instead of reporting it, so detect it from the AST.
+ * A block is unclosed when its source does not end with `}`.
+ */
+function collectUnclosedBlockDiagnostics(
+  ast: CssNode,
+  text: string,
+  file: DiagnosticSourceFile,
+): DiagnosticWithLocation[] {
+  const diagnostics: DiagnosticWithLocation[] = [];
+  walk(ast, (node) => {
+    if (node.type !== 'Rule' && node.type !== 'Atrule') return;
+    const block = node.block;
+    if (block === null || block.loc === undefined) return;
+    if (text.charAt(block.loc.end.offset - 1) === '}') return;
+    diagnostics.push({
+      file,
+      start: { line: node.loc!.start.line, column: node.loc!.start.column },
+      length: 1,
+      text: 'Unclosed block',
+      category: 'error',
+    });
+  });
+  return diagnostics;
+}
+
+function toSyntaxErrorDiagnostic(
+  error: SyntaxParseError,
+  text: string,
+  file: DiagnosticSourceFile,
+): DiagnosticWithLocation {
+  const position = offsetToPosition(text, { line: 1, column: 1, offset: 0 }, error.offset);
+  return {
+    file,
+    start: { line: position.line, column: position.column },
+    length: 1,
+    text: error.message,
+    category: 'error',
+  };
 }
 
 export interface ParseCSSModuleOptions {
@@ -108,39 +125,32 @@ export interface ParseCSSModuleOptions {
 }
 /**
  * Parse CSS Module text.
- * If a syntax error is detected in the text, it is re-parsed using `postcss-safe-parser`, and `localTokens` are collected as much as possible.
+ * Parsing is tolerant, so `localTokens` are collected even when the text contains syntax errors.
  */
 export function parseCSSModule(
   text: string,
   { fileName, includeSyntaxError, keyframes }: ParseCSSModuleOptions,
 ): CSSModule {
-  let ast: Root;
   const diagnosticFile = { fileName, text };
-  const allDiagnostics: DiagnosticWithLocation[] = [];
+  const syntaxErrors: DiagnosticWithLocation[] = [];
+  const ast = parseCss(text, {
+    fileName,
+    onParseError: includeSyntaxError
+      ? (error) => {
+          syntaxErrors.push(toSyntaxErrorDiagnostic(error, text, diagnosticFile));
+        }
+      : undefined,
+  });
+
   if (includeSyntaxError) {
-    try {
-      ast = parse(text, { from: fileName });
-    } catch (e) {
-      if (!(e instanceof CssSyntaxError)) throw e;
-      // If syntax error, try to parse with safe parser. While this incurs a cost
-      // due to parsing the file twice, it rarely becomes an issue since files
-      // with syntax errors are usually few in number.
-      ast = safeParser(text, { from: fileName });
-      const { line, column, endColumn } = e.input!;
-      allDiagnostics.push({
-        file: diagnosticFile,
-        start: { line, column },
-        length: endColumn !== undefined ? endColumn - column : 1,
-        text: e.reason,
-        category: 'error',
-      });
-    }
-  } else {
-    ast = safeParser(text, { from: fileName });
+    syntaxErrors.push(...collectUnclosedBlockDiagnostics(ast, text, diagnosticFile));
   }
 
-  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, keyframes);
-  allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
+  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, text, keyframes);
+  const allDiagnostics: DiagnosticWithLocation[] = [
+    ...syntaxErrors,
+    ...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })),
+  ];
   return {
     fileName,
     text,
@@ -149,4 +159,21 @@ export function parseCSSModule(
     tokenReferences,
     diagnostics: allDiagnostics,
   };
+}
+
+/**
+ * Collect the local class selectors defined in CSS Module text.
+ *
+ * Unlike {@link parseCSSModule}, the result is limited to class selectors and excludes other token
+ * kinds such as `@value` and `@keyframes`. It is used by the lint plugins to report unused class names.
+ */
+export function getClassSelectors(text: string, fileName: string): ClassSelector[] {
+  const ast = parseCss(text, { fileName });
+  const classSelectors: ClassSelector[] = [];
+  walk(ast, (node) => {
+    if (node.type === 'Rule') {
+      classSelectors.push(...parseRule(node).classSelectors);
+    }
+  });
+  return classSelectors;
 }

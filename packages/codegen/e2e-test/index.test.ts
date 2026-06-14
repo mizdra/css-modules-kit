@@ -130,10 +130,10 @@ test('reports CSS syntax error', async () => {
   const cmk = spawnSync('node', [binPath, '--pretty'], { cwd: iff.rootDir });
   expect(cmk.status).toBe(1);
   expect(stripVTControlCharacters(cmk.stderr.toString())).toMatchInlineSnapshot(`
-    "src/a.module.css:1:1 - error: Unknown word badword
+    "src/a.module.css:1:8 - error: "{" is expected
 
     1 badword
-      ~~~~~~~
+             
 
     "
   `);

@@ -1,63 +1,40 @@
-import type { AtRule, Declaration, Root, Rule } from 'postcss';
-import { parse } from 'postcss';
-import type { ClassName } from 'postcss-selector-parser';
-import selectorParser from 'postcss-selector-parser';
+import type { Atrule, CssNode, Declaration, Rule } from 'css-tree';
+import { parseCss, walk } from '../parser/csstree.js';
 
-export function fakeRoot(text: string, from?: string): Root {
-  return parse(text, { from: from || '/test/test.css' });
+export function fakeRoot(text: string, from?: string): CssNode {
+  return parseCss(text, { fileName: from ?? '/test/test.css' });
 }
 
-export function fakeAtImports(root: Root): AtRule[] {
-  const results: AtRule[] = [];
-  root.walkAtRules('import', (atImport) => {
-    results.push(atImport);
+function collectByType<T extends CssNode>(root: CssNode, type: T['type']): T[] {
+  const results: T[] = [];
+  walk(root, (node) => {
+    if (node.type === type) results.push(node as T);
   });
   return results;
 }
 
-export function fakeAtValues(root: Root): AtRule[] {
-  const results: AtRule[] = [];
-  root.walkAtRules('value', (atValue) => {
-    results.push(atValue);
-  });
-  return results;
+function collectAtRules(root: CssNode, name: string): Atrule[] {
+  return collectByType<Atrule>(root, 'Atrule').filter((atrule) => atrule.name === name);
 }
 
-export function fakeRules(root: Root): Rule[] {
-  const results: Rule[] = [];
-  root.walkRules((rule) => {
-    results.push(rule);
-  });
-  return results;
+export function fakeAtImports(root: CssNode): Atrule[] {
+  return collectAtRules(root, 'import');
 }
 
-export function fakeClassSelectors(root: Root): { rule: Rule; classSelector: ClassName }[] {
-  const results: { rule: Rule; classSelector: ClassName }[] = [];
-  root.walkRules((rule) => {
-    selectorParser((selectors) => {
-      selectors.walk((selector) => {
-        if (selector.type === 'class') {
-          results.push({ rule, classSelector: selector });
-        }
-      });
-    }).processSync(rule);
-  });
-  return results;
+export function fakeAtValues(root: CssNode): Atrule[] {
+  return collectAtRules(root, 'value');
 }
 
-export function fakeAtKeyframes(root: Root): AtRule[] {
-  const results: AtRule[] = [];
-  root.walkAtRules('keyframes', (atKeyframes) => {
-    results.push(atKeyframes);
-  });
-  return results;
+export function fakeAtKeyframes(root: CssNode): Atrule[] {
+  return collectAtRules(root, 'keyframes');
+}
+
+export function fakeRules(root: CssNode): Rule[] {
+  return collectByType<Rule>(root, 'Rule');
 }
 
 export function fakeDeclaration(css: string): Declaration {
-  const root = fakeRoot(css);
-  const rule = root.first;
-  if (rule === undefined || rule.type !== 'rule') throw new Error('expected a rule');
-  const decl = rule.first;
-  if (decl === undefined || decl.type !== 'decl') throw new Error('expected a declaration');
+  const [decl] = collectByType<Declaration>(fakeRoot(css), 'Declaration');
+  if (decl === undefined) throw new Error('expected a declaration');
   return decl;
 }

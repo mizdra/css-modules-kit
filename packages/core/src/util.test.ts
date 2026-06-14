@@ -1,7 +1,11 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
-import { fakeRoot } from './test/ast.js';
+import { parseCSSModule } from './parser/css-module-parser.js';
 import { findUsedTokenNames, validateTokenName } from './util.js';
+
+function parse(css: string) {
+  return parseCSSModule(css, { fileName: '/test.module.css', includeSyntaxError: false, keyframes: true });
+}
 
 describe('validateTokenName', () => {
   test('returns undefined for valid token name', () => {
@@ -40,18 +44,18 @@ describe('findUsedTokenNames', () => {
       styles;
     `;
     const expected = new Set(['a_1', 'a_2', 'a-3', 'a-4', 'a_6']);
-    expect(findUsedTokenNames(text, fakeRoot(''))).toEqual(expected);
+    expect(findUsedTokenNames(text, parse(''))).toEqual(expected);
   });
   test('collects token names referenced from animation-name in the CSS module', () => {
-    const root = fakeRoot('.a_3 { animation-name: a_1, a_2; }');
-    expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
+    const cssModule = parse('.a_3 { animation-name: a_1, a_2; }');
+    expect(findUsedTokenNames('styles.a_3;', cssModule)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
   });
   test('collects token names referenced from composes in the CSS module', () => {
-    const root = fakeRoot('.a_3 { composes: a_1 a_2; }');
-    expect(findUsedTokenNames('styles.a_3;', root)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
+    const cssModule = parse('.a_3 { composes: a_1 a_2; }');
+    expect(findUsedTokenNames('styles.a_3;', cssModule)).toEqual(new Set(['a_1', 'a_2', 'a_3']));
   });
   test('does not collect token names referenced from composes with a `from` specifier', () => {
-    const root = fakeRoot(`.a_2 { composes: a_1 from './b.module.css'; }`);
-    expect(findUsedTokenNames('styles.a_2;', root)).toEqual(new Set(['a_2']));
+    const cssModule = parse(`.a_2 { composes: a_1 from './b.module.css'; }`);
+    expect(findUsedTokenNames('styles.a_2;', cssModule)).toEqual(new Set(['a_2']));
   });
 });

@@ -745,73 +745,72 @@ describe('parseCSSModule', () => {
       options,
     );
     expect(parsed).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [
-    	    {
-    	      "category": "error",
-    	      "file": {
-    	        "fileName": "/test.module.css",
-    	        "text": ":local .local1 {}
-    	@value;",
-    	      },
-    	      "length": 6,
-    	      "start": {
-    	        "column": 1,
-    	        "line": 1,
-    	        "offset": 0,
-    	      },
-    	      "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
-    	    },
-    	    {
-    	      "category": "error",
-    	      "file": {
-    	        "fileName": "/test.module.css",
-    	        "text": ":local .local1 {}
-    	@value;",
-    	      },
-    	      "length": 7,
-    	      "start": {
-    	        "column": 1,
-    	        "line": 2,
-    	      },
-    	      "text": "\`@value\` is a invalid syntax.",
-    	    },
-    	  ],
-    	  "fileName": "/test.module.css",
-    	  "localTokens": [
-    	    {
-    	      "declarationLoc": {
-    	        "end": {
-    	          "column": 18,
-    	          "line": 1,
-    	          "offset": 17,
-    	        },
-    	        "start": {
-    	          "column": 1,
-    	          "line": 1,
-    	          "offset": 0,
-    	        },
-    	      },
-    	      "loc": {
-    	        "end": {
-    	          "column": 15,
-    	          "line": 1,
-    	          "offset": 14,
-    	        },
-    	        "start": {
-    	          "column": 9,
-    	          "line": 1,
-    	          "offset": 8,
-    	        },
-    	      },
-    	      "name": "local1",
-    	    },
-    	  ],
-    	  "text": ":local .local1 {}
-    	@value;",
-    	  "tokenImporters": [],
-    	  "tokenReferences": [],
-    	}
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "file": {
+              "fileName": "/test.module.css",
+              "text": ":local .local1 {}
+      @value;",
+            },
+            "length": 6,
+            "start": {
+              "column": 1,
+              "line": 1,
+            },
+            "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
+          },
+          {
+            "category": "error",
+            "file": {
+              "fileName": "/test.module.css",
+              "text": ":local .local1 {}
+      @value;",
+            },
+            "length": 7,
+            "start": {
+              "column": 1,
+              "line": 2,
+            },
+            "text": "\`@value\` is a invalid syntax.",
+          },
+        ],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 18,
+                "line": 1,
+                "offset": 17,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 15,
+                "line": 1,
+                "offset": 14,
+              },
+              "start": {
+                "column": 9,
+                "line": 1,
+                "offset": 8,
+              },
+            },
+            "name": "local1",
+          },
+        ],
+        "text": ":local .local1 {}
+      @value;",
+        "tokenImporters": [],
+        "tokenReferences": [],
+      }
     `);
   });
   // TODO: Support local tokens by CSS variables. This is supported by lightningcss.
@@ -835,80 +834,80 @@ describe('parseCSSModule', () => {
         options,
       ),
     ).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [
-    	    {
-    	      "category": "error",
-    	      "file": {
-    	        "fileName": "/test.module.css",
-    	        "text": ".a {",
-    	      },
-    	      "length": 1,
-    	      "start": {
-    	        "column": 1,
-    	        "line": 1,
-    	      },
-    	      "text": "Unclosed block",
-    	    },
-    	  ],
-    	  "fileName": "/test.module.css",
-    	  "localTokens": [
-    	    {
-    	      "declarationLoc": {
-    	        "end": {
-    	          "column": 6,
-    	          "line": 1,
-    	          "offset": 5,
-    	        },
-    	        "start": {
-    	          "column": 1,
-    	          "line": 1,
-    	          "offset": 0,
-    	        },
-    	      },
-    	      "loc": {
-    	        "end": {
-    	          "column": 3,
-    	          "line": 1,
-    	          "offset": 2,
-    	        },
-    	        "start": {
-    	          "column": 2,
-    	          "line": 1,
-    	          "offset": 1,
-    	        },
-    	      },
-    	      "name": "a",
-    	    },
-    	  ],
-    	  "text": ".a {",
-    	  "tokenImporters": [],
-    	  "tokenReferences": [],
-    	}
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "file": {
+              "fileName": "/test.module.css",
+              "text": ".a {",
+            },
+            "length": 1,
+            "start": {
+              "column": 1,
+              "line": 1,
+            },
+            "text": "Unclosed block",
+          },
+        ],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 3,
+                "line": 1,
+                "offset": 2,
+              },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
+              },
+            },
+            "name": "a",
+          },
+        ],
+        "text": ".a {",
+        "tokenImporters": [],
+        "tokenReferences": [],
+      }
     `);
     expect(parseCSSModule('badword', options)).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [
-    	    {
-    	      "category": "error",
-    	      "file": {
-    	        "fileName": "/test.module.css",
-    	        "text": "badword",
-    	      },
-    	      "length": 7,
-    	      "start": {
-    	        "column": 1,
-    	        "line": 1,
-    	      },
-    	      "text": "Unknown word badword",
-    	    },
-    	  ],
-    	  "fileName": "/test.module.css",
-    	  "localTokens": [],
-    	  "text": "badword",
-    	  "tokenImporters": [],
-    	  "tokenReferences": [],
-    	}
+      {
+        "diagnostics": [
+          {
+            "category": "error",
+            "file": {
+              "fileName": "/test.module.css",
+              "text": "badword",
+            },
+            "length": 1,
+            "start": {
+              "column": 8,
+              "line": 1,
+            },
+            "text": ""{" is expected",
+          },
+        ],
+        "fileName": "/test.module.css",
+        "localTokens": [],
+        "text": "badword",
+        "tokenImporters": [],
+        "tokenReferences": [],
+      }
     `);
   });
   test('does not include syntax error in diagnostics if includeSyntaxError is false', () => {
@@ -920,42 +919,42 @@ describe('parseCSSModule', () => {
         { ...options, includeSyntaxError: false },
       ),
     ).toMatchInlineSnapshot(`
-    	{
-    	  "diagnostics": [],
-    	  "fileName": "/test.module.css",
-    	  "localTokens": [
-    	    {
-    	      "declarationLoc": {
-    	        "end": {
-    	          "column": 6,
-    	          "line": 1,
-    	          "offset": 5,
-    	        },
-    	        "start": {
-    	          "column": 1,
-    	          "line": 1,
-    	          "offset": 0,
-    	        },
-    	      },
-    	      "loc": {
-    	        "end": {
-    	          "column": 3,
-    	          "line": 1,
-    	          "offset": 2,
-    	        },
-    	        "start": {
-    	          "column": 2,
-    	          "line": 1,
-    	          "offset": 1,
-    	        },
-    	      },
-    	      "name": "a",
-    	    },
-    	  ],
-    	  "text": ".a {",
-    	  "tokenImporters": [],
-    	  "tokenReferences": [],
-    	}
+      {
+        "diagnostics": [],
+        "fileName": "/test.module.css",
+        "localTokens": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 3,
+                "line": 1,
+                "offset": 2,
+              },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
+              },
+            },
+            "name": "a",
+          },
+        ],
+        "text": ".a {",
+        "tokenImporters": [],
+        "tokenReferences": [],
+      }
     `);
   });
   test('does not include the token of keyframes if keyframes is false', () => {

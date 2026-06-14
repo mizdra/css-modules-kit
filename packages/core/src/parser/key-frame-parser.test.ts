@@ -138,7 +138,6 @@ describe('parseAtKeyframes', () => {
               "start": {
                 "column": 12,
                 "line": 2,
-                "offset": 50,
               },
               "text": "css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes :local(local) {...}\` instead.",
             },

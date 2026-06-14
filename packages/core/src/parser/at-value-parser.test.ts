@@ -416,9 +416,8 @@ describe('parseAtValue', () => {
     // guarantee any specific behavior for them. The snapshots below document how the current
     // implementation parses them rather than a behavior we commit to.
     //
-    // The `@value \31 e` case is tokenized as `\31` and `e` instead of a single ident `1e`,
-    // because postcss-value-parser does not interpret CSS escape sequences in identifiers.
-    // This is a known bug: https://github.com/postcss/postcss-value-parser/issues/64
+    // The `@value \31 e` case is parsed as the single ident `\31 e`, because css-tree's tokenizer
+    // treats the CSS escape sequence and the following characters as one identifier.
     const atValues = fakeAtValues(
       fakeRoot(dedent`
         @value;
@@ -583,9 +582,9 @@ describe('parseAtValue', () => {
             },
             "loc": {
               "end": {
-                "column": 11,
+                "column": 13,
                 "line": 5,
-                "offset": 83,
+                "offset": 85,
               },
               "start": {
                 "column": 8,
@@ -593,7 +592,7 @@ describe('parseAtValue', () => {
                 "offset": 80,
               },
             },
-            "name": "\\31",
+            "name": "\\31 e",
             "type": "declaration",
           },
           "diagnostics": [],

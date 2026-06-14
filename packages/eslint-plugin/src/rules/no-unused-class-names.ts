@@ -1,6 +1,12 @@
-import { basename, findComponentFileSync, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import {
+  basename,
+  findComponentFileSync,
+  findUsedTokenNames,
+  getClassSelectors,
+  isCSSModuleFile,
+  parseCSSModule,
+} from '@css-modules-kit/core';
 import type { Rule } from 'eslint';
-import safeParser from 'postcss-safe-parser';
 import { readFile } from '../util.js';
 
 export const noUnusedClassNames: Rule.RuleModule = {
@@ -27,34 +33,31 @@ export const noUnusedClassNames: Rule.RuleModule = {
     // assumed that all class names are used.
     if (componentFile === undefined) return {};
 
-    const root = safeParser(context.sourceCode.text, { from: fileName });
-    const usedTokenNames = findUsedTokenNames(componentFile.text, root);
+    const text = context.sourceCode.text;
+    const cssModule = parseCSSModule(text, { fileName, includeSyntaxError: false, keyframes: true });
+    const usedTokenNames = findUsedTokenNames(componentFile.text, cssModule);
 
-    root.walkRules((rule) => {
-      const { classSelectors } = parseRule(rule);
-
-      for (const classSelector of classSelectors) {
-        if (!usedTokenNames.has(classSelector.name)) {
-          context.report({
-            loc: {
-              start: {
-                line: classSelector.loc.start.line,
-                column: classSelector.loc.start.column,
-              },
-              end: {
-                line: classSelector.loc.end.line,
-                column: classSelector.loc.end.column,
-              },
+    for (const classSelector of getClassSelectors(text, fileName)) {
+      if (!usedTokenNames.has(classSelector.name)) {
+        context.report({
+          loc: {
+            start: {
+              line: classSelector.loc.start.line,
+              column: classSelector.loc.start.column,
             },
-            messageId: 'disallow',
-            data: {
-              className: classSelector.name,
-              componentFileName: basename(componentFile.fileName),
+            end: {
+              line: classSelector.loc.end.line,
+              column: classSelector.loc.end.column,
             },
-          });
-        }
+          },
+          messageId: 'disallow',
+          data: {
+            className: classSelector.name,
+            componentFileName: basename(componentFile.fileName),
+          },
+        });
       }
-    });
+    }
     return {};
   },
 };

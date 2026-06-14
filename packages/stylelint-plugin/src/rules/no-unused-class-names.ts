@@ -1,4 +1,11 @@
-import { basename, findComponentFile, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import {
+  basename,
+  findComponentFile,
+  findUsedTokenNames,
+  getClassSelectors,
+  isCSSModuleFile,
+  parseCSSModule,
+} from '@css-modules-kit/core';
 import type { Rule, RuleMeta } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
@@ -28,25 +35,22 @@ const ruleFunction: Rule = (_primaryOptions, _secondaryOptions, _context) => {
     // assumed that all class names are used.
     if (componentFile === undefined) return;
 
-    const usedTokenNames = findUsedTokenNames(componentFile.text, root);
+    const text = root.source!.input.css;
+    const cssModule = parseCSSModule(text, { fileName, includeSyntaxError: false, keyframes: true });
+    const usedTokenNames = findUsedTokenNames(componentFile.text, cssModule);
 
-    root.walkRules((rule) => {
-      const { classSelectors } = parseRule(rule);
-
-      for (const classSelector of classSelectors) {
-        if (!usedTokenNames.has(classSelector.name)) {
-          utils.report({
-            result,
-            ruleName,
-            message: messages.disallow(classSelector.name, componentFile.fileName),
-            node: rule,
-            index: classSelector.loc.start.offset - rule.source!.start!.offset,
-            endIndex: classSelector.loc.end.offset - rule.source!.start!.offset,
-            word: classSelector.name,
-          });
-        }
+    for (const classSelector of getClassSelectors(text, fileName)) {
+      if (!usedTokenNames.has(classSelector.name)) {
+        utils.report({
+          result,
+          ruleName,
+          message: messages.disallow(classSelector.name, componentFile.fileName),
+          node: root,
+          start: { line: classSelector.loc.start.line, column: classSelector.loc.start.column },
+          end: { line: classSelector.loc.end.line, column: classSelector.loc.end.column },
+        });
       }
-    });
+    }
   };
 };
 

@@ -1,90 +1,8 @@
-import type { Rule } from 'postcss';
-import selectorParser from 'postcss-selector-parser';
-import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
+import type { ClassSelector as CssClassSelector, CssNode, PseudoClassSelector, Rule } from 'css-tree';
+import type { DiagnosticWithDetachedLocation, Location } from '../type.js';
+import { toLocation } from './csstree.js';
 
-function calcDiagnosticsLocationForSelectorParserNode(
-  rule: Rule,
-  node: selectorParser.Node,
-): { start: DiagnosticPosition; length: number } {
-  const start = rule.positionBy({ index: node.sourceIndex });
-  const length = node.toString().length;
-  return { start, length };
-}
-export { calcDiagnosticsLocationForSelectorParserNode as calcDiagnosticsLocationForSelectorParserNodeForTest };
-
-interface CollectResult {
-  classNames: selectorParser.ClassName[];
-  diagnostics: DiagnosticWithDetachedLocation[];
-}
-
-function flatCollectResults(results: CollectResult[]): CollectResult {
-  const classNames: selectorParser.ClassName[] = [];
-  const diagnostics: DiagnosticWithDetachedLocation[] = [];
-  for (const result of results) {
-    classNames.push(...result.classNames);
-    diagnostics.push(...result.diagnostics);
-  }
-  return { classNames, diagnostics };
-}
-
-/**
- * Collect local class names from the AST.
- * This function is based on the behavior of postcss-modules-local-by-default.
- *
- * @see https://github.com/css-modules/postcss-modules-local-by-default/blob/38119276608ef14821797cfc0242b3c7dead69af/src/index.js
- * @see https://github.com/css-modules/postcss-modules-local-by-default/blob/38119276608ef14821797cfc0242b3c7dead69af/test/index.test.js
- * @example `.local1 :global(.global1) .local2 :local(.local3)` => `[".local1", ".local2", ".local3"]`
- */
-function collectLocalClassNames(rule: Rule, root: selectorParser.Root): CollectResult {
-  return visitNode(root, undefined);
-
-  function visitNode(node: selectorParser.Node, wrappedBy: ':local(...)' | ':global(...)' | undefined): CollectResult {
-    if (selectorParser.isClassName(node)) {
-      switch (wrappedBy) {
-        // If the class name is wrapped by `:local(...)` or `:global(...)`,
-        // the scope is determined by the wrapper.
-        case ':local(...)':
-          return { classNames: [node], diagnostics: [] };
-        case ':global(...)':
-          return { classNames: [], diagnostics: [] };
-        // If the class name is not wrapped by `:local(...)` or `:global(...)`,
-        // the scope is determined by the mode.
-        default:
-          // Mode is customizable in css-loader, but we don't support it for simplicity. We fix the mode to 'local'.
-          return { classNames: [node], diagnostics: [] };
-      }
-    } else if (selectorParser.isPseudo(node) && (node.value === ':local' || node.value === ':global')) {
-      if (node.nodes.length === 0) {
-        // `node` is `:local` or `:global` (without any arguments)
-        // We don't support `:local` and `:global` (without any arguments) because they are complex.
-        const diagnostic: DiagnosticWithDetachedLocation = {
-          ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
-          text: `css-modules-kit does not support \`${node.value}\`. Use \`${node.value}(...)\` instead.`,
-          category: 'error',
-        };
-        return { classNames: [], diagnostics: [diagnostic] };
-      } else {
-        // `node` is `:local(...)` or `:global(...)` (with arguments)
-        if (wrappedBy !== undefined) {
-          const diagnostic: DiagnosticWithDetachedLocation = {
-            ...calcDiagnosticsLocationForSelectorParserNode(rule, node),
-            text: `A \`${node.value}(...)\` is not allowed inside of \`${wrappedBy}\`.`,
-            category: 'error',
-          };
-          return { classNames: [], diagnostics: [diagnostic] };
-        }
-        return flatCollectResults(
-          node.nodes.map((child) => visitNode(child, node.value === ':local' ? ':local(...)' : ':global(...)')),
-        );
-      }
-    } else if (selectorParser.isContainer(node)) {
-      return flatCollectResults(node.nodes.map((child) => visitNode(child, wrappedBy)));
-    }
-    return { classNames: [], diagnostics: [] };
-  }
-}
-
-interface ClassSelector {
+export interface ClassSelector {
   /** The class name. It does not include the leading dot. */
   name: string;
   /**
@@ -104,42 +22,86 @@ interface ParseRuleResult {
   diagnostics: DiagnosticWithDetachedLocation[];
 }
 
+type Wrapper = ':local(...)' | ':global(...)' | undefined;
+
 /**
  * Parse a rule and collect local class selectors.
+ *
+ * The scope handling is based on the behavior of postcss-modules-local-by-default. A class name is local
+ * when it is wrapped by `:local(...)` or written without a wrapper (the mode is fixed to 'local'), and
+ * global when wrapped by `:global(...)`.
+ *
+ * @see https://github.com/css-modules/postcss-modules-local-by-default/blob/38119276608ef14821797cfc0242b3c7dead69af/src/index.js
+ * @example `.local1 :global(.global1) .local2 :local(.local3)` => `[".local1", ".local2", ".local3"]`
  */
 export function parseRule(rule: Rule): ParseRuleResult {
-  const root = selectorParser().astSync(rule);
-  const result = collectLocalClassNames(rule, root);
-  const classSelectors: ClassSelector[] = result.classNames.map((className) => {
-    // If `rule` is `.a, .b { color: red; }` and `className` is `.b`,
-    // `rule.source` is `{ start: { line: 1, column: 1 }, end: { line: 1, column: 22 } }`
-    // And `className.source` is `{ start: { line: 1, column: 5 }, end: { line: 1, column: 6 } }`.
-    const start = {
-      line: rule.source!.start!.line + className.source!.start!.line - 1,
-      column: rule.source!.start!.column + className.source!.start!.column,
-      offset: rule.source!.start!.offset + className.sourceIndex + 1,
-    };
-    /**
-     * When there is a selector like `.\31 backslash`, `className.value` becomes `"1backslash"`.
-     * In other words, it is the string after escape sequences have been interpreted.
-     * However, here we need the raw string as written in the CSS source code.
-     * So we use `className.toString()`.
-     *
-     * The return value of `className.toString()` may contain leading dots and spaces like `" .1backslash"`.
-     * Therefore, we remove the leading spaces and dot with a regular expression.
-     */
-    const rawClassName = className.toString().replace(/^\s*\./u, '');
-    const end = {
-      // The end line is always the same as the start line, as a class selector cannot break in the middle.
-      line: start.line,
-      column: start.column + rawClassName.length,
-      offset: start.offset + rawClassName.length,
-    };
-    return {
-      name: rawClassName,
-      loc: { start, end },
-      declarationLoc: { start: rule.source!.start!, end: rule.positionBy({ index: rule.toString().length }) },
-    };
-  });
-  return { classSelectors, diagnostics: result.diagnostics };
+  const classNames: CssClassSelector[] = [];
+  const diagnostics: DiagnosticWithDetachedLocation[] = [];
+
+  if (rule.prelude.type === 'SelectorList') {
+    visitNode(rule.prelude, undefined);
+  }
+
+  const declarationLoc = toLocation(rule.loc!);
+  const classSelectors = classNames.map((node) => ({
+    name: node.name,
+    loc: classNameLoc(node),
+    declarationLoc,
+  }));
+  return { classSelectors, diagnostics };
+
+  function visitNode(node: CssNode, wrappedBy: Wrapper): void {
+    if (node.type === 'ClassSelector') {
+      // A class name wrapped by `:global(...)` is global. Otherwise it is local, because the mode is fixed to 'local'.
+      if (wrappedBy !== ':global(...)') classNames.push(node);
+    } else if (node.type === 'PseudoClassSelector') {
+      if (node.name === 'local' || node.name === 'global') {
+        visitLocalOrGlobal(node, wrappedBy);
+      } else if (node.children) {
+        // Functional pseudo-classes like `:not(...)` and `:is(...)` keep the current scope for their arguments.
+        for (const child of node.children) visitNode(child, wrappedBy);
+      }
+    } else if (node.type === 'SelectorList' || node.type === 'Selector') {
+      for (const child of node.children) visitNode(child, wrappedBy);
+    }
+  }
+
+  function visitLocalOrGlobal(node: PseudoClassSelector, wrappedBy: Wrapper): void {
+    const inner = node.children?.first;
+    if (!inner || inner.type !== 'SelectorList') {
+      // `:local` or `:global` without arguments. They are complex, so css-modules-kit does not support them.
+      diagnostics.push({
+        ...detachedLocation(node),
+        text: `css-modules-kit does not support \`:${node.name}\`. Use \`:${node.name}(...)\` instead.`,
+        category: 'error',
+      });
+      return;
+    }
+    if (wrappedBy !== undefined) {
+      diagnostics.push({
+        ...detachedLocation(node),
+        text: `A \`:${node.name}(...)\` is not allowed inside of \`${wrappedBy}\`.`,
+        category: 'error',
+      });
+      return;
+    }
+    visitNode(inner, node.name === 'local' ? ':local(...)' : ':global(...)');
+  }
+}
+
+function classNameLoc(node: CssClassSelector): Location {
+  const loc = node.loc!;
+  // Skip the leading dot, which is always a single character on the same line as the class name.
+  return {
+    start: { line: loc.start.line, column: loc.start.column + 1, offset: loc.start.offset + 1 },
+    end: { line: loc.end.line, column: loc.end.column, offset: loc.end.offset },
+  };
+}
+
+function detachedLocation(node: CssNode): { start: { line: number; column: number }; length: number } {
+  const loc = node.loc!;
+  return {
+    start: { line: loc.start.line, column: loc.start.column },
+    length: loc.end.offset - loc.start.offset,
+  };
 }

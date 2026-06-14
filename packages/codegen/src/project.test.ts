@@ -436,12 +436,12 @@ describe('getDiagnostics', () => {
         {
           "category": "error",
           "fileName": "<rootDir>/src/b.module.css",
-          "length": 5,
+          "length": 1,
           "start": {
-            "column": 8,
+            "column": 14,
             "line": 1,
           },
-          "text": "Unknown word color",
+          "text": "Colon is expected",
         },
       ]
     `);

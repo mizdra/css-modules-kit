@@ -1,8 +1,8 @@
 export type { CMKConfig } from './config.js';
 export { readConfigFile } from './config.js';
 export { TsConfigFileNotFoundError, SystemError } from './error.js';
-export { parseCSSModule, type ParseCSSModuleOptions } from './parser/css-module-parser.js';
-export { parseRule } from './parser/rule-parser.js';
+export { parseCSSModule, type ParseCSSModuleOptions, getClassSelectors } from './parser/css-module-parser.js';
+export type { ClassSelector } from './parser/rule-parser.js';
 export {
   type Location,
   type Position,
