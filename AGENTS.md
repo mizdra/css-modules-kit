@@ -43,13 +43,22 @@ vp run vscode-test # Run VS Code extension tests
 
 ### Updating generated files in examples
 
-The examples directory contains generated type definition files produced by codegen as examples. If the generated type definition files change, these files must also be updated. You can update them with the following command:
+The `examples/` directory is used for manual verification of ts-plugin language features in an editor. When adding a new language feature, add a minimal usage example in `examples/`.
+
+The examples directory also contains generated type definition files produced by codegen. If the generated type definition files change, these files must also be updated. You can update them with the following command:
 
 ```bash
 vp run update-generated-in-examples
 ```
 
+After updating, commit the example changes separately with `chore(examples): ...`.
+
 ## Coding Conventions
+
+### Comments
+
+- Write no comments that restate what the code already says. Let the code speak.
+- Exception: a comment is warranted for hidden constraints, surprising behavior, or workarounds that the code alone cannot communicate.
 
 ### Error Handling
 
@@ -83,6 +92,21 @@ function myFunction() {
   }
 }
 ```
+
+## Testing Conventions
+
+### Test names
+
+- Write test names as concrete verb phrases that describe the expected behavior: `inserts X into Y`, `omits X from Y`, `prioritizes X over Y`. Avoid vague words like `correct`, `properly`, `right`, `handle`, or `work`.
+- Do not use undefined terms in test names. If a concept isn't in the glossary or the code, describe its property directly.
+- In `packages/ts-plugin/e2e-test/`, use abstract concepts from the project glossary instead of CSS syntax literals:
+  - ❌ ``from `@import` in CSS`` → ✅ `from all token importer`
+  - ❌ ``from `@value ... from` in CSS`` → ✅ `from named token importer`
+
+### Test cases
+
+- Keep one representative test case per distinct output structure. If two inputs produce the same abstract output shape, keep one and remove the other.
+- Use `dedent` only for multiline template literals. Single-line fixtures should use a plain backtick string or a variable directly — not wrapped in `dedent`.
 
 ## Glossary
 
@@ -127,6 +151,8 @@ function myFunction() {
   - `[optional scope]`: choose one of core, ts-plugin, codegen, vscode, stylelint-plugin, eslint-plugin, zed
     - For changes spanning multiple packages, use comma-separated scopes like `feat(core, ts-plugin): ...`
 - If you make changes that affect users, add a changeset file under `.changeset`
+  - The changeset body must be a single summary line only.
+- PR descriptions should be readable without knowledge of internal implementation details. Do not include API-level jargon or notes that only make sense after reading the source.
 - Assign appropriate labels when creating a PR
   - `Type: Breaking Change`: Breaking changes
   - `Type: Bug`: Bug fixes
