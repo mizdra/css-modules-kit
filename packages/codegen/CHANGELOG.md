@@ -1,5 +1,12 @@
 # @css-modules-kit/codegen
 
+## 1.3.0
+
+### Patch Changes
+
+- Updated dependencies [[`e9315e4`](https://github.com/mizdra/css-modules-kit/commit/e9315e49ea9acbaa21196435ce463e6dd7efc94b), [`a247518`](https://github.com/mizdra/css-modules-kit/commit/a247518bd1ae67d02f3193fb052eaf50acde2ff8), [`4f59d0c`](https://github.com/mizdra/css-modules-kit/commit/4f59d0c6b5ab336d1e9a3eaa0d3763c8185032f2), [`947d06d`](https://github.com/mizdra/css-modules-kit/commit/947d06de88d762f14a09ffeb6c3afb1e69c04f64), [`f40f511`](https://github.com/mizdra/css-modules-kit/commit/f40f5118158ffa2126eb9e23bbe6b7bf09efba63)]:
+  - @css-modules-kit/core@1.3.0
+
 ## 1.2.0
 
 ### Patch Changes
