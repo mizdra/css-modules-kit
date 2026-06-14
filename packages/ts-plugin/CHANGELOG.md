@@ -1,5 +1,36 @@
 # @css-modules-kit/ts-plugin
 
+## 1.3.0
+
+### Minor Changes
+
+- [#409](https://github.com/mizdra/css-modules-kit/pull/409) [`4f59d0c`](https://github.com/mizdra/css-modules-kit/commit/4f59d0c6b5ab336d1e9a3eaa0d3763c8185032f2) - feat(core, ts-plugin): support `composes: <name> from '<specifier>'`
+
+  Class names referenced via `composes: foo from './other.module.css';` are now linked to the `.foo {...}` declaration in the referenced file. Go to Definition jumps from the reference to the declaration, Find All References lists reference sites across files, and Rename updates the declaration and every reference together.
+
+  Two diagnostics are also emitted in the check phase:
+  - `Cannot import module '<specifier>'` when the specifier cannot be resolved.
+  - `Module '<specifier>' has no exported token '<name>'.` when the referenced file does not export the token.
+
+- [#408](https://github.com/mizdra/css-modules-kit/pull/408) [`947d06d`](https://github.com/mizdra/css-modules-kit/commit/947d06de88d762f14a09ffeb6c3afb1e69c04f64) - feat(core, ts-plugin, eslint-plugin, stylelint-plugin): support composes property
+
+  Class names referenced via `composes: foo;` are now linked back to the `.foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Space-separated names (`composes: foo bar;`), comma-separated names (`composes: foo, bar;`), and mixes of both are supported. `composes: global(foo);`, `composes: foo from global;`, and `composes: foo from '<specifier>';` do not produce references (support for `from '<specifier>'` is planned).
+
+  Two diagnostics are also emitted for invalid usage:
+  - Parse phase: a `from` clause not followed by a quoted specifier or the `global` keyword is reported.
+  - Check phase: references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
+
+  The `no-unused-class-names` rule in eslint-plugin and stylelint-plugin now treats names referenced via `composes` from within the same CSS as used, so they are no longer reported as unused.
+
+### Patch Changes
+
+- [#410](https://github.com/mizdra/css-modules-kit/pull/410) [`41ec0a2`](https://github.com/mizdra/css-modules-kit/commit/41ec0a2e6cf8bac3e03d286ef2eac6608e91fc3f) - fix(ts-plugin): omit the `default` member from namespace member completion
+
+  When `namedExports` is enabled and `prioritizeNamedImports` is disabled, completing members of a namespace import (`import * as styles from './a.module.css'; styles.`) no longer suggests a `default` member that the CSS module does not export.
+
+- Updated dependencies [[`e9315e4`](https://github.com/mizdra/css-modules-kit/commit/e9315e49ea9acbaa21196435ce463e6dd7efc94b), [`a247518`](https://github.com/mizdra/css-modules-kit/commit/a247518bd1ae67d02f3193fb052eaf50acde2ff8), [`4f59d0c`](https://github.com/mizdra/css-modules-kit/commit/4f59d0c6b5ab336d1e9a3eaa0d3763c8185032f2), [`947d06d`](https://github.com/mizdra/css-modules-kit/commit/947d06de88d762f14a09ffeb6c3afb1e69c04f64), [`f40f511`](https://github.com/mizdra/css-modules-kit/commit/f40f5118158ffa2126eb9e23bbe6b7bf09efba63)]:
+  - @css-modules-kit/core@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes
