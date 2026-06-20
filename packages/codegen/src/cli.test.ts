@@ -16,6 +16,7 @@ describe('parseCLIArgs', () => {
       clean: false,
       watch: false,
       preserveWatchOutput: false,
+      cache: false,
     });
   });
   it('should parse --help option', () => {
@@ -51,6 +52,10 @@ describe('parseCLIArgs', () => {
   it('should parse --preserveWatchOutput option', () => {
     expect(parseCLIArgs(['--preserveWatchOutput'], cwd).preserveWatchOutput).toBe(true);
     expect(parseCLIArgs(['--no-preserveWatchOutput'], cwd).preserveWatchOutput).toBe(false);
+  });
+  it('should parse --cache option', () => {
+    expect(parseCLIArgs(['--cache'], cwd).cache).toBe(true);
+    expect(parseCLIArgs(['--no-cache'], cwd).cache).toBe(false);
   });
   it('should throw ParseCLIArgsError for invalid options', () => {
     expect(() => parseCLIArgs(['--invalid-option'], cwd)).toThrow(ParseCLIArgsError);

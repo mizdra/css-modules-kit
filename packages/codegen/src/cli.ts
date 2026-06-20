@@ -15,6 +15,7 @@ Options:
   --clean                Remove the output directory before generating files.                       [default: false]
   --watch, -w            Watch for changes and regenerate files.                                    [default: false]
   --preserveWatchOutput  Disable wiping the console in watch mode.                                  [default: false]
+  --cache                Only emit files that have changed since the last run.                      [default: false]
 `;
 
 export function printHelpText(): void {
@@ -33,6 +34,7 @@ export interface ParsedArgs {
   clean: boolean;
   watch: boolean;
   preserveWatchOutput: boolean;
+  cache: boolean;
 }
 
 /**
@@ -51,6 +53,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
         clean: { type: 'boolean', default: false },
         watch: { type: 'boolean', short: 'w', default: false },
         preserveWatchOutput: { type: 'boolean', default: false },
+        cache: { type: 'boolean', default: false },
       },
       allowNegative: true,
     });
@@ -62,6 +65,7 @@ export function parseCLIArgs(args: string[], cwd: string): ParsedArgs {
       clean: values.clean,
       watch: values.watch,
       preserveWatchOutput: values.preserveWatchOutput,
+      cache: values.cache,
     };
   } catch (cause) {
     throw new ParseCLIArgsError(cause);

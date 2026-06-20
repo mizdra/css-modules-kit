@@ -12,6 +12,7 @@ import {
   readConfigFile,
 } from '@css-modules-kit/core';
 import ts from 'typescript';
+import type { Cache } from './cache.js';
 import { writeDtsFile } from './dts-writer.js';
 import { ReadCSSModuleFileError } from './error.js';
 
@@ -48,7 +49,7 @@ export interface Project {
    * Emit .d.ts files for all project files.
    * @throws {WriteDtsFileError}
    */
-  emitDtsFiles(): Promise<void>;
+  emitDtsFiles(cache?: Cache): Promise<void>;
 }
 
 /**
@@ -201,10 +202,11 @@ export function createProject(args: ProjectArgs): Project {
   /**
    * @throws {WriteDtsFileError}
    */
-  async function emitDtsFiles(): Promise<void> {
+  async function emitDtsFiles(cache?: Cache): Promise<void> {
     const promises: Promise<void>[] = [];
     for (const cssModule of cssModuleMap.values()) {
       if (emittedSet.has(cssModule.fileName)) continue;
+      if (cache?.isHit(cssModule.fileName, cssModule.text)) continue;
       const dts = generateDts(cssModule, { ...config, forTsPlugin: false });
       promises.push(
         writeDtsFile(dts.text, cssModule.fileName, {
@@ -213,6 +215,7 @@ export function createProject(args: ProjectArgs): Project {
           arbitraryExtensions: config.arbitraryExtensions,
         }).then(() => {
           emittedSet.add(cssModule.fileName);
+          cache?.record(cssModule.fileName, cssModule.text);
         }),
       );
     }

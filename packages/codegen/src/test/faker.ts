@@ -9,6 +9,7 @@ export function fakeParsedArgs(args?: Partial<ParsedArgs>): ParsedArgs {
     clean: false,
     watch: false,
     preserveWatchOutput: false,
+    cache: false,
     ...args,
   };
 }

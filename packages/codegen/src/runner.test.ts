@@ -1,4 +1,4 @@
-import { access, rm, writeFile } from 'node:fs/promises';
+import { access, readFile, rm, writeFile } from 'node:fs/promises';
 import { platform } from 'node:process';
 import dedent from 'dedent';
 import { afterEach, describe, expect, test, vi } from 'vite-plus/test';
@@ -107,6 +107,99 @@ describe('runCMK', () => {
       'src/a.module.css': '.a_1 { color: red; }',
     });
     await expect(runCMK(fakeParsedArgs({ project: iff.rootDir }), createLoggerSpy())).rejects.toThrow(CMKDisabledError);
+  });
+  describe('--cache', () => {
+    test('writes a cache file under dtsOutDir', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      const cacheText = await readFile(iff.join('generated/.cache'), 'utf-8');
+      const cache = JSON.parse(cacheText);
+      expect(cache).toMatchObject({
+        version: expect.any(String),
+        configHash: expect.any(String),
+        files: { 'src/a.module.css': expect.any(String) },
+      });
+    });
+    test('skips emitting an unchanged file on the second run', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).toBe('STALE');
+    });
+    test('reemits only the file whose content changed', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+        'src/b.module.css': '.b_1 { color: blue; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await writeFile(iff.join('generated/src/b.module.css.d.ts'), 'STALE');
+      await writeFile(iff.join('src/a.module.css'), '.a_2 { color: green; }');
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).not.toBe('STALE');
+      expect(await readFile(iff.join('generated/src/b.module.css.d.ts'), 'utf-8')).toBe('STALE');
+    });
+    test('invalidates the entire cache when cmkOptions change', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await writeFile(
+        iff.join('tsconfig.json'),
+        '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated", "namedExports": true } }',
+      );
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).not.toBe('STALE');
+    });
+    test('invalidates the entire cache when the cache version changes', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      const cacheText = await readFile(iff.join('generated/.cache'), 'utf-8');
+      const cache = JSON.parse(cacheText);
+      await writeFile(iff.join('generated/.cache'), JSON.stringify({ ...cache, version: '0.0.0-old' }));
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).not.toBe('STALE');
+    });
+    test('emits all files when clean is used together', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true, clean: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).not.toBe('STALE');
+    });
+    test('reports a diagnostic for an unchanged file when its dependency changes', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': `@value b_1 from './b.module.css';\n.a_1 { color: red; }`,
+        'src/b.module.css': '.b_1 { color: blue; }',
+      });
+      const loggerSpy1 = createLoggerSpy();
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), loggerSpy1);
+      expect(loggerSpy1.logDiagnostics).not.toHaveBeenCalled();
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await writeFile(iff.join('src/b.module.css'), '.b_2 { color: blue; }');
+      const loggerSpy2 = createLoggerSpy();
+      await runCMK(fakeParsedArgs({ project: iff.rootDir, cache: true }), loggerSpy2);
+      expect(loggerSpy2.logDiagnostics).toHaveBeenCalledTimes(1);
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).toBe('STALE');
+    });
   });
 });
 
