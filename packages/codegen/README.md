@@ -28,6 +28,7 @@ Options:
   --clean                Remove the output directory before generating files.                       [default: false]
   --watch, -w            Watch for changes and regenerate files.                                    [default: false]
   --preserveWatchOutput  Disable wiping the console in watch mode.                                  [default: false]
+  --cache                Only emit files that have changed since the last run.                      [default: false]
 ```
 
 ## Configuration
