@@ -82,6 +82,11 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
   if (args.clean) {
     await rm(project.config.dtsOutDir, { recursive: true, force: true });
   }
+  let cache: Cache | undefined;
+  if (args.cache) {
+    cache = new Cache(project.config);
+    await cache.load();
+  }
   await emitAndReportDiagnostics();
 
   // Watch project files and report diagnostics on changes
@@ -160,7 +165,8 @@ export async function runCMKInWatchMode(args: RunnerArgs, logger: Logger): Promi
     if (!args.preserveWatchOutput) {
       logger.clearScreen();
     }
-    await project.emitDtsFiles();
+    await project.emitDtsFiles(cache);
+    await cache?.save();
     const diagnostics = project.getDiagnostics();
     if (diagnostics.length > 0) {
       logger.logDiagnostics(diagnostics);
