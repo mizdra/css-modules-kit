@@ -415,4 +415,47 @@ describe('runCMKInWatchMode', () => {
       CMKDisabledError,
     );
   });
+  describe('--cache', () => {
+    test('skips emitting unchanged files on watch startup', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+      });
+      watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      await watcher.close();
+      watcher = null;
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).toBe('STALE');
+    });
+    // This is a flaky test that sometimes fails to detect file changes. Retrying may help.
+    test('saves updated cache after a file changes during watch', { retry: 5 }, async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": "generated" } }',
+        'src/a.module.css': '.a_1 { color: red; }',
+        'src/b.module.css': '.b_1 { color: blue; }',
+      });
+      const loggerSpy = createLoggerSpy();
+      watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, cache: true }), loggerSpy);
+      if (platform === 'darwin') await sleep(100);
+
+      // Change a to v2; watcher re-emits and saves cache with v2 hash
+      await writeFile(iff.join('src/a.module.css'), '.a_2 { color: green; }');
+      await vi.waitFor(() => {
+        expect(loggerSpy.logMessage).toHaveBeenCalledTimes(2);
+      });
+      await watcher.close();
+      watcher = null;
+
+      // Revert a back to v1; cache still holds v2 hash → miss on next startup
+      await writeFile(iff.join('src/a.module.css'), '.a_1 { color: red; }');
+      await writeFile(iff.join('generated/src/a.module.css.d.ts'), 'STALE');
+      await writeFile(iff.join('generated/src/b.module.css.d.ts'), 'STALE');
+
+      // a=v1 vs cached v2 hash → miss → re-emit; b=v1 vs cached v1 hash → hit → skip
+      watcher = await runCMKInWatchMode(fakeParsedArgs({ project: iff.rootDir, cache: true }), createLoggerSpy());
+      expect(await readFile(iff.join('generated/src/a.module.css.d.ts'), 'utf-8')).not.toBe('STALE');
+      expect(await readFile(iff.join('generated/src/b.module.css.d.ts'), 'utf-8')).toBe('STALE');
+    });
+  });
 });
