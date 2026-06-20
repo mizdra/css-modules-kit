@@ -2,6 +2,7 @@ import type { Stats } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { basename } from '@css-modules-kit/core';
 import chokidar, { type FSWatcher } from 'chokidar';
+import { Cache } from './cache.js';
 import { CMKDisabledError } from './error.js';
 import type { Logger } from './logger/logger.js';
 import { createProject, type Project } from './project.js';
@@ -16,6 +17,7 @@ interface RunnerArgs {
   project: string;
   clean: boolean;
   preserveWatchOutput: boolean;
+  cache: boolean;
 }
 
 export interface Watcher {
@@ -40,7 +42,13 @@ export async function runCMK(args: RunnerArgs, logger: Logger): Promise<boolean>
   if (args.clean) {
     await rm(project.config.dtsOutDir, { recursive: true, force: true });
   }
-  await project.emitDtsFiles();
+  let cache: Cache | undefined;
+  if (args.cache) {
+    cache = new Cache(project.config);
+    await cache.load();
+  }
+  await project.emitDtsFiles(cache);
+  await cache?.save();
   const diagnostics = project.getDiagnostics();
   if (diagnostics.length > 0) {
     logger.logDiagnostics(diagnostics);
