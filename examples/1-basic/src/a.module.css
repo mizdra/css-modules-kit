@@ -15,3 +15,50 @@
 :root {
   composes: a_1, b_1 from './b.module.css';
 }
+
+/* custom property */
+:root {
+  --custom-property: red;
+  color: var(--custom-property), var(--custom-property from './c.module.css');
+}
+@container style(--custom-property) {}
+
+/* @property */
+@property --property {}
+:root {
+  color: var(--property);
+}
+
+/* @custom-media */
+@custom-media --custom-media (max-width: 30em);
+@media (--custom-media) {}
+
+/* @font-palette-values */
+@font-palette-values --font-palette {}
+:root {
+  font-palette: --font-palette;
+}
+
+/* @position-try */
+@position-try --position-try {}
+:root {
+  position-try-fallbacks: --position-try;
+}
+
+/* anchor-name */
+:root {
+  anchor-name: --anchor;
+  position-anchor: --anchor;
+}
+
+/* view-timeline-name */
+:root {
+  view-timeline-name: --view-timeline;
+  animation-timeline: --view-timeline;
+}
+
+/* scroll-timeline-name */
+:root {
+  scroll-timeline-name: --scroll-timeline;
+  animation-timeline: --scroll-timeline;
+}
