@@ -9,6 +9,7 @@ export default defineConfig([
     languageOptions: {
       tolerant: true,
     },
-    extends: [css.configs.recommended, cssModulesKit.configs.recommended],
+    plugins: { css },
+    extends: [cssModulesKit.configs.recommended],
   },
 ]);

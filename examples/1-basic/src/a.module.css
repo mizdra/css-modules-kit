@@ -2,15 +2,16 @@
 .a_2 { color: red; }
 .a_2 { color: red; }
 @value a_3: red;
-@keyframes a_4 {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-100%); }
-}
-.a_5 {
-  composes: a_1, b_1 from './b.module.css';
-  animation-name: a_4;
-  animation: a_4 1s linear;
-}
-
 @import './b.module.css';
 @value c_1, c_2 as c_alias from './c.module.css';
+
+/** @keyframe */
+@keyframes keyframe {}
+:root {
+  animation-name: keyframe;
+}
+
+/* composes */
+:root {
+  composes: a_1, b_1 from './b.module.css';
+}
