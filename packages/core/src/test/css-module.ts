@@ -25,5 +25,6 @@ export function readAndParseCSSModule(path: string, options?: { keyframes?: bool
     fileName: path,
     includeSyntaxError: false,
     keyframes: options?.keyframes ?? true,
+    dashedIdents: false,
   });
 }

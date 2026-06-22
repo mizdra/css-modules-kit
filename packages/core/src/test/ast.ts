@@ -61,3 +61,10 @@ export function fakeDeclaration(css: string): Declaration {
   if (decl === undefined || decl.type !== 'decl') throw new Error('expected a declaration');
   return decl;
 }
+
+export function fakeAtRule(css: string): AtRule {
+  const root = fakeRoot(css);
+  const atRule = root.first;
+  if (atRule === undefined || atRule.type !== 'atrule') throw new Error('expected an at-rule');
+  return atRule;
+}

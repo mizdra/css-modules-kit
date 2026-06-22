@@ -2,7 +2,12 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.js';
 
-const options: ParseCSSModuleOptions = { fileName: '/test.module.css', includeSyntaxError: true, keyframes: true };
+const options: ParseCSSModuleOptions = {
+  fileName: '/test.module.css',
+  includeSyntaxError: true,
+  keyframes: true,
+  dashedIdents: false,
+};
 
 describe('parseCSSModule', () => {
   test('collects local tokens', () => {
@@ -961,5 +966,26 @@ describe('parseCSSModule', () => {
   test('does not include the token of keyframes if keyframes is false', () => {
     const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
     expect(cssModule.localTokens).toMatchInlineSnapshot(`[]`);
+  });
+  test('collects local tokens from dashed-ident declarations', () => {
+    const cssModule = parseCSSModule(':root { --foo: red; }', { ...options, dashedIdents: true });
+    expect(cssModule.localTokens.map((token) => token.name)).toMatchInlineSnapshot(`
+      [
+        "--foo",
+      ]
+    `);
+  });
+  test('collects token references from dashed-ident references', () => {
+    const cssModule = parseCSSModule(':root { color: var(--foo); }', { ...options, dashedIdents: true });
+    expect(cssModule.tokenReferences.map((ref) => ref.type === 'local' && ref.name)).toMatchInlineSnapshot(`
+      [
+        "--foo",
+      ]
+    `);
+  });
+  test('does not collect dashed-ident tokens if dashedIdents is false', () => {
+    const cssModule = parseCSSModule('.a_1 { --foo: red; color: var(--foo); }', { ...options, dashedIdents: false });
+    expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['a_1']);
+    expect(cssModule.tokenReferences).toStrictEqual([]);
   });
 });

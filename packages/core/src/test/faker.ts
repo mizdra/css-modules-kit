@@ -12,6 +12,7 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
     namedExports: false,
     prioritizeNamedImports: false,
     keyframes: true,
+    dashedIdents: false,
     basePath: '/app',
     configFileName: '/app/tsconfig.json',
     compilerOptions: {},

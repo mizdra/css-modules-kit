@@ -152,7 +152,12 @@ export function createProject(args: ProjectArgs): Project {
       }
       throw new ReadCSSModuleFileError(fileName, error);
     }
-    return parseCSSModule(text, { fileName, includeSyntaxError: true, keyframes: config.keyframes });
+    return parseCSSModule(text, {
+      fileName,
+      includeSyntaxError: true,
+      keyframes: config.keyframes,
+      dashedIdents: config.dashedIdents,
+    });
   }
 
   function getDiagnostics(): Diagnostic[] {

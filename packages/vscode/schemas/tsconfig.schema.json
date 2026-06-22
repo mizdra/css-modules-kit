@@ -35,6 +35,12 @@
           "default": true,
           "title": "keyframes",
           "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of keyframes in the d.ts file."
+        },
+        "dashedIdents": {
+          "type": "boolean",
+          "default": false,
+          "title": "dashedIdents",
+          "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of `<dashed-ident>`s (custom properties such as `--foo`) in the d.ts file."
         }
       }
     }
