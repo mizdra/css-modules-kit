@@ -1,7 +1,7 @@
 {
   "name": "css-modules-kit-vscode",
   "displayName": "CSS Modules Kit",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
   "description": "The VS Code extension for CSS Modules",
   "categories": [
