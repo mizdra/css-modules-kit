@@ -1,5 +1,16 @@
 # @css-modules-kit/codegen
 
+## 1.4.0
+
+### Minor Changes
+
+- [#420](https://github.com/mizdra/css-modules-kit/pull/420) [`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd) - feat(core, ts-plugin, codegen, vscode): support `<dashed-ident>` tokens via the `dashedIdents` option
+
+### Patch Changes
+
+- Updated dependencies [[`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd)]:
+  - @css-modules-kit/core@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes
