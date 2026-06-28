@@ -1,9 +1,9 @@
 import dedent from 'dedent';
 import { expect, test } from 'vite-plus/test';
 import { fakeAtImports, fakeRoot } from '../test/ast.js';
-import { parseAtImport } from './at-import-parser.js';
+import { parseImportAtRule } from './at-import-parser.js';
 
-test('parseAtImport', () => {
+test('parseImportAtRule', () => {
   const atImports = fakeAtImports(
     fakeRoot(dedent`
       @import;
@@ -13,7 +13,7 @@ test('parseAtImport', () => {
       @import "test.css" print;
     `),
   );
-  expect(atImports.map(parseAtImport)).toMatchInlineSnapshot(`
+  expect(atImports.map(parseImportAtRule)).toMatchInlineSnapshot(`
     [
       undefined,
       {

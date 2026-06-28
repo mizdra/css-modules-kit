@@ -2,14 +2,14 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { fakeAtRule, fakeDeclaration } from '../test/ast.js';
 import {
-  isDashedIdentAtRule,
+  isDashedIdentAtRuleName,
   parseDashedIdentAtRule,
   parseDashedIdentContainerQuery,
   parseDashedIdentDecl,
   parseDashedIdentMediaQuery,
 } from './dashed-ident-parser.js';
 
-describe('isDashedIdentAtRule', () => {
+describe('isDashedIdentAtRuleName', () => {
   test.each([
     ['property', true],
     ['custom-media', true],
@@ -18,7 +18,7 @@ describe('isDashedIdentAtRule', () => {
     ['keyframes', false],
     ['import', false],
   ])('%s -> %s', (name, expected) => {
-    expect(isDashedIdentAtRule(name)).toBe(expected);
+    expect(isDashedIdentAtRuleName(name)).toBe(expected);
   });
 });
 

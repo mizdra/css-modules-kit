@@ -25,7 +25,7 @@ interface ParseAtKeyframesResult {
  * @param atKeyframes The @keyframes at-rule to parse
  * @returns Parsed keyframe information and diagnostics
  */
-export function parseAtKeyframes(atKeyframes: AtRule): ParseAtKeyframesResult {
+export function parseKeyframesAtRule(atKeyframes: AtRule): ParseAtKeyframesResult {
   // Extract keyframe name from params
   // e.g., "@keyframes fadeIn { ... }" -> keyframeName = "fadeIn"
   // e.g., "@keyframes :local(slideOut) { ... }" -> keyframeName = ":local(slideOut)"

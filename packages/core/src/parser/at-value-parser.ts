@@ -38,7 +38,7 @@ interface ParseAtValueResult {
  * MEMO: css-modules-kit does not support `@value` with parentheses (e.g., `@value (a, b) from '...';`) to simplify the implementation.
  * MEMO: css-modules-kit does not support `@value` with variable module name (e.g., `@value a from moduleName;`) to simplify the implementation.
  */
-export function parseAtValue(atValue: AtRule): ParseAtValueResult {
+export function parseValueAtRule(atValue: AtRule): ParseAtValueResult {
   const nodes = postcssValueParser(atValue.params).nodes;
   if (isValueImporter(nodes)) {
     return parseValueImporter(atValue, nodes);
