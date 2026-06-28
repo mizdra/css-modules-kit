@@ -50,6 +50,7 @@ export function createCSSLanguagePlugin(
         // To avoid this, ts-plugin does not report invalid syntax errors.
         includeSyntaxError: false,
         keyframes: config.keyframes,
+        dashedIdents: config.dashedIdents,
       });
       // oxlint-disable-next-line prefer-const
       let { text, mapping, linkedCodeMapping } = generateDts(cssModule, {

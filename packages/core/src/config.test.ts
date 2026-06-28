@@ -27,6 +27,7 @@ describe('readConfigFile', () => {
         namedExports: false,
         prioritizeNamedImports: false,
         keyframes: true,
+        dashedIdents: false,
         enabled: false,
         compilerOptions: expect.any(Object),
         wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
@@ -48,6 +49,7 @@ describe('readConfigFile', () => {
             "namedExports": true,
             "prioritizeNamedImports": true,
             "keyframes": false,
+            "dashedIdents": true,
             "enabled": true
           }
         }
@@ -62,6 +64,7 @@ describe('readConfigFile', () => {
         namedExports: true,
         prioritizeNamedImports: true,
         keyframes: false,
+        dashedIdents: true,
         enabled: true,
         compilerOptions: expect.objectContaining({
           module: ts.ModuleKind.ESNext,
@@ -86,6 +89,7 @@ describe('readConfigFile', () => {
               "namedExports": true,
               "prioritizeNamedImports": true,
               "keyframes": false,
+              "dashedIdents": true,
               "enabled": true
             }
           }
@@ -101,6 +105,7 @@ describe('readConfigFile', () => {
           namedExports: true,
           prioritizeNamedImports: true,
           keyframes: false,
+          dashedIdents: true,
           enabled: true,
           compilerOptions: expect.objectContaining({
             module: ts.ModuleKind.ESNext,

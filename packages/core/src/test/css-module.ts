@@ -14,7 +14,10 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
   };
 }
 
-export function readAndParseCSSModule(path: string, options?: { keyframes?: boolean }): CSSModule | undefined {
+export function readAndParseCSSModule(
+  path: string,
+  options?: { keyframes?: boolean; dashedIdents?: boolean },
+): CSSModule | undefined {
   let text: string;
   try {
     text = readFileSync(path, 'utf-8');
@@ -25,5 +28,6 @@ export function readAndParseCSSModule(path: string, options?: { keyframes?: bool
     fileName: path,
     includeSyntaxError: false,
     keyframes: options?.keyframes ?? true,
+    dashedIdents: options?.dashedIdents ?? false,
   });
 }

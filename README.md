@@ -227,6 +227,23 @@ Determines whether to generate the [token](docs/glossary.md#token) of keyframes 
 }
 ```
 
+### `cmkOptions.dashedIdents`
+
+Type: `boolean`, Default: `false`
+
+Determines whether to generate the [token](docs/glossary.md#token) of `<dashed-ident>`s (custom properties such as `--foo`) in the d.ts file.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "dashedIdents": true,
+  },
+}
+```
+
 ## Limitations
 
 Due to implementation constraints and technical reasons, css-modules-kit has various limitations.
