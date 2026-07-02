@@ -552,6 +552,33 @@ describe('parseDashedIdentContainerQuery', () => {
     `);
   });
 
+  // A style query tests the computed value of a property rather than declaring it. So even for
+  // a name-defining property like `anchor-name`, the queried `--foo` refers to a name declared
+  // elsewhere and must be a reference, not a token definition.
+  test('extracts a reference from a name-defining property in a style query', () => {
+    expect(parseDashedIdentContainerQuery(fakeAtRule('@container style(anchor-name: --foo) {}')))
+      .toMatchInlineSnapshot(`
+        [
+          {
+            "loc": {
+              "end": {
+                "column": 36,
+                "line": 1,
+                "offset": 35,
+              },
+              "start": {
+                "column": 31,
+                "line": 1,
+                "offset": 30,
+              },
+            },
+            "name": "--foo",
+            "type": "local",
+          },
+        ]
+      `);
+  });
+
   test('extracts a reference from a style feature nested in a style query', () => {
     expect(parseDashedIdentContainerQuery(fakeAtRule('@container style((--accent)) {}'))).toMatchInlineSnapshot(`
       [
