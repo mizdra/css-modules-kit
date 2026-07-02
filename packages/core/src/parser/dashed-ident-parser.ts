@@ -8,7 +8,6 @@ import type {
   Token,
   TokenReference,
 } from '../type.js';
-import { calcDeclValueLoc } from './decl-value-location.js';
 
 /** Properties that declare a `<dashed-ident>` in their value. */
 const DECLARING_PROP_RE = /^(?:anchor-name|view-timeline-name|scroll-timeline-name|view-timeline|scroll-timeline)$/iu;
@@ -103,8 +102,8 @@ export function isContainerAtRuleName(name: string): boolean {
  * `@media (--foo) { ... }`, which references a `@custom-media --foo`. References nested
  * in a condition (e.g. `@media ((--foo))` or `@media (not (--foo))`) are also extracted.
  */
-export function parseDashedIdentMediaQuery(atRule: AtRule): LocalTokenReference[] {
-  const references: LocalTokenReference[] = [];
+export function parseDashedIdentMediaQuery(atRule: AtRule): TokenReference[] {
+  const references: TokenReference[] = [];
   // A custom media reference is always parenthesized (it sits where a media feature does),
   // which postcss-value-parser represents as a function node with an empty name.
   for (const node of postcssValueParser(atRule.params).nodes) {
@@ -121,8 +120,8 @@ export function parseDashedIdentMediaQuery(atRule: AtRule): LocalTokenReference[
  * Boolean style queries (e.g. `style((--a: red) or (--b: blue))`) and `style()` nested
  * in a condition are also extracted.
  */
-export function parseDashedIdentContainerQuery(atRule: AtRule): LocalTokenReference[] {
-  const references: LocalTokenReference[] = [];
+export function parseDashedIdentContainerQuery(atRule: AtRule): TokenReference[] {
+  const references: TokenReference[] = [];
   const walk = (nodes: postcssValueParser.Node[]): void => {
     for (const node of nodes) {
       if (node.type !== 'function') continue;
@@ -140,31 +139,26 @@ export function parseDashedIdentContainerQuery(atRule: AtRule): LocalTokenRefere
 /**
  * Collect `<dashed-ident>` references from the `<media-condition>` in `@media (<media-condition>)`
  * and the `<style-query>` in `@container style(<style-query>)`. Recurse into nested groups
- * (e.g. `(--a) or (--b)`, `not (--a)`) as well as functions within values (e.g. `var(--b)` in `--a: var(--b)`).
+ * (e.g. `(--a) or (--b)`, `not (--a)`). Functions within values (e.g. `var(--b)` in `--a: var(--b)`)
+ * are parsed like declaration values, so the `from` clause of `var()` is honored.
  */
-function collectFromConditionOrQuery(atRule: AtRule, nodes: postcssValueParser.Node[]): LocalTokenReference[] {
-  const references: LocalTokenReference[] = [];
+function collectFromConditionOrQuery(atRule: AtRule, nodes: postcssValueParser.Node[]): TokenReference[] {
+  const references: TokenReference[] = [];
   const walk = (nodes: postcssValueParser.Node[]): void => {
     const nameNode = nodes.find((n) => n.type === 'word' && n.value.startsWith('--'));
-    if (nameNode) references.push(createAtRuleParamReference(atRule, nameNode));
+    if (nameNode) references.push(createLocalReference(atRule, nameNode));
     for (const node of nodes) {
-      if (node.type === 'function') walk(node.nodes);
+      if (node.type !== 'function') continue;
+      // A parenthesized group is represented as a function node with an empty name.
+      if (node.value === '') {
+        walk(node.nodes);
+      } else {
+        references.push(...collectFromValueNodes(atRule, [node], 'none').references);
+      }
     }
   };
   walk(nodes);
   return references;
-}
-
-function createAtRuleParamReference(atRule: AtRule, node: postcssValueParser.Node): LocalTokenReference {
-  const base = `@${atRule.name}${atRule.raws.afterName ?? ''}`.length;
-  return {
-    type: 'local',
-    name: node.value,
-    loc: {
-      start: atRule.positionBy({ index: base + node.sourceIndex }),
-      end: atRule.positionBy({ index: base + node.sourceIndex + node.value.length }),
-    },
-  };
 }
 
 function calcPropLoc(decl: Declaration): Location {
@@ -174,7 +168,31 @@ function calcPropLoc(decl: Declaration): Location {
   };
 }
 
+/**
+ * Calculate the location of a range in the value parsed by postcss-value-parser,
+ * given its source index and length. The parsed value is the declaration value
+ * when `parent` is a declaration, or the params when `parent` is an at-rule.
+ */
+function calcValueLoc(parent: Declaration | AtRule, sourceIndex: number, length: number): Location {
+  const base =
+    parent.type === 'decl'
+      ? parent.prop.length + parent.raws.between!.length
+      : `@${parent.name}${parent.raws.afterName ?? ''}`.length;
+  return {
+    start: parent.positionBy({ index: base + sourceIndex }),
+    end: parent.positionBy({ index: base + sourceIndex + length }),
+  };
+}
+
 function collectFromDeclValue(decl: Declaration): ParseDeclResult {
+  return collectFromValueNodes(decl, postcssValueParser(decl.value).nodes, getBareDashedIdentRole(decl.prop));
+}
+
+function collectFromValueNodes(
+  parent: Declaration | AtRule,
+  nodes: postcssValueParser.Node[],
+  role: BareDashedIdentRole,
+): ParseDeclResult {
   const result: ParseDeclResult = { localTokens: [], references: [] };
   const walk = (nodes: postcssValueParser.Node[], role: BareDashedIdentRole): void => {
     for (const node of nodes) {
@@ -192,9 +210,9 @@ function collectFromDeclValue(decl: Declaration): ParseDeclResult {
         }
       } else if (node.type === 'word' && node.value.startsWith('--')) {
         if (role === 'definition') {
-          result.localTokens.push({ name: node.value, loc: calcNodeLoc(decl, node) });
+          result.localTokens.push({ name: node.value, loc: calcNodeLoc(parent, node) });
         } else if (role === 'reference') {
-          result.references.push(createLocalReference(decl, node));
+          result.references.push(createLocalReference(parent, node));
         }
       }
     }
@@ -204,7 +222,7 @@ function collectFromDeclValue(decl: Declaration): ParseDeclResult {
     // `var( <first-arg> , <fallback>? )`: the first argument holds the referenced custom
     // property name (and an optional `from` clause); the fallback is an arbitrary value.
     const [firstArg, fallback] = splitAtFirstComma(fn.nodes);
-    const reference = parseVarFirstArg(decl, firstArg);
+    const reference = parseVarFirstArg(parent, firstArg);
     if (reference) result.references.push(reference);
     walk(fallback, 'none');
   };
@@ -215,56 +233,59 @@ function collectFromDeclValue(decl: Declaration): ParseDeclResult {
     const [firstArg, fallback] = splitAtFirstComma(fn.nodes);
     const nameNode = firstArg.find((n) => n.type !== 'space');
     if (nameNode?.type === 'word' && nameNode.value.startsWith('--')) {
-      result.references.push(createLocalReference(decl, nameNode));
+      result.references.push(createLocalReference(parent, nameNode));
     }
     walk(fallback, 'none');
   };
 
-  walk(postcssValueParser(decl.value).nodes, getBareDashedIdentRole(decl.prop));
+  walk(nodes, role);
   return result;
 }
 
 /** Parse `--foo` or `--foo from <specifier>` from the first argument of a `var()` call. */
-function parseVarFirstArg(decl: Declaration, firstArg: postcssValueParser.Node[]): TokenReference | undefined {
+function parseVarFirstArg(
+  parent: Declaration | AtRule,
+  firstArg: postcssValueParser.Node[],
+): TokenReference | undefined {
   const meaningful = firstArg.filter((n) => n.type !== 'space');
   const nameNode = meaningful[0];
   if (nameNode?.type !== 'word' || !nameNode.value.startsWith('--')) return undefined;
 
   const fromIndex = meaningful.findIndex((n) => n.type === 'word' && n.value.toLowerCase() === 'from');
-  if (fromIndex === -1) return createLocalReference(decl, nameNode);
+  if (fromIndex === -1) return createLocalReference(parent, nameNode);
 
   const tail = meaningful.slice(fromIndex + 1);
   const specifier = tail.length === 1 ? tail[0] : undefined;
   if (specifier?.type === 'string') {
-    return createExternalReference(decl, nameNode, specifier);
+    return createExternalReference(parent, nameNode, specifier);
   }
   // `from global` does not produce a token reference.
   if (specifier?.type === 'word' && specifier.value.toLowerCase() === 'global') {
     return undefined;
   }
-  return createLocalReference(decl, nameNode);
+  return createLocalReference(parent, nameNode);
 }
 
-function createLocalReference(decl: Declaration, node: postcssValueParser.Node): LocalTokenReference {
-  return { type: 'local', name: node.value, loc: calcNodeLoc(decl, node) };
+function createLocalReference(parent: Declaration | AtRule, node: postcssValueParser.Node): LocalTokenReference {
+  return { type: 'local', name: node.value, loc: calcNodeLoc(parent, node) };
 }
 
 function createExternalReference(
-  decl: Declaration,
+  parent: Declaration | AtRule,
   nameNode: postcssValueParser.Node,
   specifierNode: postcssValueParser.StringNode,
 ): ExternalTokenReference {
   return {
     type: 'external',
-    entries: [{ name: nameNode.value, loc: calcNodeLoc(decl, nameNode) }],
+    entries: [{ name: nameNode.value, loc: calcNodeLoc(parent, nameNode) }],
     from: specifierNode.value,
     // The location of the specifier without quotes.
-    fromLoc: calcDeclValueLoc(decl, specifierNode.sourceIndex + 1, specifierNode.value.length),
+    fromLoc: calcValueLoc(parent, specifierNode.sourceIndex + 1, specifierNode.value.length),
   };
 }
 
-function calcNodeLoc(decl: Declaration, node: postcssValueParser.Node): Location {
-  return calcDeclValueLoc(decl, node.sourceIndex, node.value.length);
+function calcNodeLoc(parent: Declaration | AtRule, node: postcssValueParser.Node): Location {
+  return calcValueLoc(parent, node.sourceIndex, node.value.length);
 }
 
 /** Split function arguments at the first top-level comma into the first argument and the remaining fallback nodes. */

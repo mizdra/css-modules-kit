@@ -22,6 +22,7 @@
   color: var(--custom-property), var(--custom-property from './c.module.css');
 }
 @container style(--custom-property) {}
+@container style(color: var(--custom-property)) {}
 
 /* @property */
 @property --property {}
