@@ -26,12 +26,8 @@ interface ParseAtKeyframesResult {
  * @returns Parsed keyframe information and diagnostics
  */
 export function parseKeyframesAtRule(atKeyframes: AtRule): ParseAtKeyframesResult {
-  // Extract keyframe name from params
-  // e.g., "@keyframes fadeIn { ... }" -> keyframeName = "fadeIn"
-  // e.g., "@keyframes :local(slideOut) { ... }" -> keyframeName = ":local(slideOut)"
   const keyframeName = atKeyframes.params;
 
-  // Ignore empty keyframe names
   if (keyframeName === '') {
     return { diagnostics: [] };
   }
@@ -41,7 +37,6 @@ export function parseKeyframesAtRule(atKeyframes: AtRule): ParseAtKeyframesResul
     end: atKeyframes.positionBy({ index: `@keyframes${atKeyframes.raws.afterName!}${keyframeName}`.length }),
   };
 
-  // Handle :local() and :global() wrappers
   if (keyframeName.startsWith(':local(') && keyframeName.endsWith(')')) {
     // For simplicity of implementation, css-modules-kit does not support `:local(...)`.
     return {
@@ -55,7 +50,6 @@ export function parseKeyframesAtRule(atKeyframes: AtRule): ParseAtKeyframesResul
       ],
     };
   } else if (keyframeName.startsWith(':global(') && keyframeName.endsWith(')')) {
-    // Ignore keyframes wrapped in :global()
     return { diagnostics: [] };
   }
 
