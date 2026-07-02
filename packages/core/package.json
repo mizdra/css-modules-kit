@@ -46,7 +46,7 @@
     "postcss-value-parser": "^4.2.0"
   },
   "peerDependencies": {
-    "typescript": ">=5.7.3"
+    "typescript": "^5.7.3 || ^6.0.0"
   },
   "engines": {
     "node": ">=22.12.0"
