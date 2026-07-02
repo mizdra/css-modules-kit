@@ -58,7 +58,7 @@ function isValueImporter(nodes: postcssValueParser.Node[]): boolean {
 }
 
 function findFromKeywordIndex(nodes: postcssValueParser.Node[]): number {
-  return nodes.findLastIndex((node) => node.type === 'word' && node.value === 'from');
+  return nodes.findLastIndex((node) => node.type === 'word' && node.value.toLowerCase() === 'from');
 }
 
 function parseValueImporter(atValue: AtRule, nodes: postcssValueParser.Node[]): ParseAtValueResult {
@@ -85,7 +85,7 @@ function parseValueImporter(atValue: AtRule, nodes: postcssValueParser.Node[]): 
       name: nameNode.value,
       loc: calcAtValueParamsLoc(atValue, nameNode.sourceIndex, nameNode.value.length),
     };
-    const localNode = words[1]?.value === 'as' ? words[2] : undefined;
+    const localNode = words[1]?.value.toLowerCase() === 'as' ? words[2] : undefined;
     if (localNode !== undefined) {
       entry.localName = localNode.value;
       entry.localLoc = calcAtValueParamsLoc(atValue, localNode.sourceIndex, localNode.value.length);
