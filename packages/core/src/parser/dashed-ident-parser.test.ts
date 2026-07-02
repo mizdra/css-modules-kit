@@ -575,6 +575,63 @@ describe('parseDashedIdentContainerQuery', () => {
     `);
   });
 
+  test('extracts an external reference from a var() with a file specifier in a style query value', () => {
+    expect(parseDashedIdentContainerQuery(fakeAtRule(`@container style(--a: var(--b from "./c.module.css")) {}`)))
+      .toMatchInlineSnapshot(`
+        [
+          {
+            "loc": {
+              "end": {
+                "column": 21,
+                "line": 1,
+                "offset": 20,
+              },
+              "start": {
+                "column": 18,
+                "line": 1,
+                "offset": 17,
+              },
+            },
+            "name": "--a",
+            "type": "local",
+          },
+          {
+            "entries": [
+              {
+                "loc": {
+                  "end": {
+                    "column": 30,
+                    "line": 1,
+                    "offset": 29,
+                  },
+                  "start": {
+                    "column": 27,
+                    "line": 1,
+                    "offset": 26,
+                  },
+                },
+                "name": "--b",
+              },
+            ],
+            "from": "./c.module.css",
+            "fromLoc": {
+              "end": {
+                "column": 51,
+                "line": 1,
+                "offset": 50,
+              },
+              "start": {
+                "column": 37,
+                "line": 1,
+                "offset": 36,
+              },
+            },
+            "type": "external",
+          },
+        ]
+      `);
+  });
+
   test('extracts a reference from a var() in a style query value', () => {
     expect(parseDashedIdentContainerQuery(fakeAtRule('@container style(--accent: var(--theme)) {}')))
       .toMatchInlineSnapshot(`
