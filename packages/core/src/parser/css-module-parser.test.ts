@@ -983,6 +983,18 @@ describe('parseCSSModule', () => {
       ]
     `);
   });
+  test('matches at-rule names case-insensitively', () => {
+    const cssModule = parseCSSModule(
+      dedent`
+        @IMPORT './a.module.css';
+        @VALUE b: red;
+        @KEYFRAMES fade {}
+      `,
+      options,
+    );
+    expect(cssModule.tokenImporters.map((importer) => importer.from)).toStrictEqual(['./a.module.css']);
+    expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['b', 'fade']);
+  });
   test('does not collect dashed-ident tokens if dashedIdents is false', () => {
     const cssModule = parseCSSModule('.a_1 { --foo: red; color: var(--foo); }', { ...options, dashedIdents: false });
     expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['a_1']);
