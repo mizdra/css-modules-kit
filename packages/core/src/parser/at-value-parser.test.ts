@@ -1,9 +1,9 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { fakeAtValues, fakeRoot } from '../test/ast.js';
-import { parseAtValue } from './at-value-parser.js';
+import { parseValueAtRule } from './at-value-parser.js';
 
-describe('parseAtValue', () => {
+describe('parseValueAtRule', () => {
   test('parses syntax supported by css-loader', () => {
     const atValues = fakeAtValues(
       fakeRoot(dedent`
@@ -19,7 +19,7 @@ describe('parseAtValue', () => {
          @value  withSpace2 ,  withSpace3  as  alias2  from  "test.css" ;
       `),
     );
-    const result = atValues.map(parseAtValue);
+    const result = atValues.map(parseValueAtRule);
     expect(result).toMatchInlineSnapshot(`
       [
         {
@@ -428,7 +428,7 @@ describe('parseAtValue', () => {
         @value \31 e: #000;
       `),
     );
-    const result = atValues.map(parseAtValue);
+    const result = atValues.map(parseValueAtRule);
     expect(result).toMatchInlineSnapshot(`
       [
         {

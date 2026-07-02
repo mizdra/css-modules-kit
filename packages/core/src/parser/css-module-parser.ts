@@ -15,46 +15,42 @@ import {
   parseAnimationNameProp,
   parseAnimationProp,
 } from './animation-parser.js';
-import { parseAtImport } from './at-import-parser.js';
-import { parseAtValue } from './at-value-parser.js';
+import { parseImportAtRule } from './at-import-parser.js';
+import { parseValueAtRule } from './at-value-parser.js';
 import { isComposesProp, parseComposesProp } from './composes-parser.js';
 import {
-  isContainerAtRule,
-  isDashedIdentAtRule,
-  isMediaAtRule,
+  isContainerAtRuleName,
+  isDashedIdentAtRuleName,
+  isMediaAtRuleName,
   parseDashedIdentAtRule,
   parseDashedIdentContainerQuery,
   parseDashedIdentDecl,
   parseDashedIdentMediaQuery,
 } from './dashed-ident-parser.js';
-import { parseAtKeyframes } from './key-frame-parser.js';
+import { parseKeyframesAtRule } from './key-frame-parser.js';
 import { parseRule } from './rule-parser.js';
 
-type AtImport = AtRule & { name: 'import' };
-type AtValue = AtRule & { name: 'value' };
-type AtKeyframes = AtRule & { name: 'keyframes' };
-
-function isAtRuleNode(node: Node): node is AtRule {
+function isAtRule(node: Node): node is AtRule {
   return node.type === 'atrule';
 }
 
-function isAtImportNode(node: Node): node is AtImport {
-  return isAtRuleNode(node) && node.name === 'import';
+function isImportAtRuleName(name: string): boolean {
+  return name === 'import';
 }
 
-function isAtValueNode(node: Node): node is AtValue {
-  return isAtRuleNode(node) && node.name === 'value';
+function isValueAtRuleName(name: string): boolean {
+  return name === 'value';
 }
 
-function isAtKeyframesNode(node: Node): node is AtKeyframes {
-  return isAtRuleNode(node) && node.name === 'keyframes';
+function isKeyframesAtRuleName(name: string): boolean {
+  return name === 'keyframes';
 }
 
-function isRuleNode(node: Node): node is Rule {
+function isRule(node: Node): node is Rule {
   return node.type === 'rule';
 }
 
-function isDeclarationNode(node: Node): node is Declaration {
+function isDeclaration(node: Node): node is Declaration {
   return node.type === 'decl';
 }
 
@@ -67,55 +63,59 @@ function collectTokens(ast: Root, keyframes: boolean, dashedIdents: boolean) {
   const tokenImporters: TokenImporter[] = [];
   const tokenReferences: TokenReference[] = [];
   ast.walk((node) => {
-    if (dashedIdents && isAtRuleNode(node) && isDashedIdentAtRule(node.name)) {
-      const { token, diagnostics } = parseDashedIdentAtRule(node);
-      allDiagnostics.push(...diagnostics);
-      if (token) localTokens.push(token);
-    } else if (dashedIdents && isAtRuleNode(node) && isMediaAtRule(node.name)) {
-      tokenReferences.push(...parseDashedIdentMediaQuery(node));
-    } else if (dashedIdents && isAtRuleNode(node) && isContainerAtRule(node.name)) {
-      tokenReferences.push(...parseDashedIdentContainerQuery(node));
-    } else if (isAtImportNode(node)) {
-      const parsed = parseAtImport(node);
-      if (parsed !== undefined) {
-        tokenImporters.push({ type: 'all', ...parsed });
+    if (isAtRule(node)) {
+      if (dashedIdents && isDashedIdentAtRuleName(node.name)) {
+        const { token, diagnostics } = parseDashedIdentAtRule(node);
+        allDiagnostics.push(...diagnostics);
+        if (token) localTokens.push(token);
+      } else if (dashedIdents && isMediaAtRuleName(node.name)) {
+        tokenReferences.push(...parseDashedIdentMediaQuery(node));
+      } else if (dashedIdents && isContainerAtRuleName(node.name)) {
+        tokenReferences.push(...parseDashedIdentContainerQuery(node));
+      } else if (isImportAtRuleName(node.name)) {
+        const parsed = parseImportAtRule(node);
+        if (parsed !== undefined) {
+          tokenImporters.push({ type: 'all', ...parsed });
+        }
+      } else if (isValueAtRuleName(node.name)) {
+        const { atValue, diagnostics } = parseValueAtRule(node);
+        allDiagnostics.push(...diagnostics);
+        if (atValue === undefined) return;
+        if (atValue.type === 'declaration') {
+          localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
+        } else if (atValue.type === 'importer') {
+          const { type: _, ...rest } = atValue;
+          tokenImporters.push({ ...rest, type: 'named' });
+        }
+      } else if (keyframes && isKeyframesAtRuleName(node.name)) {
+        const { keyframe, diagnostics } = parseKeyframesAtRule(node);
+        allDiagnostics.push(...diagnostics);
+        if (keyframe) {
+          localTokens.push({ name: keyframe.name, loc: keyframe.loc, declarationLoc: keyframe.declarationLoc });
+        }
       }
-    } else if (isAtValueNode(node)) {
-      const { atValue, diagnostics } = parseAtValue(node);
-      allDiagnostics.push(...diagnostics);
-      if (atValue === undefined) return;
-      if (atValue.type === 'declaration') {
-        localTokens.push({ name: atValue.name, loc: atValue.loc, declarationLoc: atValue.declarationLoc });
-      } else if (atValue.type === 'importer') {
-        const { type: _, ...rest } = atValue;
-        tokenImporters.push({ ...rest, type: 'named' });
-      }
-    } else if (keyframes && isAtKeyframesNode(node)) {
-      const { keyframe, diagnostics } = parseAtKeyframes(node);
-      allDiagnostics.push(...diagnostics);
-      if (keyframe) {
-        localTokens.push({ name: keyframe.name, loc: keyframe.loc, declarationLoc: keyframe.declarationLoc });
-      }
-    } else if (isRuleNode(node)) {
+    } else if (isRule(node)) {
       const { classSelectors, diagnostics } = parseRule(node);
       allDiagnostics.push(...diagnostics);
       for (const classSelector of classSelectors) {
         localTokens.push(classSelector);
       }
-    } else if (keyframes && isDeclarationNode(node) && isAnimationNameProp(node.prop)) {
-      const { references, diagnostics } = parseAnimationNameProp(node);
-      allDiagnostics.push(...diagnostics);
-      tokenReferences.push(...references);
-    } else if (keyframes && isDeclarationNode(node) && isAnimationProp(node.prop)) {
-      const { references, diagnostics } = parseAnimationProp(node);
-      allDiagnostics.push(...diagnostics);
-      tokenReferences.push(...references);
-    } else if (isDeclarationNode(node) && isComposesProp(node.prop)) {
-      tokenReferences.push(...parseComposesProp(node));
-    } else if (dashedIdents && isDeclarationNode(node)) {
-      const { localTokens: tokens, references } = parseDashedIdentDecl(node);
-      localTokens.push(...tokens);
-      tokenReferences.push(...references);
+    } else if (isDeclaration(node)) {
+      if (keyframes && isAnimationNameProp(node.prop)) {
+        const { references, diagnostics } = parseAnimationNameProp(node);
+        allDiagnostics.push(...diagnostics);
+        tokenReferences.push(...references);
+      } else if (keyframes && isAnimationProp(node.prop)) {
+        const { references, diagnostics } = parseAnimationProp(node);
+        allDiagnostics.push(...diagnostics);
+        tokenReferences.push(...references);
+      } else if (isComposesProp(node.prop)) {
+        tokenReferences.push(...parseComposesProp(node));
+      } else if (dashedIdents) {
+        const { localTokens: tokens, references } = parseDashedIdentDecl(node);
+        localTokens.push(...tokens);
+        tokenReferences.push(...references);
+      }
     }
   });
   return { localTokens, tokenImporters, tokenReferences, diagnostics: allDiagnostics };

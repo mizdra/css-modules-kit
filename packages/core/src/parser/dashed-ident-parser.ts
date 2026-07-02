@@ -33,7 +33,7 @@ function isCustomPropertyDecl(prop: string): boolean {
   return prop.startsWith('--');
 }
 
-export function isDashedIdentAtRule(name: string): boolean {
+export function isDashedIdentAtRuleName(name: string): boolean {
   return DASHED_IDENT_AT_RULE_NAMES.has(name.toLowerCase());
 }
 
@@ -90,11 +90,11 @@ export function parseDashedIdentAtRule(atRule: AtRule): ParseAtRuleResult {
   };
 }
 
-export function isMediaAtRule(name: string): boolean {
+export function isMediaAtRuleName(name: string): boolean {
   return name.toLowerCase() === 'media';
 }
 
-export function isContainerAtRule(name: string): boolean {
+export function isContainerAtRuleName(name: string): boolean {
   return name.toLowerCase() === 'container';
 }
 

@@ -12,7 +12,7 @@ interface ParsedAtImport {
  * @param atImport The `@import` rule to parse.
  * @returns The specifier of the imported file.
  */
-export function parseAtImport(atImport: AtRule): ParsedAtImport | undefined {
+export function parseImportAtRule(atImport: AtRule): ParsedAtImport | undefined {
   const firstNode = postcssValueParser(atImport.params).nodes[0];
   if (firstNode === undefined) return undefined;
   if (firstNode.type === 'string') return convertParsedAtImport(atImport, firstNode);

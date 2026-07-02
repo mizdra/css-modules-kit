@@ -1,9 +1,9 @@
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { fakeAtKeyframes, fakeRoot } from '../test/ast.js';
-import { parseAtKeyframes } from './key-frame-parser.js';
+import { parseKeyframesAtRule } from './key-frame-parser.js';
 
-describe('parseAtKeyframes', () => {
+describe('parseKeyframesAtRule', () => {
   test('valid', () => {
     const atKeyframes = fakeAtKeyframes(
       fakeRoot(dedent`
@@ -18,7 +18,7 @@ describe('parseAtKeyframes', () => {
         @keyframes :global(global) {}
       `),
     );
-    const result = atKeyframes.map(parseAtKeyframes);
+    const result = atKeyframes.map(parseKeyframesAtRule);
     expect(result).toMatchInlineSnapshot(`
       [
         {
@@ -127,7 +127,7 @@ describe('parseAtKeyframes', () => {
         @keyframes :local(local) {}
       `),
     );
-    const result = atKeyframes.map(parseAtKeyframes);
+    const result = atKeyframes.map(parseKeyframesAtRule);
     expect(result).toMatchInlineSnapshot(`
       [
         {
