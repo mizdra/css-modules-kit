@@ -43,7 +43,7 @@ function hasFromClause(item: postcssValueParser.Node[]): boolean {
 }
 
 function findFromKeywordIndex(item: postcssValueParser.Node[]): number {
-  return item.findLastIndex((node) => node.type === 'word' && node.value === 'from');
+  return item.findLastIndex((node) => node.type === 'word' && node.value.toLowerCase() === 'from');
 }
 
 /**
@@ -53,7 +53,7 @@ function findFromKeywordIndex(item: postcssValueParser.Node[]): number {
 function isValidFromClauseTail(tail: postcssValueParser.Node[]): boolean {
   if (tail.length !== 1) return false;
   const node = tail[0]!;
-  return node.type === 'string' || (node.type === 'word' && node.value === 'global');
+  return node.type === 'string' || (node.type === 'word' && node.value.toLowerCase() === 'global');
 }
 
 /** Create a local token reference for each class name in `nodes`. */

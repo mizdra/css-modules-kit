@@ -411,6 +411,64 @@ describe('parseValueAtRule', () => {
       ]
     `);
   });
+  test('matches the `from` and `as` keywords case-insensitively', () => {
+    const atValues = fakeAtValues(fakeRoot(`@value import1 AS alias1 FROM "test.css";`));
+    const result = atValues.map(parseValueAtRule);
+    expect(result).toMatchInlineSnapshot(`
+      [
+        {
+          "atValue": {
+            "entries": [
+              {
+                "loc": {
+                  "end": {
+                    "column": 15,
+                    "line": 1,
+                    "offset": 14,
+                  },
+                  "start": {
+                    "column": 8,
+                    "line": 1,
+                    "offset": 7,
+                  },
+                },
+                "localLoc": {
+                  "end": {
+                    "column": 25,
+                    "line": 1,
+                    "offset": 24,
+                  },
+                  "start": {
+                    "column": 19,
+                    "line": 1,
+                    "offset": 18,
+                  },
+                },
+                "localName": "alias1",
+                "name": "import1",
+              },
+            ],
+            "from": "test.css",
+            "fromLoc": {
+              "end": {
+                "column": 40,
+                "line": 1,
+                "offset": 39,
+              },
+              "start": {
+                "column": 32,
+                "line": 1,
+                "offset": 31,
+              },
+            },
+            "type": "importer",
+          },
+          "diagnostics": [],
+        },
+      ]
+    `);
+  });
+
   test('parses syntax unsupported by css-loader', () => {
     // NOTE: These syntaxes are not supported by css-loader, so css-modules-kit does not
     // guarantee any specific behavior for them. The snapshots below document how the current

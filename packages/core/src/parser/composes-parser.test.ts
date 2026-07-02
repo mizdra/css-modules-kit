@@ -229,6 +229,52 @@ describe('parseComposesProp', () => {
     `);
   });
 
+  test('matches the `from` keyword case-insensitively', () => {
+    const decl = fakeDeclaration(`.a_1 { composes: a_2 FROM './a.module.css' }`);
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
+      [
+        {
+          "entries": [
+            {
+              "loc": {
+                "end": {
+                  "column": 21,
+                  "line": 1,
+                  "offset": 20,
+                },
+                "start": {
+                  "column": 18,
+                  "line": 1,
+                  "offset": 17,
+                },
+              },
+              "name": "a_2",
+            },
+          ],
+          "from": "./a.module.css",
+          "fromLoc": {
+            "end": {
+              "column": 42,
+              "line": 1,
+              "offset": 41,
+            },
+            "start": {
+              "column": 28,
+              "line": 1,
+              "offset": 27,
+            },
+          },
+          "type": "external",
+        },
+      ]
+    `);
+  });
+
+  test('matches the `global` keyword case-insensitively', () => {
+    const decl = fakeDeclaration('.a_1 { composes: a_2 from GLOBAL }');
+    expect(parseComposesProp(decl)).toMatchInlineSnapshot(`[]`);
+  });
+
   test('extracts local and external references according to the `from` clause of each item', () => {
     const decl = fakeDeclaration(`.a_1 { composes: a_2, a_3 from './a.module.css', a_4 from global, a_5 }`);
     expect(parseComposesProp(decl)).toMatchInlineSnapshot(`
