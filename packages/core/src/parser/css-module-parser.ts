@@ -35,15 +35,15 @@ function isAtRule(node: Node): node is AtRule {
 }
 
 function isImportAtRuleName(name: string): boolean {
-  return name === 'import';
+  return name.toLowerCase() === 'import';
 }
 
 function isValueAtRuleName(name: string): boolean {
-  return name === 'value';
+  return name.toLowerCase() === 'value';
 }
 
 function isKeyframesAtRuleName(name: string): boolean {
-  return name === 'keyframes';
+  return name.toLowerCase() === 'keyframes';
 }
 
 function isRule(node: Node): node is Rule {
