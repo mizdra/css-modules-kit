@@ -5,7 +5,7 @@ import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.
 const options: ParseCSSModuleOptions = {
   fileName: '/test.module.css',
   includeSyntaxError: true,
-  keyframes: true,
+  animation: true,
   dashedIdents: false,
 };
 
@@ -819,9 +819,6 @@ describe('parseCSSModule', () => {
     	}
     `);
   });
-  // TODO: Support local tokens by CSS variables. This is supported by lightningcss.
-  // https://github.com/parcel-bundler/lightningcss/blob/a3390fd4140ca87f5035595d22bc9357cf72177e/src/css_modules.rs#L34
-
   // TODO: Support local tokens by grid names. This is supported by lightningcss.
   // https://github.com/parcel-bundler/lightningcss/blob/a3390fd4140ca87f5035595d22bc9357cf72177e/src/css_modules.rs#L40
 
@@ -963,8 +960,8 @@ describe('parseCSSModule', () => {
     	}
     `);
   });
-  test('does not include the token of keyframes if keyframes is false', () => {
-    const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
+  test('does not include the token of keyframes if animation is false', () => {
+    const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, animation: false });
     expect(cssModule.localTokens).toMatchInlineSnapshot(`[]`);
   });
   test('collects local tokens from dashed-ident declarations', () => {

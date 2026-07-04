@@ -26,7 +26,7 @@ describe('readConfigFile', () => {
         arbitraryExtensions: false,
         namedExports: false,
         prioritizeNamedImports: false,
-        keyframes: true,
+        animation: true,
         dashedIdents: false,
         enabled: false,
         compilerOptions: expect.any(Object),
@@ -48,7 +48,7 @@ describe('readConfigFile', () => {
             "arbitraryExtensions": true,
             "namedExports": true,
             "prioritizeNamedImports": true,
-            "keyframes": false,
+            "animation": false,
             "dashedIdents": true,
             "enabled": true
           }
@@ -63,7 +63,7 @@ describe('readConfigFile', () => {
         arbitraryExtensions: true,
         namedExports: true,
         prioritizeNamedImports: true,
-        keyframes: false,
+        animation: false,
         dashedIdents: true,
         enabled: true,
         compilerOptions: expect.objectContaining({
@@ -88,7 +88,7 @@ describe('readConfigFile', () => {
               "arbitraryExtensions": true,
               "namedExports": true,
               "prioritizeNamedImports": true,
-              "keyframes": false,
+              "animation": false,
               "dashedIdents": true,
               "enabled": true
             }
@@ -104,7 +104,7 @@ describe('readConfigFile', () => {
           arbitraryExtensions: true,
           namedExports: true,
           prioritizeNamedImports: true,
-          keyframes: false,
+          animation: false,
           dashedIdents: true,
           enabled: true,
           compilerOptions: expect.objectContaining({
@@ -377,6 +377,98 @@ describe('readConfigFile', () => {
             {
               category: 'error',
               text: `\`arbitraryExtensions\` in ${iff.paths['tsconfig.json']} must be a boolean.`,
+            },
+          ],
+        }),
+      );
+    });
+    test('reports an error if `animation` is not a boolean', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "animation": 1 } }',
+      });
+      expect(readConfigFile(iff.rootDir).diagnostics).toStrictEqual([
+        {
+          category: 'error',
+          text: `\`animation\` in ${iff.paths['tsconfig.json']} must be a boolean.`,
+        },
+      ]);
+    });
+  });
+  describe('deprecated `keyframes` option', () => {
+    test('adopts the `keyframes` value as `animation` and reports a deprecation warning', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "keyframes": false } }',
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual(
+        expect.objectContaining({
+          animation: false,
+          diagnostics: [
+            {
+              category: 'warning',
+              text: `\`keyframes\` in ${iff.paths['tsconfig.json']} is deprecated. Use the \`animation\` option instead.`,
+            },
+          ],
+        }),
+      );
+    });
+    test('inherits the `keyframes` value from the extended tsconfig and reports a deprecation warning', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': '{ "cmkOptions": { "keyframes": false } }',
+        'tsconfig.json': '{ "extends": "./tsconfig.base.json" }',
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual(
+        expect.objectContaining({
+          animation: false,
+          diagnostics: [
+            {
+              category: 'warning',
+              text: `\`keyframes\` in ${iff.paths['tsconfig.base.json']} is deprecated. Use the \`animation\` option instead.`,
+            },
+          ],
+        }),
+      );
+    });
+    test('reports an error and adopts the `animation` value if both `keyframes` and `animation` are specified', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "keyframes": true, "animation": false } }',
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual(
+        expect.objectContaining({
+          animation: false,
+          diagnostics: [
+            {
+              category: 'warning',
+              text: `\`keyframes\` in ${iff.paths['tsconfig.json']} is deprecated. Use the \`animation\` option instead.`,
+            },
+            {
+              category: 'error',
+              text: `\`keyframes\` and \`animation\` in ${iff.paths['tsconfig.json']} cannot be used together. Remove \`keyframes\`.`,
+            },
+          ],
+        }),
+      );
+    });
+    test('reports an error if `keyframes` and `animation` are specified in separate tsconfig files linked by `extends`', async () => {
+      const iff = await createIFF({
+        'tsconfig.base.json': '{ "cmkOptions": { "keyframes": true } }',
+        'tsconfig.json': dedent`
+          {
+            "extends": "./tsconfig.base.json",
+            "cmkOptions": { "animation": false }
+          }
+        `,
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual(
+        expect.objectContaining({
+          animation: false,
+          diagnostics: [
+            {
+              category: 'warning',
+              text: `\`keyframes\` in ${iff.paths['tsconfig.base.json']} is deprecated. Use the \`animation\` option instead.`,
+            },
+            {
+              category: 'error',
+              text: `\`keyframes\` and \`animation\` in ${iff.paths['tsconfig.json']} cannot be used together. Remove \`keyframes\`.`,
             },
           ],
         }),
