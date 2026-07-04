@@ -36,15 +36,9 @@ jobs:
       fail-fast: false
       matrix:
         node: [26]
-        os: [ubuntu-24.04-arm, macos-latest]
+        os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
         stylelint-version: ['17']
         include:
-          # Windows is pinned to Node.js 24.15.0 because Node.js 24.16+ and 26.x bundle libuv 1.52.x,
-          # which has a Windows file-watching bug.
-          # ref: https://github.com/libuv/libuv/issues/5010
-          - node: '24.15.0'
-            os: windows-11-arm
-            stylelint-version: '17'
           # Configuration for Node.js 24
           - node: 24
             os: ubuntu-24.04-arm
