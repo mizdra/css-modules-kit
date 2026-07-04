@@ -210,7 +210,7 @@ When this option is `true`, `import { button } from '...'` will be added. When t
 }
 ```
 
-### `cmkOptions.keyframes`
+### `cmkOptions.animation`
 
 Type: `boolean`, Default: `true`
 
@@ -222,10 +222,14 @@ Determines whether to generate the [token](docs/glossary.md#token) of keyframes 
     // ...
   },
   "cmkOptions": {
-    "keyframes": false,
+    "animation": false,
   },
 }
 ```
+
+### `cmkOptions.keyframes`
+
+Deprecated: Use [`cmkOptions.animation`](#cmkoptionsanimation) instead.
 
 ### `cmkOptions.dashedIdents`
 

@@ -16,7 +16,7 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
 
 export function readAndParseCSSModule(
   path: string,
-  options?: { keyframes?: boolean; dashedIdents?: boolean },
+  options?: { animation?: boolean; dashedIdents?: boolean },
 ): CSSModule | undefined {
   let text: string;
   try {
@@ -27,7 +27,7 @@ export function readAndParseCSSModule(
   return parseCSSModule(text, {
     fileName: path,
     includeSyntaxError: false,
-    keyframes: options?.keyframes ?? true,
+    animation: options?.animation ?? true,
     dashedIdents: options?.dashedIdents ?? false,
   });
 }

@@ -480,6 +480,32 @@ describe('getDiagnostics', () => {
       ]
     `);
   });
+  test('reports semantic diagnostics when project diagnostics contain only warnings', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true, "keyframes": true } }',
+      'src/a.module.css': `@import './non-existent.module.css';`,
+    });
+    const project = createProject({ project: iff.rootDir });
+    const diagnostics = project.getDiagnostics();
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "warning",
+          "text": "\`keyframes\` in <rootDir>/tsconfig.json is deprecated. Use the \`animation\` option instead.",
+        },
+        {
+          "category": "error",
+          "fileName": "<rootDir>/src/a.module.css",
+          "length": 25,
+          "start": {
+            "column": 10,
+            "line": 1,
+          },
+          "text": "Cannot import module './non-existent.module.css'",
+        },
+      ]
+    `);
+  });
   test('skips semantic diagnostics when project or syntactic diagnostics exist', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": 1 } }',

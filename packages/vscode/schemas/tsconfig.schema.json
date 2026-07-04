@@ -30,10 +30,17 @@
           "default": false,
           "markdownDescription": "Whether to prioritize named imports over namespace imports when adding import statements. This option only takes effect when `cmkOptions.namedExports` is `true`.\n\nWhen this option is `true`, `import { button } from '...'` will be added. When this option is `false`, `import button from '...'` will be added."
         },
+        "animation": {
+          "type": "boolean",
+          "default": true,
+          "title": "animation",
+          "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of keyframes in the d.ts file."
+        },
         "keyframes": {
           "type": "boolean",
           "default": true,
           "title": "keyframes",
+          "deprecationMessage": "Deprecated: Use the `animation` option instead.",
           "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of keyframes in the d.ts file."
         },
         "dashedIdents": {

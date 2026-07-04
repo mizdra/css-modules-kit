@@ -18,7 +18,7 @@ export interface CMKConfig {
   arbitraryExtensions: boolean;
   namedExports: boolean;
   prioritizeNamedImports: boolean;
-  keyframes: boolean;
+  animation: boolean;
   dashedIdents: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
@@ -78,6 +78,7 @@ interface UnnormalizedRawConfig {
   arbitraryExtensions?: boolean;
   namedExports?: boolean;
   prioritizeNamedImports?: boolean;
+  animation?: boolean;
   keyframes?: boolean;
   dashedIdents?: boolean;
 }
@@ -161,7 +162,21 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile, b
         });
       }
     }
+    if ('animation' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.animation === 'boolean') {
+        result.config.animation = raw.cmkOptions.animation;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`animation\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+        });
+      }
+    }
     if ('keyframes' in raw.cmkOptions) {
+      result.diagnostics.push({
+        category: 'warning',
+        text: `\`keyframes\` in ${tsConfigSourceFile.fileName} is deprecated. Use the \`animation\` option instead.`,
+      });
       if (typeof raw.cmkOptions.keyframes === 'boolean') {
         result.config.keyframes = raw.cmkOptions.keyframes;
       } else {
@@ -281,6 +296,13 @@ export function readConfigFile(project: string): CMKConfig {
     }
   }
 
+  if (parsedTsConfig.config.animation !== undefined && parsedTsConfig.config.keyframes !== undefined) {
+    parsedTsConfig.diagnostics.push({
+      category: 'error',
+      text: `\`keyframes\` and \`animation\` in ${configFileName} cannot be used together. Remove \`keyframes\`.`,
+    });
+  }
+
   return {
     // If `include` is not specified, fallback to the default include spec。
     // ref: https://github.com/microsoft/TypeScript/blob/caf1aee269d1660b4d2a8b555c2d602c97cb28d7/src/compiler/commandLineParser.ts#L3102
@@ -292,7 +314,7 @@ export function readConfigFile(project: string): CMKConfig {
     arbitraryExtensions: parsedTsConfig.config.arbitraryExtensions ?? false,
     namedExports: parsedTsConfig.config.namedExports ?? false,
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
-    keyframes: parsedTsConfig.config.keyframes ?? true,
+    animation: parsedTsConfig.config.animation ?? parsedTsConfig.config.keyframes ?? true,
     dashedIdents: parsedTsConfig.config.dashedIdents ?? false,
     enabled: parsedTsConfig.config.enabled ?? false,
     basePath,

@@ -5,7 +5,7 @@ import { parseCSSModule, type ParseCSSModuleOptions } from './css-module-parser.
 const options: ParseCSSModuleOptions = {
   fileName: '/test.module.css',
   includeSyntaxError: true,
-  keyframes: true,
+  animation: true,
   dashedIdents: false,
 };
 
@@ -963,8 +963,8 @@ describe('parseCSSModule', () => {
     	}
     `);
   });
-  test('does not include the token of keyframes if keyframes is false', () => {
-    const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, keyframes: false });
+  test('does not include the token of keyframes if animation is false', () => {
+    const cssModule = parseCSSModule('@keyframes slide-in {}', { ...options, animation: false });
     expect(cssModule.localTokens).toMatchInlineSnapshot(`[]`);
   });
   test('collects local tokens from dashed-ident declarations', () => {

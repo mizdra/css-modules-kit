@@ -49,7 +49,7 @@ export function createCSSLanguagePlugin(
         // Therefore, if ts-plugin also reports it, the same error is reported twice.
         // To avoid this, ts-plugin does not report invalid syntax errors.
         includeSyntaxError: false,
-        keyframes: config.keyframes,
+        animation: config.animation,
         dashedIdents: config.dashedIdents,
       });
       // oxlint-disable-next-line prefer-const

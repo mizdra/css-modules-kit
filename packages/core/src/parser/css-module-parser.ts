@@ -57,7 +57,7 @@ function isDeclaration(node: Node): node is Declaration {
 /**
  * Collect tokens from the AST.
  */
-function collectTokens(ast: Root, keyframes: boolean, dashedIdents: boolean) {
+function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean) {
   const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
@@ -87,7 +87,7 @@ function collectTokens(ast: Root, keyframes: boolean, dashedIdents: boolean) {
           const { type: _, ...rest } = atValue;
           tokenImporters.push({ ...rest, type: 'named' });
         }
-      } else if (keyframes && isKeyframesAtRuleName(node.name)) {
+      } else if (animation && isKeyframesAtRuleName(node.name)) {
         const { keyframe, diagnostics } = parseKeyframesAtRule(node);
         allDiagnostics.push(...diagnostics);
         if (keyframe) {
@@ -101,11 +101,11 @@ function collectTokens(ast: Root, keyframes: boolean, dashedIdents: boolean) {
         localTokens.push(classSelector);
       }
     } else if (isDeclaration(node)) {
-      if (keyframes && isAnimationNameProp(node.prop)) {
+      if (animation && isAnimationNameProp(node.prop)) {
         const { references, diagnostics } = parseAnimationNameProp(node);
         allDiagnostics.push(...diagnostics);
         tokenReferences.push(...references);
-      } else if (keyframes && isAnimationProp(node.prop)) {
+      } else if (animation && isAnimationProp(node.prop)) {
         const { references, diagnostics } = parseAnimationProp(node);
         allDiagnostics.push(...diagnostics);
         tokenReferences.push(...references);
@@ -125,7 +125,7 @@ export interface ParseCSSModuleOptions {
   fileName: string;
   /** Whether to include syntax errors from diagnostics */
   includeSyntaxError: boolean;
-  keyframes: boolean;
+  animation: boolean;
   dashedIdents: boolean;
 }
 /**
@@ -134,7 +134,7 @@ export interface ParseCSSModuleOptions {
  */
 export function parseCSSModule(
   text: string,
-  { fileName, includeSyntaxError, keyframes, dashedIdents }: ParseCSSModuleOptions,
+  { fileName, includeSyntaxError, animation, dashedIdents }: ParseCSSModuleOptions,
 ): CSSModule {
   let ast: Root;
   const diagnosticFile = { fileName, text };
@@ -161,7 +161,7 @@ export function parseCSSModule(
     ast = safeParser(text, { from: fileName });
   }
 
-  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, keyframes, dashedIdents);
+  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, animation, dashedIdents);
   allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
   return {
     fileName,

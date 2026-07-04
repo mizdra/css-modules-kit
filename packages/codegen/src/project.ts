@@ -155,15 +155,15 @@ export function createProject(args: ProjectArgs): Project {
     return parseCSSModule(text, {
       fileName,
       includeSyntaxError: true,
-      keyframes: config.keyframes,
+      animation: config.animation,
       dashedIdents: config.dashedIdents,
     });
   }
 
   function getDiagnostics(): Diagnostic[] {
     const diagnostics: Diagnostic[] = [...getProjectDiagnostics(), ...getSyntacticDiagnostics()];
-    // If there are project or syntactic diagnostics, skip semantic diagnostics
-    if (diagnostics.length > 0) return diagnostics;
+    // If there are project or syntactic errors, skip semantic diagnostics
+    if (diagnostics.some((diagnostic) => diagnostic.category === 'error')) return diagnostics;
     diagnostics.push(...getSemanticDiagnostics());
     return diagnostics;
   }
