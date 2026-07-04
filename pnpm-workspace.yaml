@@ -11,11 +11,8 @@ minimumReleaseAgeExclude:
   - '@mizdra/*'
 overrides:
   vite: '$vite'
-  vitest: '$vitest'
 peerDependencyRules:
   allowAny:
     - vite
-    - vitest
   allowedVersions:
     vite: '*'
-    vitest: '*'

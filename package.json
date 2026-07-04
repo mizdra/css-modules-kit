@@ -15,7 +15,7 @@
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/changelog-github": "^0.7.0",
     "@changesets/cli": "^2.31.0",
     "@changesets/types": "^6.1.0",
     "@css-modules-kit/codegen": "workspace:^",
@@ -26,27 +26,26 @@
     "@mizdra/oxfmt-config": "^0.2.0",
     "@mizdra/oxlint-config": "^0.5.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^25.9.4",
+    "@types/node": "^26.1.0",
     "@types/postcss-safe-parser": "^5.0.4",
     "@types/react": "^19.2.17",
     "@types/vscode": "^1.125.0",
     "@typescript/server-harness": "^0.3.6",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
     "@vscode/vsce": "^3.9.2",
     "dedent": "^1.7.2",
     "eslint": "^10.6.0",
     "mocha": "^11.7.6",
-    "ovsx": "^0.10.12",
-    "rolldown": "1.0.0-rc.13",
+    "ovsx": "^1.0.2",
+    "rolldown": "1.1.4",
     "stylelint": "^17.14.0",
     "stylelint-16": "npm:stylelint@^16.26.1",
     "stylelint-17": "npm:stylelint@^17.14.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.24",
-    "vite-plus": "^0.1.24",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@^0.1.24"
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.2.1",
+    "vite-plus": "^0.2.1"
   },
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
 }
