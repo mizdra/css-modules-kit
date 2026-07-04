@@ -62,6 +62,14 @@ export default defineConfig({
     // Therefore, we set the timeout to 10 seconds.
     testTimeout: 10_000,
     watch: false,
+    server: {
+      deps: {
+        // By default, Vitest includes node_modules in `server.deps.external`, but Vitest built
+        // into Vite+ has a bug where it does not include node_modules in `server.deps.external`.
+        // Therefore, we explicitly include node_modules in `server.deps.external`.
+        external: [/\/node_modules\//u],
+      },
+    },
     projects: [
       {
         extends: true,
