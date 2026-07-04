@@ -819,9 +819,6 @@ describe('parseCSSModule', () => {
     	}
     `);
   });
-  // TODO: Support local tokens by CSS variables. This is supported by lightningcss.
-  // https://github.com/parcel-bundler/lightningcss/blob/a3390fd4140ca87f5035595d22bc9357cf72177e/src/css_modules.rs#L34
-
   // TODO: Support local tokens by grid names. This is supported by lightningcss.
   // https://github.com/parcel-bundler/lightningcss/blob/a3390fd4140ca87f5035595d22bc9357cf72177e/src/css_modules.rs#L40
 
