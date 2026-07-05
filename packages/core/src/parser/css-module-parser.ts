@@ -20,6 +20,13 @@ import { parseValueAtRule } from './at-value-parser.js';
 import { isComposesProp, parseComposesProp } from './composes-parser.js';
 import {
   isContainerAtRuleName,
+  isContainerNameProp,
+  isContainerProp,
+  parseContainerAtRule,
+  parseContainerNameProp,
+  parseContainerProp,
+} from './container-parser.js';
+import {
   isDashedIdentAtRuleName,
   isMediaAtRuleName,
   parseDashedIdentAtRule,
@@ -57,7 +64,7 @@ function isDeclaration(node: Node): node is Declaration {
 /**
  * Collect tokens from the AST.
  */
-function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean) {
+function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean, container: boolean) {
   const allDiagnostics: DiagnosticWithDetachedLocation[] = [];
   const localTokens: Token[] = [];
   const tokenImporters: TokenImporter[] = [];
@@ -70,8 +77,12 @@ function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean) {
         if (token) localTokens.push(token);
       } else if (dashedIdents && isMediaAtRuleName(node.name)) {
         tokenReferences.push(...parseDashedIdentMediaQuery(node));
-      } else if (dashedIdents && isContainerAtRuleName(node.name)) {
-        tokenReferences.push(...parseDashedIdentContainerQuery(node));
+      } else if (isContainerAtRuleName(node.name)) {
+        if (container) {
+          const reference = parseContainerAtRule(node);
+          if (reference) tokenReferences.push(reference);
+        }
+        if (dashedIdents) tokenReferences.push(...parseDashedIdentContainerQuery(node));
       } else if (isImportAtRuleName(node.name)) {
         const parsed = parseImportAtRule(node);
         if (parsed !== undefined) {
@@ -109,6 +120,10 @@ function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean) {
         const { references, diagnostics } = parseAnimationProp(node);
         allDiagnostics.push(...diagnostics);
         tokenReferences.push(...references);
+      } else if (container && isContainerNameProp(node.prop)) {
+        localTokens.push(...parseContainerNameProp(node));
+      } else if (container && isContainerProp(node.prop)) {
+        localTokens.push(...parseContainerProp(node));
       } else if (isComposesProp(node.prop)) {
         tokenReferences.push(...parseComposesProp(node));
       } else if (dashedIdents) {
@@ -127,6 +142,7 @@ export interface ParseCSSModuleOptions {
   includeSyntaxError: boolean;
   animation: boolean;
   dashedIdents: boolean;
+  container: boolean;
 }
 /**
  * Parse CSS Module text.
@@ -134,7 +150,7 @@ export interface ParseCSSModuleOptions {
  */
 export function parseCSSModule(
   text: string,
-  { fileName, includeSyntaxError, animation, dashedIdents }: ParseCSSModuleOptions,
+  { fileName, includeSyntaxError, animation, dashedIdents, container }: ParseCSSModuleOptions,
 ): CSSModule {
   let ast: Root;
   const diagnosticFile = { fileName, text };
@@ -161,7 +177,12 @@ export function parseCSSModule(
     ast = safeParser(text, { from: fileName });
   }
 
-  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(ast, animation, dashedIdents);
+  const { localTokens, tokenImporters, tokenReferences, diagnostics } = collectTokens(
+    ast,
+    animation,
+    dashedIdents,
+    container,
+  );
   allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
   return {
     fileName,

@@ -48,6 +48,12 @@
           "default": false,
           "title": "dashedIdents",
           "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of `<dashed-ident>`s (custom properties such as `--foo`) in the d.ts file."
+        },
+        "container": {
+          "type": "boolean",
+          "default": false,
+          "title": "container",
+          "markdownDescription": "Determines whether to generate the [token](https://github.com/mizdra/css-modules-kit/blob/main/docs/glossary.md#token) of container names (used in `container-name`, the `container` shorthand, and `@container`) in the d.ts file."
         }
       }
     }

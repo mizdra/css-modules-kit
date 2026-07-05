@@ -13,6 +13,7 @@ export function fakeConfig(args?: Partial<CMKConfig>): CMKConfig {
     prioritizeNamedImports: false,
     animation: true,
     dashedIdents: false,
+    container: false,
     basePath: '/app',
     configFileName: '/app/tsconfig.json',
     compilerOptions: {},

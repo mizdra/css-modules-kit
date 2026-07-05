@@ -157,6 +157,7 @@ export function createProject(args: ProjectArgs): Project {
       includeSyntaxError: true,
       animation: config.animation,
       dashedIdents: config.dashedIdents,
+      container: config.container,
     });
   }
 

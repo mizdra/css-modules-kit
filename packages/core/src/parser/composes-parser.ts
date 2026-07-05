@@ -6,7 +6,7 @@ import type {
   LocalTokenReference,
   TokenReference,
 } from '../type.js';
-import { calcDeclValueLoc } from './decl-value-location.js';
+import { calcDeclValueLoc } from './util.js';
 
 const COMPOSES_PROP_RE = /^composes$/iu;
 

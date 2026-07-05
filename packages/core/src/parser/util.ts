@@ -14,3 +14,8 @@ export function calcDeclValueLoc(decl: Declaration, sourceIndex: number, length:
     end: decl.positionBy({ index: startIndex + length }),
   };
 }
+
+// A valid CSS identifier, including `<dashed-ident>`. Excludes `<time>` (`3s`), `<number>` (`2`),
+// and other non-ident words. We don't validate `hex digits`, because it is the job of linters.
+export const VALID_IDENT_RE =
+  /^-?([a-zA-Z\u0080-\uFFFF_]|(\\[^\r\n\f])|-(?![0-9]))((\\[^\r\n\f])|[a-zA-Z\u0080-\uFFFF_0-9-])*$/u;

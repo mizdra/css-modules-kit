@@ -28,6 +28,7 @@ describe('readConfigFile', () => {
         prioritizeNamedImports: false,
         animation: true,
         dashedIdents: false,
+        container: false,
         enabled: false,
         compilerOptions: expect.any(Object),
         wildcardDirectories: [{ fileName: iff.rootDir, recursive: true }],
@@ -50,6 +51,7 @@ describe('readConfigFile', () => {
             "prioritizeNamedImports": true,
             "animation": false,
             "dashedIdents": true,
+            "container": true,
             "enabled": true
           }
         }
@@ -65,6 +67,7 @@ describe('readConfigFile', () => {
         prioritizeNamedImports: true,
         animation: false,
         dashedIdents: true,
+        container: true,
         enabled: true,
         compilerOptions: expect.objectContaining({
           module: ts.ModuleKind.ESNext,
@@ -90,6 +93,7 @@ describe('readConfigFile', () => {
               "prioritizeNamedImports": true,
               "animation": false,
               "dashedIdents": true,
+              "container": true,
               "enabled": true
             }
           }
@@ -106,6 +110,7 @@ describe('readConfigFile', () => {
           prioritizeNamedImports: true,
           animation: false,
           dashedIdents: true,
+          container: true,
           enabled: true,
           compilerOptions: expect.objectContaining({
             module: ts.ModuleKind.ESNext,
@@ -390,6 +395,17 @@ describe('readConfigFile', () => {
         {
           category: 'error',
           text: `\`animation\` in ${iff.paths['tsconfig.json']} must be a boolean.`,
+        },
+      ]);
+    });
+    test('reports an error if `container` is not a boolean', async () => {
+      const iff = await createIFF({
+        'tsconfig.json': '{ "cmkOptions": { "container": 1 } }',
+      });
+      expect(readConfigFile(iff.rootDir).diagnostics).toStrictEqual([
+        {
+          category: 'error',
+          text: `\`container\` in ${iff.paths['tsconfig.json']} must be a boolean.`,
         },
       ]);
     });

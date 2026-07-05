@@ -14,6 +14,7 @@ declare const styles = {
   '--anchor': '' as string,
   '--view-timeline': '' as string,
   '--scroll-timeline': '' as string,
+  'container': '' as string,
   ...blockErrorType((await import('./b.module.css')).default),
   'c_1': (await import('./c.module.css')).default['c_1'],
   'c_alias': (await import('./c.module.css')).default['c_2'],

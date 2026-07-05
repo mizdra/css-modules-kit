@@ -110,8 +110,8 @@ function myFunction() {
 
 ## Glossary
 
-- **Token**: A generic term for things exported by CSS Modules, such as class names, `@value` definitions, `@keyframes` names, and `<dashed-ident>`s (custom properties, when `cmkOptions.dashedIdents` is enabled).
-- **Token reference**: A usage of a token elsewhere in the CSS. Currently produced for `animation-name: <name>` and `composes: <name>`. There are two kinds:
+- **Token**: A generic term for things exported by CSS Modules, such as class names, `@value` definitions, `@keyframes` names, container names (when `cmkOptions.container` is enabled), and `<dashed-ident>`s (custom properties, when `cmkOptions.dashedIdents` is enabled).
+- **Token reference**: A usage of a token elsewhere in the CSS. Currently produced for `animation-name: <name>`, `composes: <name>`, and `@container <name> (...)`. There are two kinds:
   - **Local token reference**: References a token available in the current file. The token may be defined in the same file (e.g. `@keyframes`) or imported via `@import` / `@value ... from`.
   - **External token reference**: References tokens exported by another file, like `composes: <name> ... from '<specifier>'`. One reference corresponds to one `from` clause and holds an entry per referenced token.
 - **Diagnostic**: An object representing errors or warnings
