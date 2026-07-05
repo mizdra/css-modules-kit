@@ -63,3 +63,9 @@
   scroll-timeline-name: --scroll-timeline;
   animation-timeline: --scroll-timeline;
 }
+
+/* container-name */
+:root {
+  container-name: container;
+}
+@container container (width > 400px) {}
