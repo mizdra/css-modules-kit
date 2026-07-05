@@ -31,6 +31,7 @@
     "@types/react": "^19.2.17",
     "@types/vscode": "^1.125.0",
     "@typescript/server-harness": "^0.3.6",
+    "@vitest/coverage-v8": "^4.1.9",
     "@vscode/test-cli": "^0.0.15",
     "@vscode/test-electron": "^3.0.0",
     "@vscode/vsce": "^3.9.2",
