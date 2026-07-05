@@ -5,7 +5,6 @@ allowBuilds:
   '@vscode/vsce-sign': true
   esbuild: true
   keytar: false
-blockExoticSubdeps: true
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@mizdra/*'
