@@ -248,6 +248,23 @@ Determines whether to generate the [token](docs/glossary.md#token) of `<dashed-i
 }
 ```
 
+### `cmkOptions.container`
+
+Type: `boolean`, Default: `false`
+
+Determines whether to generate the [token](docs/glossary.md#token) of container names (used in `container-name`, the `container` shorthand, and `@container`) in the d.ts file.
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...
+  },
+  "cmkOptions": {
+    "container": true,
+  },
+}
+```
+
 ## Limitations
 
 Due to implementation constraints and technical reasons, css-modules-kit has various limitations.

@@ -20,6 +20,7 @@ export interface CMKConfig {
   prioritizeNamedImports: boolean;
   animation: boolean;
   dashedIdents: boolean;
+  container: boolean;
   /**
    * A root directory to resolve relative path entries in the config file to.
    * This is an absolute path.
@@ -81,6 +82,7 @@ interface UnnormalizedRawConfig {
   animation?: boolean;
   keyframes?: boolean;
   dashedIdents?: boolean;
+  container?: boolean;
 }
 
 /**
@@ -193,6 +195,16 @@ function parseRawData(raw: unknown, tsConfigSourceFile: ts.TsConfigSourceFile, b
         result.diagnostics.push({
           category: 'error',
           text: `\`dashedIdents\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
+        });
+      }
+    }
+    if ('container' in raw.cmkOptions) {
+      if (typeof raw.cmkOptions.container === 'boolean') {
+        result.config.container = raw.cmkOptions.container;
+      } else {
+        result.diagnostics.push({
+          category: 'error',
+          text: `\`container\` in ${tsConfigSourceFile.fileName} must be a boolean.`,
         });
       }
     }
@@ -316,6 +328,7 @@ export function readConfigFile(project: string): CMKConfig {
     prioritizeNamedImports: parsedTsConfig.config.prioritizeNamedImports ?? false,
     animation: parsedTsConfig.config.animation ?? parsedTsConfig.config.keyframes ?? true,
     dashedIdents: parsedTsConfig.config.dashedIdents ?? false,
+    container: parsedTsConfig.config.container ?? false,
     enabled: parsedTsConfig.config.enabled ?? false,
     basePath,
     configFileName,

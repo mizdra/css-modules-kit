@@ -93,10 +93,6 @@ export function isMediaAtRuleName(name: string): boolean {
   return name.toLowerCase() === 'media';
 }
 
-export function isContainerAtRuleName(name: string): boolean {
-  return name.toLowerCase() === 'container';
-}
-
 /**
  * Extract custom media references from an `@media` prelude, e.g. the `--foo` in
  * `@media (--foo) { ... }`, which references a `@custom-media --foo`. References nested

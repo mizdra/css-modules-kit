@@ -21,7 +21,7 @@ For example, consider the following CSS file:
 }
 ```
 
-In this case, `a_1`, `a_2`, `a_3`, `a_4`, `b_1` and `b_2_alias` are tokens. If `dashedIdents` option is `true`, `--a-5` is also a token.
+In this case, `a_1`, `a_2`, `a_3`, `a_4`, `b_1` and `b_2_alias` are tokens. If `dashedIdents` option is `true`, `--a-5` is also a token. If `container` option is `true`, container names used in `container-name`, the `container` shorthand, and `@container` are also tokens.
 
 ## Corresponding Component File
 

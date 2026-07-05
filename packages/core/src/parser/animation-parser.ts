@@ -1,7 +1,8 @@
 import type { Declaration } from 'postcss';
 import postcssValueParser from 'postcss-value-parser';
 import type { DiagnosticWithDetachedLocation, TokenReference } from '../type.js';
-import { calcDeclValueLoc } from './decl-value-location.js';
+import { calcDeclValueLoc } from './util.js';
+import { VALID_IDENT_RE } from './util.js';
 
 const ANIMATION_NAME_PROP_RE = /^(?:-(?:webkit|moz|o|ms)-)?animation-name$/iu;
 const ANIMATION_PROP_RE = /^(?:-(?:webkit|moz|o|ms)-)?animation$/iu;
@@ -59,11 +60,6 @@ const ANIMATION_SHORTHAND_RESERVED_KEYWORDS = new Set([
   'running',
   'paused',
 ]);
-
-// A valid CSS identifier, including `<dashed-ident>`. Excludes `<time>` (`3s`), `<number>` (`2`),
-// and other non-ident words. We don't validate `hex digits`, because it is the job of linters.
-const VALID_IDENT_RE =
-  /^-?([a-zA-Z\u0080-\uFFFF_]|(\\[^\r\n\f])|-(?![0-9]))((\\[^\r\n\f])|[a-zA-Z\u0080-\uFFFF_0-9-])*$/u;
 
 interface ParseAnimationResult {
   references: TokenReference[];

@@ -51,6 +51,7 @@ export function createCSSLanguagePlugin(
         includeSyntaxError: false,
         animation: config.animation,
         dashedIdents: config.dashedIdents,
+        container: config.container,
       });
       // oxlint-disable-next-line prefer-const
       let { text, mapping, linkedCodeMapping } = generateDts(cssModule, {

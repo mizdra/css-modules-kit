@@ -16,7 +16,7 @@ export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
 
 export function readAndParseCSSModule(
   path: string,
-  options?: { animation?: boolean; dashedIdents?: boolean },
+  options?: { animation?: boolean; dashedIdents?: boolean; container?: boolean },
 ): CSSModule | undefined {
   let text: string;
   try {
@@ -29,5 +29,6 @@ export function readAndParseCSSModule(
     includeSyntaxError: false,
     animation: options?.animation ?? true,
     dashedIdents: options?.dashedIdents ?? false,
+    container: options?.container ?? false,
   });
 }

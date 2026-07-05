@@ -7,6 +7,7 @@ const options: ParseCSSModuleOptions = {
   includeSyntaxError: true,
   animation: true,
   dashedIdents: false,
+  container: false,
 };
 
 describe('parseCSSModule', () => {
@@ -994,6 +995,28 @@ describe('parseCSSModule', () => {
   });
   test('does not collect dashed-ident tokens if dashedIdents is false', () => {
     const cssModule = parseCSSModule('.a_1 { --foo: red; color: var(--foo); }', { ...options, dashedIdents: false });
+    expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['a_1']);
+    expect(cssModule.tokenReferences).toStrictEqual([]);
+  });
+  test('collects container name tokens and references if container is true', () => {
+    const cssModule = parseCSSModule(
+      dedent`
+        .a_1 { container-name: foo; }
+        @container foo (width > 400px) {}
+      `,
+      { ...options, container: true },
+    );
+    expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['a_1', 'foo']);
+    expect(cssModule.tokenReferences.map((ref) => ref.type === 'local' && ref.name)).toStrictEqual(['foo']);
+  });
+  test('does not collect container name tokens or references if container is false', () => {
+    const cssModule = parseCSSModule(
+      dedent`
+        .a_1 { container-name: foo; }
+        @container foo (width > 400px) {}
+      `,
+      { ...options, container: false },
+    );
     expect(cssModule.localTokens.map((token) => token.name)).toStrictEqual(['a_1']);
     expect(cssModule.tokenReferences).toStrictEqual([]);
   });
