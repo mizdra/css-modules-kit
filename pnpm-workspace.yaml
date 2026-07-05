@@ -2,8 +2,8 @@ packages:
   - 'packages/*'
   - 'crates/*'
 allowBuilds:
-  '@vscode/vsce-sign': true
-  esbuild: true
+  '@vscode/vsce-sign': false
+  esbuild: false
   keytar: false
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
