@@ -2,15 +2,17 @@ packages:
   - 'packages/*'
   - 'crates/*'
 allowBuilds:
-  '@vscode/vsce-sign': true
-  esbuild: true
+  '@vscode/vsce-sign': false
+  esbuild: false
   keytar: false
-blockExoticSubdeps: true
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@mizdra/*'
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@0.2.1
+  vite-plus: 0.2.1
 overrides:
-  vite: '$vite'
+  vite: 'catalog:'
 peerDependencyRules:
   allowAny:
     - vite
