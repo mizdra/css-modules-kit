@@ -1,5 +1,12 @@
 # @css-modules-kit/eslint-plugin
 
+## 1.4.0
+
+### Patch Changes
+
+- Updated dependencies [[`fb19123`](https://github.com/mizdra/css-modules-kit/commit/fb19123a8887f91f8fdd2d693726b74ab14ca418), [`85196f9`](https://github.com/mizdra/css-modules-kit/commit/85196f9c8c5ee50768db91b4a8f02cc85813aaaa), [`c2ce4f3`](https://github.com/mizdra/css-modules-kit/commit/c2ce4f3f1d79d40abb939dc196b6165b2cd577e2), [`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd), [`5f24d86`](https://github.com/mizdra/css-modules-kit/commit/5f24d863845c2d88a2a2e27987893b8fdad764c6), [`eb850ed`](https://github.com/mizdra/css-modules-kit/commit/eb850ed498b5ba5f4af6681d375727684abdc1c4), [`4a8630f`](https://github.com/mizdra/css-modules-kit/commit/4a8630ffbe8ea46693c09363be9b0924ea58dac6)]:
+  - @css-modules-kit/core@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes
@@ -9,6 +16,7 @@
   Class names referenced via `composes: foo;` are now linked back to the `.foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Space-separated names (`composes: foo bar;`), comma-separated names (`composes: foo, bar;`), and mixes of both are supported. `composes: global(foo);`, `composes: foo from global;`, and `composes: foo from '<specifier>';` do not produce references (support for `from '<specifier>'` is planned).
 
   Two diagnostics are also emitted for invalid usage:
+
   - Parse phase: a `from` clause not followed by a quoted specifier or the `global` keyword is reported.
   - Check phase: references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
 
@@ -26,6 +34,7 @@
   `animation-name: foo;` is now linked back to the `@keyframes foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Comma-separated names (`animation-name: foo, bar;`), `local()` / `global()` notation, and vendor prefixes (`-webkit-animation-name`) are all supported. References to `@keyframes` defined in another file via `@import` are resolved as well.
 
   Two diagnostics are also emitted for invalid usage:
+
   - Parse phase: malformed `local(...)` calls (empty, multiple identifiers, or non-identifier nodes such as a nested function) are reported.
   - Check phase: token references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
 
