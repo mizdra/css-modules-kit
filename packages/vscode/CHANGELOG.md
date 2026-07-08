@@ -1,5 +1,20 @@
 # css-modules-kit-vscode
 
+## 1.4.0
+
+### Minor Changes
+
+- [#437](https://github.com/mizdra/css-modules-kit/pull/437) [`c2ce4f3`](https://github.com/mizdra/css-modules-kit/commit/c2ce4f3f1d79d40abb939dc196b6165b2cd577e2) - feat(core, ts-plugin, codegen, vscode): support scoping container names via `cmkOptions.container`
+
+- [#420](https://github.com/mizdra/css-modules-kit/pull/420) [`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd) - feat(core, ts-plugin, codegen, vscode): support `<dashed-ident>` tokens via the `dashedIdents` option
+
+- [#430](https://github.com/mizdra/css-modules-kit/pull/430) [`5f24d86`](https://github.com/mizdra/css-modules-kit/commit/5f24d863845c2d88a2a2e27987893b8fdad764c6) - feat(core, ts-plugin, codegen, vscode): deprecate `cmkOptions.keyframes` in favor of `cmkOptions.animation`
+
+### Patch Changes
+
+- Updated dependencies [[`c2ce4f3`](https://github.com/mizdra/css-modules-kit/commit/c2ce4f3f1d79d40abb939dc196b6165b2cd577e2), [`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd), [`5f24d86`](https://github.com/mizdra/css-modules-kit/commit/5f24d863845c2d88a2a2e27987893b8fdad764c6), [`eb850ed`](https://github.com/mizdra/css-modules-kit/commit/eb850ed498b5ba5f4af6681d375727684abdc1c4)]:
+  - @css-modules-kit/ts-plugin@1.4.0
+
 ## 1.3.0
 
 ### Patch Changes

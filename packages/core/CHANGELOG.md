@@ -1,5 +1,25 @@
 # @css-modules-kit/core
 
+## 1.4.0
+
+### Minor Changes
+
+- [#437](https://github.com/mizdra/css-modules-kit/pull/437) [`c2ce4f3`](https://github.com/mizdra/css-modules-kit/commit/c2ce4f3f1d79d40abb939dc196b6165b2cd577e2) - feat(core, ts-plugin, codegen, vscode): support scoping container names via `cmkOptions.container`
+
+- [#420](https://github.com/mizdra/css-modules-kit/pull/420) [`eaafd2c`](https://github.com/mizdra/css-modules-kit/commit/eaafd2c9b1f57b4778f18b99e2a171a6ae809acd) - feat(core, ts-plugin, codegen, vscode): support `<dashed-ident>` tokens via the `dashedIdents` option
+
+- [#430](https://github.com/mizdra/css-modules-kit/pull/430) [`5f24d86`](https://github.com/mizdra/css-modules-kit/commit/5f24d863845c2d88a2a2e27987893b8fdad764c6) - feat(core, ts-plugin, codegen, vscode): deprecate `cmkOptions.keyframes` in favor of `cmkOptions.animation`
+
+### Patch Changes
+
+- [#427](https://github.com/mizdra/css-modules-kit/pull/427) [`fb19123`](https://github.com/mizdra/css-modules-kit/commit/fb19123a8887f91f8fdd2d693726b74ab14ca418) - fix(core): match `@import` / `@value` / `@keyframes` at-rule names case-insensitively
+
+- [#426](https://github.com/mizdra/css-modules-kit/pull/426) [`85196f9`](https://github.com/mizdra/css-modules-kit/commit/85196f9c8c5ee50768db91b4a8f02cc85813aaaa) - fix(core): match `from` / `global` / `as` keywords case-insensitively in `composes` and `@value`
+
+- [#429](https://github.com/mizdra/css-modules-kit/pull/429) [`eb850ed`](https://github.com/mizdra/css-modules-kit/commit/eb850ed498b5ba5f4af6681d375727684abdc1c4) - fix(core, ts-plugin, codegen): exclude TypeScript 7 from supported peerDependencies range
+
+- [#428](https://github.com/mizdra/css-modules-kit/pull/428) [`4a8630f`](https://github.com/mizdra/css-modules-kit/commit/4a8630ffbe8ea46693c09363be9b0924ea58dac6) - fix(core): honor the `from` clause of `var()` inside `@container style()` query values
+
 ## 1.3.0
 
 ### Minor Changes
@@ -11,6 +31,7 @@
   The `@value` parser is reimplemented on top of postcss-value-parser. Behavior for syntax supported by css-loader is unchanged.
 
   For syntax that css-loader does not support (where css-modules-kit does not guarantee a specific behavior), the result changed:
+
   - `@value \\c: #000;` and `@value \'d: #000;` are now parsed as a token declaration instead of reporting an error.
   - `@value \31 e: #000;` is now read as the token name `\31` instead of `e`.
 
@@ -19,6 +40,7 @@
   Class names referenced via `composes: foo from './other.module.css';` are now linked to the `.foo {...}` declaration in the referenced file. Go to Definition jumps from the reference to the declaration, Find All References lists reference sites across files, and Rename updates the declaration and every reference together.
 
   Two diagnostics are also emitted in the check phase:
+
   - `Cannot import module '<specifier>'` when the specifier cannot be resolved.
   - `Module '<specifier>' has no exported token '<name>'.` when the referenced file does not export the token.
 
@@ -27,6 +49,7 @@
   Class names referenced via `composes: foo;` are now linked back to the `.foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Space-separated names (`composes: foo bar;`), comma-separated names (`composes: foo, bar;`), and mixes of both are supported. `composes: global(foo);`, `composes: foo from global;`, and `composes: foo from '<specifier>';` do not produce references (support for `from '<specifier>'` is planned).
 
   Two diagnostics are also emitted for invalid usage:
+
   - Parse phase: a `from` clause not followed by a quoted specifier or the `global` keyword is reported.
   - Check phase: references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
 
@@ -45,6 +68,7 @@
   `animation-name: foo;` is now linked back to the `@keyframes foo {...}` declaration. Go to Definition jumps from a reference to the declaration, Find All References lists every reference site, and Rename updates the declaration and every reference together. Comma-separated names (`animation-name: foo, bar;`), `local()` / `global()` notation, and vendor prefixes (`-webkit-animation-name`) are all supported. References to `@keyframes` defined in another file via `@import` are resolved as well.
 
   Two diagnostics are also emitted for invalid usage:
+
   - Parse phase: malformed `local(...)` calls (empty, multiple identifiers, or non-identifier nodes such as a nested function) are reported.
   - Check phase: token references that resolve to neither a locally defined token nor an imported token are reported as `Cannot find token '<name>'.`.
 
@@ -73,6 +97,7 @@
   Rename the public types so they describe the abstract shape of the import
   (matching ESTree's `ExportAllDeclaration` / `ExportNamedDeclaration`)
   rather than the CSS syntax that produced them:
+
   - `AtImportTokenImporter` → `AllTokenImporter` (`type: 'all'`)
   - `AtValueTokenImporter` → `NamedTokenImporter` (`type: 'named'`)
   - `AtValueTokenImporterValue` → `NamedTokenImporterEntry`
