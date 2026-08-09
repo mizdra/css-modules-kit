@@ -158,3 +158,4 @@ Cargo.lock
 
 ### User
 /crates/zed/extension.wasm
+/.tmp/
