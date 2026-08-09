@@ -252,6 +252,27 @@ test('quotes generated specifiers with the original quote character', () => {
   `);
 });
 
+test('synthesizes quotes for unquoted url() specifiers and maps them as zero-width spans', () => {
+  expect(run(`@import url(./b.module.css);`)).toMatchInlineSnapshot(`
+    "=== source ===
+    @import url(./b.module.css);
+                              ¦ #2
+                ¦ #0
+                ^^^^^^^^^^^^^^ #1
+
+    === generated ===
+    import * as _import_0 from './b.module.css';
+                                              ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^^^^^^^^^^^^^^ #1 Verbatim
+                               ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+    type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
+    interface Styles {}
+    declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
+    export default styles;
+    "
+  `);
+});
+
 test('converts parse diagnostics into mapper diagnostics', () => {
   const result = run(dedent`
     .foo { color: red; }

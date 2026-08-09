@@ -39,21 +39,32 @@ const NON_RENAME_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
 function createTextBuilder() {
   let text = '';
   const mappings: SpanMapping[] = [];
+  function appendQuoted(value: string, loc: Location): void {
+    mappings.push([text.length, 1, loc.start.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
+    mappings.push([text.length + 1, value.length, loc.start.offset, value.length, SpanMapKind.Verbatim]);
+    mappings.push([text.length + 1 + value.length, 1, loc.end.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
+    text += `'${value}'`;
+  }
   return {
     append(chunk: string): void {
       text += chunk;
     },
     /** Appends `'name'`, mapping the name to `loc` and the quotes to its boundaries. */
     appendTokenName(name: string, loc: Location): void {
-      mappings.push([text.length, 1, loc.start.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
-      mappings.push([text.length + 1, name.length, loc.start.offset, name.length, SpanMapKind.Verbatim]);
-      mappings.push([text.length + 1 + name.length, 1, loc.end.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
-      text += `'${name}'`;
+      appendQuoted(name, loc);
     },
-    /** Appends the quoted specifier, mapping it (quotes included) to the original. */
-    appendSpecifier(from: string, fromLoc: Location, quote: string): void {
-      mappings.push([text.length, from.length + 2, fromLoc.start.offset - 1, from.length + 2, SpanMapKind.Verbatim]);
-      text += `${quote}${from}${quote}`;
+    /**
+     * Appends the quoted specifier. When the original is quoted, the whole literal is mapped
+     * verbatim. Otherwise (e.g. `url(./a.module.css)`), the synthesized quotes have no
+     * counterpart in the CSS, so they are mapped as zero-width spans like token name quotes.
+     */
+    appendSpecifier(from: string, fromLoc: Location, quote: '"' | "'" | undefined): void {
+      if (quote === undefined) {
+        appendQuoted(from, fromLoc);
+      } else {
+        mappings.push([text.length, from.length + 2, fromLoc.start.offset - 1, from.length + 2, SpanMapKind.Verbatim]);
+        text += `${quote}${from}${quote}`;
+      }
     },
     /** Appends `name`, mapping it to `loc` as an alias of the original name. */
     appendAlias(name: string, loc: Location): void {
@@ -92,9 +103,9 @@ function isImportableSpecifier(from: string): boolean {
 }
 
 /** Verbatim mapping requires identical text, so the generated specifier reuses the original quote character. */
-function specifierQuote(content: string, fromLoc: Location): string {
+function specifierQuote(content: string, fromLoc: Location): '"' | "'" | undefined {
   const quote = content[fromLoc.start.offset - 1];
-  return quote === '"' ? '"' : "'";
+  return quote === '"' || quote === "'" ? quote : undefined;
 }
 
 /**
