@@ -12,6 +12,10 @@ export {
   type TokenImporter,
   type NamedTokenImporter,
   type NamedTokenImporterEntry,
+  type TokenReference,
+  type LocalTokenReference,
+  type ExternalTokenReference,
+  type ExternalTokenReferenceEntry,
   type Resolver,
   type MatchesPattern,
   type ExportBuilder,
@@ -37,5 +41,11 @@ export {
 export { checkCSSModule, type CheckerArgs } from './checker.js';
 export { createExportBuilder } from './export-builder.js';
 export { join, resolve, relative, dirname, basename, parse } from './path.js';
-export { findUsedTokenNames } from './util.js';
+export {
+  findUsedTokenNames,
+  isURLSpecifier,
+  validateTokenName,
+  type ValidateTokenNameOptions,
+  type TokenNameViolation,
+} from './util.js';
 export { convertDiagnostic, convertDiagnosticWithLocation, convertSystemError } from './diagnostic.js';

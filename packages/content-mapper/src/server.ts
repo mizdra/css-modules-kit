@@ -1,7 +1,16 @@
 import type { Readable, Writable } from 'node:stream';
 import { ProtocolError } from './error.js';
-import type { InitializeResult, RequestMessage, ResponseMessage, TransformResult } from './protocol.js';
+import { normalizeMapperOptions } from './options.js';
+import type {
+  InitializeResult,
+  MapperDiagnostic,
+  RequestMessage,
+  ResponseMessage,
+  TransformParams,
+  TransformResult,
+} from './protocol.js';
 import { DIAGNOSTIC_SOURCE, METHOD_NOT_FOUND, PROTOCOL_VERSION } from './protocol.js';
+import { transformCSSModule } from './transformer.js';
 
 const HEADER_TERMINATOR = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]); // '\r\n\r\n'
 
@@ -72,7 +81,18 @@ function createResponse(request: RequestMessage): ResponseMessage {
       return { jsonrpc: '2.0', id: request.id, result };
     }
     case 'transform': {
-      const result: TransformResult = { text: 'export {};\n', mappings: [] };
+      const params = request.params as TransformParams;
+      const { options, errors } = normalizeMapperOptions(params.options);
+      const output = transformCSSModule(params.fileName, params.content, options);
+      const diagnostics: MapperDiagnostic[] = [
+        ...errors.map((message) => ({ messageText: message, start: 0, length: 0 })),
+        ...output.diagnostics,
+      ];
+      const result: TransformResult = {
+        text: output.text,
+        ...(output.mappings.length > 0 ? { mappings: output.mappings } : {}),
+        ...(diagnostics.length > 0 ? { diagnostics } : {}),
+      };
       return { jsonrpc: '2.0', id: request.id, result };
     }
     default:
