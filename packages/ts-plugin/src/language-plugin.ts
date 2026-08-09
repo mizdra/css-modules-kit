@@ -52,6 +52,7 @@ export function createCSSLanguagePlugin(
         animation: config.animation,
         dashedIdents: config.dashedIdents,
         container: config.container,
+        namedExports: config.namedExports,
       });
       // oxlint-disable-next-line prefer-const
       let { text, mapping, linkedCodeMapping } = generateDts(cssModule, {

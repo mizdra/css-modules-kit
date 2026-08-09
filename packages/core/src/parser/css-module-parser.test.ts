@@ -8,6 +8,7 @@ const options: ParseCSSModuleOptions = {
   animation: true,
   dashedIdents: false,
   container: false,
+  namedExports: false,
 };
 
 describe('parseCSSModule', () => {
@@ -959,6 +960,149 @@ describe('parseCSSModule', () => {
     	  "tokenImporters": [],
     	  "tokenReferences": [],
     	}
+    `);
+  });
+  test('reports diagnostics for `__proto__` in token names', () => {
+    const parsed = parseCSSModule(
+      dedent`
+        .__proto__ {}
+        @value __proto__, valid as __proto__ from './b.module.css';
+      `,
+      options,
+    );
+    expect(parsed.diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".__proto__ {}
+      @value __proto__, valid as __proto__ from './b.module.css';",
+          },
+          "length": 9,
+          "start": {
+            "column": 2,
+            "line": 1,
+            "offset": 1,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".__proto__ {}
+      @value __proto__, valid as __proto__ from './b.module.css';",
+          },
+          "length": 9,
+          "start": {
+            "column": 8,
+            "line": 2,
+            "offset": 21,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".__proto__ {}
+      @value __proto__, valid as __proto__ from './b.module.css';",
+          },
+          "length": 9,
+          "start": {
+            "column": 28,
+            "line": 2,
+            "offset": 41,
+          },
+          "text": "\`__proto__\` is not allowed as names.",
+        },
+      ]
+    `);
+  });
+  test('reports diagnostics for `default` in token names when namedExports is true', () => {
+    const parsed = parseCSSModule(
+      dedent`
+        .default {}
+        @value default, valid as default from './b.module.css';
+      `,
+      { ...options, namedExports: true },
+    );
+    expect(parsed.diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".default {}
+      @value default, valid as default from './b.module.css';",
+          },
+          "length": 7,
+          "start": {
+            "column": 2,
+            "line": 1,
+            "offset": 1,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".default {}
+      @value default, valid as default from './b.module.css';",
+          },
+          "length": 7,
+          "start": {
+            "column": 8,
+            "line": 2,
+            "offset": 19,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".default {}
+      @value default, valid as default from './b.module.css';",
+          },
+          "length": 7,
+          "start": {
+            "column": 26,
+            "line": 2,
+            "offset": 37,
+          },
+          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
+        },
+      ]
+    `);
+  });
+  test('does not report diagnostics for `default` in token names when namedExports is false', () => {
+    const parsed = parseCSSModule('.default {}', options);
+    expect(parsed.diagnostics).toEqual([]);
+  });
+  test('reports diagnostics for backslash in token names', () => {
+    // NOTE: The backslash is valid syntax in class selectors, but it is invalid syntax in `@value`.
+    // Therefore, it is sufficient for diagnostics to be reported only for class selectors.
+    const parsed = parseCSSModule(`.a\\1 {}`, options);
+    expect(parsed.diagnostics).toMatchInlineSnapshot(`
+      [
+        {
+          "category": "error",
+          "file": {
+            "fileName": "/test.module.css",
+            "text": ".a\\1 {}",
+          },
+          "length": 4,
+          "start": {
+            "column": 2,
+            "line": 1,
+            "offset": 1,
+          },
+          "text": "Backslash (\\) is not allowed in names.",
+        },
+      ]
     `);
   });
   test('does not include the token of keyframes if animation is false', () => {

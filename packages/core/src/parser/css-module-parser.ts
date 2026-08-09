@@ -5,10 +5,12 @@ import type {
   CSSModule,
   DiagnosticWithDetachedLocation,
   DiagnosticWithLocation,
+  Location,
   Token,
   TokenImporter,
   TokenReference,
 } from '../type.js';
+import { type TokenNameViolation, validateTokenName } from '../util.js';
 import {
   isAnimationNameProp,
   isAnimationProp,
@@ -136,6 +138,60 @@ function collectTokens(ast: Root, animation: boolean, dashedIdents: boolean, con
   return { localTokens, tokenImporters, tokenReferences, diagnostics: allDiagnostics };
 }
 
+function validateTokenNames(
+  localTokens: Token[],
+  tokenImporters: TokenImporter[],
+  namedExports: boolean,
+): DiagnosticWithDetachedLocation[] {
+  const diagnostics: DiagnosticWithDetachedLocation[] = [];
+  for (const token of localTokens) {
+    // Reject special names as they may break .d.ts files
+    const violation = validateTokenName(token.name, { namedExports });
+    if (violation) {
+      diagnostics.push(createTokenNameDiagnostic(token.loc, violation));
+    }
+  }
+  for (const tokenImporter of tokenImporters) {
+    if (tokenImporter.type !== 'named') continue;
+    for (const entry of tokenImporter.entries) {
+      const nameViolation = validateTokenName(entry.name, { namedExports });
+      if (nameViolation) {
+        diagnostics.push(createTokenNameDiagnostic(entry.loc, nameViolation));
+      }
+      if (entry.localName) {
+        const localNameViolation = validateTokenName(entry.localName, { namedExports });
+        if (localNameViolation) {
+          diagnostics.push(createTokenNameDiagnostic(entry.localLoc!, localNameViolation));
+        }
+      }
+    }
+  }
+  return diagnostics;
+}
+
+function createTokenNameDiagnostic(loc: Location, violation: TokenNameViolation): DiagnosticWithDetachedLocation {
+  let text: string;
+  switch (violation) {
+    case 'proto-not-allowed':
+      text = `\`__proto__\` is not allowed as names.`;
+      break;
+    case 'default-not-allowed':
+      text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
+      break;
+    case 'backslash-not-allowed':
+      text = `Backslash (\\) is not allowed in names.`;
+      break;
+    default:
+      throw new Error('unreachable: unknown TokenNameViolation');
+  }
+  return {
+    text,
+    category: 'error',
+    start: loc.start,
+    length: loc.end.offset - loc.start.offset,
+  };
+}
+
 export interface ParseCSSModuleOptions {
   fileName: string;
   /** Whether to include syntax errors from diagnostics */
@@ -143,6 +199,7 @@ export interface ParseCSSModuleOptions {
   animation: boolean;
   dashedIdents: boolean;
   container: boolean;
+  namedExports: boolean;
 }
 /**
  * Parse CSS Module text.
@@ -150,7 +207,7 @@ export interface ParseCSSModuleOptions {
  */
 export function parseCSSModule(
   text: string,
-  { fileName, includeSyntaxError, animation, dashedIdents, container }: ParseCSSModuleOptions,
+  { fileName, includeSyntaxError, animation, dashedIdents, container, namedExports }: ParseCSSModuleOptions,
 ): CSSModule {
   let ast: Root;
   const diagnosticFile = { fileName, text };
@@ -184,6 +241,12 @@ export function parseCSSModule(
     container,
   );
   allDiagnostics.push(...diagnostics.map((diagnostic) => ({ ...diagnostic, file: diagnosticFile })));
+  allDiagnostics.push(
+    ...validateTokenNames(localTokens, tokenImporters, namedExports).map((diagnostic) => ({
+      ...diagnostic,
+      file: diagnosticFile,
+    })),
+  );
   return {
     fileName,
     text,
