@@ -191,6 +191,30 @@
       }
     },
     {
+      // Launches the TypeScript Native Preview extension built from the content mapper
+      // PR branch (microsoft/typescript-go#4712). The marketplace build cannot enable
+      // content mappers, so the extension must be run from the PR branch's source.
+      "name": "tsgo (7-content-mapper)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/.tmp/typescript-go/_extension",
+        "--profile-temp",
+        "--skip-welcome",
+        // The extension enables content mappers only in a trusted workspace. Disabling
+        // workspace trust makes VS Code treat every workspace as trusted, which also
+        // skips the trust dialog on launch.
+        "--disable-workspace-trust",
+        "--folder-uri=${workspaceFolder}/examples/7-content-mapper",
+        "${workspaceFolder}/examples/7-content-mapper/src/index.ts"
+      ],
+      "outFiles": ["${workspaceFolder}/.tmp/typescript-go/_extension/dist/**/*.js"],
+      "preLaunchTask": "prepare content-mapper example",
+      "presentation": {
+        "group": "tsgo"
+      }
+    },
+    {
       "name": "vscode-test",
       "type": "extensionHost",
       "request": "launch",
