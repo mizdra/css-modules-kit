@@ -10,7 +10,7 @@ import type {
   TransformResult,
 } from './protocol.js';
 import { DIAGNOSTIC_SOURCE, METHOD_NOT_FOUND, PROTOCOL_VERSION } from './protocol.js';
-import { transformCSSModule } from './transformer.js';
+import { transformCSS } from './transformer.js';
 
 const HEADER_TERMINATOR = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]); // '\r\n\r\n'
 
@@ -83,7 +83,7 @@ function createResponse(request: RequestMessage): ResponseMessage {
     case 'transform': {
       const params = request.params as TransformParams;
       const { options, errors } = normalizeMapperOptions(params.options);
-      const output = transformCSSModule(params.fileName, params.content, options);
+      const output = transformCSS(params.fileName, params.content, options);
       const diagnostics: MapperDiagnostic[] = [
         ...errors.map((message) => ({ messageText: message, start: 0, length: 0 })),
         ...output.diagnostics,

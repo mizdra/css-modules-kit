@@ -9,7 +9,7 @@ export function buildTSConfigJSON(args?: TSConfig): string {
     contentMappers: [
       {
         package: '@css-modules-kit/content-mapper',
-        extensions: ['.module.css'],
+        extensions: ['.css'],
         ...(args?.mapperOptions ? { options: args.mapperOptions } : {}),
       },
     ],

@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import type { NormalizedMapperOptions } from '../options.js';
 import type { TransformOutput } from '../transformer.js';
-import { transformCSSModule } from '../transformer.js';
+import { transformCSS } from '../transformer.js';
 
 export interface SimplifiedTsDiagnostic {
   code: number;
@@ -38,7 +38,7 @@ export function checkGeneratedTexts(
   const outputs: Record<string, TransformOutput> = {};
   const tsFiles = new Map<string, string>();
   for (const [fileName, source] of Object.entries(cssFiles)) {
-    const output = transformCSSModule(fileName, source, options);
+    const output = transformCSS(fileName, source, options);
     outputs[fileName] = output;
     tsFiles.set(`${fileName}.ts`, output.text);
   }

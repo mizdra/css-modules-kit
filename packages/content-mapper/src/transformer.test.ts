@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import type { NormalizedMapperOptions } from './options.js';
 import { renderTransformOutput } from './test/render.js';
-import { transformCSSModule } from './transformer.js';
+import { transformCSS } from './transformer.js';
 
 const defaultOptions: NormalizedMapperOptions = {
   namedExports: false,
@@ -14,7 +14,7 @@ const defaultOptions: NormalizedMapperOptions = {
 const namedExportsOptions: NormalizedMapperOptions = { ...defaultOptions, namedExports: true };
 
 function run(source: string, options: NormalizedMapperOptions = defaultOptions): string {
-  return renderTransformOutput(source, transformCSSModule('/test/a.module.css', source, options));
+  return renderTransformOutput(source, transformCSS('/test/a.module.css', source, options));
 }
 
 test('generates interface declarations for local tokens', () => {
@@ -336,6 +336,14 @@ test('omits keyframes tokens when animation is false', () => {
     export default styles;
     "
   `);
+});
+
+test('generates an empty module for a non-module CSS file', () => {
+  expect(transformCSS('/test/global.css', `* { margin: 0; }`, defaultOptions)).toStrictEqual({
+    text: 'export {};\n',
+    mappings: [],
+    diagnostics: [],
+  });
 });
 
 describe('namedExports', () => {

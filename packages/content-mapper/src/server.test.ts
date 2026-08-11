@@ -2,7 +2,7 @@ import { PassThrough } from 'node:stream';
 import { expect, test } from 'vite-plus/test';
 import type { NormalizedMapperOptions } from './options.js';
 import { runServer } from './server.js';
-import { transformCSSModule } from './transformer.js';
+import { transformCSS } from './transformer.js';
 
 const defaultMapperOptions: NormalizedMapperOptions = {
   namedExports: false,
@@ -75,7 +75,7 @@ function createTransformRequest(id: number, content: string) {
 }
 
 function createTransformResponse(id: number, content: string) {
-  const { text, mappings, diagnostics } = transformCSSModule('/a.module.css', content, defaultMapperOptions);
+  const { text, mappings, diagnostics } = transformCSS('/a.module.css', content, defaultMapperOptions);
   return {
     jsonrpc: '2.0',
     id,
@@ -139,7 +139,7 @@ test('reports option normalization errors as diagnostics at the file head', asyn
   });
   input.end();
   await done;
-  const expected = transformCSSModule('/a.module.css', content, defaultMapperOptions);
+  const expected = transformCSS('/a.module.css', content, defaultMapperOptions);
   expect(readResponses(output)).toEqual([
     {
       jsonrpc: '2.0',

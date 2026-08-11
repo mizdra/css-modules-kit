@@ -9,6 +9,7 @@ import type {
 import {
   basename,
   CSS_MODULE_EXTENSION,
+  isCSSModuleFile,
   isURLSpecifier,
   parseCSSModule,
   validateTokenName,
@@ -109,16 +110,20 @@ function specifierQuote(content: string, fromLoc: Location): '"' | "'" | undefin
 }
 
 /**
- * Transforms a CSS Module into TypeScript text for the content mapper protocol.
- * The generated text delegates most validation to the TypeScript checker: importing a
- * missing file or referencing a missing token becomes an ordinary type error, which tsgo
- * maps back to the CSS through the returned span mappings.
+ * Transforms a CSS file into TypeScript text for the content mapper protocol.
+ *
+ * A CSS Module becomes a module exporting its tokens. The generated text delegates most
+ * validation to the TypeScript checker: importing a missing file or referencing a missing
+ * token becomes an ordinary type error, which tsgo maps back to the CSS through the
+ * returned span mappings.
+ *
+ * A non-module CSS file becomes an empty module, so that importing it for its side effects
+ * type-checks while it exports nothing.
  */
-export function transformCSSModule(
-  fileName: string,
-  content: string,
-  options: NormalizedMapperOptions,
-): TransformOutput {
+export function transformCSS(fileName: string, content: string, options: NormalizedMapperOptions): TransformOutput {
+  if (!isCSSModuleFile(fileName)) {
+    return { text: 'export {};\n', mappings: [], diagnostics: [] };
+  }
   const cssModule = parseCSSModule(content, {
     fileName,
     includeSyntaxError: true,
