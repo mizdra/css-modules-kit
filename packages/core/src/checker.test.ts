@@ -6,7 +6,6 @@ import { createExportBuilder } from './export-builder.js';
 import { createResolver } from './resolver.js';
 import { readAndParseCSSModule } from './test/css-module.js';
 import { formatDiagnostics } from './test/diagnostic.js';
-import { fakeConfig } from './test/faker.js';
 import { createIFF } from './test/fixture.js';
 import type { CSSModule } from './type.js';
 
@@ -16,7 +15,6 @@ const matchesPattern = (path: string) => path.endsWith('.module.css');
 type Checker = (cssModule: CSSModule) => ReturnType<typeof checkCSSModule>;
 
 function prepareChecker(args?: Partial<CheckerArgs>): Checker {
-  const config = args?.config ?? fakeConfig();
   const resolverFn = args?.resolver ?? resolver;
   const matchesPatternFn = args?.matchesPattern ?? matchesPattern;
   const exportBuilder = createExportBuilder({
@@ -26,7 +24,6 @@ function prepareChecker(args?: Partial<CheckerArgs>): Checker {
   });
   return (cssModule: CSSModule) => {
     return checkCSSModule(cssModule, {
-      config,
       getExportRecord: (m) => exportBuilder.build(m),
       matchesPattern: matchesPatternFn,
       resolver: resolverFn,
@@ -36,127 +33,6 @@ function prepareChecker(args?: Partial<CheckerArgs>): Checker {
 }
 
 describe('checkCSSModule', () => {
-  test('report diagnostics for "__proto__" name', async () => {
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        .__proto__ { color: red; }
-        @value __proto__, valid as __proto__ from './b.module.css';
-      `,
-      'b.module.css': dedent`
-        @value __proto__: red;
-        @value valid: red;
-      `,
-    });
-    const check = prepareChecker();
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 9,
-          "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 9,
-          "start": {
-            "column": 8,
-            "line": 2,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 9,
-          "start": {
-            "column": 28,
-            "line": 2,
-          },
-          "text": "\`__proto__\` is not allowed as names.",
-        },
-      ]
-    `);
-  });
-  test('report diagnostics for "default" name when namedExports is true', async () => {
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        .default { color: red; }
-        @value default, valid as default from './b.module.css';
-      `,
-      'b.module.css': dedent`
-        @value default: red;
-        @value valid: red;
-      `,
-    });
-    const check = prepareChecker({ config: fakeConfig({ namedExports: true }) });
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 7,
-          "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 7,
-          "start": {
-            "column": 8,
-            "line": 2,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 7,
-          "start": {
-            "column": 26,
-            "line": 2,
-          },
-          "text": "\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.",
-        },
-      ]
-    `);
-  });
-  test('report diagnostics for backslash in name', async () => {
-    // NOTE: The backslash is valid syntax in class selectors, but it is invalid syntax in `@value`.
-    // Therefore, it is sufficient for diagnostics to be reported only for class selectors.
-    const iff = await createIFF({
-      'a.module.css': dedent`
-        .a\\1 { color: red; }
-      `,
-    });
-    const check = prepareChecker();
-    const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
-    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
-      [
-        {
-          "category": "error",
-          "fileName": "<rootDir>/a.module.css",
-          "length": 4,
-          "start": {
-            "column": 2,
-            "line": 1,
-          },
-          "text": "Backslash (\\) is not allowed in names.",
-        },
-      ]
-    `);
-  });
   test('report diagnostics for non-exported token', async () => {
     const iff = await createIFF({
       'a.module.css': `@value b_1, b_2 from './b.module.css';`,

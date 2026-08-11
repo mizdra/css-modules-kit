@@ -158,6 +158,7 @@ export function createProject(args: ProjectArgs): Project {
       animation: config.animation,
       dashedIdents: config.dashedIdents,
       container: config.container,
+      namedExports: config.namedExports,
     });
   }
 
@@ -191,7 +192,6 @@ export function createProject(args: ProjectArgs): Project {
       let diagnostics = semanticDiagnosticsMap.get(cssModule.fileName);
       if (!diagnostics) {
         diagnostics = checkCSSModule(cssModule, {
-          config,
           getExportRecord: (m) => exportBuilder.build(m),
           matchesPattern,
           resolver,

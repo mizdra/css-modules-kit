@@ -1,4 +1,3 @@
-import type { CMKConfig } from './config.js';
 import type {
   CSSModule,
   Diagnostic,
@@ -8,10 +7,9 @@ import type {
   MatchesPattern,
   Resolver,
 } from './type.js';
-import { isURLSpecifier, type TokenNameViolation, validateTokenName } from './util.js';
+import { isURLSpecifier } from './util.js';
 
 export interface CheckerArgs {
-  config: CMKConfig;
   getExportRecord: (cssModule: CSSModule) => ExportRecord;
   matchesPattern: MatchesPattern;
   resolver: Resolver;
@@ -19,16 +17,7 @@ export interface CheckerArgs {
 }
 
 export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnostic[] {
-  const { config } = args;
   const diagnostics: Diagnostic[] = [];
-
-  for (const token of cssModule.localTokens) {
-    // Reject special names as they may break .d.ts files
-    const violation = validateTokenName(token.name, { namedExports: config.namedExports });
-    if (violation) {
-      diagnostics.push(createTokenNameDiagnostic(cssModule, token.loc, violation));
-    }
-  }
 
   for (const tokenImporter of cssModule.tokenImporters) {
     if (isURLSpecifier(tokenImporter.from)) continue;
@@ -48,16 +37,6 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
           diagnostics.push(
             createModuleHasNoExportedTokenDiagnostic(cssModule, tokenImporter.from, entry.name, entry.loc),
           );
-        }
-        const nameViolation = validateTokenName(entry.name, { namedExports: config.namedExports });
-        if (nameViolation) {
-          diagnostics.push(createTokenNameDiagnostic(cssModule, entry.loc, nameViolation));
-        }
-        if (entry.localName) {
-          const localNameViolation = validateTokenName(entry.localName, { namedExports: config.namedExports });
-          if (localNameViolation) {
-            diagnostics.push(createTokenNameDiagnostic(cssModule, entry.localLoc!, localNameViolation));
-          }
         }
       }
     }
@@ -88,30 +67,6 @@ export function checkCSSModule(cssModule: CSSModule, args: CheckerArgs): Diagnos
     }
   }
   return diagnostics;
-}
-
-function createTokenNameDiagnostic(cssModule: CSSModule, loc: Location, violation: TokenNameViolation): Diagnostic {
-  let text: string;
-  switch (violation) {
-    case 'proto-not-allowed':
-      text = `\`__proto__\` is not allowed as names.`;
-      break;
-    case 'default-not-allowed':
-      text = `\`default\` is not allowed as names when \`cmkOptions.namedExports\` is set to \`true\`.`;
-      break;
-    case 'backslash-not-allowed':
-      text = `Backslash (\\) is not allowed in names.`;
-      break;
-    default:
-      throw new Error('unreachable: unknown TokenNameViolation');
-  }
-  return {
-    text,
-    category: 'error',
-    file: { fileName: cssModule.fileName, text: cssModule.text },
-    start: { line: loc.start.line, column: loc.start.column },
-    length: loc.end.offset - loc.start.offset,
-  };
 }
 
 function createCannotImportModuleDiagnostic(cssModule: CSSModule, from: string, fromLoc: Location): Diagnostic {
