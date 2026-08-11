@@ -11,8 +11,9 @@ DEST=.tmp/typescript-go
 ./scripts/setup-tsgo.sh
 
 # In development mode, the extension resolves the tsgo binary at built/local/tsgo.
+GOEXE=$(go env GOEXE)
 mkdir -p "$DEST/built/local"
-cp "$DEST/built/tsgo" "$DEST/built/local/tsgo"
+cp "$DEST/built/tsgo$GOEXE" "$DEST/built/local/tsgo$GOEXE"
 
 # npm ci is slow, so it only runs on the first setup. Re-run it manually if the
 # pinned commit changes package-lock.json.

@@ -73,6 +73,14 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}-${{ github.sha }}
           restore-keys: test-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-stylelint-${{ matrix.stylelint-version }}
+      # The tsgo binary built by scripts/setup-tsgo.sh, used by the content-mapper e2e tests.
+      # The e2e test setup skips the build when the binary exists, so a stale binary must
+      # never be restored. Keying on the hash of setup-tsgo.sh (which contains the pinned
+      # commit) with no restore-keys guarantees that.
+      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+        with:
+          path: .tmp/typescript-go/built
+          key: tsgo-${{ runner.arch }}-${{ runner.os }}-${{ hashFiles('scripts/setup-tsgo.sh') }}
       - run: vp test
         env:
           STYLELINT_VERSION: ${{ matrix.stylelint-version }}

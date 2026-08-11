@@ -21,5 +21,8 @@ if ! git -C "$DEST" cat-file -e "$COMMIT^{commit}" 2>/dev/null; then
 fi
 git -C "$DEST" checkout -q "$COMMIT"
 
-(cd "$DEST" && go build -o built/tsgo ./cmd/tsgo)
-echo "tsgo built at $DEST/built/tsgo"
+# GOEXE is '.exe' on Windows and empty elsewhere. The extensionless name does not work on
+# Windows because process spawning resolves executables by appending '.exe'.
+GOEXE=$(go env GOEXE)
+(cd "$DEST" && go build -o "built/tsgo$GOEXE" ./cmd/tsgo)
+echo "tsgo built at $DEST/built/tsgo$GOEXE"
