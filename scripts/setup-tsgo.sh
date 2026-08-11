@@ -5,7 +5,7 @@ set -ue
 # The content mapper protocol is implemented in an unmerged PR (microsoft/typescript-go#4712),
 # so this script pins a commit of its head branch (andrewbranch/typescript-go `content-mappers`).
 
-COMMIT=bddd2162710e50281fa838456a875fd59ee7c91f
+COMMIT=c18f834e07d992a24cdfbb7cb8bd58812ff3d95e
 REPO=https://github.com/andrewbranch/typescript-go.git
 
 cd "$(dirname "$0")/.."
