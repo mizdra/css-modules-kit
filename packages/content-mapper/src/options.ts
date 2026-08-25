@@ -1,3 +1,5 @@
+import type { OptionDiagnostic } from './protocol.js';
+
 export interface NormalizedMapperOptions {
   namedExports: boolean;
   prioritizeNamedImports: boolean;
@@ -8,7 +10,7 @@ export interface NormalizedMapperOptions {
 
 export interface NormalizeMapperOptionsResult {
   options: NormalizedMapperOptions;
-  errors: string[];
+  optionDiagnostics: OptionDiagnostic[];
 }
 
 const DEFAULT_OPTIONS: NormalizedMapperOptions = {
@@ -21,17 +23,20 @@ const DEFAULT_OPTIONS: NormalizedMapperOptions = {
 
 const OPTION_KEYS = Object.keys(DEFAULT_OPTIONS) as (keyof NormalizedMapperOptions)[];
 
+const NOT_AN_OBJECT_CODE = 1001;
+const NOT_A_BOOLEAN_CODE = 1002;
+
 /**
- * Normalizes the raw `options` value of a transform request. Invalid values fall back to
- * the defaults, and a human-readable error is collected for each of them.
+ * Normalizes the raw `options` value of an openProject request. Invalid values fall back to
+ * the defaults, and an option diagnostic is collected for each of them.
  */
 export function normalizeMapperOptions(raw: unknown): NormalizeMapperOptionsResult {
   const options = { ...DEFAULT_OPTIONS };
-  const errors: string[] = [];
-  if (raw === undefined) return { options, errors };
+  const optionDiagnostics: OptionDiagnostic[] = [];
+  if (raw === undefined) return { options, optionDiagnostics };
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    errors.push('Options must be an object.');
-    return { options, errors };
+    optionDiagnostics.push({ path: [], messageText: 'Options must be an object.', code: NOT_AN_OBJECT_CODE });
+    return { options, optionDiagnostics };
   }
   for (const key of OPTION_KEYS) {
     if (!(key in raw)) continue;
@@ -39,8 +44,12 @@ export function normalizeMapperOptions(raw: unknown): NormalizeMapperOptionsResu
     if (typeof value === 'boolean') {
       options[key] = value;
     } else {
-      errors.push(`\`${key}\` must be a boolean.`);
+      optionDiagnostics.push({
+        path: [key],
+        messageText: `\`${key}\` must be a boolean.`,
+        code: NOT_A_BOOLEAN_CODE,
+      });
     }
   }
-  return { options, errors };
+  return { options, optionDiagnostics };
 }

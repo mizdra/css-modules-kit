@@ -10,7 +10,7 @@ const defaultOptions = {
 };
 
 test('returns default options when raw options are undefined', () => {
-  expect(normalizeMapperOptions(undefined)).toEqual({ options: defaultOptions, errors: [] });
+  expect(normalizeMapperOptions(undefined)).toEqual({ options: defaultOptions, optionDiagnostics: [] });
 });
 
 test('applies boolean options', () => {
@@ -30,24 +30,24 @@ test('applies boolean options', () => {
       dashedIdents: true,
       container: true,
     },
-    errors: [],
+    optionDiagnostics: [],
   });
 });
 
 test('ignores unknown keys', () => {
-  expect(normalizeMapperOptions({ unknown: true })).toEqual({ options: defaultOptions, errors: [] });
+  expect(normalizeMapperOptions({ unknown: true })).toEqual({ options: defaultOptions, optionDiagnostics: [] });
 });
 
-test('reports an error and returns default options when raw options are not an object', () => {
+test('reports a diagnostic and returns default options when raw options are not an object', () => {
   expect(normalizeMapperOptions('yes')).toEqual({
     options: defaultOptions,
-    errors: ['Options must be an object.'],
+    optionDiagnostics: [{ path: [], messageText: 'Options must be an object.', code: 1001 }],
   });
 });
 
-test('reports an error and keeps the default when an option is not a boolean', () => {
+test('reports a diagnostic at the option key and keeps the default when an option is not a boolean', () => {
   expect(normalizeMapperOptions({ animation: 'yes' })).toEqual({
     options: defaultOptions,
-    errors: ['`animation` must be a boolean.'],
+    optionDiagnostics: [{ path: ['animation'], messageText: '`animation` must be a boolean.', code: 1002 }],
   });
 });

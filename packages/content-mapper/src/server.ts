@@ -1,15 +1,18 @@
 import type { Readable, Writable } from 'node:stream';
 import { ProtocolError } from './error.js';
+import type { NormalizedMapperOptions } from './options.js';
 import { normalizeMapperOptions } from './options.js';
 import type {
+  CloseProjectParams,
   InitializeResult,
-  MapperDiagnostic,
+  OpenProjectParams,
+  OpenProjectResult,
   RequestMessage,
   ResponseMessage,
   TransformParams,
   TransformResult,
 } from './protocol.js';
-import { DIAGNOSTIC_SOURCE, METHOD_NOT_FOUND, PROTOCOL_VERSION } from './protocol.js';
+import { DIAGNOSTIC_SOURCE, INVALID_PARAMS, METHOD_NOT_FOUND } from './protocol.js';
 import { transformCSS } from './transformer.js';
 
 const HEADER_TERMINATOR = new Uint8Array([0x0d, 0x0a, 0x0d, 0x0a]); // '\r\n\r\n'
@@ -70,28 +73,43 @@ function isRequestMessage(message: unknown): message is RequestMessage {
   return typeof message === 'object' && message !== null && 'method' in message && 'id' in message;
 }
 
-function createResponse(request: RequestMessage): ResponseMessage {
+function createResponse(request: RequestMessage, projects: Map<string, NormalizedMapperOptions>): ResponseMessage {
   switch (request.method) {
     case 'initialize': {
       const result: InitializeResult = {
-        protocolVersion: PROTOCOL_VERSION,
         positionEncoding: 'utf-16',
         diagnosticSource: DIAGNOSTIC_SOURCE,
       };
       return { jsonrpc: '2.0', id: request.id, result };
     }
+    case 'openProject': {
+      const params = request.params as OpenProjectParams;
+      const { options, optionDiagnostics } = normalizeMapperOptions(params.options);
+      projects.set(params.projectHandle, options);
+      const result: OpenProjectResult = optionDiagnostics.length > 0 ? { optionDiagnostics } : {};
+      return { jsonrpc: '2.0', id: request.id, result };
+    }
+    case 'closeProject': {
+      const params = request.params as CloseProjectParams;
+      projects.delete(params.projectHandle);
+      return { jsonrpc: '2.0', id: request.id, result: null };
+    }
     case 'transform': {
       const params = request.params as TransformParams;
-      const { options, errors } = normalizeMapperOptions(params.options);
+      const options = projects.get(params.projectHandle);
+      if (options === undefined) {
+        return {
+          jsonrpc: '2.0',
+          id: request.id,
+          error: { code: INVALID_PARAMS, message: `Unknown project handle: ${params.projectHandle}` },
+        };
+      }
       const output = transformCSS(params.fileName, params.content, options);
-      const diagnostics: MapperDiagnostic[] = [
-        ...errors.map((message) => ({ messageText: message, start: 0, length: 0 })),
-        ...output.diagnostics,
-      ];
       const result: TransformResult = {
         text: output.text,
+        extension: '.ts',
         ...(output.mappings.length > 0 ? { mappings: output.mappings } : {}),
-        ...(diagnostics.length > 0 ? { diagnostics } : {}),
+        ...(output.diagnostics.length > 0 ? { diagnostics: output.diagnostics } : {}),
       };
       return { jsonrpc: '2.0', id: request.id, result };
     }
@@ -117,12 +135,13 @@ function encodeFrame(message: ResponseMessage): Uint8Array {
 export async function runServer(input: Readable, output: Writable): Promise<void> {
   return new Promise((resolve, reject) => {
     const decoder = createFrameDecoder();
+    const projects = new Map<string, NormalizedMapperOptions>();
     input.on('data', (chunk: Uint8Array) => {
       try {
         for (const frame of decoder.push(chunk)) {
           const message: unknown = JSON.parse(frame);
           if (isRequestMessage(message)) {
-            output.write(encodeFrame(createResponse(message)));
+            output.write(encodeFrame(createResponse(message, projects)));
           }
         }
       } catch (error) {

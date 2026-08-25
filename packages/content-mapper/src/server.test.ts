@@ -53,7 +53,7 @@ function createInitializeRequest(id: number) {
     jsonrpc: '2.0',
     id,
     method: 'initialize',
-    params: { protocolVersion: 1, positionEncodings: ['utf-8', 'utf-16'] },
+    params: { positionEncodings: ['utf-8', 'utf-16'] },
   };
 }
 
@@ -61,105 +61,136 @@ function createInitializeResponse(id: number) {
   return {
     jsonrpc: '2.0',
     id,
-    result: { protocolVersion: 1, positionEncoding: 'utf-16', diagnosticSource: 'cmk' },
+    result: { positionEncoding: 'utf-16', diagnosticSource: 'cmk' },
   };
 }
 
-function createTransformRequest(id: number, content: string) {
+function createOpenProjectRequest(id: number, projectHandle: string, options?: unknown) {
+  return {
+    jsonrpc: '2.0',
+    id,
+    method: 'openProject',
+    params: {
+      configFileName: '/tsconfig.json',
+      projectHandle,
+      ...(options === undefined ? {} : { options }),
+      compilerOptions: {},
+    },
+  };
+}
+
+function createOpenProjectResponse(id: number) {
+  return { jsonrpc: '2.0', id, result: {} };
+}
+
+function createTransformRequest(id: number, content: string, projectHandle = 'p1') {
   return {
     jsonrpc: '2.0',
     id,
     method: 'transform',
-    params: { fileName: '/a.module.css', content, compilerOptions: {} },
+    params: { fileName: '/a.module.css', content, projectHandle },
   };
 }
 
-function createTransformResponse(id: number, content: string) {
-  const { text, mappings, diagnostics } = transformCSS('/a.module.css', content, defaultMapperOptions);
+function createTransformResponse(id: number, content: string, options: NormalizedMapperOptions = defaultMapperOptions) {
+  const { text, mappings, diagnostics } = transformCSS('/a.module.css', content, options);
   return {
     jsonrpc: '2.0',
     id,
     result: {
       text,
+      extension: '.ts',
       ...(mappings.length > 0 ? { mappings } : {}),
       ...(diagnostics.length > 0 ? { diagnostics } : {}),
     },
   };
 }
 
-test('responds to initialize with protocol version 1, utf-16 encoding, and cmk diagnostic source', async () => {
+test('responds to initialize with utf-16 encoding and cmk diagnostic source', async () => {
   const { input, output, done } = startServer();
   writeFrame(input, createInitializeRequest(1));
   input.end();
   await done;
-  expect(readResponses(output)).toEqual([
-    {
-      jsonrpc: '2.0',
-      id: 1,
-      result: { protocolVersion: 1, positionEncoding: 'utf-16', diagnosticSource: 'cmk' },
-    },
-  ]);
+  expect(readResponses(output)).toEqual([createInitializeResponse(1)]);
 });
 
-test('responds to transform with generated text and span mappings', async () => {
+test('responds to transform with generated text, extension, and span mappings', async () => {
   const { input, output, done } = startServer();
   writeFrame(input, createInitializeRequest(1));
-  writeFrame(input, createTransformRequest(2, '.a1 { color: red; }'));
+  writeFrame(input, createOpenProjectRequest(2, 'p1'));
+  writeFrame(input, createTransformRequest(3, '.a1 { color: red; }'));
   input.end();
   await done;
   expect(readResponses(output)).toEqual([
     createInitializeResponse(1),
-    createTransformResponse(2, '.a1 { color: red; }'),
+    createOpenProjectResponse(2),
+    createTransformResponse(3, '.a1 { color: red; }'),
   ]);
 });
 
-test('applies mapper options from transform params', async () => {
+test('applies the mapper options of the project referenced by the transform', async () => {
   const { input, output, done } = startServer();
-  writeFrame(input, {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'transform',
-    params: { fileName: '/a.module.css', content: '', options: { namedExports: true }, compilerOptions: {} },
-  });
+  writeFrame(input, createOpenProjectRequest(1, 'p1'));
+  writeFrame(input, createOpenProjectRequest(2, 'p2', { namedExports: true }));
+  writeFrame(input, createTransformRequest(3, '', 'p1'));
+  writeFrame(input, createTransformRequest(4, '', 'p2'));
   input.end();
   await done;
   expect(readResponses(output)).toEqual([
-    { jsonrpc: '2.0', id: 1, result: { text: 'declare const styles: {};\nexport default styles;\n' } },
+    createOpenProjectResponse(1),
+    createOpenProjectResponse(2),
+    createTransformResponse(3, ''),
+    createTransformResponse(4, '', { ...defaultMapperOptions, namedExports: true }),
   ]);
 });
 
-test('reports option normalization errors as diagnostics at the file head', async () => {
-  const content = '.a1 { color: red; }';
+test('reports invalid mapper options as optionDiagnostics in the openProject response', async () => {
   const { input, output, done } = startServer();
-  writeFrame(input, {
-    jsonrpc: '2.0',
-    id: 1,
-    method: 'transform',
-    params: { fileName: '/a.module.css', content, options: { animation: 'yes' }, compilerOptions: {} },
-  });
+  writeFrame(input, createOpenProjectRequest(1, 'p1', { animation: 'yes' }));
   input.end();
   await done;
-  const expected = transformCSS('/a.module.css', content, defaultMapperOptions);
   expect(readResponses(output)).toEqual([
     {
       jsonrpc: '2.0',
       id: 1,
       result: {
-        text: expected.text,
-        mappings: expected.mappings,
-        diagnostics: [{ messageText: '`animation` must be a boolean.', start: 0, length: 0 }],
+        optionDiagnostics: [{ path: ['animation'], messageText: '`animation` must be a boolean.', code: 1002 }],
       },
     },
   ]);
 });
 
-test('responds with method-not-found error to unknown methods', async () => {
+test('responds with an invalid-params error to a transform with an unopened project handle', async () => {
   const { input, output, done } = startServer();
-  writeFrame(input, { jsonrpc: '2.0', id: 1, method: 'openProject', params: {} });
+  writeFrame(input, createTransformRequest(1, ''));
   input.end();
   await done;
   expect(readResponses(output)).toEqual([
-    { jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'Method not found: openProject' } },
+    { jsonrpc: '2.0', id: 1, error: { code: -32602, message: 'Unknown project handle: p1' } },
+  ]);
+});
+
+test('releases the project options on closeProject', async () => {
+  const { input, output, done } = startServer();
+  writeFrame(input, createOpenProjectRequest(1, 'p1'));
+  writeFrame(input, { jsonrpc: '2.0', id: 2, method: 'closeProject', params: { projectHandle: 'p1' } });
+  writeFrame(input, createTransformRequest(3, ''));
+  input.end();
+  await done;
+  expect(readResponses(output)).toEqual([
+    createOpenProjectResponse(1),
+    { jsonrpc: '2.0', id: 2, result: null },
+    { jsonrpc: '2.0', id: 3, error: { code: -32602, message: 'Unknown project handle: p1' } },
+  ]);
+});
+
+test('responds with method-not-found error to unknown methods', async () => {
+  const { input, output, done } = startServer();
+  writeFrame(input, { jsonrpc: '2.0', id: 1, method: 'shutdown', params: {} });
+  input.end();
+  await done;
+  expect(readResponses(output)).toEqual([
+    { jsonrpc: '2.0', id: 1, error: { code: -32601, message: 'Method not found: shutdown' } },
   ]);
 });
 
@@ -193,11 +224,16 @@ test('reads frame bodies by UTF-8 byte length', async () => {
   // code units, the boundary of the second frame would be misaligned. The `あ` is placed in
   // a comment so that the response stays ASCII-only for `readResponses`.
   const content = '/* あ */ .a1 { color: red; }';
-  writeFrame(input, createTransformRequest(1, content));
-  writeFrame(input, createInitializeRequest(2));
+  writeFrame(input, createOpenProjectRequest(1, 'p1'));
+  writeFrame(input, createTransformRequest(2, content));
+  writeFrame(input, createInitializeRequest(3));
   input.end();
   await done;
-  expect(readResponses(output)).toEqual([createTransformResponse(1, content), createInitializeResponse(2)]);
+  expect(readResponses(output)).toEqual([
+    createOpenProjectResponse(1),
+    createTransformResponse(2, content),
+    createInitializeResponse(3),
+  ]);
 });
 
 test('resolves when input ends', async () => {

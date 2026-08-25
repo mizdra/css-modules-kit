@@ -6,9 +6,7 @@ import type { TestProject } from 'vite-plus/test/node';
 // Keep the resolution in sync with `packages/content-mapper/e2e-test/test-util/lsp-client.ts`.
 const tsgoBinPath =
   process.env['TSGO_BIN'] ??
-  fileURLToPath(
-    new URL(`../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`, import.meta.url),
-  );
+  fileURLToPath(new URL(`../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`, import.meta.url));
 
 function prepare() {
   if (!existsSync(tsgoBinPath)) {

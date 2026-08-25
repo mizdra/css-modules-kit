@@ -35,13 +35,13 @@ test('generates interface declarations for local tokens', () => {
 
     === generated ===
     interface Styles { readonly 'foo': string; }
-                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #1 Verbatim
-                                ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
     interface Styles { readonly 'bar': string; }
-                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #4 Verbatim
-                                ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     export default styles;
     "
@@ -87,19 +87,19 @@ test('generates indexed access type members for named token importer entries', (
     import * as _import_0 from './c.module.css';
                                ^^^^^^^^^^^^^^^^ #0 Verbatim
     interface Styles { readonly 'v1': typeof _import_0.default['v1']; }
-                                                                  ^ #6 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                                                  ^ #6 Atom(Definition|TypeDefinition|Implementation|References)
                                                                 ^^ #5 Verbatim
-                                                               ^ #4 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
-                                   ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                                               ^ #4 Atom(Definition|TypeDefinition|Implementation|References)
+                                   ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^ #2 Verbatim
-                                ^ #1 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #1 Atom(Definition|TypeDefinition|Implementation|References)
     interface Styles { readonly 'v3': typeof _import_0.default['v2']; }
-                                                                  ^ #12 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                                                  ^ #12 Atom(Definition|TypeDefinition|Implementation|References)
                                                                 ^^ #11 Verbatim
-                                                               ^ #10 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
-                                   ^ #9 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                                               ^ #10 Atom(Definition|TypeDefinition|Implementation|References)
+                                   ^ #9 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^ #8 Verbatim
-                                ^ #7 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #7 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     export default styles;
     "
@@ -145,18 +145,18 @@ test('generates expression statements for local token references', () => {
 
     === generated ===
     interface Styles { readonly 'foo': string; }
-                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #1 Verbatim
-                                ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
     interface Styles { readonly 'pulse': string; }
-                                      ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                      ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^^^ #4 Verbatim
-                                ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     styles['pulse'];
-                 ^ #8 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                 ^ #8 Atom(Definition|TypeDefinition|Implementation|References)
             ^^^^^ #7 Verbatim
-           ^ #6 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+           ^ #6 Atom(Definition|TypeDefinition|Implementation|References)
     export default styles;
     "
   `);
@@ -178,14 +178,14 @@ test('generates imports and expression statements for external token references'
     import * as _import_0 from './d.module.css';
                                ^^^^^^^^^^^^^^^^ #0 Verbatim
     interface Styles { readonly 'foo': string; }
-                                    ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #2 Verbatim
-                                ^ #1 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #1 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     _import_0.default['baz'];
-                          ^ #6 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                          ^ #6 Atom(Definition|TypeDefinition|Implementation|References)
                        ^^^ #5 Verbatim
-                      ^ #4 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                      ^ #4 Atom(Definition|TypeDefinition|Implementation|References)
     export default styles;
     "
   `);
@@ -209,13 +209,13 @@ test('generates an interface declaration for every occurrence of a duplicated to
 
     === generated ===
     interface Styles { readonly 'foo': string; }
-                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #1 Verbatim
-                                ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
     interface Styles { readonly 'foo': string; }
-                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #4 Verbatim
-                                ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     export default styles;
     "
@@ -262,9 +262,9 @@ test('synthesizes quotes for unquoted url() specifiers and maps them as zero-wid
 
     === generated ===
     import * as _import_0 from './b.module.css';
-                                              ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                              ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
                                 ^^^^^^^^^^^^^^ #1 Verbatim
-                               ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                               ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
     type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
     interface Styles {}
     declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
@@ -292,13 +292,13 @@ test('converts parse diagnostics into mapper diagnostics', () => {
 
     === generated ===
     interface Styles { readonly 'foo': string; }
-                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #1 Verbatim
-                                ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
     interface Styles { readonly 'bar': string; }
-                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                    ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
                                  ^^^ #4 Verbatim
-                                ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
     declare const styles: Styles;
     export default styles;
 
@@ -377,15 +377,15 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #1 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                               ^ #4 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                               ^ #4 Atom(Definition|TypeDefinition|Implementation|References)
                             ^^^ #3 Verbatim
-                           ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                           ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
       var _token_1: string;
           ^^^^^^^^ #5 Alias(All~Rename)
       export { _token_1 as 'bar' };
-                               ^ #8 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                               ^ #8 Atom(Definition|TypeDefinition|Implementation|References)
                             ^^^ #7 Verbatim
-                           ^ #6 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                           ^ #6 Atom(Definition|TypeDefinition|Implementation|References)
       declare const styles: {};
       export default styles;
       "
@@ -428,19 +428,19 @@ describe('namedExports', () => {
       === generated ===
       export {
         'v1' as 'v1',
-                   ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                   ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
                  ^^ #4 Verbatim
-                ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
-           ^ #2 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
+           ^ #2 Atom(Definition|TypeDefinition|Implementation|References)
          ^^ #1 Verbatim
-        ^ #0 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+        ^ #0 Atom(Definition|TypeDefinition|Implementation|References)
         'v2' as 'v3',
-                   ^ #11 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                   ^ #11 Atom(Definition|TypeDefinition|Implementation|References)
                  ^^ #10 Verbatim
-                ^ #9 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
-           ^ #8 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                ^ #9 Atom(Definition|TypeDefinition|Implementation|References)
+           ^ #8 Atom(Definition|TypeDefinition|Implementation|References)
          ^^ #7 Verbatim
-        ^ #6 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+        ^ #6 Atom(Definition|TypeDefinition|Implementation|References)
       } from './c.module.css';
              ^^^^^^^^^^^^^^^^ #12 Verbatim
       declare const styles: {};
@@ -477,20 +477,20 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #0 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                               ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                               ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
                             ^^^ #2 Verbatim
-                           ^ #1 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                           ^ #1 Atom(Definition|TypeDefinition|Implementation|References)
       var _token_1: string;
           ^^^^^^^^ #4 Alias(All~Rename)
       export { _token_1 as 'pulse' };
-                                 ^ #7 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                                 ^ #7 Atom(Definition|TypeDefinition|Implementation|References)
                             ^^^^^ #6 Verbatim
-                           ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                           ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
       declare const __self: typeof import('./a.module.css');
       __self['pulse'];
-                   ^ #10 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                   ^ #10 Atom(Definition|TypeDefinition|Implementation|References)
               ^^^^^ #9 Verbatim
-             ^ #8 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+             ^ #8 Atom(Definition|TypeDefinition|Implementation|References)
       declare const styles: {};
       export default styles;
       "
@@ -514,15 +514,15 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #0 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                               ^ #3 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                               ^ #3 Atom(Definition|TypeDefinition|Implementation|References)
                             ^^^ #2 Verbatim
-                           ^ #1 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                           ^ #1 Atom(Definition|TypeDefinition|Implementation|References)
       import * as _import_0 from './d.module.css';
                                  ^^^^^^^^^^^^^^^^ #4 Verbatim
       _import_0['baz'];
-                    ^ #7 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                    ^ #7 Atom(Definition|TypeDefinition|Implementation|References)
                  ^^^ #6 Verbatim
-                ^ #5 Atom(Definition|TypeDefinition|Implementation|SourceDefinition|References)
+                ^ #5 Atom(Definition|TypeDefinition|Implementation|References)
       declare const styles: {};
       export default styles;
       "

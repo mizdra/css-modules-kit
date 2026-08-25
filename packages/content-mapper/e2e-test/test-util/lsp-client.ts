@@ -8,10 +8,7 @@ import { resolve } from '@css-modules-kit/core';
 /** The tsgo binary built by `scripts/setup-tsgo.sh`. Overridable via the `TSGO_BIN` environment variable. */
 const tsgoBinPath =
   process.env['TSGO_BIN'] ??
-  resolve(
-    import.meta.dirname,
-    `../../../../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`,
-  );
+  resolve(import.meta.dirname, `../../../../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`);
 
 export interface Position {
   line: number;
@@ -249,7 +246,7 @@ export function launchLSPClient(rootDir: string): LSPClient {
             fileOperations: { willRename: true },
           },
         },
-        initializationOptions: { loadExternalPlugins: true },
+        initializationOptions: { runExternalCode: true },
       });
       send({ method: 'initialized', params: {} });
     })();

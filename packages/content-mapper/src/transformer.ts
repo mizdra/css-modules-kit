@@ -28,11 +28,7 @@ export interface TransformOutput {
 // mapped as zero-width spans. Only definition-style features are enabled for them so that
 // requests on the whole string literal still resolve to the token.
 const QUOTE_FEATURES =
-  SpanMapFeature.Definition |
-  SpanMapFeature.TypeDefinition |
-  SpanMapFeature.Implementation |
-  SpanMapFeature.SourceDefinition |
-  SpanMapFeature.References;
+  SpanMapFeature.Definition | SpanMapFeature.TypeDefinition | SpanMapFeature.Implementation | SpanMapFeature.References;
 
 // Rename edits can only be written back through a Verbatim span, so alias spans exclude Rename.
 const NON_RENAME_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
@@ -328,6 +324,9 @@ function appendImportSpecifier(
   builder.append(';\n');
 }
 
+// Core diagnostics have no code of their own, so they all share one mapper diagnostic code.
+const CSS_MODULE_DIAGNOSTIC_CODE = 1000;
+
 function convertDiagnostics(diagnostics: DiagnosticWithLocation[], content: string): MapperDiagnostic[] {
   return diagnostics
     .filter((diagnostic) => diagnostic.category === 'error')
@@ -335,6 +334,7 @@ function convertDiagnostics(diagnostics: DiagnosticWithLocation[], content: stri
       messageText: diagnostic.text,
       start: toOffset(content, diagnostic.start.line, diagnostic.start.column),
       length: diagnostic.length,
+      code: CSS_MODULE_DIAGNOSTIC_CODE,
     }));
 }
 
