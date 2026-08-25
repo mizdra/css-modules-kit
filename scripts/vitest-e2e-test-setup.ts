@@ -7,7 +7,7 @@ import type { TestProject } from 'vite-plus/test/node';
 const tsgoBinPath =
   process.env['TSGO_BIN'] ??
   fileURLToPath(
-    new URL(`../.tmp/typescript-go/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`, import.meta.url),
+    new URL(`../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`, import.meta.url),
   );
 
 function prepare() {

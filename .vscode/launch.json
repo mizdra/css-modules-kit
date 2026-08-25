@@ -191,14 +191,14 @@
       }
     },
     {
-      // Launches the TypeScript Native Preview extension built from the content mapper
-      // PR branch (microsoft/typescript-go#4712). The marketplace build cannot enable
-      // content mappers, so the extension must be run from the PR branch's source.
+      // Launches the TypeScript Native Preview extension built from the pinned
+      // microsoft/TypeScript commit. The marketplace build predates the content
+      // mapper support, so the extension must be run from source.
       "name": "tsgo (7-content-mapper)",
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/.tmp/typescript-go/_extension",
+        "--extensionDevelopmentPath=${workspaceFolder}/.tmp/typescript/packages/vscode-typescript",
         "--profile-temp",
         "--skip-welcome",
         // The extension enables content mappers only in a trusted workspace. Disabling
@@ -208,7 +208,7 @@
         "--folder-uri=${workspaceFolder}/examples/7-content-mapper",
         "${workspaceFolder}/examples/7-content-mapper/src/index.ts"
       ],
-      "outFiles": ["${workspaceFolder}/.tmp/typescript-go/_extension/dist/**/*.js"],
+      "outFiles": ["${workspaceFolder}/.tmp/typescript/packages/vscode-typescript/dist/**/*.js"],
       "preLaunchTask": "prepare content-mapper example",
       "presentation": {
         "group": "tsgo"

@@ -10,7 +10,7 @@ const tsgoBinPath =
   process.env['TSGO_BIN'] ??
   resolve(
     import.meta.dirname,
-    `../../../../.tmp/typescript-go/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`,
+    `../../../../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`,
   );
 
 export interface Position {

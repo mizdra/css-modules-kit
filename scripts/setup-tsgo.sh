@@ -2,14 +2,17 @@
 set -ue
 
 # Builds the tsgo binary used by the content-mapper e2e tests.
-# The content mapper protocol is implemented in an unmerged PR (microsoft/typescript-go#4712),
-# so this script pins a commit of its head branch (andrewbranch/typescript-go `content-mappers`).
+# The content mapper protocol is implemented in microsoft/TypeScript (the TypeScript 7
+# monorepo, which absorbed microsoft/typescript-go). This script pins a commit of its
+# main branch. The Go implementation lives in the tsc/ subdirectory, and its main
+# package is ./cmd/tsc; the built binary is named tsgo here to avoid confusion with
+# the TypeScript 6 tsc.
 
-COMMIT=c18f834e07d992a24cdfbb7cb8bd58812ff3d95e
-REPO=https://github.com/andrewbranch/typescript-go.git
+COMMIT=8ac035a394c79e693a3a7d74cb170448503ee894
+REPO=https://github.com/microsoft/TypeScript.git
 
 cd "$(dirname "$0")/.."
-DEST=.tmp/typescript-go
+DEST=.tmp/typescript
 
 if [ ! -d "$DEST/.git" ]; then
   mkdir -p "$DEST"
@@ -24,5 +27,5 @@ git -C "$DEST" checkout -q "$COMMIT"
 # GOEXE is '.exe' on Windows and empty elsewhere. The extensionless name does not work on
 # Windows because process spawning resolves executables by appending '.exe'.
 GOEXE=$(go env GOEXE)
-(cd "$DEST" && go build -o "built/tsgo$GOEXE" ./cmd/tsgo)
+(cd "$DEST/tsc" && go build -o "../built/tsgo$GOEXE" ./cmd/tsc)
 echo "tsgo built at $DEST/built/tsgo$GOEXE"

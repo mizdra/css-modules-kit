@@ -2,18 +2,20 @@
 set -ue
 
 # Prepares everything the "tsgo (7-content-mapper)" launch configuration needs:
-# the pinned tsgo binary, the PR-branch VS Code extension (TypeScript Native Preview),
-# and the mapper package symlink for the example.
+# the pinned tsgo binary, the VS Code extension (TypeScript Native Preview) built
+# from the pinned microsoft/TypeScript commit, and the mapper package symlink for
+# the example.
 
 cd "$(dirname "$0")/.."
-DEST=.tmp/typescript-go
+DEST=.tmp/typescript
 
 ./scripts/setup-tsgo.sh
 
-# In development mode, the extension resolves the tsgo binary at built/local/tsgo.
+# In development mode, the extension resolves the binary at built/local/tsc
+# (see packages/vscode-typescript/src/util.ts).
 GOEXE=$(go env GOEXE)
 mkdir -p "$DEST/built/local"
-cp "$DEST/built/tsgo$GOEXE" "$DEST/built/local/tsgo$GOEXE"
+cp "$DEST/built/tsgo$GOEXE" "$DEST/built/local/tsc$GOEXE"
 
 # npm ci is slow, so it only runs on the first setup. Re-run it manually if the
 # pinned commit changes package-lock.json.
