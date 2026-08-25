@@ -72,6 +72,15 @@ function createTextBuilder() {
   return {
     append,
     appendAtomTokenName,
+    /**
+     * Appends `'name'` as an export name, mapping only the name verbatim to `loc`. Renaming
+     * a module export rewrites the export name itself but not companion statements, so the
+     * export name must be the verbatim span that rename edits write back through.
+     */
+    appendVerbatimExportName(name: string, loc: Location): void {
+      mappings.push([text.length + 1, name.length, loc.start.offset, name.length, SpanMapKind.Verbatim]);
+      text += `'${name}'`;
+    },
     /** Appends `<object>['name'];`, mapping the quote-inclusive literal to `loc` as a single atom. */
     appendAtomElementAccessStatement(object: string, name: string, loc: Location): void {
       append(`${object}[`);
@@ -103,6 +112,14 @@ function createTextBuilder() {
         mappings.push([text.length, from.length + 2, fromLoc.start.offset - 1, from.length + 2, SpanMapKind.Verbatim]);
         text += `${quote}${from}${quote}`;
       }
+    },
+    /**
+     * Appends `name`, mapping it as a zero-width span at the start of the CSS file so that
+     * go-to-definition on a binding importing the module lands at the top of the file.
+     */
+    appendModuleAnchor(name: string): void {
+      mappings.push([text.length, name.length, 0, 0, SpanMapKind.Atom, SpanMapFeature.Definition]);
+      append(name);
     },
     /** Appends `name`, mapping it to `loc` as an alias of the original name. */
     appendAlias(name: string, loc: Location): void {
@@ -154,9 +171,10 @@ function specifierQuote(content: string, fromLoc: Location): '"' | "'" | undefin
  * token becomes an ordinary type error, which tsgo maps back to the CSS through the
  * returned span mappings.
  *
- * Every token occurrence is projected twice: an atom-mapped quote-inclusive literal in a
- * declaration or type position that whole-literal result spans map back through, and a
- * verbatim-mapped literal in an expression statement that rename edits write back through.
+ * Every token occurrence is projected twice: a literal in a declaration or export position
+ * that result spans map back through, and a verbatim-mapped literal in an expression
+ * statement. Declaration-position literals are atom-mapped including quotes, except export
+ * names, which are verbatim-mapped because rename edits write back through them.
  *
  * A non-module CSS file becomes an empty module, so that importing it for its side effects
  * type-checks while it exports nothing.
@@ -266,7 +284,9 @@ function buildDefaultExportText(
     }
   }
   if (!hasMembers) builder.append('interface Styles {}\n');
-  builder.append('declare const styles: Styles');
+  builder.append('declare const ');
+  builder.appendModuleAnchor('styles');
+  builder.append(': Styles');
   for (const allImporter of allImporters) {
     builder.append(` & __BlockErrorType<typeof ${importerBindings.get(allImporter)!}.default>`);
   }
@@ -322,7 +342,7 @@ function buildNamedExportsText(
       builder.append(': string;\n');
     }
     builder.append(`export { ${alias} as `);
-    builder.appendAtomTokenName(name, tokens[0]!.loc);
+    builder.appendVerbatimExportName(name, tokens[0]!.loc);
     builder.append(' };\n');
     isModule = true;
   }
@@ -335,10 +355,14 @@ function buildNamedExportsText(
     } else {
       builder.append('export {\n');
       for (const entry of tokenImporter.entries) {
+        // Always the explicit `as` form, even for alias-less entries. Renaming the
+        // propertyName and the localName renames the imported and the exported token
+        // respectively, and both projections of an alias-less entry combine into a
+        // full-chain rename of the CSS token.
         builder.append('  ');
-        builder.appendAtomTokenName(entry.name, entry.loc);
+        builder.appendVerbatimExportName(entry.name, entry.loc);
         builder.append(' as ');
-        builder.appendAtomTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
+        builder.appendVerbatimExportName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
         builder.append(',\n');
       }
       builder.append('} from ');
@@ -366,7 +390,9 @@ function buildNamedExportsText(
     importerBindings.size > 0 ||
     tokenReferences.some((reference) => reference.type === 'local');
   if (needsSelf) {
-    builder.append(`declare const __self: typeof import('./${basename(fileName)}');\n`);
+    // A real self-import rather than a `typeof import()` declaration, because renaming a
+    // module export only propagates to accesses through real import bindings.
+    builder.append(`import * as __self from './${basename(fileName)}';\n`);
   }
   for (const token of localTokens) {
     builder.appendVerbatimElementAccessStatement('__self', token.name, token.loc);

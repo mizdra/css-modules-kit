@@ -26,10 +26,11 @@ test('generates interface declarations for local tokens', () => {
     "=== source ===
     .foo {}
      ^^^ #0
-     ^^^ #2
+     ^^^ #3
+    ¦ #2
     .bar {}
      ^^^ #1
-     ^^^ #3
+     ^^^ #4
 
     === generated ===
     interface Styles { readonly 'foo': string; }
@@ -37,11 +38,12 @@ test('generates interface declarations for local tokens', () => {
     interface Styles { readonly 'bar': string; }
                                 ^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
+                  ^^^^^^ #2 Atom(Definition)
     styles['foo'];
-            ^^^ #2 Verbatim(All~Hover)
+            ^^^ #3 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
     styles['bar'];
-            ^^^ #3 Verbatim(All~Hover)
+            ^^^ #4 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#1
     export default styles;
     "
@@ -53,6 +55,7 @@ test('generates a namespace import and an intersection type for all token import
     "=== source ===
     @import './b.module.css';
             ^^^^^^^^^^^^^^^^ #0
+    ¦ #1
 
     === generated ===
     import * as _import_0 from './b.module.css';
@@ -60,6 +63,7 @@ test('generates a namespace import and an intersection type for all token import
     type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
     interface Styles {}
     declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
+                  ^^^^^^ #1 Atom(Definition)
     export default styles;
     "
   `);
@@ -71,13 +75,14 @@ test('generates indexed access type members for named token importer entries', (
     @value v1, v2 as v3 from './c.module.css';
                              ^^^^^^^^^^^^^^^^ #0
                      ^^ #3
-                     ^^ #7
+                     ^^ #8
                ^^ #4
-               ^^ #8
+               ^^ #9
            ^^ #1
            ^^ #2
-           ^^ #5
            ^^ #6
+           ^^ #7
+    ¦ #5
 
     === generated ===
     import * as _import_0 from './c.module.css';
@@ -89,17 +94,18 @@ test('generates indexed access type members for named token importer entries', (
                                                                ^^^^ #4 Atom(All~Rename)
                                 ^^^^ #3 Atom(All~Rename)
     declare const styles: Styles;
+                  ^^^^^^ #5 Atom(Definition)
     styles['v1'];
-            ^^ #5 Verbatim(All~Hover)
+            ^^ #6 Verbatim(All~Hover)
     ^^^^^^^^^^^^^ ignore#0
     _import_0.default['v1'];
-                       ^^ #6 Verbatim(All~Hover)
+                       ^^ #7 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
     styles['v3'];
-            ^^ #7 Verbatim(All~Hover)
+            ^^ #8 Verbatim(All~Hover)
     ^^^^^^^^^^^^^ ignore#2
     _import_0.default['v2'];
-                       ^^ #8 Verbatim(All~Hover)
+                       ^^ #9 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^^^^^^^^^^^ ignore#3
     export default styles;
     "
@@ -114,11 +120,13 @@ test('omits imports for URL specifiers and non css module specifiers', () => {
   expect(result).toMatchInlineSnapshot(`
     "=== source ===
     @import 'https://example.com/a.module.css';
+    ¦ #0
     @import './plain.css';
 
     === generated ===
     interface Styles {}
     declare const styles: Styles;
+                  ^^^^^^ #0 Atom(Definition)
     export default styles;
     "
   `);
@@ -132,13 +140,14 @@ test('generates expression statements for local token references', () => {
   expect(result).toMatchInlineSnapshot(`
     "=== source ===
     .foo { animation-name: pulse; }
-                           ^^^^^ #4
                            ^^^^^ #5
+                           ^^^^^ #6
      ^^^ #0
-     ^^^ #2
+     ^^^ #3
+    ¦ #2
     @keyframes pulse {}
                ^^^^^ #1
-               ^^^^^ #3
+               ^^^^^ #4
 
     === generated ===
     interface Styles { readonly 'foo': string; }
@@ -146,16 +155,17 @@ test('generates expression statements for local token references', () => {
     interface Styles { readonly 'pulse': string; }
                                 ^^^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
+                  ^^^^^^ #2 Atom(Definition)
     styles['foo'];
-            ^^^ #2 Verbatim(All~Hover)
+            ^^^ #3 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
     styles['pulse'];
-            ^^^^^ #3 Verbatim(All~Hover)
+            ^^^^^ #4 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^^^ ignore#1
     styles['pulse'];
-           ^^^^^^^ #4 Atom(All~Rename)
+           ^^^^^^^ #5 Atom(All~Rename)
     styles['pulse'];
-            ^^^^^ #5 Verbatim(All~Hover)
+            ^^^^^ #6 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^^^ ignore#2
     export default styles;
     "
@@ -167,10 +177,11 @@ test('generates imports and expression statements for external token references'
     "=== source ===
     .foo { composes: baz from './d.module.css'; }
                               ^^^^^^^^^^^^^^^^ #0
-                     ^^^ #3
                      ^^^ #4
+                     ^^^ #5
      ^^^ #1
-     ^^^ #2
+     ^^^ #3
+    ¦ #2
 
     === generated ===
     import * as _import_0 from './d.module.css';
@@ -178,13 +189,14 @@ test('generates imports and expression statements for external token references'
     interface Styles { readonly 'foo': string; }
                                 ^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
+                  ^^^^^^ #2 Atom(Definition)
     styles['foo'];
-            ^^^ #2 Verbatim(All~Hover)
+            ^^^ #3 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
     _import_0.default['baz'];
-                      ^^^^^ #3 Atom(All~Rename)
+                      ^^^^^ #4 Atom(All~Rename)
     _import_0.default['baz'];
-                       ^^^ #4 Verbatim(All~Hover)
+                       ^^^ #5 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
     export default styles;
     "
@@ -200,10 +212,11 @@ test('generates an interface declaration for every occurrence of a duplicated to
     "=== source ===
     .foo {}
      ^^^ #0
-     ^^^ #2
+     ^^^ #3
+    ¦ #2
     .foo:hover {}
      ^^^ #1
-     ^^^ #3
+     ^^^ #4
 
     === generated ===
     interface Styles { readonly 'foo': string; }
@@ -211,11 +224,12 @@ test('generates an interface declaration for every occurrence of a duplicated to
     interface Styles { readonly 'foo': string; }
                                 ^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
-    styles['foo'];
-            ^^^ #2 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#0
+                  ^^^^^^ #2 Atom(Definition)
     styles['foo'];
             ^^^ #3 Verbatim(All~Hover)
+    ^^^^^^^^^^^^^^ ignore#0
+    styles['foo'];
+            ^^^ #4 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#1
     export default styles;
     "
@@ -226,10 +240,12 @@ test('generates a default export for an empty file', () => {
   expect(run('')).toMatchInlineSnapshot(`
     "=== source ===
 
+    ¦ #0
 
     === generated ===
     interface Styles {}
     declare const styles: Styles;
+                  ^^^^^^ #0 Atom(Definition)
     export default styles;
     "
   `);
@@ -240,6 +256,7 @@ test('quotes generated specifiers with the original quote character', () => {
     "=== source ===
     @import "./b.module.css";
             ^^^^^^^^^^^^^^^^ #0
+    ¦ #1
 
     === generated ===
     import * as _import_0 from "./b.module.css";
@@ -247,6 +264,7 @@ test('quotes generated specifiers with the original quote character', () => {
     type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
     interface Styles {}
     declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
+                  ^^^^^^ #1 Atom(Definition)
     export default styles;
     "
   `);
@@ -259,6 +277,7 @@ test('synthesizes quotes for unquoted url() specifiers and maps them as zero-wid
                               ¦ #2
                 ¦ #0
                 ^^^^^^^^^^^^^^ #1
+    ¦ #3
 
     === generated ===
     import * as _import_0 from './b.module.css';
@@ -268,6 +287,7 @@ test('synthesizes quotes for unquoted url() specifiers and maps them as zero-wid
     type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
     interface Styles {}
     declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
+                  ^^^^^^ #3 Atom(Definition)
     export default styles;
     "
   `);
@@ -282,10 +302,11 @@ test('converts parse diagnostics into mapper diagnostics', () => {
     "=== source ===
     .foo { color: red; }
      ^^^ #0
-     ^^^ #2
+     ^^^ #3
+    ¦ #2
     .bar {
      ^^^ #1
-     ^^^ #3
+     ^^^ #4
     ^ diag#0
 
     === generated ===
@@ -294,11 +315,12 @@ test('converts parse diagnostics into mapper diagnostics', () => {
     interface Styles { readonly 'bar': string; }
                                 ^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
+                  ^^^^^^ #2 Atom(Definition)
     styles['foo'];
-            ^^^ #2 Verbatim(All~Hover)
+            ^^^ #3 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
     styles['bar'];
-            ^^^ #3 Verbatim(All~Hover)
+            ^^^ #4 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#1
     export default styles;
 
@@ -313,10 +335,12 @@ test('excludes invalid token names and reports diagnostics', () => {
     "=== source ===
     .__proto__ {}
      ^^^^^^^^^ diag#0
+    ¦ #0
 
     === generated ===
     interface Styles {}
     declare const styles: Styles;
+                  ^^^^^^ #0 Atom(Definition)
     export default styles;
 
 
@@ -329,10 +353,12 @@ test('omits keyframes tokens when animation is false', () => {
   expect(run('@keyframes pulse {}', { ...defaultOptions, animation: false })).toMatchInlineSnapshot(`
     "=== source ===
     @keyframes pulse {}
+    ¦ #0
 
     === generated ===
     interface Styles {}
     declare const styles: Styles;
+                  ^^^^^^ #0 Atom(Definition)
     export default styles;
     "
   `);
@@ -376,12 +402,12 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #1 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                           ^^^^^ #2 Atom(All~Rename)
+                            ^^^ #2 Verbatim
       var _token_1: string;
           ^^^^^^^^ #3 Alias(All~Rename)
       export { _token_1 as 'bar' };
-                           ^^^^^ #4 Atom(All~Rename)
-      declare const __self: typeof import('./a.module.css');
+                            ^^^ #4 Verbatim
+      import * as __self from './a.module.css';
       __self['foo'];
               ^^^ #5 Verbatim(All~Hover)
       ^^^^^^^^^^^^^^ ignore#0
@@ -430,16 +456,16 @@ describe('namedExports', () => {
       === generated ===
       export {
         'v1' as 'v1',
-                ^^^^ #1 Atom(All~Rename)
-        ^^^^ #0 Atom(All~Rename)
+                 ^^ #1 Verbatim
+         ^^ #0 Verbatim
         'v2' as 'v3',
-                ^^^^ #3 Atom(All~Rename)
-        ^^^^ #2 Atom(All~Rename)
+                 ^^ #3 Verbatim
+         ^^ #2 Verbatim
       } from './c.module.css';
              ^^^^^^^^^^^^^^^^ #4 Verbatim
       import * as _import_0 from './c.module.css';
                                  ^^^^^^^^^^^^^^^^ #5 Verbatim
-      declare const __self: typeof import('./a.module.css');
+      import * as __self from './a.module.css';
       __self['v1'];
               ^^ #6 Verbatim(All~Hover)
       ^^^^^^^^^^^^^ ignore#0
@@ -483,12 +509,12 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #0 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                           ^^^^^ #1 Atom(All~Rename)
+                            ^^^ #1 Verbatim
       var _token_1: string;
           ^^^^^^^^ #2 Alias(All~Rename)
       export { _token_1 as 'pulse' };
-                           ^^^^^^^ #3 Atom(All~Rename)
-      declare const __self: typeof import('./a.module.css');
+                            ^^^^^ #3 Verbatim
+      import * as __self from './a.module.css';
       __self['foo'];
               ^^^ #4 Verbatim(All~Hover)
       ^^^^^^^^^^^^^^ ignore#0
@@ -521,10 +547,10 @@ describe('namedExports', () => {
       var _token_0: string;
           ^^^^^^^^ #0 Alias(All~Rename)
       export { _token_0 as 'foo' };
-                           ^^^^^ #1 Atom(All~Rename)
+                            ^^^ #1 Verbatim
       import * as _import_0 from './d.module.css';
                                  ^^^^^^^^^^^^^^^^ #2 Verbatim
-      declare const __self: typeof import('./a.module.css');
+      import * as __self from './a.module.css';
       __self['foo'];
               ^^^ #3 Verbatim(All~Hover)
       ^^^^^^^^^^^^^^ ignore#0
