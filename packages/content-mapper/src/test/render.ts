@@ -1,4 +1,4 @@
-import { SpanMapFeature, SpanMapKind } from '../protocol.js';
+import { DiagnosticDirectivePolicy, SpanMapFeature, SpanMapKind } from '../protocol.js';
 import type { TransformOutput } from '../transformer.js';
 
 interface Marker {
@@ -16,6 +16,11 @@ const KIND_NAMES: Record<SpanMapKind, string> = {
   [SpanMapKind.Verbatim]: 'Verbatim',
   [SpanMapKind.Atom]: 'Atom',
   [SpanMapKind.Alias]: 'Alias',
+};
+
+const POLICY_NAMES: Record<DiagnosticDirectivePolicy, string> = {
+  [DiagnosticDirectivePolicy.Ignore]: 'ignore',
+  [DiagnosticDirectivePolicy.Expect]: 'expect',
 };
 
 function formatFeatures(features: number | undefined): string {
@@ -75,11 +80,18 @@ export function renderTransformOutput(source: string, output: TransformOutput): 
       length: diagnostic.length,
     })),
   ];
-  const generatedMarkers: Marker[] = output.mappings.map((mapping, i) => ({
-    label: `#${i} ${KIND_NAMES[mapping[4]]}${formatFeatures(mapping[5])}`,
-    offset: mapping[0],
-    length: mapping[1],
-  }));
+  const generatedMarkers: Marker[] = [
+    ...output.mappings.map((mapping, i) => ({
+      label: `#${i} ${KIND_NAMES[mapping[4]]}${formatFeatures(mapping[5])}`,
+      offset: mapping[0],
+      length: mapping[1],
+    })),
+    ...(output.diagnosticDirectives?.directives ?? []).map((directive, i) => ({
+      label: `${POLICY_NAMES[directive[4]]}#${i}`,
+      offset: directive[2],
+      length: directive[3] - directive[2],
+    })),
+  ];
   let result = `=== source ===\n${renderTextWithMarkers(source, sourceMarkers)}\n\n=== generated ===\n${renderTextWithMarkers(output.text, generatedMarkers)}`;
   if (output.diagnostics.length > 0) {
     result += `\n\n=== diagnostics ===\n${output.diagnostics.map((d, i) => `diag#${i}: ${d.messageText}`).join('\n')}`;

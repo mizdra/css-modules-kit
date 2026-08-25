@@ -93,7 +93,7 @@ function createTransformRequest(id: number, content: string, projectHandle = 'p1
 }
 
 function createTransformResponse(id: number, content: string, options: NormalizedMapperOptions = defaultMapperOptions) {
-  const { text, mappings, diagnostics } = transformCSS('/a.module.css', content, options);
+  const { text, mappings, diagnosticDirectives, diagnostics } = transformCSS('/a.module.css', content, options);
   return {
     jsonrpc: '2.0',
     id,
@@ -101,6 +101,7 @@ function createTransformResponse(id: number, content: string, options: Normalize
       text,
       extension: '.ts',
       ...(mappings.length > 0 ? { mappings } : {}),
+      ...(diagnosticDirectives ? { diagnosticDirectives } : {}),
       ...(diagnostics.length > 0 ? { diagnostics } : {}),
     },
   };

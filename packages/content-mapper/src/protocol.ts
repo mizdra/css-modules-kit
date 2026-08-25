@@ -81,6 +81,7 @@ export interface TransformResult {
   /** Determines how `text` is parsed. */
   extension: VirtualExtension;
   mappings?: SpanMapping[];
+  diagnosticDirectives?: DiagnosticDirectives;
   diagnostics?: MapperDiagnostic[];
 }
 
@@ -139,3 +140,36 @@ export interface MapperDiagnostic {
   length: number;
   code: number;
 }
+
+export interface DiagnosticDirectives {
+  /** Diagnostics reported when an `Expect` directive matches no diagnostic. Unused by `Ignore` directives. */
+  unusedExpectDirectiveDiagnostics: UnusedExpectDirectiveDiagnostic[];
+  /** Directives whose generated ranges must not overlap each other. */
+  directives: MappedDiagnosticDirective[];
+}
+
+export interface UnusedExpectDirectiveDiagnostic {
+  messageText: string;
+  code: number;
+}
+
+/**
+ * Suppresses (`Ignore`) or expects (`Expect`) TypeScript diagnostics whose start position falls
+ * within `[generatedStart, generatedEnd)`. `originalStart` and `originalLength` locate the
+ * directive in the original file for `Expect` reporting.
+ */
+export type MappedDiagnosticDirective = [
+  originalStart: number,
+  originalLength: number,
+  generatedStart: number,
+  generatedEnd: number,
+  policy: DiagnosticDirectivePolicy,
+  unusedExpectDirectiveIndex?: number,
+];
+
+export const DiagnosticDirectivePolicy = {
+  Ignore: 0,
+  Expect: 1,
+} as const;
+
+export type DiagnosticDirectivePolicy = (typeof DiagnosticDirectivePolicy)[keyof typeof DiagnosticDirectivePolicy];

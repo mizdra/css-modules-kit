@@ -15,27 +15,54 @@ import {
   validateTokenName,
 } from '@css-modules-kit/core';
 import type { NormalizedMapperOptions } from './options.js';
-import type { MapperDiagnostic, SpanMapping } from './protocol.js';
-import { SpanMapFeature, SpanMapKind } from './protocol.js';
+import type { DiagnosticDirectives, MapperDiagnostic, MappedDiagnosticDirective, SpanMapping } from './protocol.js';
+import { DiagnosticDirectivePolicy, SpanMapFeature, SpanMapKind } from './protocol.js';
 
 export interface TransformOutput {
   text: string;
   mappings: SpanMapping[];
+  diagnosticDirectives?: DiagnosticDirectives;
   diagnostics: MapperDiagnostic[];
 }
 
-// The quotes around a generated token name have no counterpart in the CSS, so they are
-// mapped as zero-width spans. Only definition-style features are enabled for them so that
-// requests on the whole string literal still resolve to the token.
+// Rename edits can only be written back through a Verbatim span, so atom and alias spans
+// exclude Rename. A verbatim projection of the same token carries it instead.
+const NON_RENAME_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
+
+// Hover results from multiple projections of the same original span are concatenated, so
+// only the atom projection answers hover.
+const NON_HOVER_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Hover;
+
+// The synthesized quotes around an unquoted url() specifier have no counterpart in the CSS,
+// so they are mapped as zero-width spans. Only definition-style features are enabled for them
+// so that requests on the whole string literal still resolve to the module.
 const QUOTE_FEATURES =
   SpanMapFeature.Definition | SpanMapFeature.TypeDefinition | SpanMapFeature.Implementation | SpanMapFeature.References;
-
-// Rename edits can only be written back through a Verbatim span, so alias spans exclude Rename.
-const NON_RENAME_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
 
 function createTextBuilder() {
   let text = '';
   const mappings: SpanMapping[] = [];
+  const directives: MappedDiagnosticDirective[] = [];
+  function append(chunk: string): void {
+    text += chunk;
+  }
+  /** Appends `'name'` as a single atom, mapping the quote-inclusive literal to `loc`. */
+  function appendAtomTokenName(name: string, loc: Location): void {
+    mappings.push([text.length, name.length + 2, loc.start.offset, name.length, SpanMapKind.Atom, NON_RENAME_FEATURES]);
+    text += `'${name}'`;
+  }
+  /** Appends `'name'`, mapping only the name verbatim to `loc` and leaving the quotes unmapped. */
+  function appendVerbatimTokenName(name: string, loc: Location): void {
+    mappings.push([
+      text.length + 1,
+      name.length,
+      loc.start.offset,
+      name.length,
+      SpanMapKind.Verbatim,
+      NON_HOVER_FEATURES,
+    ]);
+    text += `'${name}'`;
+  }
   function appendQuoted(value: string, loc: Location): void {
     mappings.push([text.length, 1, loc.start.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
     mappings.push([text.length + 1, value.length, loc.start.offset, value.length, SpanMapKind.Verbatim]);
@@ -43,17 +70,31 @@ function createTextBuilder() {
     text += `'${value}'`;
   }
   return {
-    append(chunk: string): void {
-      text += chunk;
+    append,
+    appendAtomTokenName,
+    /** Appends `<object>['name'];`, mapping the quote-inclusive literal to `loc` as a single atom. */
+    appendAtomElementAccessStatement(object: string, name: string, loc: Location): void {
+      append(`${object}[`);
+      appendAtomTokenName(name, loc);
+      append('];\n');
     },
-    /** Appends `'name'`, mapping the name to `loc` and the quotes to its boundaries. */
-    appendTokenName(name: string, loc: Location): void {
-      appendQuoted(name, loc);
+    /**
+     * Appends `<object>['name'];`, mapping only the name verbatim to `loc`. TypeScript
+     * diagnostics on the statement are suppressed, because the statement always duplicates
+     * an atom projection that already reports them.
+     */
+    appendVerbatimElementAccessStatement(object: string, name: string, loc: Location): void {
+      const start = text.length;
+      append(`${object}[`);
+      appendVerbatimTokenName(name, loc);
+      append('];');
+      directives.push([loc.start.offset, name.length, start, text.length, DiagnosticDirectivePolicy.Ignore]);
+      append('\n');
     },
     /**
      * Appends the quoted specifier. When the original is quoted, the whole literal is mapped
      * verbatim. Otherwise (e.g. `url(./a.module.css)`), the synthesized quotes have no
-     * counterpart in the CSS, so they are mapped as zero-width spans like token name quotes.
+     * counterpart in the CSS, so they are mapped as zero-width spans.
      */
     appendSpecifier(from: string, fromLoc: Location, quote: '"' | "'" | undefined): void {
       if (quote === undefined) {
@@ -75,8 +116,8 @@ function createTextBuilder() {
       ]);
       text += name;
     },
-    build(): { text: string; mappings: SpanMapping[] } {
-      return { text, mappings };
+    build(): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
+      return { text, mappings, directives };
     },
   };
 }
@@ -113,6 +154,10 @@ function specifierQuote(content: string, fromLoc: Location): '"' | "'" | undefin
  * token becomes an ordinary type error, which tsgo maps back to the CSS through the
  * returned span mappings.
  *
+ * Every token occurrence is projected twice: an atom-mapped quote-inclusive literal in a
+ * declaration or type position that whole-literal result spans map back through, and a
+ * verbatim-mapped literal in an expression statement that rename edits write back through.
+ *
  * A non-module CSS file becomes an empty module, so that importing it for its side effects
  * type-checks while it exports nothing.
  */
@@ -147,7 +192,7 @@ export function transformCSS(fileName: string, content: string, options: Normali
         ? isValidTokenName(reference.name, options)
         : isImportableSpecifier(reference.from) && reference.entries.length > 0,
     );
-  const { text, mappings } = options.namedExports
+  const { text, mappings, directives } = options.namedExports
     ? buildNamedExportsText(
         fileName,
         content,
@@ -157,7 +202,12 @@ export function transformCSS(fileName: string, content: string, options: Normali
         options.prioritizeNamedImports,
       )
     : buildDefaultExportText(content, localTokens, tokenImporters, tokenReferences);
-  return { text, mappings, diagnostics: convertDiagnostics(cssModule.diagnostics, content) };
+  return {
+    text,
+    mappings,
+    ...(directives.length > 0 ? { diagnosticDirectives: { unusedExpectDirectiveDiagnostics: [], directives } } : {}),
+    diagnostics: convertDiagnostics(cssModule.diagnostics, content),
+  };
 }
 
 function buildDefaultExportText(
@@ -165,7 +215,7 @@ function buildDefaultExportText(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
   tokenReferences: TokenReference[],
-): { text: string; mappings: SpanMapping[] } {
+): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
   const builder = createTextBuilder();
   const importerBindings = new Map<TokenImporter, string>();
   const referenceBindings = new Map<TokenReference, string>();
@@ -199,7 +249,7 @@ function buildDefaultExportText(
   let hasMembers = false;
   for (const token of localTokens) {
     builder.append('interface Styles { readonly ');
-    builder.appendTokenName(token.name, token.loc);
+    builder.appendAtomTokenName(token.name, token.loc);
     builder.append(': string; }\n');
     hasMembers = true;
   }
@@ -208,9 +258,9 @@ function buildDefaultExportText(
     const binding = importerBindings.get(tokenImporter)!;
     for (const entry of tokenImporter.entries) {
       builder.append('interface Styles { readonly ');
-      builder.appendTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
+      builder.appendAtomTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
       builder.append(`: typeof ${binding}.default[`);
-      builder.appendTokenName(entry.name, entry.loc);
+      builder.appendAtomTokenName(entry.name, entry.loc);
       builder.append(']; }\n');
       hasMembers = true;
     }
@@ -221,17 +271,30 @@ function buildDefaultExportText(
     builder.append(` & __BlockErrorType<typeof ${importerBindings.get(allImporter)!}.default>`);
   }
   builder.append(';\n');
+  for (const token of localTokens) {
+    builder.appendVerbatimElementAccessStatement('styles', token.name, token.loc);
+  }
+  for (const tokenImporter of tokenImporters) {
+    if (tokenImporter.type !== 'named') continue;
+    const binding = importerBindings.get(tokenImporter)!;
+    for (const entry of tokenImporter.entries) {
+      builder.appendVerbatimElementAccessStatement(
+        'styles',
+        entry.localName ?? entry.name,
+        entry.localLoc ?? entry.loc,
+      );
+      builder.appendVerbatimElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
+    }
+  }
   for (const reference of tokenReferences) {
     if (reference.type === 'local') {
-      builder.append('styles[');
-      builder.appendTokenName(reference.name, reference.loc);
-      builder.append('];\n');
+      builder.appendAtomElementAccessStatement('styles', reference.name, reference.loc);
+      builder.appendVerbatimElementAccessStatement('styles', reference.name, reference.loc);
     } else {
       const binding = referenceBindings.get(reference)!;
       for (const entry of reference.entries) {
-        builder.append(`${binding}.default[`);
-        builder.appendTokenName(entry.name, entry.loc);
-        builder.append('];\n');
+        builder.appendAtomElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
+        builder.appendVerbatimElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
       }
     }
   }
@@ -246,7 +309,7 @@ function buildNamedExportsText(
   tokenImporters: TokenImporter[],
   tokenReferences: TokenReference[],
   prioritizeNamedImports: boolean,
-): { text: string; mappings: SpanMapping[] } {
+): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
   const builder = createTextBuilder();
   let isModule = false;
   const groups = Object.groupBy(localTokens, (token) => token.name);
@@ -259,29 +322,37 @@ function buildNamedExportsText(
       builder.append(': string;\n');
     }
     builder.append(`export { ${alias} as `);
-    builder.appendTokenName(name, tokens[0]!.loc);
+    builder.appendAtomTokenName(name, tokens[0]!.loc);
     builder.append(' };\n');
     isModule = true;
   }
+  const importerBindings = new Map<TokenImporter, string>();
+  let importCount = 0;
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'all') {
       builder.append('export * from ');
+      appendImportSpecifier(builder, content, tokenImporter);
     } else {
       builder.append('export {\n');
       for (const entry of tokenImporter.entries) {
         builder.append('  ');
-        builder.appendTokenName(entry.name, entry.loc);
+        builder.appendAtomTokenName(entry.name, entry.loc);
         builder.append(' as ');
-        builder.appendTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
+        builder.appendAtomTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
         builder.append(',\n');
       }
       builder.append('} from ');
+      appendImportSpecifier(builder, content, tokenImporter);
+      if (tokenImporter.entries.length > 0) {
+        const binding = `_import_${importCount++}`;
+        importerBindings.set(tokenImporter, binding);
+        builder.append(`import * as ${binding} from `);
+        appendImportSpecifier(builder, content, tokenImporter);
+      }
     }
-    appendImportSpecifier(builder, content, tokenImporter);
     isModule = true;
   }
   const referenceBindings = new Map<TokenReference, string>();
-  let importCount = 0;
   for (const reference of tokenReferences) {
     if (reference.type !== 'external') continue;
     const binding = `_import_${importCount++}`;
@@ -290,20 +361,38 @@ function buildNamedExportsText(
     appendImportSpecifier(builder, content, reference);
     isModule = true;
   }
-  if (tokenReferences.some((reference) => reference.type === 'local')) {
+  const needsSelf =
+    localTokens.length > 0 ||
+    importerBindings.size > 0 ||
+    tokenReferences.some((reference) => reference.type === 'local');
+  if (needsSelf) {
     builder.append(`declare const __self: typeof import('./${basename(fileName)}');\n`);
+  }
+  for (const token of localTokens) {
+    builder.appendVerbatimElementAccessStatement('__self', token.name, token.loc);
+  }
+  for (const tokenImporter of tokenImporters) {
+    if (tokenImporter.type !== 'named') continue;
+    const binding = importerBindings.get(tokenImporter);
+    if (binding === undefined) continue;
+    for (const entry of tokenImporter.entries) {
+      builder.appendVerbatimElementAccessStatement(
+        '__self',
+        entry.localName ?? entry.name,
+        entry.localLoc ?? entry.loc,
+      );
+      builder.appendVerbatimElementAccessStatement(binding, entry.name, entry.loc);
+    }
   }
   for (const reference of tokenReferences) {
     if (reference.type === 'local') {
-      builder.append('__self[');
-      builder.appendTokenName(reference.name, reference.loc);
-      builder.append('];\n');
+      builder.appendAtomElementAccessStatement('__self', reference.name, reference.loc);
+      builder.appendVerbatimElementAccessStatement('__self', reference.name, reference.loc);
     } else {
       const binding = referenceBindings.get(reference)!;
       for (const entry of reference.entries) {
-        builder.append(`${binding}[`);
-        builder.appendTokenName(entry.name, entry.loc);
-        builder.append('];\n');
+        builder.appendAtomElementAccessStatement(binding, entry.name, entry.loc);
+        builder.appendVerbatimElementAccessStatement(binding, entry.name, entry.loc);
       }
     }
   }

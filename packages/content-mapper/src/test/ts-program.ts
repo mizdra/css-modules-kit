@@ -1,5 +1,6 @@
 import ts from 'typescript';
 import type { NormalizedMapperOptions } from '../options.js';
+import { DiagnosticDirectivePolicy } from '../protocol.js';
 import type { TransformOutput } from '../transformer.js';
 import { transformCSS } from '../transformer.js';
 
@@ -64,14 +65,28 @@ export function checkGeneratedTexts(
     writeFile: () => {},
   };
   const program = ts.createProgram([...tsFiles.keys()], COMPILER_OPTIONS, host);
-  const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) => ({
-    code: diagnostic.code,
-    fileName: diagnostic.file?.fileName,
-    start: diagnostic.start,
-    length: diagnostic.length,
-    message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
-  }));
+  const diagnostics = ts
+    .getPreEmitDiagnostics(program)
+    .filter((diagnostic) => !isSuppressedByIgnoreDirective(diagnostic, outputs))
+    .map((diagnostic) => ({
+      code: diagnostic.code,
+      fileName: diagnostic.file?.fileName,
+      start: diagnostic.start,
+      length: diagnostic.length,
+      message: ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'),
+    }));
   return { outputs, diagnostics };
+}
+
+/** Mirrors how tsgo applies `Ignore` diagnostic directives to TypeScript diagnostics. */
+function isSuppressedByIgnoreDirective(diagnostic: ts.Diagnostic, outputs: Record<string, TransformOutput>): boolean {
+  if (diagnostic.file === undefined || diagnostic.start === undefined) return false;
+  const cssFileName = diagnostic.file.fileName.replace(/\.ts$/u, '');
+  const directives = outputs[cssFileName]?.diagnosticDirectives?.directives ?? [];
+  const { start } = diagnostic;
+  return directives.some(
+    (directive) => directive[4] === DiagnosticDirectivePolicy.Ignore && start >= directive[2] && start < directive[3],
+  );
 }
 
 function resolveSpecifier(containingFile: string, specifier: string): string {

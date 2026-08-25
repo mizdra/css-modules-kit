@@ -109,6 +109,7 @@ function createResponse(request: RequestMessage, projects: Map<string, Normalize
         text: output.text,
         extension: '.ts',
         ...(output.mappings.length > 0 ? { mappings: output.mappings } : {}),
+        ...(output.diagnosticDirectives ? { diagnosticDirectives: output.diagnosticDirectives } : {}),
         ...(output.diagnostics.length > 0 ? { diagnostics: output.diagnostics } : {}),
       };
       return { jsonrpc: '2.0', id: request.id, result };

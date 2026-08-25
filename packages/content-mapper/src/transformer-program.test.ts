@@ -1,7 +1,7 @@
 import dedent from 'dedent';
 import { expect, test } from 'vite-plus/test';
 import type { NormalizedMapperOptions } from './options.js';
-import { SpanMapKind } from './protocol.js';
+import { SpanMapFeature, SpanMapKind } from './protocol.js';
 import { checkGeneratedTexts } from './test/ts-program.js';
 
 const defaultOptions: NormalizedMapperOptions = {
@@ -75,7 +75,14 @@ test('reports a missing token error on the token span for named token importer e
       length: `'missing'`.length,
     }),
   ]);
-  expect(outputs['/a.module.css']!.mappings).toContainEqual([keyStart + 1, 7, 7, 7, SpanMapKind.Verbatim]);
+  expect(outputs['/a.module.css']!.mappings).toContainEqual([
+    keyStart,
+    `'missing'`.length,
+    7,
+    'missing'.length,
+    SpanMapKind.Atom,
+    SpanMapFeature.All & ~SpanMapFeature.Rename,
+  ]);
 });
 
 test('reports a missing token error on the token span for export from entries in named exports mode', () => {
