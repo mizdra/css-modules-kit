@@ -4,255 +4,672 @@ import type { NormalizedMapperOptions } from './options.js';
 import { renderTransformOutput } from './test/render.js';
 import { transformCSS } from './transformer.js';
 
-const defaultOptions: NormalizedMapperOptions = {
+const defaultExportOptions: NormalizedMapperOptions = {
   namedExports: false,
   prioritizeNamedImports: false,
   animation: true,
   dashedIdents: false,
   container: false,
 };
-const namedExportsOptions: NormalizedMapperOptions = { ...defaultOptions, namedExports: true };
 
-function run(source: string, options: NormalizedMapperOptions = defaultOptions): string {
+const namedExportOptions: NormalizedMapperOptions = { ...defaultExportOptions, namedExports: true };
+
+function run(source: string, options: NormalizedMapperOptions): string {
   return renderTransformOutput(source, transformCSS('/test/a.module.css', source, options));
 }
 
-test('generates interface declarations for local tokens', () => {
-  const result = run(dedent`
-    .foo {}
-    .bar {}
-  `);
-  expect(result).toMatchInlineSnapshot(`
-    "=== source ===
-    .foo {}
-     ^^^ #0
-     ^^^ #3
-    ¦ #2
-    .bar {}
-     ^^^ #1
-     ^^^ #4
+describe('generates an empty module when the CSS module has no tokens', () => {
+  test('default export', () => {
+    expect(run('', defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
 
-    === generated ===
-    interface Styles { readonly 'foo': string; }
-                                ^^^^^ #0 Atom(All~Rename)
-    interface Styles { readonly 'bar': string; }
-                                ^^^^^ #1 Atom(All~Rename)
-    declare const styles: Styles;
-                  ^^^^^^ #2 Atom(Definition)
-    styles['foo'];
-            ^^^ #3 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#0
-    styles['bar'];
-            ^^^ #4 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#1
-    export default styles;
-    "
-  `);
+      ¦ #0
+
+      === generated ===
+      interface Styles {}
+      declare const styles: Styles;
+                    ^^^^^^ #0 Atom(Definition)
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run('', namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+
+
+      === generated ===
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
 });
 
-test('generates a namespace import and an intersection type for all token importers', () => {
-  expect(run(`@import './b.module.css';`)).toMatchInlineSnapshot(`
-    "=== source ===
+describe('creates an entry for each local token declaration', () => {
+  const source = dedent`
+    .a_1 { color: red; }
+    .a_2 { color: red; }
+    .a_2 { color: red; }
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { color: red; }
+       ^^^ #0
+       ^^^ #4
+      ¦ #3
+      .a_2 { color: red; }
+       ^^^ #1
+       ^^^ #5
+      .a_2 { color: red; }
+       ^^^ #2
+       ^^^ #6
+
+      === generated ===
+      interface Styles { readonly 'a_1': string; }
+                                  ^^^^^ #0 Atom(All~Rename)
+      interface Styles { readonly 'a_2': string; }
+                                  ^^^^^ #1 Atom(All~Rename)
+      interface Styles { readonly 'a_2': string; }
+                                  ^^^^^ #2 Atom(All~Rename)
+      declare const styles: Styles;
+                    ^^^^^^ #3 Atom(Definition)
+      styles['a_1'];
+              ^^^ #4 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      styles['a_2'];
+              ^^^ #5 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#1
+      styles['a_2'];
+              ^^^ #6 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#2
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { color: red; }
+       ^^^ #0
+       ^^^ #1
+       ^^^ #5
+      .a_2 { color: red; }
+       ^^^ #2
+       ^^^ #4
+       ^^^ #6
+      .a_2 { color: red; }
+       ^^^ #3
+       ^^^ #7
+
+      === generated ===
+      var _token_0: string;
+          ^^^^^^^^ #0 Alias(All~Rename)
+      export { _token_0 as 'a_1' };
+                            ^^^ #1 Verbatim
+      var _token_1: string;
+          ^^^^^^^^ #2 Alias(All~Rename)
+      var _token_1: string;
+          ^^^^^^^^ #3 Alias(All~Rename)
+      export { _token_1 as 'a_2' };
+                            ^^^ #4 Verbatim
+      import * as __self from './a.module.css';
+      __self['a_1'];
+              ^^^ #5 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      __self['a_2'];
+              ^^^ #6 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#1
+      __self['a_2'];
+              ^^^ #7 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#2
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+describe('re-exports tokens from an all token importer', () => {
+  const source = dedent`
     @import './b.module.css';
-            ^^^^^^^^^^^^^^^^ #0
+    @import './c.module.css';
+    @import './c.module.css';
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @import './b.module.css';
+              ^^^^^^^^^^^^^^^^ #0
+      ¦ #3
+      @import './c.module.css';
+              ^^^^^^^^^^^^^^^^ #1
+      @import './c.module.css';
+              ^^^^^^^^^^^^^^^^ #2
+
+      === generated ===
+      import * as _import_0 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #0 Verbatim
+      import * as _import_1 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #1 Verbatim
+      import * as _import_2 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #2 Verbatim
+      type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
+      interface Styles {}
+      declare const styles: Styles & __BlockErrorType<typeof _import_0.default> & __BlockErrorType<typeof _import_1.default> & __BlockErrorType<typeof _import_2.default>;
+                    ^^^^^^ #3 Atom(Definition)
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @import './b.module.css';
+              ^^^^^^^^^^^^^^^^ #0
+      @import './c.module.css';
+              ^^^^^^^^^^^^^^^^ #1
+      @import './c.module.css';
+              ^^^^^^^^^^^^^^^^ #2
+
+      === generated ===
+      export * from './b.module.css';
+                    ^^^^^^^^^^^^^^^^ #0 Verbatim
+      export * from './c.module.css';
+                    ^^^^^^^^^^^^^^^^ #1 Verbatim
+      export * from './c.module.css';
+                    ^^^^^^^^^^^^^^^^ #2 Verbatim
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+describe('re-exports tokens from a named token importer', () => {
+  const source = dedent`
+    @value b_1, b_2 as b_alias from './b.module.css';
+    @value c_1 from './c.module.css';
+    @value c_1 from './c.module.css';
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @value b_1, b_2 as b_alias from './b.module.css';
+                                      ^^^^^^^^^^^^^^^^ #0
+                         ^^^^^^^ #5
+                         ^^^^^^^ #14
+                  ^^^ #6
+                  ^^^ #15
+             ^^^ #3
+             ^^^ #4
+             ^^^ #12
+             ^^^ #13
+      ¦ #11
+      @value c_1 from './c.module.css';
+                      ^^^^^^^^^^^^^^^^ #1
+             ^^^ #7
+             ^^^ #8
+             ^^^ #16
+             ^^^ #17
+      @value c_1 from './c.module.css';
+                      ^^^^^^^^^^^^^^^^ #2
+             ^^^ #9
+             ^^^ #10
+             ^^^ #18
+             ^^^ #19
+
+      === generated ===
+      import * as _import_0 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #0 Verbatim
+      import * as _import_1 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #1 Verbatim
+      import * as _import_2 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #2 Verbatim
+      interface Styles { readonly 'b_1': typeof _import_0.default['b_1']; }
+                                                                  ^^^^^ #4 Atom(All~Rename)
+                                  ^^^^^ #3 Atom(All~Rename)
+      interface Styles { readonly 'b_alias': typeof _import_0.default['b_2']; }
+                                                                      ^^^^^ #6 Atom(All~Rename)
+                                  ^^^^^^^^^ #5 Atom(All~Rename)
+      interface Styles { readonly 'c_1': typeof _import_1.default['c_1']; }
+                                                                  ^^^^^ #8 Atom(All~Rename)
+                                  ^^^^^ #7 Atom(All~Rename)
+      interface Styles { readonly 'c_1': typeof _import_2.default['c_1']; }
+                                                                  ^^^^^ #10 Atom(All~Rename)
+                                  ^^^^^ #9 Atom(All~Rename)
+      declare const styles: Styles;
+                    ^^^^^^ #11 Atom(Definition)
+      styles['b_1'];
+              ^^^ #12 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      _import_0.default['b_1'];
+                         ^^^ #13 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
+      styles['b_alias'];
+              ^^^^^^^ #14 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^ ignore#2
+      _import_0.default['b_2'];
+                         ^^^ #15 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#3
+      styles['c_1'];
+              ^^^ #16 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#4
+      _import_1.default['c_1'];
+                         ^^^ #17 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#5
+      styles['c_1'];
+              ^^^ #18 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#6
+      _import_2.default['c_1'];
+                         ^^^ #19 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#7
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @value b_1, b_2 as b_alias from './b.module.css';
+                                      ^^^^^^^^^^^^^^^^ #4
+                                      ^^^^^^^^^^^^^^^^ #5
+                         ^^^^^^^ #3
+                         ^^^^^^^ #16
+                  ^^^ #2
+                  ^^^ #17
+             ^^^ #0
+             ^^^ #1
+             ^^^ #14
+             ^^^ #15
+      @value c_1 from './c.module.css';
+                      ^^^^^^^^^^^^^^^^ #8
+                      ^^^^^^^^^^^^^^^^ #9
+             ^^^ #6
+             ^^^ #7
+             ^^^ #18
+             ^^^ #19
+      @value c_1 from './c.module.css';
+                      ^^^^^^^^^^^^^^^^ #12
+                      ^^^^^^^^^^^^^^^^ #13
+             ^^^ #10
+             ^^^ #11
+             ^^^ #20
+             ^^^ #21
+
+      === generated ===
+      export {
+        'b_1' as 'b_1',
+                  ^^^ #1 Verbatim
+         ^^^ #0 Verbatim
+        'b_2' as 'b_alias',
+                  ^^^^^^^ #3 Verbatim
+         ^^^ #2 Verbatim
+      } from './b.module.css';
+             ^^^^^^^^^^^^^^^^ #4 Verbatim
+      import * as _import_0 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #5 Verbatim
+      export {
+        'c_1' as 'c_1',
+                  ^^^ #7 Verbatim
+         ^^^ #6 Verbatim
+      } from './c.module.css';
+             ^^^^^^^^^^^^^^^^ #8 Verbatim
+      import * as _import_1 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #9 Verbatim
+      export {
+        'c_1' as 'c_1',
+                  ^^^ #11 Verbatim
+         ^^^ #10 Verbatim
+      } from './c.module.css';
+             ^^^^^^^^^^^^^^^^ #12 Verbatim
+      import * as _import_2 from './c.module.css';
+                                 ^^^^^^^^^^^^^^^^ #13 Verbatim
+      import * as __self from './a.module.css';
+      __self['b_1'];
+              ^^^ #14 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      _import_0['b_1'];
+                 ^^^ #15 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#1
+      __self['b_alias'];
+              ^^^^^^^ #16 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^ ignore#2
+      _import_0['b_2'];
+                 ^^^ #17 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#3
+      __self['c_1'];
+              ^^^ #18 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#4
+      _import_1['c_1'];
+                 ^^^ #19 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#5
+      __self['c_1'];
+              ^^^ #20 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#6
+      _import_2['c_1'];
+                 ^^^ #21 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#7
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+describe('emits token reference statements', () => {
+  const source = dedent`
+    @keyframes a_1 {}
+    .a_2 { animation-name: a_1; }
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @keyframes a_1 {}
+                 ^^^ #0
+                 ^^^ #3
+      ¦ #2
+      .a_2 { animation-name: a_1; }
+                             ^^^ #5
+                             ^^^ #6
+       ^^^ #1
+       ^^^ #4
+
+      === generated ===
+      interface Styles { readonly 'a_1': string; }
+                                  ^^^^^ #0 Atom(All~Rename)
+      interface Styles { readonly 'a_2': string; }
+                                  ^^^^^ #1 Atom(All~Rename)
+      declare const styles: Styles;
+                    ^^^^^^ #2 Atom(Definition)
+      styles['a_1'];
+              ^^^ #3 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      styles['a_2'];
+              ^^^ #4 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#1
+      styles['a_1'];
+             ^^^^^ #5 Atom(All~Rename)
+      styles['a_1'];
+              ^^^ #6 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#2
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @keyframes a_1 {}
+                 ^^^ #0
+                 ^^^ #1
+                 ^^^ #4
+      .a_2 { animation-name: a_1; }
+                             ^^^ #6
+                             ^^^ #7
+       ^^^ #2
+       ^^^ #3
+       ^^^ #5
+
+      === generated ===
+      var _token_0: string;
+          ^^^^^^^^ #0 Alias(All~Rename)
+      export { _token_0 as 'a_1' };
+                            ^^^ #1 Verbatim
+      var _token_1: string;
+          ^^^^^^^^ #2 Alias(All~Rename)
+      export { _token_1 as 'a_2' };
+                            ^^^ #3 Verbatim
+      import * as __self from './a.module.css';
+      __self['a_1'];
+              ^^^ #4 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      __self['a_2'];
+              ^^^ #5 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#1
+      __self['a_1'];
+             ^^^^^ #6 Atom(All~Rename)
+      __self['a_1'];
+              ^^^ #7 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#2
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+describe('emits external token reference statements', () => {
+  // `b_1` and `b_2` share one `from` clause. The `from` clause of `b_3` has the same specifier
+  // as the first one, but is a separate clause.
+  const source = `.a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }`;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }
+                                                               ^^^^^^^^^^^^^^^^ #1
+                                                      ^^^ #9
+                                                      ^^^ #10
+                                    ^^^^^^^^^^^^^^^^ #0
+                           ^^^ #7
+                           ^^^ #8
+                       ^^^ #5
+                       ^^^ #6
+       ^^^ #2
+       ^^^ #4
+      ¦ #3
+
+      === generated ===
+      import * as _import_0 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #0 Verbatim
+      import * as _import_1 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #1 Verbatim
+      interface Styles { readonly 'a_1': string; }
+                                  ^^^^^ #2 Atom(All~Rename)
+      declare const styles: Styles;
+                    ^^^^^^ #3 Atom(Definition)
+      styles['a_1'];
+              ^^^ #4 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      _import_0.default['b_1'];
+                        ^^^^^ #5 Atom(All~Rename)
+      _import_0.default['b_1'];
+                         ^^^ #6 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
+      _import_0.default['b_2'];
+                        ^^^^^ #7 Atom(All~Rename)
+      _import_0.default['b_2'];
+                         ^^^ #8 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#2
+      _import_1.default['b_3'];
+                        ^^^^^ #9 Atom(All~Rename)
+      _import_1.default['b_3'];
+                         ^^^ #10 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#3
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .a_1 { composes: b_1 b_2 from './b.module.css', b_3 from './b.module.css'; }
+                                                               ^^^^^^^^^^^^^^^^ #3
+                                                      ^^^ #9
+                                                      ^^^ #10
+                                    ^^^^^^^^^^^^^^^^ #2
+                           ^^^ #7
+                           ^^^ #8
+                       ^^^ #5
+                       ^^^ #6
+       ^^^ #0
+       ^^^ #1
+       ^^^ #4
+
+      === generated ===
+      var _token_0: string;
+          ^^^^^^^^ #0 Alias(All~Rename)
+      export { _token_0 as 'a_1' };
+                            ^^^ #1 Verbatim
+      import * as _import_0 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #2 Verbatim
+      import * as _import_1 from './b.module.css';
+                                 ^^^^^^^^^^^^^^^^ #3 Verbatim
+      import * as __self from './a.module.css';
+      __self['a_1'];
+              ^^^ #4 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^ ignore#0
+      _import_0['b_1'];
+                ^^^^^ #5 Atom(All~Rename)
+      _import_0['b_1'];
+                 ^^^ #6 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#1
+      _import_0['b_2'];
+                ^^^^^ #7 Atom(All~Rename)
+      _import_0['b_2'];
+                 ^^^ #8 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#2
+      _import_1['b_3'];
+                ^^^^^ #9 Atom(All~Rename)
+      _import_1['b_3'];
+                 ^^^ #10 Verbatim(All~Hover)
+      ^^^^^^^^^^^^^^^^^ ignore#3
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
+});
+
+test('omits external token reference statements whose specifier is a URL', () => {
+  const source = `.a_1 { composes: b_1 from 'https://example.com/b.module.css'; }`;
+  expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+    "=== source ===
+    .a_1 { composes: b_1 from 'https://example.com/b.module.css'; }
+     ^^^ #0
+     ^^^ #2
     ¦ #1
 
     === generated ===
-    import * as _import_0 from './b.module.css';
-                               ^^^^^^^^^^^^^^^^ #0 Verbatim
-    type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;
-    interface Styles {}
-    declare const styles: Styles & __BlockErrorType<typeof _import_0.default>;
+    interface Styles { readonly 'a_1': string; }
+                                ^^^^^ #0 Atom(All~Rename)
+    declare const styles: Styles;
                   ^^^^^^ #1 Atom(Definition)
-    export default styles;
-    "
-  `);
-});
-
-test('generates indexed access type members for named token importer entries', () => {
-  expect(run(`@value v1, v2 as v3 from './c.module.css';`)).toMatchInlineSnapshot(`
-    "=== source ===
-    @value v1, v2 as v3 from './c.module.css';
-                             ^^^^^^^^^^^^^^^^ #0
-                     ^^ #3
-                     ^^ #8
-               ^^ #4
-               ^^ #9
-           ^^ #1
-           ^^ #2
-           ^^ #6
-           ^^ #7
-    ¦ #5
-
-    === generated ===
-    import * as _import_0 from './c.module.css';
-                               ^^^^^^^^^^^^^^^^ #0 Verbatim
-    interface Styles { readonly 'v1': typeof _import_0.default['v1']; }
-                                                               ^^^^ #2 Atom(All~Rename)
-                                ^^^^ #1 Atom(All~Rename)
-    interface Styles { readonly 'v3': typeof _import_0.default['v2']; }
-                                                               ^^^^ #4 Atom(All~Rename)
-                                ^^^^ #3 Atom(All~Rename)
-    declare const styles: Styles;
-                  ^^^^^^ #5 Atom(Definition)
-    styles['v1'];
-            ^^ #6 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^ ignore#0
-    _import_0.default['v1'];
-                       ^^ #7 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
-    styles['v3'];
-            ^^ #8 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^ ignore#2
-    _import_0.default['v2'];
-                       ^^ #9 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^^^^^^^^^^^ ignore#3
-    export default styles;
-    "
-  `);
-});
-
-test('omits imports for URL specifiers and non css module specifiers', () => {
-  const result = run(dedent`
-    @import 'https://example.com/a.module.css';
-    @import './plain.css';
-  `);
-  expect(result).toMatchInlineSnapshot(`
-    "=== source ===
-    @import 'https://example.com/a.module.css';
-    ¦ #0
-    @import './plain.css';
-
-    === generated ===
-    interface Styles {}
-    declare const styles: Styles;
-                  ^^^^^^ #0 Atom(Definition)
-    export default styles;
-    "
-  `);
-});
-
-test('generates expression statements for local token references', () => {
-  const result = run(dedent`
-    .foo { animation-name: pulse; }
-    @keyframes pulse {}
-  `);
-  expect(result).toMatchInlineSnapshot(`
-    "=== source ===
-    .foo { animation-name: pulse; }
-                           ^^^^^ #5
-                           ^^^^^ #6
-     ^^^ #0
-     ^^^ #3
-    ¦ #2
-    @keyframes pulse {}
-               ^^^^^ #1
-               ^^^^^ #4
-
-    === generated ===
-    interface Styles { readonly 'foo': string; }
-                                ^^^^^ #0 Atom(All~Rename)
-    interface Styles { readonly 'pulse': string; }
-                                ^^^^^^^ #1 Atom(All~Rename)
-    declare const styles: Styles;
-                  ^^^^^^ #2 Atom(Definition)
-    styles['foo'];
-            ^^^ #3 Verbatim(All~Hover)
+    styles['a_1'];
+            ^^^ #2 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
-    styles['pulse'];
-            ^^^^^ #4 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^^^ ignore#1
-    styles['pulse'];
-           ^^^^^^^ #5 Atom(All~Rename)
-    styles['pulse'];
-            ^^^^^ #6 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^^^ ignore#2
     export default styles;
     "
   `);
 });
 
-test('generates imports and expression statements for external token references', () => {
-  expect(run(`.foo { composes: baz from './d.module.css'; }`)).toMatchInlineSnapshot(`
-    "=== source ===
-    .foo { composes: baz from './d.module.css'; }
-                              ^^^^^^^^^^^^^^^^ #0
-                     ^^^ #4
-                     ^^^ #5
-     ^^^ #1
-     ^^^ #3
-    ¦ #2
+describe('omits importers whose specifier is a URL or a non-module CSS file', () => {
+  const source = dedent`
+    @import 'https://example.com/b.module.css';
+    @value c_1 from 'https://example.com/c.module.css';
+    @import './d.css';
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @import 'https://example.com/b.module.css';
+      ¦ #0
+      @value c_1 from 'https://example.com/c.module.css';
+      @import './d.css';
 
-    === generated ===
-    import * as _import_0 from './d.module.css';
-                               ^^^^^^^^^^^^^^^^ #0 Verbatim
-    interface Styles { readonly 'foo': string; }
-                                ^^^^^ #1 Atom(All~Rename)
-    declare const styles: Styles;
-                  ^^^^^^ #2 Atom(Definition)
-    styles['foo'];
-            ^^^ #3 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#0
-    _import_0.default['baz'];
-                      ^^^^^ #4 Atom(All~Rename)
-    _import_0.default['baz'];
-                       ^^^ #5 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^^^^^^^^^^^^ ignore#1
-    export default styles;
-    "
-  `);
+      === generated ===
+      interface Styles {}
+      declare const styles: Styles;
+                    ^^^^^^ #0 Atom(Definition)
+      export default styles;
+      "
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      @import 'https://example.com/b.module.css';
+      @value c_1 from 'https://example.com/c.module.css';
+      @import './d.css';
+
+      === generated ===
+      declare const styles: {};
+      export default styles;
+      "
+    `);
+  });
 });
 
-test('generates an interface declaration for every occurrence of a duplicated token name', () => {
-  const result = run(dedent`
-    .foo {}
-    .foo:hover {}
-  `);
-  expect(result).toMatchInlineSnapshot(`
-    "=== source ===
-    .foo {}
-     ^^^ #0
-     ^^^ #3
-    ¦ #2
-    .foo:hover {}
-     ^^^ #1
-     ^^^ #4
+describe('omits tokens whose name fails validateTokenName', () => {
+  const source = dedent`
+    .__proto__ { color: red; }
+    @value __proto__ from './b.module.css';
+    @value b_1 as __proto__ from './b.module.css';
+  `;
+  test('default export', () => {
+    expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .__proto__ { color: red; }
+       ^^^^^^^^^ diag#0
+      ¦ #2
+      @value __proto__ from './b.module.css';
+                            ^^^^^^^^^^^^^^^^ #0
+             ^^^^^^^^^ diag#1
+      @value b_1 as __proto__ from './b.module.css';
+                                   ^^^^^^^^^^^^^^^^ #1
+                    ^^^^^^^^^ diag#2
 
-    === generated ===
-    interface Styles { readonly 'foo': string; }
-                                ^^^^^ #0 Atom(All~Rename)
-    interface Styles { readonly 'foo': string; }
-                                ^^^^^ #1 Atom(All~Rename)
-    declare const styles: Styles;
-                  ^^^^^^ #2 Atom(Definition)
-    styles['foo'];
-            ^^^ #3 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#0
-    styles['foo'];
-            ^^^ #4 Verbatim(All~Hover)
-    ^^^^^^^^^^^^^^ ignore#1
-    export default styles;
-    "
-  `);
-});
+      === generated ===
+      import './b.module.css';
+             ^^^^^^^^^^^^^^^^ #0 Verbatim
+      import './b.module.css';
+             ^^^^^^^^^^^^^^^^ #1 Verbatim
+      interface Styles {}
+      declare const styles: Styles;
+                    ^^^^^^ #2 Atom(Definition)
+      export default styles;
 
-test('generates a default export for an empty file', () => {
-  expect(run('')).toMatchInlineSnapshot(`
-    "=== source ===
 
-    ¦ #0
+      === diagnostics ===
+      diag#0: \`__proto__\` is not allowed as names.
+      diag#1: \`__proto__\` is not allowed as names.
+      diag#2: \`__proto__\` is not allowed as names."
+    `);
+  });
+  test('named export', () => {
+    expect(run(source, namedExportOptions)).toMatchInlineSnapshot(`
+      "=== source ===
+      .__proto__ { color: red; }
+       ^^^^^^^^^ diag#0
+      @value __proto__ from './b.module.css';
+                            ^^^^^^^^^^^^^^^^ #0
+             ^^^^^^^^^ diag#1
+      @value b_1 as __proto__ from './b.module.css';
+                                   ^^^^^^^^^^^^^^^^ #1
+                    ^^^^^^^^^ diag#2
 
-    === generated ===
-    interface Styles {}
-    declare const styles: Styles;
-                  ^^^^^^ #0 Atom(Definition)
-    export default styles;
-    "
-  `);
+      === generated ===
+      export {
+      } from './b.module.css';
+             ^^^^^^^^^^^^^^^^ #0 Verbatim
+      export {
+      } from './b.module.css';
+             ^^^^^^^^^^^^^^^^ #1 Verbatim
+      declare const styles: {};
+      export default styles;
+
+
+      === diagnostics ===
+      diag#0: \`__proto__\` is not allowed as names.
+      diag#1: \`__proto__\` is not allowed as names.
+      diag#2: \`__proto__\` is not allowed as names."
+    `);
+  });
 });
 
 test('quotes generated specifiers with the original quote character', () => {
-  expect(run(`@import "./b.module.css";`)).toMatchInlineSnapshot(`
+  expect(run(`@import "./b.module.css";`, defaultExportOptions)).toMatchInlineSnapshot(`
     "=== source ===
     @import "./b.module.css";
             ^^^^^^^^^^^^^^^^ #0
@@ -271,7 +688,7 @@ test('quotes generated specifiers with the original quote character', () => {
 });
 
 test('synthesizes quotes for unquoted url() specifiers and maps them as zero-width spans', () => {
-  expect(run(`@import url(./b.module.css);`)).toMatchInlineSnapshot(`
+  expect(run(`@import url(./b.module.css);`, defaultExportOptions)).toMatchInlineSnapshot(`
     "=== source ===
     @import url(./b.module.css);
                               ¦ #2
@@ -294,32 +711,32 @@ test('synthesizes quotes for unquoted url() specifiers and maps them as zero-wid
 });
 
 test('converts parse diagnostics into mapper diagnostics', () => {
-  const result = run(dedent`
-    .foo { color: red; }
-    .bar {
-  `);
-  expect(result).toMatchInlineSnapshot(`
+  const source = dedent`
+    .a_1 { color: red; }
+    .a_2 {
+  `;
+  expect(run(source, defaultExportOptions)).toMatchInlineSnapshot(`
     "=== source ===
-    .foo { color: red; }
+    .a_1 { color: red; }
      ^^^ #0
      ^^^ #3
     ¦ #2
-    .bar {
+    .a_2 {
      ^^^ #1
      ^^^ #4
     ^ diag#0
 
     === generated ===
-    interface Styles { readonly 'foo': string; }
+    interface Styles { readonly 'a_1': string; }
                                 ^^^^^ #0 Atom(All~Rename)
-    interface Styles { readonly 'bar': string; }
+    interface Styles { readonly 'a_2': string; }
                                 ^^^^^ #1 Atom(All~Rename)
     declare const styles: Styles;
                   ^^^^^^ #2 Atom(Definition)
-    styles['foo'];
+    styles['a_1'];
             ^^^ #3 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#0
-    styles['bar'];
+    styles['a_2'];
             ^^^ #4 Verbatim(All~Hover)
     ^^^^^^^^^^^^^^ ignore#1
     export default styles;
@@ -330,29 +747,10 @@ test('converts parse diagnostics into mapper diagnostics', () => {
   `);
 });
 
-test('excludes invalid token names and reports diagnostics', () => {
-  expect(run('.__proto__ {}')).toMatchInlineSnapshot(`
-    "=== source ===
-    .__proto__ {}
-     ^^^^^^^^^ diag#0
-    ¦ #0
-
-    === generated ===
-    interface Styles {}
-    declare const styles: Styles;
-                  ^^^^^^ #0 Atom(Definition)
-    export default styles;
-
-
-    === diagnostics ===
-    diag#0: \`__proto__\` is not allowed as names."
-  `);
-});
-
 test('omits keyframes tokens when animation is false', () => {
-  expect(run('@keyframes pulse {}', { ...defaultOptions, animation: false })).toMatchInlineSnapshot(`
+  expect(run('@keyframes a_1 {}', { ...defaultExportOptions, animation: false })).toMatchInlineSnapshot(`
     "=== source ===
-    @keyframes pulse {}
+    @keyframes a_1 {}
     ¦ #0
 
     === generated ===
@@ -365,226 +763,20 @@ test('omits keyframes tokens when animation is false', () => {
 });
 
 test('generates an empty module for a non-module CSS file', () => {
-  expect(transformCSS('/test/global.css', `* { margin: 0; }`, defaultOptions)).toStrictEqual({
+  expect(transformCSS('/test/global.css', `* { margin: 0; }`, defaultExportOptions)).toStrictEqual({
     text: 'export {};\n',
     mappings: [],
     diagnostics: [],
   });
 });
 
-describe('namedExports', () => {
-  test('generates var declarations and export clauses for local tokens', () => {
-    const result = run(
-      dedent`
-        .foo {}
-        .foo:hover {}
-        .bar {}
-      `,
-      namedExportsOptions,
-    );
-    expect(result).toMatchInlineSnapshot(`
-      "=== source ===
-      .foo {}
-       ^^^ #0
-       ^^^ #2
-       ^^^ #5
-      .foo:hover {}
-       ^^^ #1
-       ^^^ #6
-      .bar {}
-       ^^^ #3
-       ^^^ #4
-       ^^^ #7
-
-      === generated ===
-      var _token_0: string;
-          ^^^^^^^^ #0 Alias(All~Rename)
-      var _token_0: string;
-          ^^^^^^^^ #1 Alias(All~Rename)
-      export { _token_0 as 'foo' };
-                            ^^^ #2 Verbatim
-      var _token_1: string;
-          ^^^^^^^^ #3 Alias(All~Rename)
-      export { _token_1 as 'bar' };
-                            ^^^ #4 Verbatim
-      import * as __self from './a.module.css';
-      __self['foo'];
-              ^^^ #5 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^ ignore#0
-      __self['foo'];
-              ^^^ #6 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^ ignore#1
-      __self['bar'];
-              ^^^ #7 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^ ignore#2
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('generates export star for all token importers', () => {
-    expect(run(`@import './b.module.css';`, namedExportsOptions)).toMatchInlineSnapshot(`
-      "=== source ===
-      @import './b.module.css';
-              ^^^^^^^^^^^^^^^^ #0
-
-      === generated ===
-      export * from './b.module.css';
-                    ^^^^^^^^^^^^^^^^ #0 Verbatim
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('generates export from clauses for named token importer entries', () => {
-    expect(run(`@value v1, v2 as v3 from './c.module.css';`, namedExportsOptions)).toMatchInlineSnapshot(`
-      "=== source ===
-      @value v1, v2 as v3 from './c.module.css';
-                               ^^^^^^^^^^^^^^^^ #4
-                               ^^^^^^^^^^^^^^^^ #5
-                       ^^ #3
-                       ^^ #8
-                 ^^ #2
-                 ^^ #9
-             ^^ #0
-             ^^ #1
-             ^^ #6
-             ^^ #7
-
-      === generated ===
-      export {
-        'v1' as 'v1',
-                 ^^ #1 Verbatim
-         ^^ #0 Verbatim
-        'v2' as 'v3',
-                 ^^ #3 Verbatim
-         ^^ #2 Verbatim
-      } from './c.module.css';
-             ^^^^^^^^^^^^^^^^ #4 Verbatim
-      import * as _import_0 from './c.module.css';
-                                 ^^^^^^^^^^^^^^^^ #5 Verbatim
-      import * as __self from './a.module.css';
-      __self['v1'];
-              ^^ #6 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^ ignore#0
-      _import_0['v1'];
-                 ^^ #7 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^^^ ignore#1
-      __self['v3'];
-              ^^ #8 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^ ignore#2
-      _import_0['v2'];
-                 ^^ #9 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^^^ ignore#3
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('generates self references for local token references', () => {
-    const result = run(
-      dedent`
-        .foo { animation-name: pulse; }
-        @keyframes pulse {}
-      `,
-      namedExportsOptions,
-    );
-    expect(result).toMatchInlineSnapshot(`
-      "=== source ===
-      .foo { animation-name: pulse; }
-                             ^^^^^ #6
-                             ^^^^^ #7
-       ^^^ #0
-       ^^^ #1
-       ^^^ #4
-      @keyframes pulse {}
-                 ^^^^^ #2
-                 ^^^^^ #3
-                 ^^^^^ #5
-
-      === generated ===
-      var _token_0: string;
-          ^^^^^^^^ #0 Alias(All~Rename)
-      export { _token_0 as 'foo' };
-                            ^^^ #1 Verbatim
-      var _token_1: string;
-          ^^^^^^^^ #2 Alias(All~Rename)
-      export { _token_1 as 'pulse' };
-                            ^^^^^ #3 Verbatim
-      import * as __self from './a.module.css';
-      __self['foo'];
-              ^^^ #4 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^ ignore#0
-      __self['pulse'];
-              ^^^^^ #5 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^^^ ignore#1
-      __self['pulse'];
-             ^^^^^^^ #6 Atom(All~Rename)
-      __self['pulse'];
-              ^^^^^ #7 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^^^ ignore#2
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('generates namespace element accesses for external token references', () => {
-    expect(run(`.foo { composes: baz from './d.module.css'; }`, namedExportsOptions)).toMatchInlineSnapshot(`
-      "=== source ===
-      .foo { composes: baz from './d.module.css'; }
-                                ^^^^^^^^^^^^^^^^ #2
-                       ^^^ #4
-                       ^^^ #5
-       ^^^ #0
-       ^^^ #1
-       ^^^ #3
-
-      === generated ===
-      var _token_0: string;
-          ^^^^^^^^ #0 Alias(All~Rename)
-      export { _token_0 as 'foo' };
-                            ^^^ #1 Verbatim
-      import * as _import_0 from './d.module.css';
-                                 ^^^^^^^^^^^^^^^^ #2 Verbatim
-      import * as __self from './a.module.css';
-      __self['foo'];
-              ^^^ #3 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^ ignore#0
-      _import_0['baz'];
-                ^^^^^ #4 Atom(All~Rename)
-      _import_0['baz'];
-                 ^^^ #5 Verbatim(All~Hover)
-      ^^^^^^^^^^^^^^^^^ ignore#1
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('generates a dummy default export when prioritizeNamedImports is false', () => {
-    expect(run('', namedExportsOptions)).toMatchInlineSnapshot(`
-      "=== source ===
+test('keeps the generated text a module when prioritizeNamedImports is true', () => {
+  expect(run('', { ...namedExportOptions, prioritizeNamedImports: true })).toMatchInlineSnapshot(`
+    "=== source ===
 
 
-      === generated ===
-      declare const styles: {};
-      export default styles;
-      "
-    `);
-  });
-
-  test('keeps the generated text a module when prioritizeNamedImports is true', () => {
-    expect(run('', { ...namedExportsOptions, prioritizeNamedImports: true })).toMatchInlineSnapshot(`
-      "=== source ===
-
-
-      === generated ===
-      export {};
-      "
-    `);
-  });
+    === generated ===
+    export {};
+    "
+  `);
 });
