@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -ue
 
-# Builds the tsgo binary used by the content-mapper e2e tests.
+# Builds the tsgo binary from source for the VS Code extension dev flow
+# (scripts/setup-tsgo-extension.sh), which needs the source checkout to build the
+# vscode-typescript extension. The content-mapper e2e tests instead use the native
+# tsc binary from the `typescript` npm nightly (see scripts/vitest-e2e-test-setup.ts).
 # The content mapper protocol is implemented in microsoft/TypeScript (the TypeScript 7
 # monorepo, which absorbed microsoft/typescript-go). This script pins a commit of its
 # main branch. The Go implementation lives in the tsc/ subdirectory, and its main

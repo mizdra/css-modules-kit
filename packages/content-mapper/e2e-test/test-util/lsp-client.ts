@@ -1,14 +1,27 @@
 import type { ChildProcessByStdio } from 'node:child_process';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import type { Readable, Writable } from 'node:stream';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { resolve } from '@css-modules-kit/core';
 
-/** The tsgo binary built by `scripts/setup-tsgo.sh`. Overridable via the `TSGO_BIN` environment variable. */
-const tsgoBinPath =
-  process.env['TSGO_BIN'] ??
-  resolve(import.meta.dirname, `../../../../.tmp/typescript/built/tsgo${process.platform === 'win32' ? '.exe' : ''}`);
+// Keep the resolution in sync with `scripts/vitest-e2e-test-setup.ts`.
+/** The native tsc binary shipped with the `typescript` npm package. Overridable via the `TSGO_BIN` environment variable. */
+const tsgoBinPath = process.env['TSGO_BIN'] ?? resolveNativeTscBinPath(import.meta.url);
+
+/**
+ * Resolves the platform-specific native tsc binary the same way as `typescript/lib/getExePath.js`.
+ * The `typescript-nightly` alias points at the `typescript` nightly, whose platform package is a
+ * dependency of the nightly, not of this package, so it must be resolved relative to the nightly
+ * package to work with pnpm's non-flat `node_modules`.
+ */
+function resolveNativeTscBinPath(base: string): string {
+  const typescriptPkgPath = createRequire(base).resolve('typescript-nightly/package.json');
+  const platformPkgName = `@typescript/typescript-${process.platform}-${process.arch}`;
+  const platformPkgPath = createRequire(typescriptPkgPath).resolve(`${platformPkgName}/package.json`);
+  const binName = process.platform === 'win32' ? 'tsc.exe' : 'tsc';
+  return fileURLToPath(new URL(`./lib/${binName}`, pathToFileURL(platformPkgPath)));
+}
 
 export interface Position {
   line: number;
