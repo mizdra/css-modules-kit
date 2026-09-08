@@ -7,7 +7,7 @@ const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   test('reports a syntactic diagnostic on a CSS module file', async () => {
-    const { iff, getRange } = await setupFixture({
+    const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@value;`,
     });
@@ -15,13 +15,15 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
     const res = await tsserver.sendSyntacticDiagnosticsSync({ file: iff.paths['a.module.css'] });
 
+    const { start, end } = getFileSpan('a.module.css', '@value;');
     expect(res.body).toStrictEqual([
       {
         category: 'error',
         code: 0,
         source: 'css-modules-kit',
         text: '`@value` is a invalid syntax.',
-        ...getRange('a.module.css', '@value;'),
+        start,
+        end,
       },
     ]);
   });

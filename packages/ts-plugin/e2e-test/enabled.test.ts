@@ -1,12 +1,12 @@
 import dedent from 'dedent';
 import { expect, test } from 'vite-plus/test';
 import { setupFixture } from './test-util/fixture.js';
-import { launchTsserver, normalizeDefinitions } from './test-util/tsserver.js';
+import { launchTsserver } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 
 test('returns no Go to Definition results when cmkOptions.enabled is false', async () => {
-  const { iff, getLoc } = await setupFixture({
+  const { iff, getFileLocation } = await setupFixture({
     'tsconfig.json': `{ "cmkOptions": { "enabled": false } }`,
     'index.ts': dedent`
       import styles from './a.module.css';
@@ -16,10 +16,7 @@ test('returns no Go to Definition results when cmkOptions.enabled is false', asy
   });
   await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
-  const res = await tsserver.sendDefinitionAndBoundSpan({
-    file: iff.paths['index.ts'],
-    ...getLoc('index.ts', 'a_1'),
-  });
+  const definitions = await tsserver.sendDefinitionAndBoundSpan(getFileLocation('index.ts', 'a_1'));
 
-  expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual([]);
+  expect(definitions).toStrictEqual([]);
 });

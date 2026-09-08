@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from '@css-modules-kit/core';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
+import { type FileSpan, type FileSpanWithContext, formatPath } from './tsserver.js';
 
 const fixtureDir = join(tmpdir(), '@css-modules-kit/ts-plugin', process.env['VITEST_POOL_ID']!);
 export const createIFF = defineIFFCreator({
@@ -10,6 +11,7 @@ export const createIFF = defineIFFCreator({
 });
 
 export type Loc = { line: number; offset: number };
+export type FileLocation = { file: string; line: number; offset: number };
 
 function findAllMatches(content: string, search: string): number[] {
   if (search.length === 0) throw new Error('Empty search string is not allowed.');
@@ -34,36 +36,53 @@ function offsetToLoc(content: string, offset: number): Loc {
 
 type Files = Record<string, string>;
 
+export interface GetFileSpanOptions {
+  /** 0-based index of the match when `search` matches multiple times. */
+  index?: number;
+  /**
+   * A substring enclosing the `search` match. When given, the returned span also carries
+   * `contextStart` / `contextEnd` pointing to the occurrence of `context` that encloses the match.
+   */
+  context?: string;
+}
+
 export interface SetupFixtureResult<T extends Files> {
   iff: CreateIFFResult<T>;
   /**
-   * Get the (1-based) line/offset of the first character of `search` in `file`.
+   * Get the absolute path of `file` and the (1-based) line/offset of the first character of `search` in it.
+   * The result can be passed directly as tsserver request arguments.
    *
    * - If `search` matches exactly once, returns that position.
    * - If `search` matches multiple times, an `index` (0-based) must be passed.
    * - Throws if `search` does not match, or `index` is out of range.
    */
-  getLoc: (file: string, search: string, index?: number) => Loc;
+  getFileLocation: (file: string, search: string, index?: number) => FileLocation;
   /**
-   * Get the (1-based) start/end range of `search` in `file`.
+   * Get the absolute (path-normalized) path of `file` and the (1-based) start/end range of `search` in it.
+   * The result can be compared directly with spans returned by the tsserver client.
    *
-   * - `start` is identical to `getLoc(file, search, index)`.
+   * - `start` is identical to the position returned by `getFileLocation`.
    * - `end` points to the position immediately AFTER the last character of `search`
    *   (exclusive end, matching tsserver's convention).
-   * - Same matching/error semantics as `getLoc`.
+   * - Same matching/error semantics as `getFileLocation`.
    */
-  getRange: (file: string, search: string, index?: number) => { start: Loc; end: Loc };
+  getFileSpan: (file: string, search: string, options?: GetFileSpanOptions) => FileSpanWithContext;
 }
 
 export async function setupFixture<const T extends Files>(files: T): Promise<SetupFixtureResult<T>> {
   // oxlint-disable-next-line typescript/no-explicit-any
   const iff = (await createIFF(files)) as any;
 
-  function getLoc(file: string, search: string, index?: number): Loc {
+  function getFileContent(file: string): string {
     const content = files[file];
     if (content === undefined) {
       throw new Error(`File "${file}" was not registered in the fixture.`);
     }
+    return content;
+  }
+
+  function findOffset(file: string, search: string, index?: number): number {
+    const content = getFileContent(file);
     const matches = findAllMatches(content, search);
     if (matches.length === 0) {
       throw new Error(`Substring ${JSON.stringify(search)} not found in "${file}".`);
@@ -80,24 +99,41 @@ export async function setupFixture<const T extends Files>(files: T): Promise<Set
         `Index ${index} is out of bounds (only ${matches.length} matches of ${JSON.stringify(search)} in "${file}").`,
       );
     }
-    return offsetToLoc(content, target);
+    return target;
   }
 
-  function getRange(file: string, search: string, index?: number): { start: Loc; end: Loc } {
-    const start = getLoc(file, search, index);
-    const lines = search.split('\n');
-    if (lines.length === 1) {
-      return { start, end: { line: start.line, offset: start.offset + search.length } };
+  function findEnclosingContextOffset(file: string, context: string, start: number, end: number): number {
+    const content = getFileContent(file);
+    const enclosing = findAllMatches(content, context).find(
+      (offset) => offset <= start && end <= offset + context.length,
+    );
+    if (enclosing === undefined) {
+      throw new Error(`No occurrence of context ${JSON.stringify(context)} encloses the match in "${file}".`);
     }
-    const lastLine = lines[lines.length - 1] ?? '';
+    return enclosing;
+  }
+
+  function getFileLocation(file: string, search: string, index?: number): FileLocation {
+    return { file: iff.paths[file], ...offsetToLoc(getFileContent(file), findOffset(file, search, index)) };
+  }
+
+  function getFileSpan(file: string, search: string, options?: GetFileSpanOptions): FileSpanWithContext {
+    const content = getFileContent(file);
+    const start = findOffset(file, search, options?.index);
+    const end = start + search.length;
+    const span: FileSpan = {
+      file: formatPath(iff.paths[file]),
+      start: offsetToLoc(content, start),
+      end: offsetToLoc(content, end),
+    };
+    if (options?.context === undefined) return span;
+    const contextStart = findEnclosingContextOffset(file, options.context, start, end);
     return {
-      start,
-      end: {
-        line: start.line + lines.length - 1,
-        offset: lastLine.length + 1,
-      },
+      ...span,
+      contextStart: offsetToLoc(content, contextStart),
+      contextEnd: offsetToLoc(content, contextStart + options.context.length),
     };
   }
 
-  return { iff, getLoc, getRange };
+  return { iff, getFileLocation, getFileSpan };
 }

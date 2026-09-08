@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { describe, expect, test } from 'vite-plus/test';
 import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
 import { setupFixture } from './test-util/fixture.js';
-import { launchTsserver, normalizeCompletionDetails, normalizeCompletionEntry } from './test-util/tsserver.js';
+import { launchTsserver } from './test-util/tsserver.js';
 
 const reactDtsPath = join(require.resolve('@types/react/package.json'), '../index.d.ts');
 const tsserver = launchTsserver();
@@ -12,7 +12,7 @@ const tsserver = launchTsserver();
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('styles binding suggestion', () => {
     test('prioritizes the CSS module corresponding to the current component file', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'a.tsx': `styles;`,
         'a.module.css': '',
@@ -26,23 +26,19 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['a.tsx'],
-        ...getRange('a.tsx', 'styles').end,
+        ...getFileSpan('a.tsx', 'styles').end,
       });
 
-      expect(
-        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
-      ).toStrictEqual(
-        normalizeCompletionEntry([
-          { name: 'styles', sortText: '0', source: './a.module.css' },
-          { name: 'styles', sortText: '16', source: './b.module.css' },
-        ]),
-      );
+      expect(entries.filter((entry) => entry.name === 'styles')).toStrictEqual([
+        { name: 'styles', sortText: '0', source: './a.module.css' },
+        { name: 'styles', sortText: '16', source: './b.module.css' },
+      ]);
     });
 
     test('excludes generated files from suggestions', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports, dtsOutDir: 'generated' },
         }),
@@ -61,18 +57,18 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['a.tsx'],
-        ...getRange('a.tsx', 'styles').end,
+        ...getFileSpan('a.tsx', 'styles').end,
       });
 
-      expect(
-        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
-      ).toStrictEqual(normalizeCompletionEntry([{ name: 'styles', sortText: '0', source: './a.module.css' }]));
+      expect(entries.filter((entry) => entry.name === 'styles')).toStrictEqual([
+        { name: 'styles', sortText: '0', source: './a.module.css' },
+      ]);
     });
 
     test('inserts the import statement when accepted', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': `styles;`,
         'a.module.css': '',
@@ -82,9 +78,9 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         preferences: { quotePreference: 'single' },
       });
 
-      const res = await tsserver.sendCompletionDetails({
+      const details = await tsserver.sendCompletionDetails({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'styles').end,
+        ...getFileSpan('index.ts', 'styles').end,
         entryNames: [
           {
             name: 'styles',
@@ -99,7 +95,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       });
 
       const importStatement = buildStylesImport('./a.module.css', { namedExports });
-      expect(normalizeCompletionDetails(res.body!)).toStrictEqual([
+      expect(details).toStrictEqual([
         {
           codeActions: [
             {
@@ -122,7 +118,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
 
     test('suggests the styles entry with an import-alias source', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           compilerOptions: { paths: { '@/*': ['./*'] } },
           cmkOptions: { namedExports },
@@ -138,14 +134,14 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'styles').end,
+        ...getFileSpan('index.ts', 'styles').end,
       });
 
-      expect(
-        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
-      ).toStrictEqual(normalizeCompletionEntry([{ name: 'styles', sortText: '16', source: '@/a.module.css' }]));
+      expect(entries.filter((entry) => entry.name === 'styles')).toStrictEqual([
+        { name: 'styles', sortText: '16', source: '@/a.module.css' },
+      ]);
     });
   });
 
@@ -153,7 +149,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
       'completes as className={$$1} with quotePreference: $quotePreference',
       async ({ quotePreference }) => {
-        const { iff, getRange } = await setupFixture({
+        const { iff, getFileSpan } = await setupFixture({
           'tsconfig.json': buildTSConfigJSON({
             compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
             cmkOptions: { namedExports },
@@ -174,16 +170,14 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
           },
         });
 
-        const res = await tsserver.sendCompletionInfo({
+        const entries = await tsserver.sendCompletionInfo({
           file: iff.paths['a.tsx'],
-          ...getRange('a.tsx', 'className').end,
+          ...getFileSpan('a.tsx', 'className').end,
         });
 
-        expect(
-          normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'className') ?? []),
-        ).toStrictEqual(
-          normalizeCompletionEntry([{ name: 'className', insertText: 'className={$1}', sortText: expect.anything() }]),
-        );
+        expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
+          { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
+        ]);
       },
     );
   });
@@ -192,7 +186,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 describe('prioritizeNamedImports (namedExports: true)', () => {
   describe('prioritizeNamedImports: false', () => {
     test('omits named token auto-imports', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: false },
         }),
@@ -204,18 +198,16 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
         preferences: { includeCompletionsForModuleExports: true },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'a_1').end,
+        ...getFileSpan('index.ts', 'a_1').end,
       });
 
-      expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'a_1') ?? [])).toStrictEqual(
-        [],
-      );
+      expect(entries.filter((entry) => entry.name === 'a_1')).toStrictEqual([]);
     });
 
     test('omits the default export from namespace member completion', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: false },
         }),
@@ -230,12 +222,12 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
         preferences: { includeCompletionsForModuleExports: true },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'styles.').end,
+        ...getFileSpan('index.ts', 'styles.').end,
       });
 
-      const names = res.body?.entries.map((entry) => entry.name) ?? [];
+      const names = entries.map((entry) => entry.name);
       expect(names).toContain('a_1');
       expect(names).not.toContain('default');
     });
@@ -243,7 +235,7 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
 
   describe('prioritizeNamedImports: true', () => {
     test('omits the styles binding auto-import', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: true },
         }),
@@ -255,18 +247,16 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
         preferences: { includeCompletionsForModuleExports: true },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'styles').end,
+        ...getFileSpan('index.ts', 'styles').end,
       });
 
-      expect(
-        normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'styles') ?? []),
-      ).toStrictEqual([]);
+      expect(entries.filter((entry) => entry.name === 'styles')).toStrictEqual([]);
     });
 
     test('suggests named token auto-imports', async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports: true, prioritizeNamedImports: true },
         }),
@@ -278,14 +268,14 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
         preferences: { includeCompletionsForModuleExports: true },
       });
 
-      const res = await tsserver.sendCompletionInfo({
+      const entries = await tsserver.sendCompletionInfo({
         file: iff.paths['index.ts'],
-        ...getRange('index.ts', 'a_1').end,
+        ...getFileSpan('index.ts', 'a_1').end,
       });
 
-      expect(normalizeCompletionEntry(res.body?.entries.filter((entry) => entry.name === 'a_1') ?? [])).toStrictEqual(
-        normalizeCompletionEntry([{ name: 'a_1', sortText: '16', source: './a.module.css' }]),
-      );
+      expect(entries.filter((entry) => entry.name === 'a_1')).toStrictEqual([
+        { name: 'a_1', sortText: '16', source: './a.module.css' },
+      ]);
     });
   });
 });

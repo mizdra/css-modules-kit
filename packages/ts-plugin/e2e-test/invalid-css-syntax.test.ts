@@ -2,13 +2,13 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
 import { setupFixture } from './test-util/fixture.js';
-import { formatPath, launchTsserver, normalizeDefinitions } from './test-util/tsserver.js';
+import { launchTsserver } from './test-util/tsserver.js';
 
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   test('resolves Go to Definition on a valid token even when later rules contain invalid syntax', async () => {
-    const { iff, getLoc, getRange } = await setupFixture({
+    const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'index.ts': dedent`
         ${buildStylesImport('./a.module.css', { namedExports })}
@@ -21,22 +21,9 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
     await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
-    const res = await tsserver.sendDefinitionAndBoundSpan({
-      file: iff.paths['index.ts'],
-      ...getLoc('index.ts', 'a_1'),
-    });
+    const definitions = await tsserver.sendDefinitionAndBoundSpan(getFileLocation('index.ts', 'a_1'));
 
-    const { start: contextStart, end: contextEnd } = getRange('a.module.css', '.a_1 { color: red; }');
-    expect(normalizeDefinitions(res.body?.definitions ?? [])).toStrictEqual(
-      normalizeDefinitions([
-        {
-          file: formatPath(iff.paths['a.module.css']),
-          ...getRange('a.module.css', 'a_1'),
-          contextStart,
-          contextEnd,
-        },
-      ]),
-    );
+    expect(definitions).toStrictEqual([getFileSpan('a.module.css', 'a_1', { context: '.a_1 { color: red; }' })]);
   });
 
   test('reports no syntactic diagnostics for a CSS module with parse errors', async () => {

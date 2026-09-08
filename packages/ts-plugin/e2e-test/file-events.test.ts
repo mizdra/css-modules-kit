@@ -9,7 +9,7 @@ const tsserver = launchTsserver();
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('when adding a CSS module', () => {
     test("updates the importer's diagnostic when a CSS module is added", async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
           ${buildStylesImport('./a.module.css', { namedExports })}
@@ -19,12 +19,14 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
       const before = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+      const { start, end } = getFileSpan('index.ts', "'./a.module.css'");
       expect(before.body).toStrictEqual([
         {
           category: 'error',
           code: 2307,
           text: "Cannot find module './a.module.css' or its corresponding type declarations.",
-          ...getRange('index.ts', "'./a.module.css'"),
+          start,
+          end,
         },
       ]);
 
@@ -40,7 +42,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
           category: 'error',
           code: 2307,
           text: "Cannot find module './a.module.css' or its corresponding type declarations.",
-          ...getRange('index.ts', "'./a.module.css'"),
+          start,
+          end,
         },
       ]);
     });
@@ -48,7 +51,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
   describe('when updating a CSS module', () => {
     test("updates the importer's diagnostic when a CSS module is modified", async () => {
-      const { iff, getRange } = await setupFixture({
+      const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
           ${buildStylesImport('./a.module.css', { namedExports })}
@@ -59,11 +62,13 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
       const before = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+      const { start, end } = getFileSpan('index.ts', 'a_1');
       expect(before.body).toStrictEqual([
         {
           category: 'error',
           code: 2339,
-          ...getRange('index.ts', 'a_1'),
+          start,
+          end,
           text: expect.any(String),
         },
       ]);
