@@ -2,14 +2,57 @@ import serverHarness from '@typescript/server-harness';
 import type { server } from 'typescript';
 import ts from 'typescript';
 
+export type FileSpan = {
+  file: string;
+  start: server.protocol.Location;
+  end: server.protocol.Location;
+};
+
+export type FileSpanWithContext = FileSpan & {
+  contextStart?: server.protocol.Location;
+  contextEnd?: server.protocol.Location;
+};
+
+export type RenameLocation = FileSpan & {
+  prefixText?: string;
+  suffixText?: string;
+};
+
+export type RenameResult = {
+  info: server.protocol.RenameInfo;
+  locs: RenameLocation[];
+};
+
+export type CompletionEntry = {
+  name: string;
+  sortText: string;
+  source?: string;
+  insertText?: string;
+};
+
+export type CompletionDetails = {
+  codeActions?: { changes: server.protocol.FileCodeEdits[] }[];
+};
+
+export type CodeFixAction = {
+  fixName: string;
+  changes: server.protocol.FileCodeEdits[];
+};
+
+/**
+ * A thin client for tsserver.
+ *
+ * Methods returning language feature results (definitions, references, rename, completion, code fixes)
+ * return normalized values: only the fields relevant to tests are kept, paths are normalized with
+ * `formatPath`, and the results are sorted so that they can be compared with `toStrictEqual`.
+ * Spans are sorted by file path, then by position. Duplicates are not removed.
+ */
 interface Tsserver {
   sendUpdateOpen(args: server.protocol.UpdateOpenRequest['arguments']): Promise<server.protocol.Response>;
   sendConfigure(args: server.protocol.ConfigureRequest['arguments']): Promise<server.protocol.ConfigureResponse>;
-  sendDefinitionAndBoundSpan(
-    args: server.protocol.FileLocationRequestArgs,
-  ): Promise<server.protocol.DefinitionInfoAndBoundSpanResponse>;
-  sendReferences(args: server.protocol.ReferencesRequest['arguments']): Promise<server.protocol.ReferencesResponse>;
-  sendRename(args: server.protocol.RenameRequest['arguments']): Promise<server.protocol.RenameResponse>;
+  sendDefinitionAndBoundSpan(args: server.protocol.FileLocationRequestArgs): Promise<FileSpanWithContext[]>;
+  sendReferences(args: server.protocol.ReferencesRequest['arguments']): Promise<FileSpan[]>;
+  sendRename(args: server.protocol.RenameRequest['arguments']): Promise<RenameResult>;
   sendSemanticDiagnosticsSync(
     args: server.protocol.SemanticDiagnosticsSyncRequest['arguments'],
   ): Promise<server.protocol.SemanticDiagnosticsSyncResponse>;
@@ -25,13 +68,9 @@ interface Tsserver {
   sendGetEditsForRefactor(
     args: server.protocol.GetEditsForRefactorRequest['arguments'],
   ): Promise<server.protocol.GetEditsForRefactorResponse>;
-  sendCompletionInfo(
-    args: server.protocol.CompletionsRequest['arguments'],
-  ): Promise<server.protocol.CompletionInfoResponse>;
-  sendCompletionDetails(
-    args: server.protocol.CompletionDetailsRequest['arguments'],
-  ): Promise<server.protocol.CompletionDetailsResponse>;
-  sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<server.protocol.CodeFixResponse>;
+  sendCompletionInfo(args: server.protocol.CompletionsRequest['arguments']): Promise<CompletionEntry[]>;
+  sendCompletionDetails(args: server.protocol.CompletionDetailsRequest['arguments']): Promise<CompletionDetails[]>;
+  sendGetCodeFixes(args: server.protocol.CodeFixRequest['arguments']): Promise<CodeFixAction[]>;
 }
 
 export function launchTsserver(): Tsserver {
@@ -67,10 +106,25 @@ export function launchTsserver(): Tsserver {
   return {
     sendUpdateOpen: async (args) => sendRequest(ts.server.protocol.CommandTypes.UpdateOpen, args),
     sendConfigure: async (args) => sendRequest(ts.server.protocol.CommandTypes.Configure, args),
-    sendDefinitionAndBoundSpan: async (args) =>
-      sendRequest(ts.server.protocol.CommandTypes.DefinitionAndBoundSpan, args),
-    sendReferences: async (args) => sendRequest(ts.server.protocol.CommandTypes.References, args),
-    sendRename: async (args) => sendRequest(ts.server.protocol.CommandTypes.Rename, args),
+    sendDefinitionAndBoundSpan: async (args) => {
+      const res: server.protocol.DefinitionInfoAndBoundSpanResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.DefinitionAndBoundSpan,
+        args,
+      );
+      return normalizeDefinitions(res.body?.definitions ?? []);
+    },
+    sendReferences: async (args) => {
+      const res: server.protocol.ReferencesResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.References,
+        args,
+      );
+      return normalizeFileSpans(res.body?.refs ?? []);
+    },
+    sendRename: async (args) => {
+      const res: server.protocol.RenameResponse = await sendRequest(ts.server.protocol.CommandTypes.Rename, args);
+      if (res.body === undefined) throw new Error('Expected rename response to have a body');
+      return { info: res.body.info, locs: normalizeRenameLocations(res.body.locs) };
+    },
     sendSemanticDiagnosticsSync: async (args) =>
       sendRequest(ts.server.protocol.CommandTypes.SemanticDiagnosticsSync, args),
     sendSyntacticDiagnosticsSync: async (args) =>
@@ -79,9 +133,27 @@ export function launchTsserver(): Tsserver {
     sendGetApplicableRefactors: async (args) =>
       sendRequest(ts.server.protocol.CommandTypes.GetApplicableRefactors, args),
     sendGetEditsForRefactor: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetEditsForRefactor, args),
-    sendCompletionInfo: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionInfo, args),
-    sendCompletionDetails: async (args) => sendRequest(ts.server.protocol.CommandTypes.CompletionDetails, args),
-    sendGetCodeFixes: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetCodeFixes, args),
+    sendCompletionInfo: async (args) => {
+      const res: server.protocol.CompletionInfoResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.CompletionInfo,
+        args,
+      );
+      return normalizeCompletionEntries(res.body?.entries ?? []);
+    },
+    sendCompletionDetails: async (args) => {
+      const res: server.protocol.CompletionDetailsResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.CompletionDetails,
+        args,
+      );
+      return normalizeCompletionDetails(res.body ?? []);
+    },
+    sendGetCodeFixes: async (args) => {
+      const res: server.protocol.CodeFixResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.GetCodeFixes,
+        args,
+      );
+      return normalizeCodeFixActions(res.body ?? []);
+    },
   };
 }
 
@@ -90,156 +162,66 @@ export function formatPath(path: string) {
   return path.replaceAll('\\', '/');
 }
 
-type SimplifiedDefinitionInfo = {
-  file: string;
-  start: ts.server.protocol.Location;
-  end: ts.server.protocol.Location;
-  contextStart?: ts.server.protocol.Location;
-  contextEnd?: ts.server.protocol.Location;
-};
+function compareFileSpans(a: FileSpan, b: FileSpan): number {
+  return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
+}
 
-export function normalizeDefinitions(definitions: readonly SimplifiedDefinitionInfo[]): SimplifiedDefinitionInfo[] {
+function normalizeDefinitions(definitions: readonly server.protocol.DefinitionInfo[]): FileSpanWithContext[] {
   return definitions
-    .map((definition) => {
-      return {
-        file: formatPath(definition.file),
-        start: definition.start,
-        end: definition.end,
-        ...('contextStart' in definition ? { contextStart: definition.contextStart } : {}),
-        ...('contextEnd' in definition ? { contextEnd: definition.contextEnd } : {}),
-      };
-    })
-    .toSorted((a, b) => {
-      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-    });
+    .map((definition) => ({
+      file: formatPath(definition.file),
+      start: definition.start,
+      end: definition.end,
+      ...('contextStart' in definition ? { contextStart: definition.contextStart } : {}),
+      ...('contextEnd' in definition ? { contextEnd: definition.contextEnd } : {}),
+    }))
+    .toSorted(compareFileSpans);
 }
 
-type SimplifiedSpanGroup = {
-  file: string;
-  locs: ts.server.protocol.TextSpan[];
-};
-
-export function normalizeSpanGroups(spanGroups: readonly SimplifiedSpanGroup[]): SimplifiedSpanGroup[] {
-  const sortedLocs = spanGroups
-    .map((loc) => {
-      return {
-        file: formatPath(loc.file),
-        locs: loc.locs.map((loc) => ({
-          start: loc.start,
-          end: loc.end,
-          ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
-          ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
-        })),
-      };
-    })
-    .toSorted((a, b) => {
-      return a.file.localeCompare(b.file);
-    });
-  for (const loc of sortedLocs) {
-    loc.locs.sort((a, b) => {
-      return a.start.line - b.start.line || a.start.offset - b.start.offset;
-    });
-  }
-  return sortedLocs;
+function normalizeFileSpans(spans: readonly server.protocol.FileSpan[]): FileSpan[] {
+  return spans
+    .map((span) => ({ file: formatPath(span.file), start: span.start, end: span.end }))
+    .toSorted(compareFileSpans);
 }
 
-type SimplifiedReferencesResponseItem = {
-  file: string;
-  start: ts.server.protocol.Location;
-  end: ts.server.protocol.Location;
-};
-
-export function normalizeRefItems(refs: readonly SimplifiedReferencesResponseItem[]) {
-  return refs
-    .map((ref) => {
-      return {
-        file: formatPath(ref.file),
-        start: ref.start,
-        end: ref.end,
-      };
-    })
-    .toSorted((a, b) => {
-      return a.file.localeCompare(b.file) || a.start.line - b.start.line || a.start.offset - b.start.offset;
-    });
+function normalizeRenameLocations(spanGroups: readonly server.protocol.SpanGroup[]): RenameLocation[] {
+  return spanGroups
+    .flatMap((group) =>
+      group.locs.map((loc) => ({
+        file: formatPath(group.file),
+        start: loc.start,
+        end: loc.end,
+        ...('prefixText' in loc ? { prefixText: loc.prefixText } : {}),
+        ...('suffixText' in loc ? { suffixText: loc.suffixText } : {}),
+      })),
+    )
+    .toSorted(compareFileSpans);
 }
 
-export function mergeSpanGroups(fileSpans: ts.server.protocol.FileSpan[]): SimplifiedSpanGroup[] {
-  const spanGroups: SimplifiedSpanGroup[] = [];
-  for (const fileSpan of fileSpans) {
-    const existingGroup = spanGroups.find((group) => group.file === fileSpan.file);
-    if (existingGroup) {
-      existingGroup.locs.push({ start: fileSpan.start, end: fileSpan.end });
-    } else {
-      spanGroups.push({
-        file: fileSpan.file,
-        locs: [{ start: fileSpan.start, end: fileSpan.end }],
-      });
-    }
-  }
-  return spanGroups;
-}
-
-type SimplifiedCompletionEntry = {
-  name: string;
-  sortText: string;
-  source?: string;
-  insertText?: string;
-};
-
-export function normalizeCompletionEntry(entries: readonly SimplifiedCompletionEntry[]): SimplifiedCompletionEntry[] {
+function normalizeCompletionEntries(entries: readonly server.protocol.CompletionEntry[]): CompletionEntry[] {
   return entries
-    .map((entry) => {
-      return {
-        name: entry.name,
-        sortText: entry.sortText,
-        ...('source' in entry ? { source: entry.source } : {}),
-        ...('insertText' in entry ? { insertText: entry.insertText } : {}),
-      };
-    })
+    .map((entry) => ({
+      name: entry.name,
+      sortText: entry.sortText,
+      ...('source' in entry ? { source: entry.source } : {}),
+      ...('insertText' in entry ? { insertText: entry.insertText } : {}),
+    }))
     .toSorted(
       (a, b) =>
-        a.sortText?.localeCompare(b.sortText ?? '') ||
-        a.source?.localeCompare(b.source ?? '') ||
+        a.sortText.localeCompare(b.sortText) ||
+        (a.source ?? '').localeCompare(b.source ?? '') ||
         a.name.localeCompare(b.name),
     );
 }
 
-type SimplifiedCodeAction = {
-  changes: ts.server.protocol.FileCodeEdits[];
-};
-
-type SimplifiedCompletionDetails = {
-  codeActions?: SimplifiedCodeAction[];
-};
-
-export function normalizeCompletionDetails(
-  entries: readonly SimplifiedCompletionDetails[],
-): SimplifiedCompletionDetails[] {
-  return entries.map((entry) => {
-    return entry.codeActions
-      ? {
-          codeActions: entry.codeActions.map((action) => {
-            return { changes: action.changes };
-          }),
-        }
-      : {};
-  });
+function normalizeCompletionDetails(entries: readonly server.protocol.CompletionEntryDetails[]): CompletionDetails[] {
+  return entries.map((entry) =>
+    entry.codeActions ? { codeActions: entry.codeActions.map((action) => ({ changes: action.changes })) } : {},
+  );
 }
 
-type SimplifiedCodeFixAction = {
-  fixName: string;
-  changes: ts.server.protocol.FileCodeEdits[];
-};
-
-export function normalizeCodeFixActions(actions: readonly SimplifiedCodeFixAction[]): SimplifiedCodeFixAction[] {
+function normalizeCodeFixActions(actions: readonly server.protocol.CodeFixAction[]): CodeFixAction[] {
   return actions
-    .map((action) => {
-      return {
-        fixName: action.fixName,
-        changes: action.changes,
-      };
-    })
-    .toSorted((a, b) => {
-      return a.fixName.localeCompare(b.fixName);
-    });
+    .map((action) => ({ fixName: action.fixName, changes: action.changes }))
+    .toSorted((a, b) => a.fixName.localeCompare(b.fixName));
 }

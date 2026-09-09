@@ -8,7 +8,7 @@ const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   test('reports an unknown property access on a styles binding', async () => {
-    const { iff, getRange } = await setupFixture({
+    const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'index.ts': dedent`
         ${buildStylesImport('./a.module.css', { namedExports })}
@@ -20,11 +20,13 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
     const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
 
+    const { start, end } = getFileSpan('index.ts', 'unknown');
     expect(res.body).toStrictEqual([
       {
         category: 'error',
         code: 2339,
-        ...getRange('index.ts', 'unknown'),
+        start,
+        end,
         // The `text` is not asserted because the message contains the type shape that
         // varies with `namedExports` and is owned by the TypeScript compiler, not ts-plugin.
         text: expect.any(String),
@@ -50,7 +52,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   test('reports a semantic diagnostic on a CSS module file', async () => {
-    const { iff, getRange } = await setupFixture({
+    const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@import './unresolvable.module.css';`,
     });
@@ -58,13 +60,15 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
     const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['a.module.css'] });
 
+    const { start, end } = getFileSpan('a.module.css', './unresolvable.module.css');
     expect(res.body).toStrictEqual([
       {
         category: 'error',
         code: 0,
         source: 'css-modules-kit',
         text: "Cannot import module './unresolvable.module.css'",
-        ...getRange('a.module.css', './unresolvable.module.css'),
+        start,
+        end,
       },
     ]);
   });

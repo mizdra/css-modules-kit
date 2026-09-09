@@ -6,7 +6,7 @@ import { launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 test('excludes generated .d.ts files from module resolution even when listed in rootDirs', async () => {
-  const { iff, getRange } = await setupFixture({
+  const { iff, getFileSpan } = await setupFixture({
     'tsconfig.json': dedent`
       {
         "compilerOptions": {
@@ -25,11 +25,13 @@ test('excludes generated .d.ts files from module resolution even when listed in 
 
   const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
 
+  const { start, end } = getFileSpan('index.ts', `'./a.module.css'`);
   expect(res.body).toStrictEqual([
     {
       category: 'error',
       code: 2307,
-      ...getRange('index.ts', `'./a.module.css'`),
+      start,
+      end,
       text: `Cannot find module './a.module.css' or its corresponding type declarations.`,
     },
   ]);
