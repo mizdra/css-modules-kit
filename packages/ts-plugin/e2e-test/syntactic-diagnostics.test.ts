@@ -1,3 +1,4 @@
+import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { buildTSConfigJSON } from '../src/test/builder.js';
 import { setupFixture } from './test-util/fixture.js';
@@ -26,5 +27,22 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         end,
       },
     ]);
+  });
+
+  test('reports no syntactic diagnostics for a CSS module with parse errors', async () => {
+    const { iff } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'a.module.css': dedent`
+        .a_1 { color: red; }
+        .a_2 {
+      `,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
+
+    const res = await tsserver.sendSyntacticDiagnosticsSync({
+      file: iff.paths['a.module.css'],
+    });
+
+    expect(res.body).toStrictEqual([]);
   });
 });
