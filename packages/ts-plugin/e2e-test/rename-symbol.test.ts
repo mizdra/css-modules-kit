@@ -92,6 +92,37 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
+  test('renames a reference that reaches the token definition through a chain of all token importers', async () => {
+    const { iff, getFileLocation, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'index.ts': dedent`
+        ${buildStylesImport('./a.module.css', { namedExports })}
+        styles.c_1;
+      `,
+      'a.module.css': `@import './b.module.css';`,
+      'b.module.css': `@import './c.module.css';`,
+      'c.module.css': `.c_1 { color: red; }`,
+    });
+    await tsserver.sendUpdateOpen({
+      openFiles: [
+        { file: iff.paths['index.ts'] },
+        { file: iff.paths['a.module.css'] },
+        { file: iff.paths['b.module.css'] },
+        { file: iff.paths['c.module.css'] },
+      ],
+    });
+
+    const cases = [
+      ['from the TS-side styles.<token>', getFileLocation('index.ts', 'c_1')],
+      ['from the token definition', getFileLocation('c.module.css', 'c_1')],
+    ] as const;
+    const expected = [getFileSpan('c.module.css', 'c_1'), getFileSpan('index.ts', 'c_1')];
+    for (const [name, origin] of cases) {
+      const { locs } = await tsserver.sendRename(origin);
+      expect.soft(locs, name).toStrictEqual(expected);
+    }
+  });
+
   // NOTE: For simplicity of implementation, this is not the ideal behavior when renaming from the TS side.
   // The ideal behavior would attach `prefixText: 'b_1 as '` to the binding loc in `a.module.css`
   // so that renaming changes only the alias side. Currently the binding loc is rewritten directly.
@@ -160,6 +191,43 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       getFileSpan('a.module.css', 'b_alias'),
       getFileSpan('b.module.css', 'b_1'),
       getFileSpan('index.ts', 'b_alias'),
+    ];
+    for (const [name, origin] of cases) {
+      const { locs } = await tsserver.sendRename(origin);
+      expect.soft(locs, name).toStrictEqual(expected);
+    }
+  });
+
+  test('renames the <name> of every named token importer in a chain', async () => {
+    const { iff, getFileLocation, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'index.ts': dedent`
+        ${buildStylesImport('./a.module.css', { namedExports })}
+        styles.c_1;
+      `,
+      'a.module.css': `@value c_1 from './b.module.css';`,
+      'b.module.css': `@value c_1 from './c.module.css';`,
+      'c.module.css': `@value c_1: red;`,
+    });
+    await tsserver.sendUpdateOpen({
+      openFiles: [
+        { file: iff.paths['index.ts'] },
+        { file: iff.paths['a.module.css'] },
+        { file: iff.paths['b.module.css'] },
+        { file: iff.paths['c.module.css'] },
+      ],
+    });
+
+    const cases = [
+      ['from the TS-side styles.<name>', getFileLocation('index.ts', 'c_1')],
+      ['from the <name> of the first named token importer', getFileLocation('a.module.css', 'c_1')],
+      ['from the token definition', getFileLocation('c.module.css', 'c_1')],
+    ] as const;
+    const expected = [
+      getFileSpan('a.module.css', 'c_1'),
+      getFileSpan('b.module.css', 'c_1'),
+      getFileSpan('c.module.css', 'c_1'),
+      getFileSpan('index.ts', 'c_1'),
     ];
     for (const [name, origin] of cases) {
       const { locs } = await tsserver.sendRename(origin);
