@@ -45,6 +45,14 @@ export default defineConfig({
         },
       ],
     },
+    overrides: [
+      {
+        files: ['**/*.test.ts', '**/e2e-test/**', '**/vscode-test/**', '**/src/test/**'],
+        rules: {
+          'no-await-in-loop': 'off',
+        },
+      },
+    ],
     options: { typeAware: true, typeCheck: true },
   },
   fmt: {

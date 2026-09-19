@@ -27,11 +27,9 @@ export async function waitFor<T>(
 
   while (Date.now() < endTime) {
     try {
-      // oxlint-disable-next-line no-await-in-loop
       return await testFn();
     } catch (error) {
       if (error instanceof AssertionError) {
-        // oxlint-disable-next-line no-await-in-loop
         await setTimeout(interval);
       } else {
         throw error;
