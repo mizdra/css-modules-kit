@@ -42,14 +42,14 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports, dtsOutDir: 'generated' },
         }),
-        'a.tsx': `styles;`,
+        'index.ts': `styles;`,
         'a.module.css': '',
         'generated/b.module.css.d.ts': dedent`
           const styles: {};
           export default styles;
         `,
       });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
       await tsserver.sendConfigure({
         preferences: {
           includeCompletionsForModuleExports: true,
@@ -58,12 +58,12 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       });
 
       const entries = await tsserver.sendCompletionInfo({
-        file: iff.paths['a.tsx'],
-        ...getFileSpan('a.tsx', 'styles').end,
+        file: iff.paths['index.ts'],
+        ...getFileSpan('index.ts', 'styles').end,
       });
 
       expect(entries.filter((entry) => entry.name === 'styles')).toStrictEqual([
-        { name: 'styles', sortText: '0', source: './a.module.css' },
+        { name: 'styles', sortText: '16', source: './a.module.css' },
       ]);
     });
 
@@ -145,50 +145,11 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('className attribute snippet', () => {
-    test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
-      'completes as className={$$1} with quotePreference: $quotePreference',
-      async ({ quotePreference }) => {
-        const { iff, getFileSpan } = await setupFixture({
-          'tsconfig.json': buildTSConfigJSON({
-            compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
-            cmkOptions: { namedExports },
-          }),
-          'a.tsx': dedent`
-            ${buildStylesImport('./a.module.css', { namedExports })}
-            const jsx = <div className />;
-          `,
-          'a.module.css': '',
-        });
-        await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
-        await tsserver.sendConfigure({
-          preferences: {
-            includeCompletionsWithSnippetText: true,
-            includeCompletionsWithInsertText: true,
-            jsxAttributeCompletionStyle: 'auto',
-            quotePreference,
-          },
-        });
-
-        const entries = await tsserver.sendCompletionInfo({
-          file: iff.paths['a.tsx'],
-          ...getFileSpan('a.tsx', 'className').end,
-        });
-
-        expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
-          { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
-        ]);
-      },
-    );
-  });
-});
-
-describe('prioritizeNamedImports (namedExports: true)', () => {
-  describe('prioritizeNamedImports: false', () => {
+  describe.runIf(namedExports)('prioritizeNamedImports: false', () => {
     test('omits named token auto-imports', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: false },
+          cmkOptions: { namedExports, prioritizeNamedImports: false },
         }),
         'index.ts': `a_1;`,
         'a.module.css': `.a_1 { color: red; }`,
@@ -209,7 +170,7 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
     test('omits the default export from namespace member completion', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: false },
+          cmkOptions: { namedExports, prioritizeNamedImports: false },
         }),
         'index.ts': dedent`
           import * as styles from './a.module.css';
@@ -233,11 +194,11 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
     });
   });
 
-  describe('prioritizeNamedImports: true', () => {
+  describe.runIf(namedExports)('prioritizeNamedImports: true', () => {
     test('omits the styles binding auto-import', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+          cmkOptions: { namedExports, prioritizeNamedImports: true },
         }),
         'index.ts': `styles;`,
         'a.module.css': `.a_1 { color: red; }`,
@@ -258,7 +219,7 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
     test('suggests named token auto-imports', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+          cmkOptions: { namedExports, prioritizeNamedImports: true },
         }),
         'index.ts': `a_1;`,
         'a.module.css': `.a_1 { color: red; }`,
@@ -279,3 +240,31 @@ describe('prioritizeNamedImports (namedExports: true)', () => {
     });
   });
 });
+
+test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
+  'completes the className attribute as className={$$1} with quotePreference: $quotePreference',
+  async ({ quotePreference }) => {
+    const { iff, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] } }),
+      'a.tsx': `const jsx = <div className />;`,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+    await tsserver.sendConfigure({
+      preferences: {
+        includeCompletionsWithSnippetText: true,
+        includeCompletionsWithInsertText: true,
+        jsxAttributeCompletionStyle: 'auto',
+        quotePreference,
+      },
+    });
+
+    const entries = await tsserver.sendCompletionInfo({
+      file: iff.paths['a.tsx'],
+      ...getFileSpan('a.tsx', 'className').end,
+    });
+
+    expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
+      { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
+    ]);
+  },
+);

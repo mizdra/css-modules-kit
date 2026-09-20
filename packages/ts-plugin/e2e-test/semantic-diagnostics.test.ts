@@ -34,13 +34,13 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     ]);
   });
 
-  test('provides the .d.ts-generated type on the styles binding', async () => {
-    const { iff } = await setupFixture({
+  test('types a token on the styles binding as a readonly string', async () => {
+    const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'index.ts': dedent`
         ${buildStylesImport('./a.module.css', { namedExports })}
-        type Expected = { a_1: string };
-        const _t: Expected = styles;
+        const value: number = styles.a_1;
+        styles.a_1 = '';
       `,
       'a.module.css': `.a_1 { color: red; }`,
     });
@@ -48,10 +48,27 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
     const res = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
 
-    expect(res.body).toStrictEqual([]);
+    const value = getFileSpan('index.ts', 'value');
+    const assignment = getFileSpan('index.ts', 'a_1', { index: 1 });
+    expect(res.body).toStrictEqual([
+      {
+        category: 'error',
+        code: 2322,
+        text: "Type 'string' is not assignable to type 'number'.",
+        start: value.start,
+        end: value.end,
+      },
+      {
+        category: 'error',
+        code: 2540,
+        text: "Cannot assign to 'a_1' because it is a read-only property.",
+        start: assignment.start,
+        end: assignment.end,
+      },
+    ]);
   });
 
-  test('reports a semantic diagnostic on a CSS module file', async () => {
+  test('reports check-phase diagnostics on a CSS module', async () => {
     const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@import './unresolvable.module.css';`,

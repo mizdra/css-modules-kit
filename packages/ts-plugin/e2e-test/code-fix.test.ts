@@ -14,43 +14,9 @@ const tsserver = launchTsserver();
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('fixMissingCSSRule', () => {
     test.each([
-      { errorCode: PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0] },
-      { errorCode: PROPERTY_DOES_NOT_EXIST_ERROR_CODES[1] },
-    ])('inserts a new CSS rule into an empty CSS module for diagnostic $errorCode', async ({ errorCode }) => {
-      const { iff, getFileSpan } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-        'index.ts': dedent`
-          ${buildStylesImport('./a.module.css', { namedExports })}
-          styles.a_1;
-        `,
-        'a.module.css': '',
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
-
-      const { start, end } = getFileSpan('index.ts', 'a_1');
-      const actions = await tsserver.sendGetCodeFixes({
-        errorCodes: [errorCode],
-        file: iff.paths['index.ts'],
-        startLine: start.line,
-        startOffset: start.offset,
-        endLine: end.line,
-        endOffset: end.offset,
-      });
-
-      expect(actions).toStrictEqual([
-        {
-          fixName: 'fixMissingCSSRule',
-          changes: [
-            {
-              fileName: formatPath(iff.paths['a.module.css']),
-              textChanges: [{ start: { line: 1, offset: 1 }, end: { line: 1, offset: 1 }, newText: '\n.a_1 {\n  \n}' }],
-            },
-          ],
-        },
-      ]);
-    });
-
-    test('appends a new CSS rule to a non-empty CSS module', async () => {
+      [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0], 'Property does not exist'],
+      [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[1], 'Property does not exist. Did you mean ...?'],
+    ])('appends a CSS rule for the missing token to the CSS module for TS%i (%s)', async (errorCode) => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': dedent`
@@ -67,7 +33,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
 
       const { start, end } = getFileSpan('index.ts', 'a_2');
       const actions = await tsserver.sendGetCodeFixes({
-        errorCodes: [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0]],
+        errorCodes: [errorCode],
         file: iff.paths['index.ts'],
         startLine: start.line,
         startOffset: start.offset,
@@ -126,7 +92,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   describe('auto-import', () => {
-    test('inserts the import statement when accepted', async () => {
+    test('provides a code fix that imports styles from the CSS module', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
         'index.ts': `styles;`,
@@ -164,7 +130,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
 
-    test('excludes generated files from suggestions', async () => {
+    test('provides no code fix that imports styles from a generated .d.ts file', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
           cmkOptions: { namedExports, dtsOutDir: 'generated' },
@@ -190,14 +156,12 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       expect(actions).toStrictEqual([]);
     });
   });
-});
 
-describe('named import code fix (namedExports: true)', () => {
-  describe('prioritizeNamedImports: false', () => {
+  describe.runIf(namedExports)('prioritizeNamedImports: false', () => {
     test('omits the named import code fix', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: false },
+          cmkOptions: { namedExports, prioritizeNamedImports: false },
         }),
         'index.ts': `a_1;`,
         'a.module.css': `.a_1 { color: red; }`,
@@ -218,11 +182,11 @@ describe('named import code fix (namedExports: true)', () => {
     });
   });
 
-  describe('prioritizeNamedImports: true', () => {
+  describe.runIf(namedExports)('prioritizeNamedImports: true', () => {
     test('omits the default styles binding code fix', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+          cmkOptions: { namedExports, prioritizeNamedImports: true },
         }),
         'index.ts': `styles;`,
         'a.module.css': `.a_1 { color: red; }`,
@@ -242,10 +206,10 @@ describe('named import code fix (namedExports: true)', () => {
       expect(actions).toStrictEqual([]);
     });
 
-    test('suggests a named import code fix', async () => {
+    test('provides a named import code fix', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
-          cmkOptions: { namedExports: true, prioritizeNamedImports: true },
+          cmkOptions: { namedExports, prioritizeNamedImports: true },
         }),
         'index.ts': `a_1;`,
         'a.module.css': `.a_1 { color: red; }`,

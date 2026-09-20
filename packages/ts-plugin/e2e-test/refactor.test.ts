@@ -7,7 +7,7 @@ import { launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe('Get Applicable Refactors', () => {
-  test('offers Create CSS Module file for a component file when no paired CSS module exists', async () => {
+  test('provides Create CSS Module file for a component file when no paired CSS module exists', async () => {
     const { iff } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx' } }),
       'a.tsx': '',
