@@ -10,7 +10,6 @@ function calcDiagnosticsLocationForSelectorParserNode(
   const length = node.toString().length;
   return { start, length };
 }
-export { calcDiagnosticsLocationForSelectorParserNode as calcDiagnosticsLocationForSelectorParserNodeForTest };
 
 interface CollectResult {
   classNames: selectorParser.ClassName[];
