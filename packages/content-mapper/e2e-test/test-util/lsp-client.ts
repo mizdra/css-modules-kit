@@ -60,6 +60,25 @@ export type Diagnostic = {
 
 export const DiagnosticSeverity = { Error: 1, Warning: 2, Information: 3, Hint: 4 } as const;
 
+export type CompletionEntry = {
+  name: string;
+  sortText: string;
+  source?: string;
+  insertText?: string;
+};
+
+export type CompletionDetails = {
+  additionalTextEdits?: TextEdit[];
+};
+
+export type CodeAction = {
+  title: string;
+  kind?: string;
+  edits: FileTextEdits[];
+  /** The files that the code action creates. */
+  createdFiles: string[];
+};
+
 interface LSPLocation {
   uri: string;
   range: Range;
@@ -82,9 +101,28 @@ interface LSPRenameFile {
   newUri: string;
 }
 
+interface LSPCreateFile {
+  kind: 'create';
+  uri: string;
+}
+
 interface LSPWorkspaceEdit {
   changes?: Record<string, TextEdit[]>;
-  documentChanges?: (LSPTextDocumentEdit | LSPRenameFile)[];
+  documentChanges?: (LSPTextDocumentEdit | LSPRenameFile | LSPCreateFile)[];
+}
+
+interface LSPCompletionItem {
+  label: string;
+  labelDetails?: { description?: string };
+  sortText?: string;
+  insertText?: string;
+  additionalTextEdits?: TextEdit[];
+}
+
+interface LSPCodeAction {
+  title: string;
+  kind?: string;
+  edit?: LSPWorkspaceEdit;
 }
 
 interface JSONRPCMessage {
@@ -99,7 +137,7 @@ interface JSONRPCMessage {
  * A thin client for the tsgo LSP server.
  *
  * Methods returning language feature results (definitions, references, rename, file rename edits,
- * diagnostics) return normalized values: only the fields relevant to tests are kept, URIs are
+ * diagnostics, completion, code actions) return normalized values: only the fields relevant to tests are kept, URIs are
  * converted to paths normalized with `formatPath`, and the results are sorted so that they can be
  * compared with `toStrictEqual`. Spans and text edits are sorted by file path, then by position.
  * Duplicates are not removed.
@@ -121,6 +159,16 @@ export interface LSPClient {
    */
   sendDocumentDiagnostic(file: string): Promise<Diagnostic[]>;
   sendWillRenameFiles(args: { oldFilePath: string; newFilePath: string }): Promise<FileTextEdits[]>;
+  /**
+   * Sets the user preferences by the names that tsserver uses (e.g. `quotePreference`).
+   * The preferences stay in effect until the next call.
+   */
+  sendConfigure(args: { preferences: Record<string, unknown> }): Promise<void>;
+  sendCompletion(args: FileLocation): Promise<CompletionEntry[]>;
+  /** Returns the details of the completion entry with `name` and `source` among the entries at the location. */
+  sendCompletionDetails(args: FileLocation & { name: string; source?: string }): Promise<CompletionDetails>;
+  /** Returns the code actions of the kinds `only` for `range`, as if `range` had the diagnostics with `errorCodes`. */
+  sendCodeActions(args: FileSpan & { errorCodes?: number[]; only: string[] }): Promise<CodeAction[]>;
 }
 
 export function formatPath(path: string) {
@@ -198,12 +246,53 @@ function normalizeRenameResult(edit: LSPWorkspaceEdit | null, newName: string): 
     })),
   );
   const fileRenames = (edit?.documentChanges ?? [])
-    .filter((documentChange): documentChange is LSPRenameFile => 'kind' in documentChange)
+    .filter(
+      (documentChange): documentChange is LSPRenameFile => 'kind' in documentChange && documentChange.kind === 'rename',
+    )
     .map((documentChange) => ({
       oldFile: toFilePath(documentChange.oldUri),
       newFile: toFilePath(documentChange.newUri),
     }));
   return { locs, fileRenames };
+}
+
+function getCompletionSource(item: LSPCompletionItem): string | undefined {
+  return item.labelDetails?.description;
+}
+
+function normalizeCompletionEntries(items: readonly LSPCompletionItem[]): CompletionEntry[] {
+  return items
+    .map((item) => {
+      const source = getCompletionSource(item);
+      return {
+        name: item.label,
+        sortText: item.sortText ?? item.label,
+        ...(source === undefined ? {} : { source }),
+        ...(item.insertText === undefined ? {} : { insertText: item.insertText }),
+      };
+    })
+    .toSorted(
+      (a, b) =>
+        a.sortText.localeCompare(b.sortText) ||
+        (a.source ?? '').localeCompare(b.source ?? '') ||
+        a.name.localeCompare(b.name),
+    );
+}
+
+function normalizeCodeActions(actions: readonly LSPCodeAction[] | null): CodeAction[] {
+  return (actions ?? [])
+    .map((action) => ({
+      title: action.title,
+      ...(action.kind === undefined ? {} : { kind: action.kind }),
+      edits: collectTextEdits(action.edit ?? null),
+      createdFiles: (action.edit?.documentChanges ?? [])
+        .filter(
+          (documentChange): documentChange is LSPCreateFile =>
+            'kind' in documentChange && documentChange.kind === 'create',
+        )
+        .map((documentChange) => toFilePath(documentChange.uri)),
+    }))
+    .toSorted((a, b) => a.title.localeCompare(b.title));
 }
 
 function normalizeDiagnostics(diagnostics: readonly Diagnostic[]): Diagnostic[] {
@@ -243,15 +332,13 @@ function languageIdOf(filePath: string): string {
 }
 
 /**
- * The configuration the server requests per section with `workspace/configuration`.
+ * The user preferences that are in effect unless a test sets others, by the names that tsserver uses.
  *
- * `useAliasesForRenames` defaults to `true` in tsgo, which makes a rename through a shorthand
- * export specifier return an edit like `a_1 as renamed`. tsserver defaults to the opposite, and
- * the expectations here are shared with the ts-plugin e2e tests, which run with that default.
+ * `providePrefixAndSuffixTextForRename` defaults to `true` in tsgo, which makes a rename through a
+ * shorthand export specifier return an edit like `a_1 as renamed`. tsserver defaults to the opposite,
+ * and the expectations here are shared with the ts-plugin e2e tests, which run with that default.
  */
-const CONFIGURATION: Record<string, unknown> = {
-  'js/ts': { preferences: { useAliasesForRenames: false } },
-};
+const DEFAULT_PREFERENCES = { providePrefixAndSuffixTextForRename: false };
 
 /**
  * Launches a tsgo LSP server shared by all tests in a test file. The server is spawned lazily on
@@ -268,6 +355,12 @@ export function launchLSPClient(rootDir: string): LSPClient {
   const documentVersions = new Map<string, number>();
   let buffer: Uint8Array = new Uint8Array(0);
   let contentLength: number | undefined;
+  let preferences: Record<string, unknown> = DEFAULT_PREFERENCES;
+
+  /** The server accepts the preferences by the names that tsserver uses in the `unstable` section of `js/ts`. */
+  function getConfiguration(section: string | undefined): unknown {
+    return section === 'js/ts' ? { unstable: preferences } : null;
+  }
 
   function send(message: object): void {
     const body = new TextEncoder().encode(JSON.stringify({ jsonrpc: '2.0', ...message }));
@@ -290,7 +383,7 @@ export function launchLSPClient(rootDir: string): LSPClient {
       // so every request other than `workspace/configuration` is answered with an empty result.
       if (message.method === 'workspace/configuration') {
         const { items } = message.params as { items: { section?: string }[] };
-        send({ id: message.id, result: items.map((item) => CONFIGURATION[item.section ?? ''] ?? null) });
+        send({ id: message.id, result: items.map((item) => getConfiguration(item.section)) });
       } else {
         send({ id: message.id, result: null });
       }
@@ -347,12 +440,22 @@ export function launchLSPClient(rootDir: string): LSPClient {
             configuration: true,
             // The server answers a rename request on an import specifier with a file rename
             // operation only when the client declares these capabilities.
-            workspaceEdit: { documentChanges: true, resourceOperations: ['rename'] },
+            workspaceEdit: { documentChanges: true, resourceOperations: ['create', 'rename'] },
             fileOperations: { willRename: true },
           },
           textDocument: {
             // The server reports the enclosing declaration of a definition only as a part of `LocationLink`.
             definition: { linkSupport: true },
+            completion: {
+              completionItem: {
+                snippetSupport: true,
+                labelDetailsSupport: true,
+                resolveSupport: { properties: ['detail', 'documentation', 'additionalTextEdits'] },
+              },
+            },
+            codeAction: {
+              codeActionLiteralSupport: { codeActionKind: { valueSet: ['quickfix', 'refactor'] } },
+            },
           },
         },
         initializationOptions: { runExternalCode: true },
@@ -360,6 +463,16 @@ export function launchLSPClient(rootDir: string): LSPClient {
       send({ method: 'initialized', params: {} });
     })();
     return started;
+  }
+
+  async function sendCompletionRequest(args: FileLocation): Promise<LSPCompletionItem[]> {
+    await ensureStarted();
+    const result: LSPCompletionItem[] | { items: LSPCompletionItem[] } | null = await sendRequest(
+      'textDocument/completion',
+      { textDocument: { uri: toFileUri(args.file) }, position: args.position },
+    );
+    if (result === null) return [];
+    return Array.isArray(result) ? result : result.items;
   }
 
   async function sendDefinitionRequest(args: FileLocation) {
@@ -428,6 +541,36 @@ export function launchLSPClient(rootDir: string): LSPClient {
         textDocument: { uri: toFileUri(file) },
       });
       return normalizeDiagnostics(result.items);
+    },
+    async sendConfigure(args) {
+      await ensureStarted();
+      preferences = { ...DEFAULT_PREFERENCES, ...args.preferences };
+      send({
+        method: 'workspace/didChangeConfiguration',
+        params: { settings: { 'js/ts': getConfiguration('js/ts') } },
+      });
+    },
+    async sendCompletion(args) {
+      return normalizeCompletionEntries(await sendCompletionRequest(args));
+    },
+    async sendCompletionDetails(args) {
+      const items = await sendCompletionRequest(args);
+      const item = items.find((item) => item.label === args.name && getCompletionSource(item) === args.source);
+      if (item === undefined) throw new Error(`Completion entry ${JSON.stringify(args.name)} is not found.`);
+      const resolved: LSPCompletionItem = await sendRequest('completionItem/resolve', item);
+      return resolved.additionalTextEdits === undefined ? {} : { additionalTextEdits: resolved.additionalTextEdits };
+    },
+    async sendCodeActions(args) {
+      await ensureStarted();
+      const result = await sendRequest('textDocument/codeAction', {
+        textDocument: { uri: toFileUri(args.file) },
+        range: args.range,
+        context: {
+          diagnostics: (args.errorCodes ?? []).map((code) => ({ range: args.range, code, source: 'ts', message: '' })),
+          only: args.only,
+        },
+      });
+      return normalizeCodeActions(result);
     },
     async sendWillRenameFiles(args) {
       await ensureStarted();
