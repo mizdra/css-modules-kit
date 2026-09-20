@@ -241,32 +241,30 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 });
 
-describe('className attribute snippet', () => {
-  test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
-    'completes as className={$$1} with quotePreference: $quotePreference',
-    async ({ quotePreference }) => {
-      const { iff, getFileSpan } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] } }),
-        'a.tsx': `const jsx = <div className />;`,
-      });
-      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
-      await tsserver.sendConfigure({
-        preferences: {
-          includeCompletionsWithSnippetText: true,
-          includeCompletionsWithInsertText: true,
-          jsxAttributeCompletionStyle: 'auto',
-          quotePreference,
-        },
-      });
+test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
+  'completes the className attribute as className={$$1} with quotePreference: $quotePreference',
+  async ({ quotePreference }) => {
+    const { iff, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] } }),
+      'a.tsx': `const jsx = <div className />;`,
+    });
+    await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+    await tsserver.sendConfigure({
+      preferences: {
+        includeCompletionsWithSnippetText: true,
+        includeCompletionsWithInsertText: true,
+        jsxAttributeCompletionStyle: 'auto',
+        quotePreference,
+      },
+    });
 
-      const entries = await tsserver.sendCompletionInfo({
-        file: iff.paths['a.tsx'],
-        ...getFileSpan('a.tsx', 'className').end,
-      });
+    const entries = await tsserver.sendCompletionInfo({
+      file: iff.paths['a.tsx'],
+      ...getFileSpan('a.tsx', 'className').end,
+    });
 
-      expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
-        { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
-      ]);
-    },
-  );
-});
+    expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
+      { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
+    ]);
+  },
+);
