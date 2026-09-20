@@ -111,9 +111,13 @@ function myFunction() {
 ## Glossary
 
 - **Token**: A generic term for things exported by CSS Modules, such as class names, `@value` definitions, `@keyframes` names, container names (when `cmkOptions.container` is enabled), and `<dashed-ident>`s (custom properties, when `cmkOptions.dashedIdents` is enabled).
+- **Token importer**: A statement that imports tokens from another file. The imported tokens are also exported from the current file. There are two kinds:
+  - **All token importer**: Imports all tokens exported by another file, like `@import '<specifier>'`.
+  - **Named token importer**: Imports specific tokens from another file, like `@value <name>, <name> as <local-name> from '<specifier>'`. It holds an entry per imported token.
 - **Token reference**: A usage of a token elsewhere in the CSS. Currently produced for `animation-name: <name>`, `composes: <name>`, and `@container <name> (...)`. There are two kinds:
   - **Local token reference**: References a token available in the current file. The token may be defined in the same file (e.g. `@keyframes`) or imported via `@import` / `@value ... from`.
   - **External token reference**: References tokens exported by another file, like `composes: <name> ... from '<specifier>'`. One reference corresponds to one `from` clause and holds an entry per referenced token.
+- **Unmatched file**: A file that CSS Modules Kit does not treat as a CSS module. Its name does not end with `.module.css`, it is not matched by `include`, or it is matched by `exclude` in tsconfig.json. `matchesPattern` returns `false` for it.
 - **Diagnostic**: An object representing errors or warnings
 - **Parse phase**: The phase that parses CSS Modules files and extracts token information
 - **Check phase**: The phase that validates CSS Modules files
