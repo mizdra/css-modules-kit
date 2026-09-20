@@ -1,5 +1,6 @@
 import dedent from 'dedent';
 import { expect, test } from 'vite-plus/test';
+import { buildTSConfigJSON } from '../src/test/builder.js';
 import { setupFixture } from './test-util/fixture.js';
 import { launchTsserver } from './test-util/tsserver.js';
 
@@ -7,14 +8,7 @@ const tsserver = launchTsserver();
 
 test('excludes generated .d.ts files from module resolution even when listed in rootDirs', async () => {
   const { iff, getFileSpan } = await setupFixture({
-    'tsconfig.json': dedent`
-      {
-        "compilerOptions": {
-          "rootDirs": [".", "generated"]
-        },
-        "cmkOptions": { "enabled": true }
-      }
-    `,
+    'tsconfig.json': buildTSConfigJSON({ compilerOptions: { rootDirs: ['.', 'generated'] } }),
     'index.ts': `import styles from './a.module.css';`,
     'generated/a.module.css.d.ts': dedent`
       const styles: {};
