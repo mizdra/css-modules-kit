@@ -8,13 +8,6 @@ import { formatDiagnostics } from './test/diagnostic.js';
 import { createIFF } from './test/fixture.js';
 
 describe('createProject', () => {
-  test('creates project', async () => {
-    const iff = await createIFF({
-      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
-    });
-    const project = createProject({ project: iff.rootDir });
-    expect(project.config.dtsOutDir).toContain('generated');
-  });
   test('throws TsConfigFileNotFoundError when tsconfig.json does not exist', async () => {
     const iff = await createIFF({});
     expect(() => createProject({ project: iff.rootDir })).toThrow(TsConfigFileNotFoundError);
@@ -48,7 +41,7 @@ test('isWildcardMatchedFile', async () => {
 });
 
 describe('addFile', () => {
-  test('The diagnostics of the added file are reported, and .d.ts file is emitted', async () => {
+  test('reports the diagnostics of the added file and emits its .d.ts file', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src': {},
@@ -85,7 +78,7 @@ describe('addFile', () => {
     await project.emitDtsFiles();
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
   });
-  test('changes diagnostics in files that import it directly or indirectly', async () => {
+  test('updates the diagnostics of the files that import it directly or indirectly', async () => {
     // This test case suggests the following facts:
     // - The check stage cache for files that directly import the added file should be invalidated.
     // - The check stage cache for files that indirectly import the added file should also be invalidated.
@@ -123,7 +116,7 @@ describe('addFile', () => {
     project.addFile(iff.join('src/a.module.css'));
     expect(formatDiagnostics(project.getDiagnostics(), iff.rootDir)).toMatchInlineSnapshot(`[]`);
   });
-  test('changes the resolution results of import specifiers in other files', async () => {
+  test('resolves the specifiers in other files again', async () => {
     // This test case suggests the following facts:
     // - The check stage cache for files that import other files should be invalidated.
     // - Only independent files that do not import any other files can keep the check stage cache.
@@ -164,12 +157,13 @@ describe('addFile', () => {
 });
 
 describe('updateFile', () => {
-  test('The new diagnostics of the changed file are reported, and new .d.ts file is emitted', async () => {
+  test('reports the new diagnostics of the updated file and emits its .d.ts file again', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '',
     });
     const project = createProject({ project: iff.rootDir });
+    await project.emitDtsFiles();
 
     // Even if the file is updated, diagnostics will not change until notified by `updateFile`.
     await writeFile(iff.join('src/a.module.css'), '.a_1 {');
@@ -221,7 +215,7 @@ describe('updateFile', () => {
       ]
     `);
   });
-  test('changes diagnostics in files that import it directly or indirectly', async () => {
+  test('updates the diagnostics of the files that import it directly or indirectly', async () => {
     // This test case suggests the following facts:
     // - The resolution cache should be invalidated.
     // - The check stage cache for files that directly import the changed file should be invalidated.
@@ -267,7 +261,7 @@ describe('updateFile', () => {
 });
 
 describe('removeFile', () => {
-  test('The diagnostics of the removed file are not reported, and .d.ts file is not emitted', async () => {
+  test('stops reporting the diagnostics of the removed file and emits no .d.ts file for it', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
@@ -304,7 +298,7 @@ describe('removeFile', () => {
     await project.emitDtsFiles();
     await expect(access(iff.join('generated/src/a.module.css.d.ts'))).rejects.toThrow();
   });
-  test('changes diagnostics in files that import it directly or indirectly', async () => {
+  test('updates the diagnostics of the files that import it directly or indirectly', async () => {
     // This test case suggests the following facts:
     // - The check stage cache for files that directly import the changed file should be invalidated.
     // - The check stage cache for files that indirectly import the changed file should also be invalidated.
@@ -343,7 +337,7 @@ describe('removeFile', () => {
       ]
     `);
   });
-  test('changes the resolution results of import specifiers in other files', async () => {
+  test('resolves the specifiers in other files again', async () => {
     // This test case suggests the following facts:
     // - The resolution cache should be invalidated.
     // - The check stage cache for files that import the removed file should be invalidated.
@@ -385,7 +379,7 @@ describe('removeFile', () => {
 });
 
 describe('getDiagnostics', () => {
-  test('returns empty array when no diagnostics', async () => {
+  test('returns no diagnostics for a project without errors', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 { color: red; }',
@@ -394,9 +388,10 @@ describe('getDiagnostics', () => {
     const diagnostics = project.getDiagnostics();
     expect(diagnostics).toEqual([]);
   });
-  test('returns project diagnostics', async () => {
+  test('reports the diagnostics of the config', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": 1 } }',
+      'src/a.module.css': '.a_1 { color: red; }',
     });
     const project = createProject({ project: iff.rootDir });
     const diagnostics = project.getDiagnostics();
@@ -406,6 +401,17 @@ describe('getDiagnostics', () => {
           "category": "error",
           "text": "\`dtsOutDir\` in <rootDir>/tsconfig.json must be a string.",
         },
+      ]
+    `);
+  });
+  test('reports an error when the project has no CSS modules', async () => {
+    const iff = await createIFF({
+      'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
+    });
+    const project = createProject({ project: iff.rootDir });
+    const diagnostics = project.getDiagnostics();
+    expect(formatDiagnostics(diagnostics, iff.rootDir)).toMatchInlineSnapshot(`
+      [
         {
           "category": "error",
           "text": "The file specified in tsconfig.json not found.",
@@ -413,7 +419,7 @@ describe('getDiagnostics', () => {
       ]
     `);
   });
-  test('returns syntactic diagnostics', async () => {
+  test('reports the parse-phase diagnostics of every CSS module', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a_1 {',
@@ -447,7 +453,7 @@ describe('getDiagnostics', () => {
     `);
   });
 
-  test('returns semantic diagnostics', async () => {
+  test('reports the check-phase diagnostics of every CSS module', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': `@import './non-existent-1.module.css';`,
@@ -480,7 +486,7 @@ describe('getDiagnostics', () => {
       ]
     `);
   });
-  test('reports semantic diagnostics when project diagnostics contain only warnings', async () => {
+  test('runs the check phase when the config reports only warnings', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true, "keyframes": true } }',
       'src/a.module.css': `@import './non-existent.module.css';`,
@@ -506,7 +512,7 @@ describe('getDiagnostics', () => {
       ]
     `);
   });
-  test('skips semantic diagnostics when project or syntactic diagnostics exist', async () => {
+  test('skips the check phase when the config or the parse phase reports an error', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true, "dtsOutDir": 1 } }',
       'src/a.module.css': '.a_1 {',
@@ -536,7 +542,7 @@ describe('getDiagnostics', () => {
 });
 
 describe('emitDtsFiles', () => {
-  test('emits .d.ts files', async () => {
+  test('emits a .d.ts file for each CSS module', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a1 { color: red; }',
@@ -561,7 +567,7 @@ describe('emitDtsFiles', () => {
     	"
     `);
   });
-  test('does not emit .d.ts files for files not matched by `pattern`', async () => {
+  test('emits no .d.ts file for a CSS file that is not a CSS module', async () => {
     const iff = await createIFF({
       'tsconfig.json': '{ "cmkOptions": { "enabled": true } }',
       'src/a.module.css': '.a1 { color: red; }',
@@ -577,7 +583,6 @@ describe('emitDtsFiles', () => {
     	export default styles;
     	"
     `);
-    await expect(access(iff.join('generated/src/a.module.css.d.ts'))).resolves.not.toThrow();
     await expect(access(iff.join('generated/src/b.css.d.ts'))).rejects.toThrow();
   });
 });
