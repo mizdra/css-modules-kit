@@ -42,10 +42,11 @@ export type CodeFixAction = {
 /**
  * A thin client for tsserver.
  *
- * Methods returning language feature results (definitions, references, rename, completion, code fixes)
- * return normalized values: only the fields relevant to tests are kept, paths are normalized with
- * `formatPath`, and the results are sorted so that they can be compared with `toStrictEqual`.
- * Spans are sorted by file path, then by position. Duplicates are not removed.
+ * Methods returning language feature results (definitions, references, rename, file rename edits,
+ * completion, code fixes) return normalized values: only the fields relevant to tests are kept, paths
+ * are normalized with `formatPath`, and the results are sorted so that they can be compared with
+ * `toStrictEqual`. Spans and text changes are sorted by file path, then by position. Duplicates are
+ * not removed.
  */
 interface Tsserver {
   sendUpdateOpen(args: server.protocol.UpdateOpenRequest['arguments']): Promise<server.protocol.Response>;
@@ -61,7 +62,7 @@ interface Tsserver {
   ): Promise<server.protocol.SyntacticDiagnosticsSyncResponse>;
   sendGetEditsForFileRename(
     args: server.protocol.GetEditsForFileRenameRequest['arguments'],
-  ): Promise<server.protocol.GetEditsForFileRenameResponse>;
+  ): Promise<server.protocol.FileCodeEdits[]>;
   sendGetApplicableRefactors(
     args: server.protocol.GetApplicableRefactorsRequest['arguments'],
   ): Promise<server.protocol.GetApplicableRefactorsResponse>;
@@ -129,7 +130,13 @@ export function launchTsserver(): Tsserver {
       sendRequest(ts.server.protocol.CommandTypes.SemanticDiagnosticsSync, args),
     sendSyntacticDiagnosticsSync: async (args) =>
       sendRequest(ts.server.protocol.CommandTypes.SyntacticDiagnosticsSync, args),
-    sendGetEditsForFileRename: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetEditsForFileRename, args),
+    sendGetEditsForFileRename: async (args) => {
+      const res: server.protocol.GetEditsForFileRenameResponse = await sendRequest(
+        ts.server.protocol.CommandTypes.GetEditsForFileRename,
+        args,
+      );
+      return normalizeFileCodeEdits(res.body ?? []);
+    },
     sendGetApplicableRefactors: async (args) =>
       sendRequest(ts.server.protocol.CommandTypes.GetApplicableRefactors, args),
     sendGetEditsForRefactor: async (args) => sendRequest(ts.server.protocol.CommandTypes.GetEditsForRefactor, args),
@@ -196,6 +203,15 @@ function normalizeRenameLocations(spanGroups: readonly server.protocol.SpanGroup
       })),
     )
     .toSorted(compareFileSpans);
+}
+
+function normalizeFileCodeEdits(edits: readonly server.protocol.FileCodeEdits[]): server.protocol.FileCodeEdits[] {
+  return edits
+    .map((edit) => ({
+      fileName: formatPath(edit.fileName),
+      textChanges: edit.textChanges.toSorted((a, b) => a.start.line - b.start.line || a.start.offset - b.start.offset),
+    }))
+    .toSorted((a, b) => a.fileName.localeCompare(b.fileName));
 }
 
 function normalizeCompletionEntries(entries: readonly server.protocol.CompletionEntry[]): CompletionEntry[] {

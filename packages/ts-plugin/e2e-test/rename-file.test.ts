@@ -57,13 +57,13 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
     await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['index.ts'] }] });
 
-    const res = await tsserver.sendGetEditsForFileRename({
+    const edits = await tsserver.sendGetEditsForFileRename({
       oldFilePath: iff.paths['a.module.css'],
       newFilePath: iff.join('aa.module.css'),
     });
 
     const { start, end } = getFileSpan('index.ts', './a.module.css');
-    expect(res.body).toStrictEqual([
+    expect(edits).toStrictEqual([
       {
         fileName: formatPath(iff.paths['index.ts']),
         textChanges: [{ start, end, newText: './aa.module.css' }],
@@ -86,7 +86,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
     await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.module.css'] }] });
 
-    const res = await tsserver.sendGetEditsForFileRename({
+    const edits = await tsserver.sendGetEditsForFileRename({
       oldFilePath: iff.paths['b.module.css'],
       newFilePath: iff.join('bb.module.css'),
     });
@@ -94,7 +94,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     const allTokenImporter = getFileSpan('a.module.css', './b.module.css', { index: 0 });
     const namedTokenImporter = getFileSpan('a.module.css', './b.module.css', { index: 1 });
     const externalTokenReference = getFileSpan('a.module.css', './b.module.css', { index: 2 });
-    expect(res.body).toStrictEqual([
+    expect(edits).toStrictEqual([
       {
         fileName: formatPath(iff.paths['a.module.css']),
         textChanges: [
