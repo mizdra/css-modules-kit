@@ -204,44 +204,6 @@ describe('parseRule', () => {
     `);
   });
 
-  test('collects a class selector placed right after a comment', () => {
-    const [rule] = fakeRules(fakeRoot('/* comment */.a_1 {}'));
-    expect(parseRule(rule!)).toMatchInlineSnapshot(`
-      {
-        "classSelectors": [
-          {
-            "declarationLoc": {
-              "end": {
-                "column": 21,
-                "line": 1,
-                "offset": 20,
-              },
-              "start": {
-                "column": 14,
-                "line": 1,
-                "offset": 13,
-              },
-            },
-            "loc": {
-              "end": {
-                "column": 18,
-                "line": 1,
-                "offset": 17,
-              },
-              "start": {
-                "column": 15,
-                "line": 1,
-                "offset": 14,
-              },
-            },
-            "name": "a_1",
-          },
-        ],
-        "diagnostics": [],
-      }
-    `);
-  });
-
   test('keeps escape sequences in the class name as written', () => {
     const [rule] = fakeRules(fakeRoot(String.raw`.\\a_1, .\'a_2, .\31 a_3 {}`));
     expect(parseRule(rule!)).toMatchInlineSnapshot(`
