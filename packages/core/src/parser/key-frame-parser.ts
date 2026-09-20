@@ -45,7 +45,7 @@ export function parseKeyframesAtRule(atKeyframes: AtRule): ParseAtKeyframesResul
           category: 'error',
           start: keyframeNameLoc.start,
           length: keyframeName.length,
-          text: `css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes ${keyframeName} {...}\` instead.`,
+          text: 'css-modules-kit does not support `@keyframes :local(...)`. Remove the `:local(...)` wrapper.',
         },
       ],
     };
