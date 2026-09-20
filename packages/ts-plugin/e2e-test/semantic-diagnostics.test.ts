@@ -51,7 +51,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     expect(res.body).toStrictEqual([]);
   });
 
-  test('reports a semantic diagnostic on a CSS module file', async () => {
+  test('reports check-phase diagnostics on a CSS module', async () => {
     const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@import './unresolvable.module.css';`,

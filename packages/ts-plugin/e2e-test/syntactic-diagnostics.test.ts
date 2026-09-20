@@ -7,7 +7,7 @@ import { launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  test('reports a syntactic diagnostic on a CSS module file', async () => {
+  test('reports parse-phase diagnostics on a CSS module', async () => {
     const { iff, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': `@value;`,
@@ -29,7 +29,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     ]);
   });
 
-  test('reports no syntactic diagnostics for a CSS module with parse errors', async () => {
+  test('reports no diagnostic for a CSS syntax error', async () => {
     const { iff } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'a.module.css': dedent`
