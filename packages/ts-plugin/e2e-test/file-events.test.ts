@@ -1,3 +1,4 @@
+import { rm } from 'node:fs/promises';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { buildStylesImport, buildTSConfigJSON } from '../src/test/builder.js';
@@ -80,5 +81,37 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     expect(after.body).toStrictEqual([]);
   });
 
-  test.todo('reports "Cannot find module" on the importer after the CSS module is removed');
+  // NOTE: tsserver notices the removal of an unopened file through its file watcher, which is asynchronous.
+  // Closing an opened file makes tsserver check the file system right away.
+  test('reports "Cannot find module" on the importer after the CSS module is removed', async () => {
+    const { iff, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
+      'index.ts': dedent`
+        ${buildStylesImport('./a.module.css', { namedExports })}
+        styles.a_1;
+      `,
+      'a.module.css': '.a_1 { color: red; }',
+    });
+    await tsserver.sendUpdateOpen({
+      openFiles: [{ file: iff.paths['index.ts'] }, { file: iff.paths['a.module.css'] }],
+    });
+
+    const before = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+    expect(before.body).toStrictEqual([]);
+
+    await rm(iff.paths['a.module.css']);
+    await tsserver.sendUpdateOpen({ closedFiles: [iff.paths['a.module.css']] });
+
+    const after = await tsserver.sendSemanticDiagnosticsSync({ file: iff.paths['index.ts'] });
+    const { start, end } = getFileSpan('index.ts', "'./a.module.css'");
+    expect(after.body).toStrictEqual([
+      {
+        category: 'error',
+        code: 2307,
+        text: "Cannot find module './a.module.css' or its corresponding type declarations.",
+        start,
+        end,
+      },
+    ]);
+  });
 });
