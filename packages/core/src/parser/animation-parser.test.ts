@@ -151,7 +151,7 @@ describe('parseAnimationNameProp', () => {
     `);
   });
 
-  test('skips reserved keywords (none, revert, revert-layer)', () => {
+  test('skips `none` and CSS-wide keywords', () => {
     const decl = fakeDeclaration('.a_1 { animation-name: revert, a_2, none }');
     expect(parseAnimationNameProp(decl)).toMatchInlineSnapshot(`
       {
@@ -227,7 +227,7 @@ describe('parseAnimationNameProp', () => {
     `);
   });
 
-  test('handles references on lines after the declaration start', () => {
+  test('extracts references on lines after the declaration start', () => {
     const decl = fakeDeclaration(dedent`
       .a_1 {
         animation-name:
