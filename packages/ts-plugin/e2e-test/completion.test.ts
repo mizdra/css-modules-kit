@@ -145,43 +145,6 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
   });
 
-  describe('className attribute snippet', () => {
-    test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
-      'completes as className={$$1} with quotePreference: $quotePreference',
-      async ({ quotePreference }) => {
-        const { iff, getFileSpan } = await setupFixture({
-          'tsconfig.json': buildTSConfigJSON({
-            compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] },
-            cmkOptions: { namedExports },
-          }),
-          'a.tsx': dedent`
-            ${buildStylesImport('./a.module.css', { namedExports })}
-            const jsx = <div className />;
-          `,
-          'a.module.css': '',
-        });
-        await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
-        await tsserver.sendConfigure({
-          preferences: {
-            includeCompletionsWithSnippetText: true,
-            includeCompletionsWithInsertText: true,
-            jsxAttributeCompletionStyle: 'auto',
-            quotePreference,
-          },
-        });
-
-        const entries = await tsserver.sendCompletionInfo({
-          file: iff.paths['a.tsx'],
-          ...getFileSpan('a.tsx', 'className').end,
-        });
-
-        expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
-          { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
-        ]);
-      },
-    );
-  });
-
   describe.runIf(namedExports)('prioritizeNamedImports: false', () => {
     test('omits named token auto-imports', async () => {
       const { iff, getFileSpan } = await setupFixture({
@@ -276,4 +239,34 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
   });
+});
+
+describe('className attribute snippet', () => {
+  test.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
+    'completes as className={$$1} with quotePreference: $quotePreference',
+    async ({ quotePreference }) => {
+      const { iff, getFileSpan } = await setupFixture({
+        'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx', types: [reactDtsPath] } }),
+        'a.tsx': `const jsx = <div className />;`,
+      });
+      await tsserver.sendUpdateOpen({ openFiles: [{ file: iff.paths['a.tsx'] }] });
+      await tsserver.sendConfigure({
+        preferences: {
+          includeCompletionsWithSnippetText: true,
+          includeCompletionsWithInsertText: true,
+          jsxAttributeCompletionStyle: 'auto',
+          quotePreference,
+        },
+      });
+
+      const entries = await tsserver.sendCompletionInfo({
+        file: iff.paths['a.tsx'],
+        ...getFileSpan('a.tsx', 'className').end,
+      });
+
+      expect(entries.filter((entry) => entry.name === 'className')).toStrictEqual([
+        { name: 'className', insertText: 'className={$1}', sortText: expect.anything() },
+      ]);
+    },
+  );
 });
