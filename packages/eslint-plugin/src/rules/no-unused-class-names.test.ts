@@ -51,9 +51,7 @@ describe('no-unused-class-names', () => {
   });
   test('does not warn global class names', async () => {
     const iff = await createIFF({
-      'a.module.css': dedent`
-        .local1, :global(.global1) {}
-      `,
+      'a.module.css': '.local1, :global(.global1) {}',
       'a.ts': dedent`
         import styles from './a.module.css';
         styles.local1;
@@ -92,11 +90,9 @@ describe('no-unused-class-names', () => {
       ]
     `);
   });
-  test('does not warn if ts file is not found', async () => {
+  test('does not warn if the component file is not found', async () => {
     const iff = await createIFF({
-      'a.module.css': dedent`
-        .local1 {}
-      `,
+      'a.module.css': '.local1 {}',
     });
     const eslint = createESLint(iff.rootDir, config);
     const results = await eslint.lintFiles(iff.rootDir);
