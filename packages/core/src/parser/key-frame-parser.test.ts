@@ -131,7 +131,7 @@ describe('parseKeyframesAtRule', () => {
               "line": 1,
               "offset": 11,
             },
-            "text": "css-modules-kit does not support \`:local()\` wrapper for keyframes. Use \`@keyframes :local(a_1) {...}\` instead.",
+            "text": "css-modules-kit does not support \`@keyframes :local(...)\`. Remove the \`:local(...)\` wrapper.",
           },
         ],
       }
