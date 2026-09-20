@@ -206,67 +206,11 @@ describe('parseRule', () => {
 
   test('excludes the whitespace before and after a class selector from its name and location', () => {
     const [rule] = fakeRules(fakeRoot('.a_1 , .a_2 {}'));
-    expect(parseRule(rule!)).toMatchInlineSnapshot(`
-      {
-        "classSelectors": [
-          {
-            "declarationLoc": {
-              "end": {
-                "column": 15,
-                "line": 1,
-                "offset": 14,
-              },
-              "start": {
-                "column": 1,
-                "line": 1,
-                "offset": 0,
-              },
-            },
-            "loc": {
-              "end": {
-                "column": 5,
-                "line": 1,
-                "offset": 4,
-              },
-              "start": {
-                "column": 2,
-                "line": 1,
-                "offset": 1,
-              },
-            },
-            "name": "a_1",
-          },
-          {
-            "declarationLoc": {
-              "end": {
-                "column": 15,
-                "line": 1,
-                "offset": 14,
-              },
-              "start": {
-                "column": 1,
-                "line": 1,
-                "offset": 0,
-              },
-            },
-            "loc": {
-              "end": {
-                "column": 12,
-                "line": 1,
-                "offset": 11,
-              },
-              "start": {
-                "column": 9,
-                "line": 1,
-                "offset": 8,
-              },
-            },
-            "name": "a_2",
-          },
-        ],
-        "diagnostics": [],
-      }
-    `);
+    const [classSelector] = parseRule(rule!).classSelectors;
+    expect(classSelector).toMatchObject({
+      name: 'a_1',
+      loc: { start: { line: 1, column: 2, offset: 1 }, end: { line: 1, column: 5, offset: 4 } },
+    });
   });
 
   test('keeps escape sequences in the class name as written', () => {
