@@ -530,7 +530,7 @@ describe('omits tokens whose name fails validateTokenName', () => {
   });
 });
 
-test('appends a default styles export so completion suggestions show up when forTsPlugin and namedExports are on without prioritizeNamedImports', async () => {
+test('appends a default styles export when forTsPlugin and namedExports are true and prioritizeNamedImports is false', async () => {
   const source = `.a_1 { color: red; }`;
   expect(await run(source, { namedExports: true, prioritizeNamedImports: false, forTsPlugin: true }))
     .toMatchInlineSnapshot(`
