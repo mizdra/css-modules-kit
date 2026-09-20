@@ -36,6 +36,29 @@
         "cwd": "${workspaceFolder}/packages/vscode"
       },
       "group": "build"
+    },
+    {
+      "label": "vp: build - packages/content-mapper",
+      "type": "shell",
+      "command": "vp run build",
+      "options": {
+        "cwd": "${workspaceFolder}/packages/content-mapper"
+      },
+      "group": "build"
+    },
+    {
+      "label": "setup tsgo extension",
+      "type": "shell",
+      "command": "./scripts/setup-tsgo-extension.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build"
+    },
+    {
+      "label": "prepare content-mapper example",
+      "dependsOn": ["vp: build - packages/content-mapper", "setup tsgo extension"],
+      "group": "build"
     }
   ]
 }
