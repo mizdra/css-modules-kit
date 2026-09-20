@@ -204,6 +204,15 @@ describe('parseRule', () => {
     `);
   });
 
+  test('excludes the whitespace before and after a class selector from its name and location', () => {
+    const [rule] = fakeRules(fakeRoot('.a_1 , .a_2 {}'));
+    const [classSelector] = parseRule(rule!).classSelectors;
+    expect(classSelector).toMatchObject({
+      name: 'a_1',
+      loc: { start: { line: 1, column: 2, offset: 1 }, end: { line: 1, column: 5, offset: 4 } },
+    });
+  });
+
   test('keeps escape sequences in the class name as written', () => {
     const [rule] = fakeRules(fakeRoot(String.raw`.\\a_1, .\'a_2, .\31 a_3 {}`));
     expect(parseRule(rule!)).toMatchInlineSnapshot(`
@@ -668,6 +677,24 @@ describe('parseRule', () => {
               "column": 3,
               "line": 3,
               "offset": 33,
+            },
+            "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
+          },
+        ]
+      `);
+    });
+
+    test('excludes the whitespace before and after `:local` from the length of a diagnostic', () => {
+      const [rule] = fakeRules(fakeRoot('.a_1 , :local , .a_2 {}'));
+      expect(parseRule(rule!).diagnostics).toMatchInlineSnapshot(`
+        [
+          {
+            "category": "error",
+            "length": 6,
+            "start": {
+              "column": 8,
+              "line": 1,
+              "offset": 7,
             },
             "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
           },
