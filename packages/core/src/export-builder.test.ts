@@ -127,7 +127,7 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  // NOTE: The entries of a named token importer are known without reading the imported file,
+  // TODO: Include the entries. They are known without reading the imported file,
   // but the current implementation skips them.
   test.fails('includes the entries of a named token importer of an unmatched or unresolvable file', async () => {
     const iff = await createIFF({

@@ -108,7 +108,7 @@ describe('checkCSSModule', () => {
     const diagnostics = check(readAndParseCSSModule(iff.paths['a.module.css'])!);
     expect(diagnostics).toEqual([]);
   });
-  // https://github.com/mizdra/css-modules-kit/issues/450
+  // TODO: https://github.com/mizdra/css-modules-kit/issues/450
   test.todo('reports a named token importer whose specifier is a URL');
   test('reports no diagnostic for a named token importer of an unmatched file', async () => {
     const iff = await createIFF({
