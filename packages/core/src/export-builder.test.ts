@@ -19,7 +19,7 @@ function prepareExportBuilder(args?: Partial<ExportBuilderHost>): ExportBuilder 
 }
 
 describe('ExportBuilder', () => {
-  test('build export record', async () => {
+  test('includes the local tokens of the module in the export record', async () => {
     const iff = await createIFF({
       'a.module.css': '.a_1 { color: red; }',
     });
@@ -33,17 +33,12 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('collect all tokens from imported modules', async () => {
+  test('includes every token exported by the module that an all token importer imports', async () => {
     const iff = await createIFF({
-      'a.module.css': dedent`
-        .a_1 { color: red; }
-        @import './b.module.css';
-        @value c_1 from './c.module.css';
-      `,
-      'b.module.css': '.b_1 { color: red; }',
-      'c.module.css': dedent`
-        .c_1 { color: red; }
-        .c_2 { color: red; }
+      'a.module.css': `@import './b.module.css';`,
+      'b.module.css': dedent`
+        .b_1 { color: red; }
+        .b_2 { color: red; }
       `,
     });
     const exportBuilder = prepareExportBuilder();
@@ -51,14 +46,31 @@ describe('ExportBuilder', () => {
     expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [
-          "a_1",
           "b_1",
-          "c_1",
+          "b_2",
         ],
       }
     `);
   });
-  test('collect all tokens from imported modules recursively', async () => {
+  test('includes only the entries of a named token importer', async () => {
+    const iff = await createIFF({
+      'a.module.css': `@value b_1 from './b.module.css';`,
+      'b.module.css': dedent`
+        .b_1 { color: red; }
+        .b_2 { color: red; }
+      `,
+    });
+    const exportBuilder = prepareExportBuilder();
+    const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
+    expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
+      {
+        "allTokens": [
+          "b_1",
+        ],
+      }
+    `);
+  });
+  test('follows imported modules recursively and includes their exported tokens', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a_1 { color: red; }
@@ -82,7 +94,7 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('use the alias name when `@value ... as ... from ...` re-exports a token', async () => {
+  test('includes the local name of a named token importer entry with `as`', async () => {
     const iff = await createIFF({
       'a.module.css': `@value b_1 as b_alias from './b.module.css';`,
       'b.module.css': `@value b_1: red;`,
@@ -97,7 +109,7 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('do not collect tokens from `@import` for unmatched or unresolvable modules', async () => {
+  test('includes no tokens from an all token importer of an unmatched or unresolvable file', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         @import './unmatched.module.css';
@@ -115,7 +127,9 @@ describe('ExportBuilder', () => {
       }
     `);
   });
-  test('collect tokens from `@value ... from ...` for unmatched or unresolvable modules', async () => {
+  // TODO: Include the entries. They are known without reading the imported file,
+  // but the current implementation skips them.
+  test.fails('includes the entries of a named token importer of an unmatched or unresolvable file', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         @value unmatched_1 from './unmatched.module.css';
@@ -127,15 +141,10 @@ describe('ExportBuilder', () => {
       matchesPattern: (path) => path.endsWith('.module.css') && !path.endsWith('unmatched.module.css'),
     });
     const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
-    // TODO: It should collect tokens
-    expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
-      {
-        "allTokens": [],
-      }
-    `);
+    expect(exportBuilder.build(cssModule)).toStrictEqual({ allTokens: ['unmatched_1', 'unresolvable_1'] });
   });
 
-  test('cache export record and return same result on subsequent builds', async () => {
+  test('returns the cached export record without reading the imported modules again', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a_1 { color: red; }
@@ -177,7 +186,7 @@ describe('ExportBuilder', () => {
     expect(getCSSModuleCalls).toBe(1);
   });
 
-  test('clear cache and rebuild export record', async () => {
+  test('rebuilds the export record after clearCache', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a_1 { color: red; }
@@ -206,7 +215,7 @@ describe('ExportBuilder', () => {
     expect(getCSSModuleCalls).toBe(2);
   });
 
-  test('maintain separate cache entries for different modules', async () => {
+  test('keeps the cached export record of a module after another module is built', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a_1 { color: red; }
@@ -241,7 +250,7 @@ describe('ExportBuilder', () => {
     expect(getCSSModuleCalls).toBe(2);
   });
 
-  test('handle circular dependencies', async () => {
+  test('terminates on circular token importers and includes the tokens of both modules', async () => {
     const iff = await createIFF({
       'a.module.css': dedent`
         .a_1 { color: red; }
@@ -254,10 +263,7 @@ describe('ExportBuilder', () => {
     });
     const exportBuilder = prepareExportBuilder();
     const cssModule = readAndParseCSSModule(iff.paths['a.module.css'])!;
-
-    // Should not cause infinite recursion
-    const result = exportBuilder.build(cssModule);
-    expect(result).toMatchInlineSnapshot(`
+    expect(exportBuilder.build(cssModule)).toMatchInlineSnapshot(`
       {
         "allTokens": [
           "a_1",

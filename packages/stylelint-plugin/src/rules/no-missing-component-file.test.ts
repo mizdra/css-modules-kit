@@ -12,7 +12,7 @@ async function lint(rootDir: string) {
         'css-modules-kit/no-missing-component-file': true,
       },
     },
-    files: ['**/*.module.css'],
+    files: ['**/*.css'],
     cwd: rootDir,
   });
 }
@@ -55,5 +55,12 @@ describe('no-missing-component-file', () => {
         },
       ]
     `);
+  });
+  test('ignores a CSS file that is not a CSS module', async () => {
+    const iff = await createIFF({
+      'a.css': '.local1 {}',
+    });
+    const results = await lint(iff.rootDir);
+    expect(formatLinterResult(results, iff.rootDir)).toStrictEqual([{ source: '<rootDir>/a.css', warnings: [] }]);
   });
 });

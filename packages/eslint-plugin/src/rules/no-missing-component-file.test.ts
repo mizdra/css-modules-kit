@@ -48,4 +48,12 @@ describe('no-missing-component-file', () => {
       ]
     `);
   });
+  test('ignores a CSS file that is not a CSS module', async () => {
+    const iff = await createIFF({
+      'a.css': '.local1 {}',
+    });
+    const eslint = createESLint(iff.rootDir, config);
+    const results = await eslint.lintFiles(iff.rootDir);
+    expect(formatLintResults(results, iff.rootDir)).toStrictEqual([{ filePath: '<rootDir>/a.css', messages: [] }]);
+  });
 });
