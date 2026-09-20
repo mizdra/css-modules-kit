@@ -379,7 +379,7 @@ describe('parseCSSModule', () => {
     `);
     expect(parsed.localTokens.map((token) => token.name)).toStrictEqual(['a_1']);
   });
-  test('reports a CSS syntax error with the length of the unknown word', () => {
+  test('reports the range of a CSS syntax error that has an end position', () => {
     const parsed = parseCSSModule('badword', options);
     expect(parsed.diagnostics).toMatchInlineSnapshot(`
       [
