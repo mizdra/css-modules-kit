@@ -204,6 +204,71 @@ describe('parseRule', () => {
     `);
   });
 
+  test('excludes the whitespace before and after a class selector from its name and location', () => {
+    const [rule] = fakeRules(fakeRoot('.a_1 , .a_2 {}'));
+    expect(parseRule(rule!)).toMatchInlineSnapshot(`
+      {
+        "classSelectors": [
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 15,
+                "line": 1,
+                "offset": 14,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 5,
+                "line": 1,
+                "offset": 4,
+              },
+              "start": {
+                "column": 2,
+                "line": 1,
+                "offset": 1,
+              },
+            },
+            "name": "a_1",
+          },
+          {
+            "declarationLoc": {
+              "end": {
+                "column": 15,
+                "line": 1,
+                "offset": 14,
+              },
+              "start": {
+                "column": 1,
+                "line": 1,
+                "offset": 0,
+              },
+            },
+            "loc": {
+              "end": {
+                "column": 12,
+                "line": 1,
+                "offset": 11,
+              },
+              "start": {
+                "column": 9,
+                "line": 1,
+                "offset": 8,
+              },
+            },
+            "name": "a_2",
+          },
+        ],
+        "diagnostics": [],
+      }
+    `);
+  });
+
   test('keeps escape sequences in the class name as written', () => {
     const [rule] = fakeRules(fakeRoot(String.raw`.\\a_1, .\'a_2, .\31 a_3 {}`));
     expect(parseRule(rule!)).toMatchInlineSnapshot(`
@@ -668,6 +733,24 @@ describe('parseRule', () => {
               "column": 3,
               "line": 3,
               "offset": 33,
+            },
+            "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
+          },
+        ]
+      `);
+    });
+
+    test('excludes the whitespace before and after `:local` from the length of a diagnostic', () => {
+      const [rule] = fakeRules(fakeRoot('.a_1 , :local , .a_2 {}'));
+      expect(parseRule(rule!).diagnostics).toMatchInlineSnapshot(`
+        [
+          {
+            "category": "error",
+            "length": 6,
+            "start": {
+              "column": 8,
+              "line": 1,
+              "offset": 7,
             },
             "text": "css-modules-kit does not support \`:local\`. Use \`:local(...)\` instead.",
           },

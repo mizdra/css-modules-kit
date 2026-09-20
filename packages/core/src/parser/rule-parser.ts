@@ -2,12 +2,23 @@ import type { Rule } from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import type { DiagnosticPosition, DiagnosticWithDetachedLocation, Location } from '../type.js';
 
+/**
+ * Stringify the node as written in the source, without the whitespace before and after it.
+ *
+ * `node.toString()` contains the whitespace next to `,`, `(` and `)`.
+ * For example, the first class selector of `.a , .b` is stringified as `".a "`, and the second one as `" .b"`.
+ */
+function stringifyWithoutSpaces(node: selectorParser.Node): string {
+  const str = node.toString();
+  return str.slice(node.rawSpaceBefore.length, str.length - node.rawSpaceAfter.length);
+}
+
 function calcDiagnosticsLocationForSelectorParserNode(
   rule: Rule,
   node: selectorParser.Node,
 ): { start: DiagnosticPosition; length: number } {
   const start = rule.positionBy({ index: node.sourceIndex });
-  const length = node.toString().length;
+  const length = stringifyWithoutSpaces(node).length;
   return { start, length };
 }
 
@@ -122,12 +133,9 @@ export function parseRule(rule: Rule): ParseRuleResult {
      * When there is a selector like `.\31 backslash`, `className.value` becomes `"1backslash"`.
      * In other words, it is the string after escape sequences have been interpreted.
      * However, here we need the raw string as written in the CSS source code.
-     * So we use `className.toString()`.
-     *
-     * The return value of `className.toString()` may contain leading dots and spaces like `" .1backslash"`.
-     * Therefore, we remove the leading spaces and dot with a regular expression.
+     * So we stringify `className`, which returns the raw string with the leading dot like `".\31 backslash"`.
      */
-    const rawClassName = className.toString().replace(/^\s*\./u, '');
+    const rawClassName = stringifyWithoutSpaces(className).slice(1);
     const end = {
       // The end line is always the same as the start line, as a class selector cannot break in the middle.
       line: start.line,
