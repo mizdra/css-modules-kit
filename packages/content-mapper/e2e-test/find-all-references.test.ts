@@ -112,7 +112,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, a request from the .ts file or the imported file stops at the named token importer in default-export mode.
+  // TODO(middleware): A request from the .ts file or the imported file stops at the named token importer in default-export mode.
   testFailsIf(!namedExports)('finds the <name> of a named token importer', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -142,7 +142,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   // NOTE: `b_1` and `b_alias` are linked to each other, so the references of both are returned.
-  // Without the middleware, the <name> and the <alias> of a named token importer are not linked to each other.
+  // TODO(middleware): The <name> and the <alias> of a named token importer are not linked to each other.
   test.fails('finds both the <name> and the <alias> of a named token importer', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -173,7 +173,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, a request from the .ts file or the imported file stops at the named token importer in default-export mode.
+  // TODO(middleware): A request from the .ts file or the imported file stops at the named token importer in default-export mode.
   testFailsIf(!namedExports)('finds the <name> of every named token importer in a chain', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),

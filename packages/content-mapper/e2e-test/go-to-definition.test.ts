@@ -34,7 +34,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, the context of a definition is derived from the generated code, not from the CSS rule.
+  // TODO(middleware): The context of a definition is derived from the generated code, not from the CSS rule.
   test.fails('returns the declaration of the token as the context of the token definition', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -124,7 +124,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     expect(definitions).toStrictEqual([getFileSpan('c.module.css', 'c_1')]);
   });
 
-  // Without the middleware, the named token importer itself is returned as a definition in default-export mode.
+  // TODO(middleware): The named token importer itself is returned as a definition in default-export mode.
   testFailsIf(!namedExports)('follows a named token importer to the token definition', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -149,7 +149,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, the named token importer itself is returned as a definition in default-export mode.
+  // TODO(middleware): The named token importer itself is returned as a definition in default-export mode.
   testFailsIf(!namedExports)('follows a named token importer with alias to the token definition', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -175,7 +175,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, the named token importer itself is returned as a definition in default-export mode.
+  // TODO(middleware): The named token importer itself is returned as a definition in default-export mode.
   testFailsIf(!namedExports)('follows a chain of named token importers to the token definition', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -246,7 +246,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     expect(definitions).toStrictEqual([getFileSpan('a.module.css', 'a_1')]);
   });
 
-  // tsgo drops the definition of a namespace import binding that resolves to a mapped file in named-exports mode.
+  // TODO(tsgo): tsgo drops the definition of a namespace import binding that resolves to a mapped file in named-exports mode.
   testFailsIf(namedExports)(
     'returns the head of the imported file from the styles binding and the specifier of a TS-side import statement',
     async () => {
@@ -269,7 +269,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     },
   );
 
-  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
+  // TODO(tsgo): tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
   test.fails('returns the head of the specified file from the specifier of a token importer and an external token reference', async () => {
     const { iff, getFileLocation } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -312,7 +312,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
+  // TODO(tsgo): tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
   test.fails('returns the head of the specified file from a url() specifier', async () => {
     const { iff, getFileLocation } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),

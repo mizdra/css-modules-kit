@@ -12,7 +12,7 @@ const client = launchLSPClient(fixtureDir);
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('fixMissingCSSRule', () => {
-    // Without the middleware, no code fix edits a CSS module.
+    // TODO(middleware): No code fix edits a CSS module.
     test.fails.each([
       [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[0], 'Property does not exist'],
       [PROPERTY_DOES_NOT_EXIST_ERROR_CODES[1], 'Property does not exist. Did you mean ...?'],
@@ -57,7 +57,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
 
-    // Without the middleware, no code fix edits a CSS module.
+    // TODO(middleware): No code fix edits a CSS module.
     test.fails('inserts the rule into the CSS module bound to the accessed identifier', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -99,7 +99,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   describe('auto-import', () => {
-    // Without the middleware, the default import is inserted even in named-exports mode.
+    // TODO(middleware): The default import is inserted even in named-exports mode.
     testFailsIf(namedExports)('provides a code fix that imports styles from the CSS module', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -137,7 +137,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   describe.runIf(namedExports)('prioritizeNamedImports: false', () => {
-    // Without the middleware, the named exports of a CSS module are imported like the ones of any other module.
+    // TODO(middleware): The named exports of a CSS module are imported like the ones of any other module.
     test.fails('omits the named import code fix', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({

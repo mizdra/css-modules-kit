@@ -11,7 +11,7 @@ const client = launchLSPClient(fixtureDir);
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
   describe('styles binding suggestion', () => {
-    // Without the middleware, the CSS module corresponding to the current component file has the same priority as the others.
+    // TODO(middleware): The CSS module corresponding to the current component file has the same priority as the others.
     test.fails('prioritizes the CSS module corresponding to the current component file', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -38,7 +38,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       ]);
     });
 
-    // Without the middleware, the default import is inserted even in named-exports mode.
+    // TODO(middleware): The default import is inserted even in named-exports mode.
     testFailsIf(namedExports)('inserts the import statement when accepted', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -97,7 +97,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 
   describe.runIf(namedExports)('prioritizeNamedImports: false', () => {
-    // Without the middleware, the named exports of a CSS module are suggested like the ones of any other module.
+    // TODO(middleware): The named exports of a CSS module are suggested like the ones of any other module.
     test.fails('omits named token auto-imports', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
@@ -119,7 +119,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       expect(entries.filter((entry) => entry.name === 'a_1')).toStrictEqual([]);
     });
 
-    // Without the middleware, the default export for the styles binding suggestion is a member of the namespace.
+    // TODO(middleware): The default export for the styles binding suggestion is a member of the namespace.
     test.fails('omits the default export from namespace member completion', async () => {
       const { iff, getFileSpan } = await setupFixture({
         'tsconfig.json': buildTSConfigJSON({
@@ -194,7 +194,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   });
 });
 
-// Without the middleware, the className attribute is completed with a string literal or braces depending on its type.
+// TODO(middleware): The className attribute is completed with a string literal or braces depending on its type.
 test.fails.each([{ quotePreference: 'single' as const }, { quotePreference: 'double' as const }])(
   'completes the className attribute as className={$$1} with quotePreference: $quotePreference',
   async ({ quotePreference }) => {

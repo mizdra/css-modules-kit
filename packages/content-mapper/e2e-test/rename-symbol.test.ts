@@ -115,7 +115,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
   // NOTE: For simplicity of implementation, this is not the ideal behavior when renaming from the TS side.
   // The ideal behavior would attach `prefixText: 'b_1 as '` to the binding loc in `a.module.css`
   // so that renaming changes only the alias side. Currently the binding loc is rewritten directly.
-  // Without the middleware, a request from the .ts file or the imported file stops at the named token importer in default-export mode.
+  // TODO(middleware): A request from the .ts file or the imported file stops at the named token importer in default-export mode.
   testFailsIf(!namedExports)('renames the <name> of a named token importer', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -190,7 +190,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // Without the middleware, a request from the .ts file or the imported file stops at the named token importer in default-export mode.
+  // TODO(middleware): A request from the .ts file or the imported file stops at the named token importer in default-export mode.
   testFailsIf(!namedExports)('renames the <name> of every named token importer in a chain', async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),

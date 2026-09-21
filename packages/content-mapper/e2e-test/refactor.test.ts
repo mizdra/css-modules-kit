@@ -7,7 +7,7 @@ const client = launchLSPClient(fixtureDir);
 
 const fileHeadRange = { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } };
 
-// Without the middleware, no refactor creates a CSS module.
+// TODO(middleware): No refactor creates a CSS module.
 test.fails('provides Create CSS Module file for a component file when no paired CSS module exists', async () => {
   const { iff } = await setupFixture({
     'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx' } }),
@@ -47,7 +47,7 @@ test('omits Create CSS Module file when the paired CSS module already exists', a
   expect(actions).toStrictEqual([]);
 });
 
-// Without the middleware, no refactor creates a CSS module.
+// TODO(middleware): No refactor creates a CSS module.
 test.fails('creates a new empty CSS module file paired with the component file', async () => {
   const { iff } = await setupFixture({
     'tsconfig.json': buildTSConfigJSON({ compilerOptions: { jsx: 'react-jsx' } }),
