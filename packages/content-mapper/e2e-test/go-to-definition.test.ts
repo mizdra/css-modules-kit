@@ -269,7 +269,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     },
   );
 
-  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from`.
+  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
   test.fails('returns the head of the specified file from the specifier of a token importer and an external token reference', async () => {
     const { iff, getFileLocation } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
@@ -312,7 +312,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     }
   });
 
-  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from`.
+  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from` when it specifies a mapped file.
   test.fails('returns the head of the specified file from a url() specifier', async () => {
     const { iff, getFileLocation } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
