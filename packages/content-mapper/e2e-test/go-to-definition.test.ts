@@ -269,54 +269,51 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     },
   );
 
-  // tsgo returns no definition from the specifier of `export ... from` in named-exports mode.
-  testFailsIf(namedExports)(
-    'returns the head of the specified file from the specifier of a token importer and an external token reference',
-    async () => {
-      const { iff, getFileLocation } = await setupFixture({
-        'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
-        'a.module.css': dedent`
-          @import './b.module.css';
-          @value c_1 from './c.module.css';
-          .a_1 { composes: d_1 from './d.module.css'; }
-        `,
-        'b.module.css': `.b_1 { color: red; }`,
-        'c.module.css': `@value c_1: red;`,
-        'd.module.css': `.d_1 { color: red; }`,
-      });
-      await client.openFiles([
-        iff.paths['a.module.css'],
+  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from`.
+  test.fails('returns the head of the specified file from the specifier of a token importer and an external token reference', async () => {
+    const { iff, getFileLocation } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
+      'a.module.css': dedent`
+        @import './b.module.css';
+        @value c_1 from './c.module.css';
+        .a_1 { composes: d_1 from './d.module.css'; }
+      `,
+      'b.module.css': `.b_1 { color: red; }`,
+      'c.module.css': `@value c_1: red;`,
+      'd.module.css': `.d_1 { color: red; }`,
+    });
+    await client.openFiles([
+      iff.paths['a.module.css'],
+      iff.paths['b.module.css'],
+      iff.paths['c.module.css'],
+      iff.paths['d.module.css'],
+    ]);
+
+    const cases = [
+      [
+        'from the specifier of an all token importer',
+        getFileLocation('a.module.css', "'./b.module.css'"),
         iff.paths['b.module.css'],
+      ],
+      [
+        'from the specifier of a named token importer',
+        getFileLocation('a.module.css', "'./c.module.css'"),
         iff.paths['c.module.css'],
+      ],
+      [
+        'from the specifier of an external token reference',
+        getFileLocation('a.module.css', "'./d.module.css'"),
         iff.paths['d.module.css'],
-      ]);
+      ],
+    ] as const;
+    for (const [name, origin, specifiedFile] of cases) {
+      const definitions = await client.sendDefinition(origin);
+      expect.soft(definitions, name).toStrictEqual([fileHeadSpan(specifiedFile)]);
+    }
+  });
 
-      const cases = [
-        [
-          'from the specifier of an all token importer',
-          getFileLocation('a.module.css', "'./b.module.css'"),
-          iff.paths['b.module.css'],
-        ],
-        [
-          'from the specifier of a named token importer',
-          getFileLocation('a.module.css', "'./c.module.css'"),
-          iff.paths['c.module.css'],
-        ],
-        [
-          'from the specifier of an external token reference',
-          getFileLocation('a.module.css', "'./d.module.css'"),
-          iff.paths['d.module.css'],
-        ],
-      ] as const;
-      for (const [name, origin, specifiedFile] of cases) {
-        const definitions = await client.sendDefinition(origin);
-        expect.soft(definitions, name).toStrictEqual([fileHeadSpan(specifiedFile)]);
-      }
-    },
-  );
-
-  // tsgo returns no definition from the specifier of `export ... from` in named-exports mode.
-  testFailsIf(namedExports)('returns the head of the specified file from a url() specifier', async () => {
+  // tsgo returns no definition from the specifier of `typeof import(...)` and `export ... from`.
+  test.fails('returns the head of the specified file from a url() specifier', async () => {
     const { iff, getFileLocation } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
       'a.module.css': `@import url(./b.module.css);`,

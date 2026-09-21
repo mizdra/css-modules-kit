@@ -90,4 +90,27 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       },
     ]);
   });
+
+  // NOTE: Unlike ts-plugin, which reports its own "Module ... has no exported token ..." diagnostic,
+  // the missing token is reported by TypeScript itself.
+  test('reports a token that does not exist on a CSS module', async () => {
+    const { iff, getFileSpan } = await setupFixture({
+      'tsconfig.json': buildTSConfigJSON({ mapperOptions: { namedExports } }),
+      'a.module.css': dedent`
+        @value b_2 from './b.module.css';
+        .a_1 { composes: a_2; }
+        .a_3 { composes: b_3 from './b.module.css'; }
+      `,
+      'b.module.css': `.b_1 { color: red; }`,
+    });
+    await client.openFiles([iff.paths['a.module.css']]);
+
+    const diagnostics = await client.sendDocumentDiagnostic(iff.paths['a.module.css']);
+
+    expect(diagnostics.map(({ range }) => range)).toStrictEqual([
+      getFileSpan('a.module.css', 'b_2').range,
+      getFileSpan('a.module.css', 'a_2').range,
+      getFileSpan('a.module.css', 'b_3').range,
+    ]);
+  });
 });

@@ -78,6 +78,33 @@ export function checkGeneratedTexts(
   return { outputs, diagnostics };
 }
 
+/**
+ * Mirrors how tsgo maps the span of a TypeScript diagnostic back to the original file. Returns
+ * `undefined` unless the span is fully covered by contiguous span mappings, because tsgo maps such
+ * a span only approximately.
+ */
+export function toOriginalSpan(
+  output: TransformOutput,
+  span: { start: number | undefined; length: number | undefined },
+): { start: number; length: number } | undefined {
+  if (span.start === undefined || span.length === undefined) return undefined;
+  const end = span.start + span.length;
+  const mappings = output.mappings
+    .filter(
+      ([generatedStart, generatedLength]) => generatedStart < end && span.start! < generatedStart + generatedLength,
+    )
+    .toSorted((a, b) => a[0] - b[0]);
+  let coveredThrough = span.start;
+  for (const [generatedStart, generatedLength] of mappings) {
+    if (generatedStart > coveredThrough) return undefined;
+    coveredThrough = generatedStart + generatedLength;
+  }
+  if (coveredThrough < end) return undefined;
+  const originalStart = Math.min(...mappings.map((mapping) => mapping[2]));
+  const originalEnd = Math.max(...mappings.map((mapping) => mapping[2] + mapping[3]));
+  return { start: originalStart, length: originalEnd - originalStart };
+}
+
 /** Mirrors how tsgo applies `Ignore` diagnostic directives to TypeScript diagnostics. */
 function isSuppressedByIgnoreDirective(diagnostic: ts.Diagnostic, outputs: Record<string, TransformOutput>): boolean {
   if (diagnostic.file === undefined || diagnostic.start === undefined) return false;

@@ -33,10 +33,15 @@ const NON_RENAME_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
 // only the atom projection answers hover.
 const NON_HOVER_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Hover;
 
-// The synthesized quotes around an unquoted url() specifier have no counterpart in the CSS,
-// so they are mapped as zero-width spans. Only definition-style features are enabled for them
-// so that requests on the whole string literal still resolve to the module.
-const QUOTE_FEATURES =
+// The generated text around a name (e.g. the quotes of `'a_1'`) has no counterpart in the CSS, so
+// it is mapped as zero-width spans. TypeScript reports a diagnostic on a node larger than the name
+// (e.g. `'a_1'` or `styles['a_1']`), and the diagnostic is mapped back to the exact range in the
+// CSS only when the whole node is mapped. Language service features are disabled for these spans.
+const NO_FEATURES = 0;
+
+// The quotes synthesized around an unquoted url() specifier additionally answer definition-style
+// requests, so that a request on the opening parenthesis still resolves to the module.
+const URL_QUOTE_FEATURES =
   SpanMapFeature.Definition | SpanMapFeature.TypeDefinition | SpanMapFeature.Implementation | SpanMapFeature.References;
 
 function createTextBuilder() {
@@ -46,59 +51,59 @@ function createTextBuilder() {
   function append(chunk: string): void {
     text += chunk;
   }
-  /** Appends `'name'` as a single atom, mapping the quote-inclusive literal to `loc`. */
-  function appendAtomTokenName(name: string, loc: Location): void {
-    mappings.push([text.length, name.length + 2, loc.start.offset, name.length, SpanMapKind.Atom, NON_RENAME_FEATURES]);
-    text += `'${name}'`;
-  }
-  /** Appends `'name'`, mapping only the name verbatim to `loc` and leaving the quotes unmapped. */
-  function appendVerbatimTokenName(name: string, loc: Location): void {
-    mappings.push([
-      text.length + 1,
-      name.length,
-      loc.start.offset,
-      name.length,
-      SpanMapKind.Verbatim,
-      NON_HOVER_FEATURES,
-    ]);
-    text += `'${name}'`;
-  }
-  function appendQuoted(value: string, loc: Location): void {
-    mappings.push([text.length, 1, loc.start.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
-    mappings.push([text.length + 1, value.length, loc.start.offset, value.length, SpanMapKind.Verbatim]);
-    mappings.push([text.length + 1 + value.length, 1, loc.end.offset, 0, SpanMapKind.Atom, QUOTE_FEATURES]);
-    text += `'${value}'`;
+  /**
+   * Appends `<prefix><value><suffix>`, mapping the value verbatim to `loc`, and the prefix and
+   * the suffix as zero-width spans around it.
+   */
+  function appendAffixed(
+    [prefix, value, suffix]: [string, string, string],
+    loc: Location,
+    features: number,
+    affixFeatures: number,
+  ): void {
+    const start = loc.start.offset;
+    const end = start + value.length;
+    mappings.push([text.length, prefix.length, start, 0, SpanMapKind.Atom, affixFeatures]);
+    text += prefix;
+    mappings.push(
+      features === SpanMapFeature.All
+        ? [text.length, value.length, start, value.length, SpanMapKind.Verbatim]
+        : [text.length, value.length, start, value.length, SpanMapKind.Verbatim, features],
+    );
+    text += value;
+    mappings.push([text.length, suffix.length, end, 0, SpanMapKind.Atom, affixFeatures]);
+    text += suffix;
   }
   return {
     append,
-    appendAtomTokenName,
     /**
-     * Appends `'name'` as an export name, mapping only the name verbatim to `loc`. Renaming
-     * a module export rewrites the export name itself but not companion statements, so the
-     * export name must be the verbatim span that rename edits write back through.
+     * Appends `'name'` as a single atom, mapping the quote-inclusive literal to `loc`. TypeScript
+     * reports the name of a declaration with the quotes included (e.g. Go to Definition results),
+     * and a reported span is mapped back only when it fits in a single span mapping.
      */
-    appendVerbatimExportName(name: string, loc: Location): void {
-      mappings.push([text.length + 1, name.length, loc.start.offset, name.length, SpanMapKind.Verbatim]);
+    appendAtomTokenName(name: string, loc: Location): void {
+      mappings.push([
+        text.length,
+        name.length + 2,
+        loc.start.offset,
+        name.length,
+        SpanMapKind.Atom,
+        NON_RENAME_FEATURES,
+      ]);
       text += `'${name}'`;
     },
-    /** Appends `<object>['name'];`, mapping the quote-inclusive literal to `loc` as a single atom. */
-    appendAtomElementAccessStatement(object: string, name: string, loc: Location): void {
-      append(`${object}[`);
-      appendAtomTokenName(name, loc);
-      append('];\n');
+    /** Appends `'name'`, mapping the name verbatim to `loc`. Rename edits are written back through it. */
+    appendVerbatimTokenName(name: string, loc: Location, features: number = SpanMapFeature.All): void {
+      appendAffixed(["'", name, "'"], loc, features, NO_FEATURES);
     },
-    /**
-     * Appends `<object>['name'];`, mapping only the name verbatim to `loc`. TypeScript
-     * diagnostics on the statement are suppressed, because the statement always duplicates
-     * an atom projection that already reports them.
-     */
-    appendVerbatimElementAccessStatement(object: string, name: string, loc: Location): void {
-      const start = text.length;
-      append(`${object}[`);
-      appendVerbatimTokenName(name, loc);
-      append('];');
-      directives.push([loc.start.offset, name.length, start, text.length, DiagnosticDirectivePolicy.Ignore]);
-      append('\n');
+    /** Appends `<object>['name']`, mapping the name verbatim to `loc`. Rename edits are written back through it. */
+    appendVerbatimElementAccess(
+      object: string,
+      name: string,
+      loc: Location,
+      features: number = SpanMapFeature.All,
+    ): void {
+      appendAffixed([`${object}['`, name, `']`], loc, features, NO_FEATURES);
     },
     /**
      * Appends the quoted specifier. When the original is quoted, the whole literal is mapped
@@ -107,7 +112,7 @@ function createTextBuilder() {
      */
     appendSpecifier(from: string, fromLoc: Location, quote: '"' | "'" | undefined): void {
       if (quote === undefined) {
-        appendQuoted(from, fromLoc);
+        appendAffixed(["'", from, "'"], fromLoc, SpanMapFeature.All, URL_QUOTE_FEATURES);
       } else {
         mappings.push([text.length, from.length + 2, fromLoc.start.offset - 1, from.length + 2, SpanMapKind.Verbatim]);
         text += `${quote}${from}${quote}`;
@@ -133,13 +138,25 @@ function createTextBuilder() {
       ]);
       text += name;
     },
-    build(): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
+    /** Appends the quoted specifier without mapping it, and suppresses the TypeScript diagnostics on it. */
+    appendUnmappedSpecifier(from: string, fromLoc: Location): void {
+      const start = text.length;
+      text += `'${from}'`;
+      directives.push([fromLoc.start.offset, from.length, start, text.length, DiagnosticDirectivePolicy.Ignore]);
+    },
+    build(): BuiltText {
       return { text, mappings, directives };
     },
   };
 }
 
 type TextBuilder = ReturnType<typeof createTextBuilder>;
+
+interface BuiltText {
+  text: string;
+  mappings: SpanMapping[];
+  directives: MappedDiagnosticDirective[];
+}
 
 function isValidTokenName(name: string, options: NormalizedMapperOptions): boolean {
   return validateTokenName(name, { namedExports: options.namedExports }) === undefined;
@@ -166,16 +183,19 @@ function specifierQuote(content: string, fromLoc: Location): '"' | "'" | undefin
 /**
  * Transforms a CSS file into TypeScript text for the content mapper protocol.
  *
- * A CSS Module becomes a module exporting its tokens. The generated text delegates most
- * validation to the TypeScript checker: importing a missing file or referencing a missing
- * token becomes an ordinary type error, which tsgo maps back to the CSS through the
- * returned span mappings.
+ * The generated text is the one `generateDts` of `@css-modules-kit/core` generates for ts-plugin
+ * (see docs/ts-plugin-internals.md), except for the following:
  *
- * Every token occurrence is projected twice: a literal in a declaration or export position
- * that result spans map back through, and a verbatim-mapped literal in an expression
- * statement. Declaration-position literals are atom-mapped including quotes, except export
- * names, which are verbatim-mapped because rename edits write back through them. The entries
- * of a named token importer in named-exports mode are projected only once, as export names.
+ * - `// @ts-nocheck` is omitted, so that importing a missing file or referencing a missing token
+ *   becomes an ordinary type error, which tsgo maps back to the CSS through the span mappings.
+ *   For the same reason, the specifiers that do not resolve to CSS Modules are omitted.
+ * - Each declared token is additionally emitted as a reference to itself, in the form of a local
+ *   token reference (`styles['<name>'];` or `import { '<name>' as __ref_N } from './<self>';`).
+ *   Rename edits are written back only through a verbatim span mapping, which the declaration of
+ *   a token cannot have: the `'<name>'` of `interface Styles { readonly '<name>': string }` is
+ *   atom-mapped including the quotes so that definitions land on it, and `_token_N` is alias-mapped.
+ * - A specifier is quoted with the original quote character, because a verbatim span mapping
+ *   requires identical text.
  *
  * The generated text expresses only the relations that TypeScript follows by itself. The
  * relations between different TypeScript symbols (e.g. the `<name>` and the `<alias>` of
@@ -211,9 +231,7 @@ export function transformCSS(fileName: string, content: string, options: Normali
         : reference,
     )
     .filter((reference) =>
-      reference.type === 'local'
-        ? isValidTokenName(reference.name, options)
-        : isImportableSpecifier(reference.from) && reference.entries.length > 0,
+      reference.type === 'local' ? isValidTokenName(reference.name, options) : isImportableSpecifier(reference.from),
     );
   const { text, mappings, directives } = options.namedExports
     ? buildNamedExportsText(
@@ -238,89 +256,97 @@ function buildDefaultExportText(
   localTokens: Token[],
   tokenImporters: TokenImporter[],
   tokenReferences: TokenReference[],
-): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
+): BuiltText {
   const builder = createTextBuilder();
-  const importerBindings = new Map<TokenImporter, string>();
-  const referenceBindings = new Map<TokenReference, string>();
-  let importCount = 0;
-  for (const tokenImporter of tokenImporters) {
-    if (tokenImporter.type === 'all' || tokenImporter.entries.length > 0) {
-      const binding = `_import_${importCount++}`;
-      importerBindings.set(tokenImporter, binding);
-      builder.append(`import * as ${binding} from `);
-    } else {
-      // A side-effect import keeps module resolution errors even when no entry is usable.
-      builder.append('import ');
-    }
-    appendImportSpecifier(builder, content, tokenImporter);
-  }
-  for (const reference of tokenReferences) {
-    if (reference.type !== 'external') continue;
-    const binding = `_import_${importCount++}`;
-    referenceBindings.set(reference, binding);
-    builder.append(`import * as ${binding} from `);
-    appendImportSpecifier(builder, content, reference);
-  }
-  const allImporters = tokenImporters.filter((tokenImporter) => tokenImporter.type === 'all');
-  if (allImporters.length > 0) {
+  if (tokenImporters.some((tokenImporter) => tokenImporter.type === 'all')) {
     // Maps an `any`-typed module (e.g. an unresolvable import) to `{}` so that it does not
     // absorb the other intersection members.
-    builder.append('type __BlockErrorType<T> = [0] extends [1 & T] ? {} : T;\n');
+    builder.append('type BlockErrorType<T> = [0] extends [1 & T] ? {} : T;\n');
   }
   // Each token occurrence gets its own interface declaration so that duplicated names
   // merge instead of colliding, while every occurrence stays a declaration.
-  let hasMembers = false;
+  let hasStylesInterface = false;
   for (const token of localTokens) {
     builder.append('interface Styles { readonly ');
     builder.appendAtomTokenName(token.name, token.loc);
-    builder.append(': string; }\n');
-    hasMembers = true;
+    builder.append(': string }\n');
+    hasStylesInterface = true;
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type !== 'named') continue;
-    const binding = importerBindings.get(tokenImporter)!;
-    for (const entry of tokenImporter.entries) {
+    for (const [i, entry] of tokenImporter.entries.entries()) {
       builder.append('interface Styles { readonly ');
       builder.appendAtomTokenName(entry.localName ?? entry.name, entry.localLoc ?? entry.loc);
-      builder.append(`: typeof ${binding}.default[`);
-      builder.appendAtomTokenName(entry.name, entry.loc);
-      builder.append(']; }\n');
-      hasMembers = true;
+      builder.append(': typeof import(');
+      // Only the first specifier is mapped. If every specifier were mapped, an unresolvable
+      // specifier would be reported once per entry, and a file rename would edit it once per entry.
+      if (i === 0) {
+        appendSpecifier(builder, content, tokenImporter);
+      } else {
+        builder.appendUnmappedSpecifier(tokenImporter.from, tokenImporter.fromLoc);
+      }
+      builder.append(').default[');
+      builder.appendVerbatimTokenName(entry.name, entry.loc);
+      builder.append('] }\n');
+      hasStylesInterface = true;
     }
   }
-  if (!hasMembers) builder.append('interface Styles {}\n');
   builder.append('declare const ');
   builder.appendModuleAnchor('styles');
-  builder.append(': Styles');
-  for (const allImporter of allImporters) {
-    builder.append(` & __BlockErrorType<typeof ${importerBindings.get(allImporter)!}.default>`);
+  builder.append(': ');
+  let termCount = 0;
+  if (hasStylesInterface) {
+    builder.append('Styles');
+    termCount++;
   }
+  for (const tokenImporter of tokenImporters) {
+    if (tokenImporter.type !== 'all') continue;
+    if (termCount > 0) builder.append('\n  & ');
+    termCount++;
+    builder.append('BlockErrorType<typeof import(');
+    appendSpecifier(builder, content, tokenImporter);
+    builder.append(').default>');
+  }
+  if (termCount === 0) builder.append('{}');
   builder.append(';\n');
+  // tsgo searches a file for references only when the searched name appears in the name table of
+  // the file. The `<name>` of an aliased entry appears only in an indexed access type, which is
+  // not registered there, but element access arguments are.
+  for (const tokenImporter of tokenImporters) {
+    if (tokenImporter.type !== 'named') continue;
+    for (const entry of tokenImporter.entries) {
+      if (entry.localName === undefined) continue;
+      builder.append(`({} as any)['${entry.name}'];\n`);
+    }
+  }
+  // The references of the declared tokens to themselves, through which rename edits are written back.
   for (const token of localTokens) {
-    builder.appendVerbatimElementAccessStatement('styles', token.name, token.loc);
+    appendElementAccessStatement(builder, 'styles', token.name, token.loc, NON_HOVER_FEATURES);
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type !== 'named') continue;
-    const binding = importerBindings.get(tokenImporter)!;
     for (const entry of tokenImporter.entries) {
-      builder.appendVerbatimElementAccessStatement(
+      appendElementAccessStatement(
+        builder,
         'styles',
         entry.localName ?? entry.name,
         entry.localLoc ?? entry.loc,
+        NON_HOVER_FEATURES,
       );
-      builder.appendVerbatimElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
     }
   }
+  let refIndex = 0;
   for (const reference of tokenReferences) {
     if (reference.type === 'local') {
-      builder.appendAtomElementAccessStatement('styles', reference.name, reference.loc);
-      builder.appendVerbatimElementAccessStatement('styles', reference.name, reference.loc);
-    } else {
-      const binding = referenceBindings.get(reference)!;
-      for (const entry of reference.entries) {
-        builder.appendAtomElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
-        builder.appendVerbatimElementAccessStatement(`${binding}.default`, entry.name, entry.loc);
-      }
+      appendElementAccessStatement(builder, 'styles', reference.name, reference.loc);
+      continue;
+    }
+    const binding = `__ref_${refIndex++}`;
+    builder.append(`import ${binding} from `);
+    appendSpecifier(builder, content, reference);
+    builder.append(';\n');
+    for (const entry of reference.entries) {
+      appendElementAccessStatement(builder, binding, entry.name, entry.loc);
     }
   }
   builder.append('export default styles;\n');
@@ -334,92 +360,108 @@ function buildNamedExportsText(
   tokenImporters: TokenImporter[],
   tokenReferences: TokenReference[],
   prioritizeNamedImports: boolean,
-): { text: string; mappings: SpanMapping[]; directives: MappedDiagnosticDirective[] } {
+): BuiltText {
   const builder = createTextBuilder();
-  let isModule = false;
+  const exportedNames = new Set<string>();
   const groups = Object.groupBy(localTokens, (token) => token.name);
   for (const [index, [name, tokens]] of Object.entries(groups).entries()) {
     if (tokens === undefined) continue;
-    const alias = `_token_${index}`;
+    const internalName = `_token_${index}`;
     for (const token of tokens) {
       builder.append('var ');
-      builder.appendAlias(alias, token.loc);
+      builder.appendAlias(internalName, token.loc);
       builder.append(': string;\n');
     }
-    builder.append(`export { ${alias} as `);
-    builder.appendVerbatimExportName(name, tokens[0]!.loc);
+    builder.append(`export { ${internalName} as `);
+    builder.appendVerbatimTokenName(name, tokens[0]!.loc);
     builder.append(' };\n');
-    isModule = true;
+    exportedNames.add(name);
   }
   for (const tokenImporter of tokenImporters) {
     if (tokenImporter.type === 'all') {
       builder.append('export * from ');
-      appendImportSpecifier(builder, content, tokenImporter);
-    } else {
-      builder.append('export {\n');
-      for (const entry of tokenImporter.entries) {
-        // An entry without an alias is the shorthand form `'v1'`, not `'v1' as 'v1'`. tsgo follows
-        // a shorthand export specifier to the imported token and to the usages of the exported
-        // token, but stops at an export specifier with a property name.
-        builder.append('  ');
-        builder.appendVerbatimExportName(entry.name, entry.loc);
-        if (entry.localName !== undefined && entry.localLoc !== undefined) {
-          builder.append(' as ');
-          builder.appendVerbatimExportName(entry.localName, entry.localLoc);
-        }
-        builder.append(',\n');
-      }
-      builder.append('} from ');
-      appendImportSpecifier(builder, content, tokenImporter);
+      appendSpecifier(builder, content, tokenImporter);
+      builder.append(';\n');
+      continue;
     }
-    isModule = true;
+    builder.append('export {\n');
+    for (const entry of tokenImporter.entries) {
+      // A module cannot export the same name twice, so an entry whose exported name is already
+      // exported (by a local token or an earlier entry) is omitted. Its positions are left unmapped.
+      const exportedName = entry.localName ?? entry.name;
+      if (exportedNames.has(exportedName)) continue;
+      exportedNames.add(exportedName);
+      // An entry without an alias is the shorthand form `'v1'`, not `'v1' as 'v1'`. tsgo follows
+      // a shorthand export specifier to the imported token and to the usages of the exported
+      // token, but stops at an export specifier with a property name.
+      builder.append('  ');
+      builder.appendVerbatimTokenName(entry.name, entry.loc);
+      if (entry.localName !== undefined && entry.localLoc !== undefined) {
+        builder.append(' as ');
+        builder.appendVerbatimTokenName(entry.localName, entry.localLoc);
+      }
+      builder.append(',\n');
+    }
+    builder.append('} from ');
+    appendSpecifier(builder, content, tokenImporter);
+    builder.append(';\n');
   }
-  let importCount = 0;
-  const referenceBindings = new Map<TokenReference, string>();
-  for (const reference of tokenReferences) {
-    if (reference.type !== 'external') continue;
-    const binding = `_import_${importCount++}`;
-    referenceBindings.set(reference, binding);
-    builder.append(`import * as ${binding} from `);
-    appendImportSpecifier(builder, content, reference);
-    isModule = true;
+  // Ensure the generated text is treated as a module even when no other top-level
+  // export/import is emitted (e.g. an empty CSS Module file).
+  if (localTokens.length === 0 && tokenImporters.length === 0) {
+    builder.append('export {};\n');
   }
-  const needsSelf = localTokens.length > 0 || tokenReferences.some((reference) => reference.type === 'local');
-  if (needsSelf) {
-    // A real self-import rather than a `typeof import()` declaration, because renaming a
-    // module export only propagates to accesses through real import bindings.
-    builder.append(`import * as __self from './${basename(fileName)}';\n`);
+  // Each token reference is an import of the referenced token, which gives the reference a
+  // position that tsgo reports in Find All References and Rename. The import bindings are never
+  // read, but TypeScript does not report unused imports whose names start with `_`.
+  let refIndex = 0;
+  function appendSelfImport(name: string, loc: Location, features?: number): void {
+    builder.append('import { ');
+    builder.appendVerbatimTokenName(name, loc, features);
+    builder.append(` as __ref_${refIndex++} } from './${basename(fileName)}';\n`);
   }
+  // The references of the local tokens to themselves, through which rename edits are written back.
+  // A rename that reaches the token through a named token importer of another file
+  // (`export { '<name>' } from`) arrives at `_token_N` and these references, but not at the
+  // `'<name>'` of `export { _token_N as '<name>' }`.
   for (const token of localTokens) {
-    builder.appendVerbatimElementAccessStatement('__self', token.name, token.loc);
+    appendSelfImport(token.name, token.loc, NON_HOVER_FEATURES);
   }
   for (const reference of tokenReferences) {
     if (reference.type === 'local') {
-      builder.appendAtomElementAccessStatement('__self', reference.name, reference.loc);
-      builder.appendVerbatimElementAccessStatement('__self', reference.name, reference.loc);
-    } else {
-      const binding = referenceBindings.get(reference)!;
-      for (const entry of reference.entries) {
-        builder.appendAtomElementAccessStatement(binding, entry.name, entry.loc);
-        builder.appendVerbatimElementAccessStatement(binding, entry.name, entry.loc);
-      }
+      appendSelfImport(reference.name, reference.loc);
+      continue;
     }
+    builder.append('import {');
+    for (const [i, entry] of reference.entries.entries()) {
+      builder.append(i === 0 ? ' ' : ', ');
+      builder.appendVerbatimTokenName(entry.name, entry.loc);
+      builder.append(` as __ref_${refIndex++}`);
+    }
+    builder.append(' } from ');
+    appendSpecifier(builder, content, reference);
+    builder.append(';\n');
   }
   if (!prioritizeNamedImports) {
+    // Export `styles` to appear in code completion suggestions
     builder.append('declare const styles: {};\nexport default styles;\n');
-    isModule = true;
   }
-  if (!isModule) builder.append('export {};\n');
   return builder.build();
 }
 
-function appendImportSpecifier(
+function appendElementAccessStatement(
   builder: TextBuilder,
-  content: string,
-  importer: { from: string; fromLoc: Location },
+  object: string,
+  name: string,
+  loc: Location,
+  features?: number,
 ): void {
-  builder.appendSpecifier(importer.from, importer.fromLoc, specifierQuote(content, importer.fromLoc));
+  builder.appendVerbatimElementAccess(object, name, loc, features);
   builder.append(';\n');
+}
+
+function appendSpecifier(builder: TextBuilder, content: string, importer: { from: string; fromLoc: Location }): void {
+  builder.appendSpecifier(importer.from, importer.fromLoc, specifierQuote(content, importer.fromLoc));
 }
 
 // Core diagnostics have no code of their own, so they all share one mapper diagnostic code.

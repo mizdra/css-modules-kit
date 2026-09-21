@@ -1,8 +1,8 @@
 import dedent from 'dedent';
 import { expect, test } from 'vite-plus/test';
 import type { NormalizedMapperOptions } from './options.js';
-import { SpanMapFeature, SpanMapKind } from './protocol.js';
-import { checkGeneratedTexts } from './test/ts-program.js';
+import { SpanMapKind } from './protocol.js';
+import { checkGeneratedTexts, toOriginalSpan } from './test/ts-program.js';
 
 const defaultOptions: NormalizedMapperOptions = {
   namedExports: false,
@@ -75,14 +75,10 @@ test('reports a missing token error on the token span for named token importer e
       length: `'missing'`.length,
     }),
   ]);
-  expect(outputs['/a.module.css']!.mappings).toContainEqual([
-    keyStart,
-    `'missing'`.length,
-    7,
-    'missing'.length,
-    SpanMapKind.Atom,
-    SpanMapFeature.All & ~SpanMapFeature.Rename,
-  ]);
+  expect(toOriginalSpan(outputs['/a.module.css']!, diagnostics[0]!)).toStrictEqual({
+    start: `@value `.length,
+    length: 'missing'.length,
+  });
 });
 
 test('reports a missing token error on the token span for export from entries in named exports mode', () => {
@@ -104,6 +100,10 @@ test('reports a missing token error on the token span for export from entries in
       length: `'missing'`.length,
     }),
   ]);
+  expect(toOriginalSpan(outputs['/a.module.css']!, diagnostics[0]!)).toStrictEqual({
+    start: `@value `.length,
+    length: 'missing'.length,
+  });
 });
 
 test('reports an implicit any error for local token references to unknown tokens', () => {
@@ -121,4 +121,8 @@ test('reports an implicit any error for local token references to unknown tokens
       length: `styles['missing']`.length,
     }),
   ]);
+  expect(toOriginalSpan(outputs['/a.module.css']!, diagnostics[0]!)).toStrictEqual({
+    start: `.foo { animation-name: `.length,
+    length: 'missing'.length,
+  });
 });
