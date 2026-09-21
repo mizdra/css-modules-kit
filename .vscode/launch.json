@@ -210,7 +210,26 @@
         "${workspaceFolder}/examples/7-content-mapper/src/index.ts"
       ],
       "outFiles": ["${workspaceFolder}/.tmp/typescript/packages/vscode-typescript/dist/**/*.js"],
-      "preLaunchTask": "prepare content-mapper example",
+      "preLaunchTask": "prepare content-mapper examples",
+      "presentation": {
+        "group": "tsgo"
+      }
+    },
+    {
+      // See the comments of "tsgo (7-content-mapper)".
+      "name": "tsgo (8-content-mapper-named-exports)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/.tmp/typescript/packages/vscode-typescript",
+        "--profile-temp",
+        "--skip-welcome",
+        "--disable-workspace-trust",
+        "--folder-uri=${workspaceFolder}/examples/8-content-mapper-named-exports",
+        "${workspaceFolder}/examples/8-content-mapper-named-exports/src/index.ts"
+      ],
+      "outFiles": ["${workspaceFolder}/.tmp/typescript/packages/vscode-typescript/dist/**/*.js"],
+      "preLaunchTask": "prepare content-mapper examples",
       "presentation": {
         "group": "tsgo"
       }

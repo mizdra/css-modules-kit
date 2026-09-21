@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -ue
 
-# Prepares everything the "tsgo (7-content-mapper)" launch configuration needs:
+# Prepares everything the "tsgo (...)" launch configurations need:
 # the VS Code extension (TypeScript Native Preview) and the tsgo binary built from
-# the pinned microsoft/TypeScript commit, and the mapper package symlink for the
-# example. The marketplace build of the extension predates content mapper support,
+# the pinned microsoft/TypeScript commit, and the mapper package symlinks for the
+# examples. The marketplace build of the extension predates content mapper support,
 # so the extension must be built from source.
 #
 # The pinned commit is the head of https://github.com/microsoft/TypeScript/pull/64173,
@@ -47,5 +47,7 @@ fi
 (cd "$DEST" && npm run extension:build)
 
 # tsgo resolves the mapper package from the tsconfig directory with node module resolution.
-mkdir -p examples/7-content-mapper/node_modules/@css-modules-kit
-ln -sfn ../../../../packages/content-mapper examples/7-content-mapper/node_modules/@css-modules-kit/content-mapper
+for dir in examples/7-content-mapper examples/8-content-mapper-named-exports; do
+  mkdir -p "$dir/node_modules/@css-modules-kit"
+  ln -sfn ../../../../packages/content-mapper "$dir/node_modules/@css-modules-kit/content-mapper"
+done

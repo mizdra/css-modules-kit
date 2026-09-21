@@ -56,7 +56,7 @@
       "group": "build"
     },
     {
-      "label": "prepare content-mapper example",
+      "label": "prepare content-mapper examples",
       "dependsOn": ["vp: build - packages/content-mapper", "setup tsgo extension"],
       "group": "build"
     }
