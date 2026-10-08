@@ -159,3 +159,4 @@ Cargo.lock
 ### User
 /crates/zed/extension.wasm
 .vitest/
+/.tmp/

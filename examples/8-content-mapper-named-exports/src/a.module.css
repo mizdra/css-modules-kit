@@ -1,0 +1,14 @@
+@import './b.module.css';
+@value primary: #2864f0;
+
+.a_1 {
+  color: primary;
+  composes: b_1 from './b.module.css';
+  animation-name: fade-in;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
