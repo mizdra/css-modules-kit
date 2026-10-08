@@ -1,0 +1,5 @@
+{
+  "js/ts.experimental.useTsgo": true,
+  // Enables the content mapper inspector ("TypeScript: Show Content Mapper Virtual Documents").
+  "js/ts.showDebugInfo": true
+}
