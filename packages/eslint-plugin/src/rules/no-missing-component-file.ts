@@ -5,6 +5,7 @@ import { readFile } from '../util.js';
 export const noMissingComponentFile: Rule.RuleModule = {
   meta: {
     type: 'problem',
+    // oxlint-disable-next-line typescript/no-deprecated -- Replacing this with `languages` would add runtime validation to existing ESLint configs.
     language: 'css/css',
     messages: {
       disallow: 'The corresponding component file is not found.',
