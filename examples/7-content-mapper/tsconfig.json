@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "es2015",
+    "lib": ["ES2015"],
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+
+    "noEmit": true,
+    "incremental": false,
+    "types": [] // Simplify tsserver.log
+  },
+  "contentMappers": [
+    {
+      "package": "@css-modules-kit/content-mapper",
+      "extensions": [".css"]
+    }
+  ]
+}
