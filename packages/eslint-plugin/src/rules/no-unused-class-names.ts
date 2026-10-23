@@ -6,6 +6,7 @@ import { readFile } from '../util.js';
 export const noUnusedClassNames: Rule.RuleModule = {
   meta: {
     type: 'problem',
+    // oxlint-disable-next-line typescript/no-deprecated -- Replacing this with `languages` would add runtime validation to existing ESLint configs.
     language: 'css/css',
     messages: {
       disallow: '"{{className}}" is defined but never used in "{{componentFileName}}"',
