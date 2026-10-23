@@ -12,7 +12,6 @@ npm i -D @css-modules-kit/eslint-plugin
 
 ```js
 // eslint.config.js
-
 import cssModulesKit from '@css-modules-kit/eslint-plugin';
 import css from '@eslint/css';
 import { defineConfig } from 'eslint/config';
