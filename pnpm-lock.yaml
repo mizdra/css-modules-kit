@@ -238,6 +238,9 @@ importers:
       '@css-modules-kit/codegen':
         specifier: workspace:*
         version: link:packages/codegen
+      '@css-modules-kit/content-mapper':
+        specifier: workspace:^
+        version: link:packages/content-mapper
       '@css-modules-kit/eslint-plugin':
         specifier: workspace:*
         version: link:packages/eslint-plugin

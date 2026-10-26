@@ -8,7 +8,9 @@ allowBuilds:
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@mizdra/*'
-  # The typescript nightly (and its native binary packages) pinned for the content-mapper e2e tests
+  # The typescript nightly (and its native binary packages) pinned for the content-mapper e2e tests.
+  # Unlike the other devDependencies, it is installed in packages/content-mapper instead of the root:
+  # in the root, pnpm would link its `tsc` (the higher version) in place of the `tsc` of typescript 6.
   - typescript
   - '@typescript/typescript-*'
 catalog:

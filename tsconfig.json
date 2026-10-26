@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "include": ["**/*", ".changeset/custom-changelog-github.ts"],
-  "exclude": ["node_modules", "**/dist", "examples", ".tmp"],
+  "exclude": ["node_modules", "**/dist", "examples"],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ESNext"],

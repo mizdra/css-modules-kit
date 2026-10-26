@@ -1,5 +1,5 @@
 {
   "js/ts.experimental.useTsgo": true,
-  // Enables the content mapper inspector ("TypeScript: Show Content Mapper Virtual Documents").
-  "js/ts.showDebugInfo": true
+  // The typescript nightly that the e2e tests of packages/content-mapper also use
+  "js/ts.tsdk.path": "../../packages/content-mapper/node_modules/typescript-nightly"
 }
