@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, realpathSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from '@css-modules-kit/core';
+import { join, resolve } from 'node:path';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
 import {
   type FileLocation,
@@ -21,7 +21,7 @@ export const fixtureDir = join(
 mkdirSync(fixtureDir, { recursive: true });
 
 const createIFF = defineIFFCreator({
-  generateRootDir: () => join(fixtureDir, randomUUID()),
+  generateRootDir: () => join(fixtureDir, randomUUID()).replaceAll('\\', '/'),
   unixStylePath: true,
 });
 
