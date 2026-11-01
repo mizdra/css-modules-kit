@@ -22,7 +22,6 @@ jobs:
       - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
         with:
           node-version: 26
-          cache: true
       - run: vp run build
       - name: set release variables
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%MZ')" >> $GITHUB_ENV
