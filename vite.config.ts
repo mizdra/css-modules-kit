@@ -57,13 +57,7 @@ export default defineConfig({
   },
   fmt: {
     ...mizdraOxfmtConfig,
-    ignorePatterns: [
-      'examples/*/generated',
-      'examples/*/src',
-      'docs/ts-plugin-internals.md',
-      'docs/ts-plugin-internals.ja.md',
-      'packages/vscode/vscode-test/fixtures',
-    ],
+    ignorePatterns: ['examples/*/generated', 'examples/*/src', 'packages/vscode/vscode-test/fixtures'],
   },
   test: {
     // On GitHub Actions, the Windows runner is slow and tests may fail with the default timeout.
