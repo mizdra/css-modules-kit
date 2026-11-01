@@ -2,18 +2,16 @@ import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import type { ExportBuilderHost } from './export-builder.js';
 import { createExportBuilder } from './export-builder.js';
-import { createResolver } from './resolver.js';
 import { readAndParseCSSModule } from './test/css-module.js';
 import { createIFF } from './test/fixture.js';
+import { fakeResolver } from './test/resolver.js';
 import type { ExportBuilder } from './type.js';
-
-const resolver = createResolver({}, undefined);
 
 function prepareExportBuilder(args?: Partial<ExportBuilderHost>): ExportBuilder {
   return createExportBuilder({
     getCSSModule: readAndParseCSSModule,
     matchesPattern: (path) => path.endsWith('.module.css'),
-    resolver,
+    resolver: fakeResolver,
     ...args,
   });
 }

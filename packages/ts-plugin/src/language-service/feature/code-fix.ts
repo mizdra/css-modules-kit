@@ -1,5 +1,5 @@
-import type { CMKConfig, Resolver } from '@css-modules-kit/core';
 import { isCSSModuleFile } from '@css-modules-kit/core';
+import type { CMKConfig, Resolver } from '@css-modules-kit/core-strada';
 import type { Language } from '@volar/language-core';
 import type ts from 'typescript';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';

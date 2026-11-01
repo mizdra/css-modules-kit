@@ -1,4 +1,4 @@
-import { resolve } from '@css-modules-kit/core';
+import { resolve } from '@css-modules-kit/core-strada';
 import css from '@eslint/css';
 import type { Linter } from 'eslint';
 import { ESLint } from 'eslint';

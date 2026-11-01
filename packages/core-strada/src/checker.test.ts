@@ -1,21 +1,20 @@
+import type { CSSModule } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import type { CheckerArgs } from './checker.js';
 import { checkCSSModule } from './checker.js';
 import { createExportBuilder } from './export-builder.js';
-import { createResolver } from './resolver.js';
 import { readAndParseCSSModule } from './test/css-module.js';
 import { formatDiagnostics } from './test/diagnostic.js';
 import { createIFF } from './test/fixture.js';
-import type { CSSModule } from './type.js';
+import { fakeResolver } from './test/resolver.js';
 
-const resolver = createResolver({}, undefined);
 const matchesPattern = (path: string) => path.endsWith('.module.css');
 
 type Checker = (cssModule: CSSModule) => ReturnType<typeof checkCSSModule>;
 
 function prepareChecker(args?: Partial<CheckerArgs>): Checker {
-  const resolverFn = args?.resolver ?? resolver;
+  const resolverFn = args?.resolver ?? fakeResolver;
   const matchesPatternFn = args?.matchesPattern ?? matchesPattern;
   const exportBuilder = createExportBuilder({
     getCSSModule: readAndParseCSSModule,

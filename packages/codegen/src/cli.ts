@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { resolve } from '@css-modules-kit/core';
+import { resolve } from '@css-modules-kit/core-strada';
 import packageJson from '../package.json' with { type: 'json' };
 import { ParseCLIArgsError } from './error.js';
 

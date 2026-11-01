@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import { stripVTControlCharacters } from 'node:util';
-import { join } from '@css-modules-kit/core';
+import { join } from '@css-modules-kit/core-strada';
 import dedent from 'dedent';
 import { describe, expect, test } from 'vite-plus/test';
 import { createIFF } from '../src/test/fixture.js';

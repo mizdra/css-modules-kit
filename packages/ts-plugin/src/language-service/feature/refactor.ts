@@ -1,4 +1,5 @@
-import { getCssModuleFileName, isComponentFileName } from '@css-modules-kit/core';
+import { isComponentFileName } from '@css-modules-kit/core';
+import { getCssModuleFileName } from '@css-modules-kit/core-strada';
 import type ts from 'typescript';
 
 export const createCssModuleFileRefactor = {

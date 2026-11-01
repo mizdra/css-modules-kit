@@ -1,0 +1,51 @@
+{
+  "name": "@css-modules-kit/core-strada",
+  "version": "1.4.1",
+  "private": false,
+  "description": "The code shared by ts-plugin and codegen of css-modules-kit, the tools that run on the API of TypeScript 6 or earlier",
+  "keywords": [
+    "css-modules",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizdra/css-modules-kit.git",
+    "directory": "packages/core-strada"
+  },
+  "files": [
+    "bin",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/__snapshots__",
+    "!src/test",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "default": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
+  "dependencies": {
+    "@css-modules-kit/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "typescript": "^5.7.3 || ^6.0.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

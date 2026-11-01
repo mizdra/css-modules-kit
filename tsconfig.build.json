@@ -5,6 +5,7 @@
   },
   "references": [
     { "path": "./packages/core/tsconfig.build.json" },
+    { "path": "./packages/core-strada/tsconfig.build.json" },
     { "path": "./packages/codegen/tsconfig.build.json" },
     { "path": "./packages/ts-plugin/tsconfig.build.json" },
     { "path": "./packages/vscode/tsconfig.build.json" },

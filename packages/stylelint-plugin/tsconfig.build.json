@@ -13,5 +13,5 @@
     "sourceMap": true,
     "declarationMap": true
   },
-  "references": [{ "path": "../core/tsconfig.build.json" }]
+  "references": [{ "path": "../core/tsconfig.build.json" }, { "path": "../core-strada/tsconfig.build.json" }]
 }

@@ -43,7 +43,8 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@css-modules-kit/core": "workspace:*"
+    "@css-modules-kit/core": "workspace:*",
+    "@css-modules-kit/core-strada": "workspace:*"
   },
   "peerDependencies": {
     "stylelint": "^16.0.0 || ^17.0.0"
