@@ -16,8 +16,8 @@ jobs:
   lint:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
+      - uses: actions/checkout@v6.0.2
+      - uses: voidzero-dev/setup-vp@v1.9.0
         with:
           node-version: 26
           cache: true
@@ -25,8 +25,8 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
+      - uses: actions/checkout@v6.0.2
+      - uses: voidzero-dev/setup-vp@v1.9.0
         with:
           node-version: 26
           cache: true
@@ -59,12 +59,12 @@ jobs:
             stylelint-version: '16'
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
+      - uses: actions/checkout@v6.0.2
+      - uses: voidzero-dev/setup-vp@v1.9.0
         with:
           node-version: ${{ matrix.node }}
           cache: true
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: actions/cache@v5.0.4
         with:
           path: |
             node_modules/.vite/vitest
@@ -84,12 +84,12 @@ jobs:
         os: [ubuntu-24.04-arm, macos-latest, windows-11-arm]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
+      - uses: actions/checkout@v6.0.2
+      - uses: voidzero-dev/setup-vp@v1.9.0
         with:
           node-version: ${{ matrix.node }}
           cache: true
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: actions/cache@v5.0.4
         with:
           path: |
             packages/*/dist
@@ -97,7 +97,7 @@ jobs:
             tsconfig.tsbuildinfo
           key: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}-${{ github.sha }}
           restore-keys: test-vscode-tools-${{ runner.arch }}-${{ runner.os }}-node-${{ matrix.node }}
-      - uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
+      - uses: actions/cache@v5.0.4
         with:
           path: .vscode-test
           key: vscode-test-${{ runner.arch }}-${{ runner.os }}-vscode-${{ env.VSCODE_VERSION }}

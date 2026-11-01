@@ -18,8 +18,8 @@ jobs:
     name: Release
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: voidzero-dev/setup-vp@56918a6d0c629c55ae8b88826a7d47fda85769ee # v1.9.0
+      - uses: actions/checkout@v6.0.2
+      - uses: voidzero-dev/setup-vp@v1.9.0
         with:
           node-version: 26
       - run: vp run build
@@ -27,7 +27,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%dT%H:%MZ')" >> $GITHUB_ENV
       - name: Create Release Pull Request or Publish to npm
         id: changesets
-        uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e # v1.5.2
+        uses: dotansimha/changesets-action@v1.5.2
         with:
           version: vp run version
           publish: ./scripts/stage-publish.sh
