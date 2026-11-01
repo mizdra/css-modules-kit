@@ -1,5 +1,14 @@
 # @css-modules-kit/stylelint-plugin
 
+## 1.4.1
+
+### Patch Changes
+
+- [#463](https://github.com/mizdra/css-modules-kit/pull/463) [`a2d2c56`](https://github.com/mizdra/css-modules-kit/commit/a2d2c562e3c92b83e25dbbb8511c26cdc3077530) - fix(ts-plugin, codegen, eslint-plugin, stylelint-plugin): depend on the exact version of `@css-modules-kit/core`, because its API may change in any release
+
+- Updated dependencies [[`4eb1703`](https://github.com/mizdra/css-modules-kit/commit/4eb1703874422ce80769433a43def141d2caca92), [`0b430c8`](https://github.com/mizdra/css-modules-kit/commit/0b430c8dda69a8f85c3d06cbc586837e68f3eb81), [`cc5b46c`](https://github.com/mizdra/css-modules-kit/commit/cc5b46c836f0cd9899ad6858723a16242b08c6b0)]:
+  - @css-modules-kit/core@1.4.1
+
 ## 1.4.0
 
 ### Patch Changes
