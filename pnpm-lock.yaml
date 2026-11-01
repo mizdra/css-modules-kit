@@ -236,13 +236,13 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       '@css-modules-kit/codegen':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/codegen
       '@css-modules-kit/eslint-plugin':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/eslint-plugin
       '@css-modules-kit/stylelint-plugin':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/stylelint-plugin
       '@eslint/css':
         specifier: ^1.4.0
@@ -331,7 +331,7 @@ importers:
   packages/codegen:
     dependencies:
       '@css-modules-kit/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       chokidar:
         specifier: ^5.0.0
@@ -361,7 +361,7 @@ importers:
   packages/eslint-plugin:
     dependencies:
       '@css-modules-kit/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       '@eslint/css':
         specifier: '>=0.4.0'
@@ -376,7 +376,7 @@ importers:
   packages/stylelint-plugin:
     dependencies:
       '@css-modules-kit/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       stylelint:
         specifier: ^16.0.0 || ^17.0.0
@@ -385,7 +385,7 @@ importers:
   packages/ts-plugin:
     dependencies:
       '@css-modules-kit/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       '@volar/language-core':
         specifier: ^2.4.28
@@ -400,7 +400,7 @@ importers:
   packages/vscode:
     dependencies:
       '@css-modules-kit/ts-plugin':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../ts-plugin
 
 packages:
