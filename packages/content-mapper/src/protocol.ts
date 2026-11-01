@@ -81,6 +81,7 @@ export type SpanMapping = [
   features?: number,
 ];
 
+// oxlint-disable-next-line no-redeclare -- The value and the type of this name are declared in separate namespaces.
 export const SpanMapKind = {
   /** Positions correspond 1:1 within the spans. */
   Verbatim: 0,
@@ -151,6 +152,7 @@ export type MappedDiagnosticDirective = [
   unusedExpectDirectiveIndex?: number,
 ];
 
+// oxlint-disable-next-line no-redeclare -- The value and the type of this name are declared in separate namespaces.
 export const DiagnosticDirectivePolicy = {
   Ignore: 0,
   Expect: 1,

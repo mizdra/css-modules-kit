@@ -23,10 +23,10 @@ export async function runServer(input: Readable, output: Writable): Promise<void
   const connection = createMessageConnection(new StreamMessageReader(input), new StreamMessageWriter(output));
   const projects = new Set<string>();
 
-  connection.onRequest(
-    InitializeRequest,
-    (): InitializeResult => ({ positionEncoding: 'utf-16', diagnosticSource: DIAGNOSTIC_SOURCE }),
-  );
+  connection.onRequest(InitializeRequest, (): InitializeResult => ({
+    positionEncoding: 'utf-16',
+    diagnosticSource: DIAGNOSTIC_SOURCE,
+  }));
   connection.onRequest(OpenProjectRequest, (params) => {
     projects.add(params.projectHandle);
     return {};
