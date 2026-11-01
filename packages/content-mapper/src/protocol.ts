@@ -2,30 +2,14 @@
 // (microsoft/typescript-go#4712, microsoft/TypeScript#63936).
 // The wire format is JSON-RPC 2.0 with LSP-style `Content-Length` framing.
 
+import { RequestType } from 'vscode-jsonrpc/node';
+
 export const DIAGNOSTIC_SOURCE = 'cmk';
 
-export const METHOD_NOT_FOUND = -32601;
-export const INVALID_PARAMS = -32602;
-
-export interface RequestMessage {
-  jsonrpc: '2.0';
-  id: number | string;
-  method: string;
-  params?: unknown;
-}
-
-export interface ResponseMessage {
-  jsonrpc: '2.0';
-  id: number | string;
-  result?: unknown;
-  error?: ResponseError;
-}
-
-export interface ResponseError {
-  code: number;
-  message: string;
-  data?: unknown;
-}
+export const InitializeRequest = new RequestType<InitializeParams, InitializeResult, void>('initialize');
+export const OpenProjectRequest = new RequestType<OpenProjectParams, OpenProjectResult, void>('openProject');
+export const CloseProjectRequest = new RequestType<CloseProjectParams, null, void>('closeProject');
+export const TransformRequest = new RequestType<TransformParams, TransformResult, void>('transform');
 
 export type PositionEncoding = 'utf-8' | 'utf-16';
 

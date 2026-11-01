@@ -16,7 +16,8 @@
     "build": "tsc -b tsconfig.build.json"
   },
   "dependencies": {
-    "@css-modules-kit/core": "workspace:^"
+    "@css-modules-kit/core": "workspace:^",
+    "vscode-jsonrpc": "^10.0.0"
   },
   "devDependencies": {
     "typescript-nightly": "npm:typescript@7.1.0-dev.20260920.1"
