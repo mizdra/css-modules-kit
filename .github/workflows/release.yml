@@ -31,7 +31,7 @@ jobs:
         uses: dotansimha/changesets-action@069996e9be15531bd598272996fa23853d61590e # v1.5.2
         with:
           version: vp run version
-          publish: vp exec changeset publish
+          publish: ./scripts/stage-publish.sh
           createGithubReleases: aggregate
           githubReleaseName: Release ${{ env.date }}
         env:
