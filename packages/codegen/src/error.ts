@@ -1,5 +1,6 @@
-import type { CMKConfig } from '@css-modules-kit/core';
-import { relative, SystemError } from '@css-modules-kit/core';
+import { SystemError } from '@css-modules-kit/core';
+import type { CMKConfig } from '@css-modules-kit/core-strada';
+import { relative } from '@css-modules-kit/core-strada';
 
 export class ParseCLIArgsError extends SystemError {
   constructor(cause: unknown) {

@@ -1,9 +1,9 @@
+import { TsConfigFileNotFoundError } from '@css-modules-kit/core';
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vite-plus/test';
 import type { CMKConfig } from './config.js';
 import { readConfigFile } from './config.js';
-import { TsConfigFileNotFoundError } from './error.js';
 import { createIFF } from './test/fixture.js';
 
 describe('readConfigFile', () => {

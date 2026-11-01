@@ -1,5 +1,6 @@
 import type { CSSModule, ExportBuilder, MatchesPattern, Resolver } from '@css-modules-kit/core';
-import { checkCSSModule, convertDiagnostic } from '@css-modules-kit/core';
+import { checkCSSModule } from '@css-modules-kit/core';
+import { convertDiagnostic } from '@css-modules-kit/core-strada';
 import type { Language } from '@volar/language-core';
 import type ts from 'typescript';
 import { CMK_DATA_KEY, isCSSModuleScript } from '../../language-plugin.js';

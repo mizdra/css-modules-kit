@@ -1,5 +1,7 @@
-import type { CMKConfig, Resolver } from '@css-modules-kit/core';
-import { getCssModuleFileName, isComponentFileName, isCSSModuleFile, STYLES_EXPORT_NAME } from '@css-modules-kit/core';
+import type { Resolver } from '@css-modules-kit/core';
+import { isComponentFileName, isCSSModuleFile } from '@css-modules-kit/core';
+import type { CMKConfig } from '@css-modules-kit/core-strada';
+import { getCssModuleFileName, STYLES_EXPORT_NAME } from '@css-modules-kit/core-strada';
 import ts from 'typescript';
 import { convertDefaultImportsToNamespaceImports, createPreferencesForCompletion } from '../../util.js';
 import { getPropertyAccessExpressionAtPosition } from '../ast.js';

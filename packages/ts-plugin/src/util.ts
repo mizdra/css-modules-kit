@@ -1,4 +1,5 @@
-import { type CMKConfig, isCSSModuleFile, type Resolver, STYLES_EXPORT_NAME } from '@css-modules-kit/core';
+import { isCSSModuleFile, type Resolver } from '@css-modules-kit/core';
+import { type CMKConfig, STYLES_EXPORT_NAME } from '@css-modules-kit/core-strada';
 import ts from 'typescript';
 
 export function createPreferencesForCompletion<T extends ts.UserPreferences>(preferences: T, config: CMKConfig): T {

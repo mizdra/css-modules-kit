@@ -5,6 +5,7 @@
   "fixed": [
     [
       "@css-modules-kit/core",
+      "@css-modules-kit/core-strada",
       "@css-modules-kit/ts-plugin",
       "@css-modules-kit/codegen",
       "@css-modules-kit/eslint-plugin",

@@ -1,7 +1,7 @@
+import type { Resolver, ResolverOptions } from '@css-modules-kit/core';
+import { isURLSpecifier } from '@css-modules-kit/core';
 import type { CompilerOptions } from 'typescript';
 import ts from 'typescript';
-import type { Resolver, ResolverOptions } from './type.js';
-import { isURLSpecifier } from './util.js';
 
 export function createResolver(
   compilerOptions: CompilerOptions,

@@ -11,6 +11,7 @@ The provided language features and available settings are described in [README.m
 This project is a monorepo and consists of the following packages:
 
 - **packages/core**: Common package that provides core functionality such as parsing CSS Modules, generating type definitions, and validation
+- **packages/core-strada**: The part of the core that depends on the API of TypeScript 6 or earlier (the Strada codebase), such as `generateDts`, `readConfigFile`, `createResolver`, and the path utilities
 - **packages/ts-plugin**: Implementation of the TypeScript Language Service Plugin (Volar.js-based)
   - Provides language features such as Go to Definition, Rename, Find All References
 - **packages/codegen**: CLI tool to generate CSS Modules type definition files (`.d.ts`)
@@ -23,8 +24,9 @@ This project is a monorepo and consists of the following packages:
 
 Package dependencies:
 
-- ts-plugin, codegen, stylelint-plugin, and eslint-plugin all depend on the core package
-- Functionality is implemented via APIs provided by the core package (`parseCSSModule`, `generateDts`, `checkCSSModule`, etc.)
+- ts-plugin, codegen, stylelint-plugin, and eslint-plugin all depend on the core and core-strada packages
+- core does not depend on `typescript`. core-strada depends on core
+- Functionality is implemented via APIs provided by these packages (`parseCSSModule`, `generateDts`, `checkCSSModule`, etc.)
 
 ## Development Commands
 
@@ -129,7 +131,7 @@ function myFunction() {
 ## Additional Documentation
 
 - [`docs/ts-plugin-internals.md`](./docs/ts-plugin-internals.md): Deep dive into the TS plugin internals
-  - Read this when working on `packages/ts-plugin` or `packages/core/src/dts-generator.ts` — especially when modifying Volar.js mappings, virtual code generation, or language service features (Go to Definition, Find References, Rename, etc.)
+  - Read this when working on `packages/ts-plugin` or `packages/core-strada/src/dts-generator.ts` — especially when modifying Volar.js mappings, virtual code generation, or language service features (Go to Definition, Find References, Rename, etc.)
 
 ## Key Files
 
@@ -138,7 +140,7 @@ function myFunction() {
   - Responsible for extracting tokens and generating diagnostics detectable during parsing
 - `packages/core/src/checker.ts`: CSS Modules validation
   - Responsible for generating diagnostics that cannot be detected in the parse phase
-- `packages/core/src/dts-generator.ts`: Generates type definition files (`.d.ts`) and mappings.
+- `packages/core-strada/src/dts-generator.ts`: Generates type definition files (`.d.ts`) and mappings.
 
 ## Tech Stack
 

@@ -10,7 +10,7 @@ ts-plugin は TypeScript Language Service Plugin です。Volar.js を使って 
 
 ## VirtualCode
 
-`VirtualCode` は、CSS ファイルの内容を TypeScript の型定義ファイル (`.d.ts`) として表現したものです。その生成は [packages/core/src/dts-generator.ts](../packages/core/src/dts-generator.ts) の `generateDts()` で行われます。ここではその構造について説明します。
+`VirtualCode` は、CSS ファイルの内容を TypeScript の型定義ファイル (`.d.ts`) として表現したものです。その生成は [packages/core-strada/src/dts-generator.ts](../packages/core-strada/src/dts-generator.ts) の `generateDts()` で行われます。ここではその構造について説明します。
 
 ### 基本的な構造
 

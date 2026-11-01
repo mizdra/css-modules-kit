@@ -1,16 +1,14 @@
 import { readFileSync } from 'node:fs';
 import type { CSSModule, Diagnostic } from '@css-modules-kit/core';
+import { checkCSSModule, createExportBuilder, parseCSSModule } from '@css-modules-kit/core';
 import {
-  checkCSSModule,
   type CMKConfig,
-  createExportBuilder,
   createMatchesPattern,
   createResolver,
   generateDts,
   getFileNamesByPattern,
-  parseCSSModule,
   readConfigFile,
-} from '@css-modules-kit/core';
+} from '@css-modules-kit/core-strada';
 import ts from 'typescript';
 import { writeDtsFile } from './dts-writer.js';
 import { ReadCSSModuleFileError } from './error.js';
