@@ -239,7 +239,7 @@ importers:
         specifier: workspace:*
         version: link:packages/codegen
       '@css-modules-kit/content-mapper':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:packages/content-mapper
       '@css-modules-kit/eslint-plugin':
         specifier: workspace:*
@@ -349,7 +349,7 @@ importers:
   packages/content-mapper:
     dependencies:
       '@css-modules-kit/core':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../core
       vscode-jsonrpc:
         specifier: ^10.0.0
