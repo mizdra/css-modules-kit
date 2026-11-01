@@ -1,9 +1,9 @@
 import { expect, test } from 'vite-plus/test';
 import { buildTSConfigJSON } from '../src/test/builder.js';
 import { fixtureDir, setupFixture } from './test-util/fixture.js';
-import { launchLSPClient } from './test-util/lsp-client.js';
+import { launchLanguageClient } from './test-util/language-client.js';
 
-const client = launchLSPClient(fixtureDir);
+const client = await launchLanguageClient(fixtureDir);
 
 // ref: https://github.com/mizdra/css-modules-kit/issues/170
 test('reports no diagnostics for a non-module .css file', async () => {

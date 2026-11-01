@@ -2,7 +2,6 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { MessageConnection } from 'vscode-jsonrpc/node';
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
 
 // Keep the resolution in sync with `scripts/vitest-e2e-test-setup.ts`.
@@ -126,7 +125,7 @@ interface LSPCodeAction {
 }
 
 /**
- * A thin client for the tsgo LSP server.
+ * A thin client for the tsgo language server.
  *
  * Methods returning language feature results (definitions, references, rename, file rename edits,
  * diagnostics, completion, code actions) return normalized values: only the fields relevant to tests are kept, URIs are
@@ -134,7 +133,7 @@ interface LSPCodeAction {
  * compared with `toStrictEqual`. Spans and text edits are sorted by file path, then by position.
  * Duplicates are not removed.
  */
-export interface LSPClient {
+export interface LanguageClient {
   /** Opens files. A file is opened with its on-disk content unless `content` is given. */
   openFiles(files: readonly (string | { file: string; content: string })[]): Promise<void>;
   closeFiles(files: readonly string[]): Promise<void>;
@@ -317,12 +316,10 @@ function languageIdOf(filePath: string): string {
 const DEFAULT_PREFERENCES = { providePrefixAndSuffixTextForRename: false };
 
 /**
- * Launches a tsgo LSP server shared by all tests in a test file. The server is spawned lazily on
- * the first use, and spawned again after it exits unexpectedly, so that a crash fails only the
- * requests that were pending. The server exits by itself when the test process closes its stdin.
+ * Launches a tsgo language server shared by all tests in a test file, and resolves after the
+ * initialization. The server exits by itself when the test process closes its stdin.
  */
-export function launchLSPClient(rootDir: string): LSPClient {
-  let connection: MessageConnection | undefined;
+export async function launchLanguageClient(rootDir: string): Promise<LanguageClient> {
   const documentVersions = new Map<string, number>();
   let preferences: Record<string, unknown> = DEFAULT_PREFERENCES;
 
@@ -331,70 +328,58 @@ export function launchLSPClient(rootDir: string): LSPClient {
     return section === 'js/ts' ? { unstable: preferences } : null;
   }
 
+  const proc = spawn(tsgoBinPath, ['--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
+  const connection = createMessageConnection(new StreamMessageReader(proc.stdout), new StreamMessageWriter(proc.stdin));
+  connection.onRequest('workspace/configuration', ({ items }: { items: { section?: string }[] }) =>
+    items.map((item) => getConfiguration(item.section)),
+  );
+  // The tests need no dynamic capability registration, so every other server-to-client request
+  // is answered with an empty result.
+  connection.onRequest(() => null);
+  connection.listen();
+  // Rejects the pending requests.
+  proc.on('exit', () => connection.dispose());
+
   // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   async function sendRequest(method: string, params: unknown): Promise<any> {
-    return connection!.sendRequest(method, params);
+    return connection.sendRequest(method, params);
   }
 
   async function sendNotification(method: string, params: unknown): Promise<void> {
-    await connection!.sendNotification(method, params);
+    await connection.sendNotification(method, params);
   }
 
-  function handleExit(): void {
-    // Rejects the pending requests.
-    connection?.dispose();
-    documentVersions.clear();
-    started = undefined;
-  }
-
-  let started: Promise<void> | undefined;
-  async function ensureStarted(): Promise<void> {
-    started ??= (async () => {
-      const proc = spawn(tsgoBinPath, ['--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
-      connection = createMessageConnection(new StreamMessageReader(proc.stdout), new StreamMessageWriter(proc.stdin));
-      connection.onRequest('workspace/configuration', ({ items }: { items: { section?: string }[] }) =>
-        items.map((item) => getConfiguration(item.section)),
-      );
-      // The tests need no dynamic capability registration, so every other server-to-client request
-      // is answered with an empty result.
-      connection.onRequest(() => null);
-      connection.listen();
-      proc.on('exit', handleExit);
-      await sendRequest('initialize', {
-        processId: process.pid,
-        rootUri: toFileUri(rootDir),
-        capabilities: {
-          workspace: {
-            configuration: true,
-            // The server answers a rename request on an import specifier with a file rename
-            // operation only when the client declares these capabilities.
-            workspaceEdit: { documentChanges: true, resourceOperations: ['create', 'rename'] },
-            fileOperations: { willRename: true },
-          },
-          textDocument: {
-            // The server reports the enclosing declaration of a definition only as a part of `LocationLink`.
-            definition: { linkSupport: true },
-            completion: {
-              completionItem: {
-                snippetSupport: true,
-                labelDetailsSupport: true,
-                resolveSupport: { properties: ['detail', 'documentation', 'additionalTextEdits'] },
-              },
-            },
-            codeAction: {
-              codeActionLiteralSupport: { codeActionKind: { valueSet: ['quickfix', 'refactor'] } },
-            },
+  await sendRequest('initialize', {
+    processId: process.pid,
+    rootUri: toFileUri(rootDir),
+    capabilities: {
+      workspace: {
+        configuration: true,
+        // The server answers a rename request on an import specifier with a file rename
+        // operation only when the client declares these capabilities.
+        workspaceEdit: { documentChanges: true, resourceOperations: ['create', 'rename'] },
+        fileOperations: { willRename: true },
+      },
+      textDocument: {
+        // The server reports the enclosing declaration of a definition only as a part of `LocationLink`.
+        definition: { linkSupport: true },
+        completion: {
+          completionItem: {
+            snippetSupport: true,
+            labelDetailsSupport: true,
+            resolveSupport: { properties: ['detail', 'documentation', 'additionalTextEdits'] },
           },
         },
-        initializationOptions: { runExternalCode: true },
-      });
-      await sendNotification('initialized', {});
-    })();
-    return started;
-  }
+        codeAction: {
+          codeActionLiteralSupport: { codeActionKind: { valueSet: ['quickfix', 'refactor'] } },
+        },
+      },
+    },
+    initializationOptions: { runExternalCode: true },
+  });
+  await sendNotification('initialized', {});
 
   async function sendCompletionRequest(args: FileLocation): Promise<LSPCompletionItem[]> {
-    await ensureStarted();
     const result: LSPCompletionItem[] | { items: LSPCompletionItem[] } | null = await sendRequest(
       'textDocument/completion',
       { textDocument: { uri: toFileUri(args.file) }, position: args.position },
@@ -404,7 +389,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
   }
 
   async function sendDefinitionRequest(args: FileLocation) {
-    await ensureStarted();
     return sendRequest('textDocument/definition', {
       textDocument: { uri: toFileUri(args.file) },
       position: args.position,
@@ -413,7 +397,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
 
   return {
     async openFiles(files) {
-      await ensureStarted();
       for (const entry of files) {
         const file = typeof entry === 'string' ? entry : entry.file;
         const text = typeof entry === 'string' ? readFileSync(file, 'utf8') : entry.content;
@@ -425,7 +408,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
       }
     },
     async closeFiles(files) {
-      await ensureStarted();
       for (const file of files) {
         const uri = toFileUri(file);
         documentVersions.delete(uri);
@@ -433,7 +415,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
       }
     },
     async changeFile(file, content) {
-      await ensureStarted();
       const uri = toFileUri(file);
       const version = (documentVersions.get(uri) ?? 1) + 1;
       documentVersions.set(uri, version);
@@ -445,7 +426,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
     sendDefinition: async (args) => normalizeDefinitions(await sendDefinitionRequest(args), false),
     sendDefinitionWithContext: async (args) => normalizeDefinitions(await sendDefinitionRequest(args), true),
     async sendReferences(args) {
-      await ensureStarted();
       const result = await sendRequest('textDocument/references', {
         textDocument: { uri: toFileUri(args.file) },
         position: args.position,
@@ -454,7 +434,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
       return normalizeLocations(result);
     },
     async sendRename(args, newName = 'renamed') {
-      await ensureStarted();
       const result = await sendRequest('textDocument/rename', {
         textDocument: { uri: toFileUri(args.file) },
         position: args.position,
@@ -463,14 +442,12 @@ export function launchLSPClient(rootDir: string): LSPClient {
       return normalizeRenameResult(result, newName);
     },
     async sendDocumentDiagnostic(file) {
-      await ensureStarted();
       const result: { items: Diagnostic[] } = await sendRequest('textDocument/diagnostic', {
         textDocument: { uri: toFileUri(file) },
       });
       return normalizeDiagnostics(result.items);
     },
     async sendConfigure(args) {
-      await ensureStarted();
       preferences = { ...DEFAULT_PREFERENCES, ...args.preferences };
       await sendNotification('workspace/didChangeConfiguration', {
         settings: { 'js/ts': getConfiguration('js/ts') },
@@ -487,7 +464,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
       return resolved.additionalTextEdits === undefined ? {} : { additionalTextEdits: resolved.additionalTextEdits };
     },
     async sendCodeActions(args) {
-      await ensureStarted();
       const result = await sendRequest('textDocument/codeAction', {
         textDocument: { uri: toFileUri(args.file) },
         range: args.range,
@@ -499,7 +475,6 @@ export function launchLSPClient(rootDir: string): LSPClient {
       return normalizeCodeActions(result);
     },
     async sendWillRenameFiles(args) {
-      await ensureStarted();
       const result = await sendRequest('workspace/willRenameFiles', {
         files: [{ oldUri: toFileUri(args.oldFilePath), newUri: toFileUri(args.newFilePath) }],
       });

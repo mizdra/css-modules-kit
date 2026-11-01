@@ -3,9 +3,15 @@ import { mkdirSync, realpathSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from '@css-modules-kit/core';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
-import { type FileLocation, type FileSpan, type FileSpanWithContext, formatPath, type Position } from './lsp-client.js';
+import {
+  type FileLocation,
+  type FileSpan,
+  type FileSpanWithContext,
+  formatPath,
+  type Position,
+} from './language-client.js';
 
-// tmpdir() may be a symlink (e.g. /var -> /private/var on macOS). The paths sent by the LSP
+// tmpdir() may be a symlink (e.g. /var -> /private/var on macOS). The paths sent by the language
 // client must match the ones the server reports back, so the real path is resolved up front.
 export const fixtureDir = join(
   realpathSync(tmpdir()),

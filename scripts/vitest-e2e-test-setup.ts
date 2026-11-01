@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { TestProject } from 'vite-plus/test/node';
 
-// Keep the resolution in sync with `packages/content-mapper/e2e-test/test-util/lsp-client.ts`.
+// Keep the resolution in sync with `packages/content-mapper/e2e-test/test-util/language-client.ts`.
 const tsgoBinPath = process.env['TSGO_BIN'] ?? resolveNativeTscBinPath();
 
 /**
