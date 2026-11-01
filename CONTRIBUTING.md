@@ -128,3 +128,7 @@ css-modules-kit is released using [changesets](https://github.com/changesets/cha
 Merging a pull request titled "Version Packages" will trigger a release.
 
 - https://github.com/mizdra/css-modules-kit/pulls?q=is%3Apr+Version+Packages+in%3Atitle
+
+After that, approve the staged packages on npmjs.com to publish them.
+
+- https://www.npmjs.com/settings/~/staged-packages
