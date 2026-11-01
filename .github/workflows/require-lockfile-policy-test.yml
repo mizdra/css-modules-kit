@@ -1,0 +1,13 @@
+name: require-lockfile-policy-test
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  echo:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - run: echo 'This workflow is not in actions.lock'
