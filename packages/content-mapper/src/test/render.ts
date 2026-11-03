@@ -1,4 +1,4 @@
-import { SpanMapFeature, SpanMapKind } from '../protocol.js';
+import { SpanMapFeature, SpanMapKind } from 'typescript/ast';
 import type { TransformOutput } from '../transformer.js';
 
 interface Marker {
@@ -12,15 +12,13 @@ interface PositionedMarker extends Marker {
   column: number;
 }
 
-const KIND_NAMES: Record<SpanMapKind, string> = {
-  [SpanMapKind.Verbatim]: 'Verbatim',
-  [SpanMapKind.Atom]: 'Atom',
-  [SpanMapKind.Alias]: 'Alias',
-};
-
 function formatFeatures(features: number | undefined): string {
   if (features === undefined) return '';
-  const flags = Object.entries(SpanMapFeature).filter(([name]) => name !== 'All');
+  // A numeric enum also has the entries of its reverse mapping.
+  const flags = Object.entries(SpanMapFeature).filter(
+    (entry): entry is [string, SpanMapFeature] =>
+      typeof entry[1] === 'number' && entry[1] !== SpanMapFeature.None && entry[1] !== SpanMapFeature.All,
+  );
   const included = flags.filter(([, bit]) => (features & bit) !== 0).map(([name]) => name);
   const excluded = flags.filter(([, bit]) => (features & bit) === 0).map(([name]) => name);
   if (excluded.length === 0) return '(All)';
@@ -77,7 +75,7 @@ export function renderTransformOutput(source: string, output: TransformOutput): 
     })),
   ];
   const generatedMarkers: Marker[] = output.mappings.map((mapping, i) => ({
-    label: `#${i} ${KIND_NAMES[mapping[4]]}${formatFeatures(mapping[5])}`,
+    label: `#${i} ${SpanMapKind[mapping[4]]}${formatFeatures(mapping[5])}`,
     offset: mapping[0],
     length: mapping[1],
   }));

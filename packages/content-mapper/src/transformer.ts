@@ -1,7 +1,7 @@
 import type { DiagnosticWithLocation, Token } from '@css-modules-kit/core';
 import { isCSSModuleFile, parseCSSModule, validateTokenName } from '@css-modules-kit/core';
+import { SpanMapFeature, SpanMapKind } from 'typescript/ast';
 import type { MapperDiagnostic, SpanMapping } from './protocol.js';
-import { SpanMapFeature, SpanMapKind } from './protocol.js';
 
 export interface TransformOutput {
   text: string;

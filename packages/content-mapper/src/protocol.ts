@@ -2,6 +2,7 @@
 // (microsoft/typescript-go#4712, microsoft/TypeScript#63936).
 // The wire format is JSON-RPC 2.0 with LSP-style `Content-Length` framing.
 
+import type { SpanMapKind } from 'typescript/ast';
 import { RequestType } from 'vscode-jsonrpc/node';
 
 export const DIAGNOSTIC_SOURCE = 'cmk';
@@ -70,43 +71,6 @@ export type SpanMapping = [
   kind: SpanMapKind,
   features?: number,
 ];
-
-// oxlint-disable-next-line no-redeclare -- The value and the type of this name are declared in separate namespaces.
-export const SpanMapKind = {
-  /** Positions correspond 1:1 within the spans. */
-  Verbatim: 0,
-  /** The spans correspond only as a whole. */
-  Atom: 1,
-  /** Like `Atom`, but the spans have unrelated text (e.g. different names). */
-  Alias: 2,
-} as const;
-
-export type SpanMapKind = (typeof SpanMapKind)[keyof typeof SpanMapKind];
-
-/** Bit flags of language service features enabled for a span. Omitted means all features. */
-export const SpanMapFeature = {
-  Hover: 1 << 0,
-  SignatureHelp: 1 << 1,
-  Completion: 1 << 2,
-  Definition: 1 << 3,
-  TypeDefinition: 1 << 4,
-  Implementation: 1 << 5,
-  References: 1 << 6,
-  DocumentHighlights: 1 << 7,
-  Rename: 1 << 8,
-  CallHierarchy: 1 << 9,
-  CodeActions: 1 << 10,
-  Formatting: 1 << 11,
-  InlayHints: 1 << 12,
-  SemanticTokens: 1 << 13,
-  FoldingRanges: 1 << 14,
-  SelectionRanges: 1 << 15,
-  LinkedEditing: 1 << 16,
-  AutoInsert: 1 << 17,
-  DocumentSymbols: 1 << 18,
-  CodeLens: 1 << 19,
-  All: (1 << 20) - 1,
-} as const;
 
 /** A diagnostic reported by the mapper. `start` and `length` are positions in the original file. */
 export interface MapperDiagnostic {
