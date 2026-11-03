@@ -44,7 +44,7 @@ Good to know:
 
 1. Install the [TypeScript 7](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview) extension in VS Code
 1. Run `vp run build`
-1. Start `code examples/7-content-mapper` (or `code examples/8-content-mapper-named-exports`)
+1. Start `code examples/7-content-mapper`
 1. Trust the workspace, and select "Allow" when asked whether to use the TypeScript 7 tsdk configured in the workspace
 
 Good to know:

@@ -1,0 +1,7 @@
+{
+  "name": "@css-modules-kit/example-content-mapper",
+  "private": true,
+  "devDependencies": {
+    "@css-modules-kit/content-mapper": "workspace:*"
+  }
+}
