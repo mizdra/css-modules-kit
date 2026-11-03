@@ -4,6 +4,7 @@
   "private": false,
   "description": "A TypeScript content mapper for CSS Modules",
   "keywords": [
+    "content-mapper",
     "css-modules",
     "typescript"
   ],

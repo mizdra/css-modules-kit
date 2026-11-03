@@ -1,5 +1,5 @@
-// Type definitions for the content mapper protocol of TypeScript 7
-// (microsoft/typescript-go#4712, microsoft/TypeScript#63936).
+// Type definitions for the content mapper protocol of TypeScript 7, as of 7.1.0-dev.20261030.1.
+// https://github.com/microsoft/TypeScript/blob/0b0aeb31e416c280bcbef7d7734aa21e7d999cdd/tsc/internal/contentmapper/hostimpl.go#L34
 // The wire format is JSON-RPC 2.0 with LSP-style `Content-Length` framing.
 
 import type { SpanMapKind } from 'typescript/ast';
@@ -62,7 +62,10 @@ export interface TransformResult {
 
 export type VirtualExtension = '.js' | '.jsx' | '.mjs' | '.cjs' | '.ts' | '.tsx' | '.mts' | '.cts' | '.json';
 
-/** A mapping between a span in the generated text and a span in the original file. */
+/**
+ * A mapping between a span in the generated text and a span in the original file.
+ * @see https://github.com/microsoft/TypeScript/blob/0b0aeb31e416c280bcbef7d7734aa21e7d999cdd/tsc/internal/spanmap/spanmap.go#L773
+ */
 export type SpanMapping = [
   generatedStart: number,
   generatedLength: number,
