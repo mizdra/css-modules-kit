@@ -40,8 +40,6 @@ See [docs/get-started.md](./docs/get-started.md).
 
 ## Supported Language Features
 
-The following features are available in [`@css-modules-kit/ts-plugin`](./packages/ts-plugin/README.md). The features marked as "ts-plugin only" are not available in [`@css-modules-kit/content-mapper`](./packages/content-mapper/README.md). See [its support status](./packages/content-mapper/README.md#support-status) for details.
-
 <details>
 <summary>Go to Definition</summary>
 
@@ -64,7 +62,7 @@ https://github.com/user-attachments/assets/df1e2feb-2a1a-4bf5-ae70-1cac36d90409
 </details>
 
 <details>
-<summary>Definition Preview by Hover (ts-plugin only)</summary>
+<summary>Definition Preview by Hover</summary>
 
 You can preview the definition with <kbd>Command</kbd> + <kbd>Hover</kbd> on macOS and VS Code (key bindings may vary depending on your OS and editor).
 
@@ -80,7 +78,7 @@ https://github.com/user-attachments/assets/4af168fa-357d-44e1-b010-3053802bf1a2
 </details>
 
 <details>
-<summary>Create CSS Module file for current file (ts-plugin only)</summary>
+<summary>Create CSS Module file for current file</summary>
 
 If there is no CSS Module file corresponding to `xxx.tsx`, create one.
 
@@ -89,7 +87,7 @@ https://github.com/user-attachments/assets/05f9e839-9617-43dc-a519-d5a20adf1146
 </details>
 
 <details>
-<summary>Complete `className={...}` instead of `className="..."` (ts-plugin only)</summary>
+<summary>Complete `className={...}` instead of `className="..."`</summary>
 
 In projects where CSS Modules are used, the element is styled with `className={styles.xxx}`. However, when you type `className`, `className="..."` is completed. This is annoying to the user.
 
@@ -100,7 +98,7 @@ https://github.com/user-attachments/assets/b3609c8a-123f-4f4b-af8c-3c8bf7ab4363
 </details>
 
 <details>
-<summary>Prioritize the `styles' import for the current component file (ts-plugin only)</summary>
+<summary>Prioritize the `styles' import for the current component file</summary>
 
 When you request `styles` completion, the CSS Module file `styles` will be suggested. If there are many CSS Module files in the project, more items will be suggested. This can be confusing to the user.
 
@@ -111,7 +109,7 @@ So I have made it so that the `styles` of the CSS Module file corresponding to t
 </details>
 
 <details>
-<summary>Add missing CSS rule (ts-plugin only)</summary>
+<summary>Add missing CSS rule</summary>
 
 If you are trying to use a class name that is not defined, you can add it with Quick Fixes.
 
