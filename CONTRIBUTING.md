@@ -30,6 +30,7 @@ You can run code in debug mode from the "Run and Debug" panel in VS Code. To sta
 - `eslint-plugin (...)`: Debug for `eslint-plugin` package
 - `stylelint (...)`: Debug for `stylelint` package
 - `vscode (...)`: Debug for `vscode` and `ts-plugin` package
+- `content-mapper: ...`: Run the `content-mapper` package on `examples/7-content-mapper`
 - `vscode-test`: Debug for `vp run vscode-test`
 
 Good to know:
@@ -43,8 +44,7 @@ Good to know:
 ### Content Mapper
 
 1. Install the [TypeScript 7](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview) extension in VS Code
-1. Run `vp run build`
-1. Start `code examples/7-content-mapper`
+1. Start `content-mapper: vscode (7-content-mapper)` from the "Run and Debug" panel
 1. Trust the workspace, and select "Allow" when asked whether to use the TypeScript 7 tsdk configured in the workspace
 
 Good to know:
