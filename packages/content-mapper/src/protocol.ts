@@ -38,16 +38,7 @@ export interface OpenProjectParams {
  * The response to an openProject request. `configIdentity` and `watchedFiles` may only be
  * returned by mappers that declare `dynamicConfig`, so cmk omits them.
  */
-export interface OpenProjectResult {
-  optionDiagnostics?: OptionDiagnostic[];
-}
-
-/** An invalid mapper option. `path` locates the value within the mapper entry's options object. */
-export interface OptionDiagnostic {
-  path: (string | number)[];
-  messageText: string;
-  code: number;
-}
+export type OpenProjectResult = Record<string, never>;
 
 export interface CloseProjectParams {
   projectHandle: string;
@@ -65,7 +56,6 @@ export interface TransformResult {
   /** Determines how `text` is parsed. */
   extension: VirtualExtension;
   mappings?: SpanMapping[];
-  diagnosticDirectives?: DiagnosticDirectives;
   diagnostics?: MapperDiagnostic[];
 }
 
@@ -125,37 +115,3 @@ export interface MapperDiagnostic {
   length: number;
   code: number;
 }
-
-export interface DiagnosticDirectives {
-  /** Diagnostics reported when an `Expect` directive matches no diagnostic. Unused by `Ignore` directives. */
-  unusedExpectDirectiveDiagnostics: UnusedExpectDirectiveDiagnostic[];
-  /** Directives whose generated ranges must not overlap each other. */
-  directives: MappedDiagnosticDirective[];
-}
-
-export interface UnusedExpectDirectiveDiagnostic {
-  messageText: string;
-  code: number;
-}
-
-/**
- * Suppresses (`Ignore`) or expects (`Expect`) TypeScript diagnostics whose start position falls
- * within `[generatedStart, generatedEnd)`. `originalStart` and `originalLength` locate the
- * directive in the original file for `Expect` reporting.
- */
-export type MappedDiagnosticDirective = [
-  originalStart: number,
-  originalLength: number,
-  generatedStart: number,
-  generatedEnd: number,
-  policy: DiagnosticDirectivePolicy,
-  unusedExpectDirectiveIndex?: number,
-];
-
-// oxlint-disable-next-line no-redeclare -- The value and the type of this name are declared in separate namespaces.
-export const DiagnosticDirectivePolicy = {
-  Ignore: 0,
-  Expect: 1,
-} as const;
-
-export type DiagnosticDirectivePolicy = (typeof DiagnosticDirectivePolicy)[keyof typeof DiagnosticDirectivePolicy];

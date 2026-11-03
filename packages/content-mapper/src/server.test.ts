@@ -14,7 +14,7 @@ function startServer() {
 }
 
 const openProjectParams = { configFileName: '/tsconfig.json', projectHandle: 'p1', compilerOptions: {} };
-const transformParams = { fileName: '/a.module.css', content: '.a1 { color: red; }', projectHandle: 'p1' };
+const transformParams = { fileName: '/a.css', content: '.a1 { color: red; }', projectHandle: 'p1' };
 const unknownProjectError = { code: ErrorCodes.InvalidParams, message: 'Unknown project handle: p1' };
 
 test('responds to initialize with utf-16 encoding and cmk diagnostic source', async () => {
@@ -23,11 +23,11 @@ test('responds to initialize with utf-16 encoding and cmk diagnostic source', as
   expect(result).toStrictEqual({ positionEncoding: 'utf-16', diagnosticSource: 'cmk' });
 });
 
-test('responds to transform with an empty module', async () => {
+test('responds to transform with the transformed text', async () => {
   const { client } = startServer();
   await client.sendRequest(OpenProjectRequest, openProjectParams);
   const result = await client.sendRequest(TransformRequest, transformParams);
-  expect(result).toStrictEqual({ text: 'export {};\n', extension: '.ts' });
+  expect(result).toStrictEqual({ text: 'export {};\n', mappings: [], diagnostics: [], extension: '.ts' });
 });
 
 test('responds with an invalid-params error to a transform with an unopened project handle', async () => {

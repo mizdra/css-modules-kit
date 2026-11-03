@@ -14,6 +14,7 @@ import {
   OpenProjectRequest,
   TransformRequest,
 } from './protocol.js';
+import { transformCSS } from './transformer.js';
 
 /**
  * Reads content mapper protocol requests from `input` and writes responses to `output`.
@@ -39,8 +40,7 @@ export async function runServer(input: Readable, output: Writable): Promise<void
     if (!projects.has(params.projectHandle)) {
       return new ResponseError(ErrorCodes.InvalidParams, `Unknown project handle: ${params.projectHandle}`);
     }
-    // TODO: Transform CSS Modules into TypeScript code. For now, every file becomes an empty module.
-    return { text: 'export {};\n', extension: '.ts' };
+    return { ...transformCSS(params.fileName, params.content), extension: '.ts' };
   });
 
   return new Promise((resolve, reject) => {
