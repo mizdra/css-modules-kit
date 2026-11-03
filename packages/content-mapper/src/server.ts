@@ -43,9 +43,9 @@ export async function runServer(input: Readable, output: Writable): Promise<void
     return { ...transformCSS(params.fileName, params.content), extension: '.ts' };
   });
 
-  return new Promise((resolve, reject) => {
-    connection.onClose(() => resolve());
-    connection.onError(([error]) => reject(error));
-    connection.listen();
-  });
+  const { promise, resolve, reject } = Promise.withResolvers<void>();
+  connection.onClose(() => resolve());
+  connection.onError(([error]) => reject(error));
+  connection.listen();
+  return promise;
 }
