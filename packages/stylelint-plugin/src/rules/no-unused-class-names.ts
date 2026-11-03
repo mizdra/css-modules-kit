@@ -1,5 +1,5 @@
+import { basename } from 'node:path';
 import { findComponentFile, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
-import { basename } from '@css-modules-kit/core-strada';
 import type { Rule, RuleMeta } from 'stylelint';
 import stylelint from 'stylelint';
 import { readFile } from '../util.js';
