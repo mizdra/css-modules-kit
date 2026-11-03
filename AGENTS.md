@@ -19,7 +19,7 @@ This project is a monorepo and consists of the following packages:
   - Wrapper to run ts-plugin in VS Code
 - **packages/stylelint-plugin**: Stylelint plugin
 - **packages/eslint-plugin**: ESLint plugin
-- **packages/content-mapper**: TypeScript content mapper that provides language features on TypeScript 7 (experimental). Its version is not fixed to the other packages, and it depends only on the core package. See [docs/content-mapper.md](./docs/content-mapper.md) for the support status
+- **packages/content-mapper**: TypeScript content mapper that provides language features on TypeScript 7
 - **crates/zed**: Zed editor extension (Rust implementation)
   - Wrapper to run ts-plugin in Zed
 
