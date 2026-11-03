@@ -100,9 +100,11 @@ The behavior of ts-plugin and codegen can be customized using the `cmkOptions` o
 
 ts-plugin and codegen only work on TypeScript 6 or earlier. On TypeScript 7.1 or later, use content-mapper ([`@css-modules-kit/content-mapper`](../packages/content-mapper/README.md)) instead.
 
-content-mapper makes TypeScript load `*.module.css` files directly, both in the editor and in `tsc`. Therefore, you do not need codegen, `.module.css.d.ts` files, or the `tsconfig.json` settings described above. The linter-plugin can be used as is.
+content-mapper makes TypeScript load `*.module.css` files directly, both in the editor and in `tsc`. Therefore, you do not need codegen, `.module.css.d.ts` files, or the `tsconfig.json` settings described above.
 
 content-mapper is experimental, and only a part of the features of ts-plugin is available. For the setup and the available features, see the following:
 
 - [Installation](../packages/content-mapper/README.md#installation)
 - [Support Status](../packages/content-mapper/README.md#support-status)
+
+The linter-plugin does not depend on TypeScript, so it also works on TypeScript 7. To use it, follow the steps in [Install linter-plugin](#install-linter-plugin).
