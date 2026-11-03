@@ -5,10 +5,8 @@
 This document lists the support status of each feature. Features are added step by step, so this document must be updated together with them.
 
 - **Supported**: Available now.
-- **Planned**: Not available yet. A content mapper alone can provide it.
+- **Planned**: Not available yet. It is planned to be supported in the future.
 - **Undecided**: Not available yet. Whether to support it is not decided. See Notes for the reason.
-
-A content mapper cannot customize language server responses. [LSP middleware](https://github.com/microsoft/TypeScript/pull/64583) can, but it is only available in VS Code, while css-modules-kit aims to support every editor.
 
 ## CSS Modules syntax
 
@@ -56,3 +54,7 @@ content-mapper does not read `cmkOptions`. The options will be given as `options
 | `cmkOptions.animation`              | Planned    | Currently behaves as `true`                        |
 | `cmkOptions.dashedIdents`           | Planned    |                                                    |
 | `cmkOptions.container`              | Planned    |                                                    |
+
+## LSP middleware
+
+A content mapper cannot customize language server responses. [LSP middleware](https://github.com/microsoft/TypeScript/pull/64583) can, but it is only available in VS Code, while css-modules-kit aims to support every editor. For this reason, whether to support the features that need it is undecided.
