@@ -2,4 +2,4 @@
 '@css-modules-kit/content-mapper': minor
 ---
 
-feat: add `@css-modules-kit/content-mapper`, an experimental content mapper for TypeScript 7 that supports local tokens
+feat: add `@css-modules-kit/content-mapper`, an experimental content mapper for TypeScript 7
