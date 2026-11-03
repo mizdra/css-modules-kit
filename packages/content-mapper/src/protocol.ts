@@ -5,8 +5,6 @@
 import type { SpanMapKind } from 'typescript/ast';
 import { RequestType } from 'vscode-jsonrpc/node';
 
-export const DIAGNOSTIC_SOURCE = 'cmk';
-
 export const InitializeRequest = new RequestType<InitializeParams, InitializeResult, void>('initialize');
 export const OpenProjectRequest = new RequestType<OpenProjectParams, OpenProjectResult, void>('openProject');
 export const CloseProjectRequest = new RequestType<CloseProjectParams, null, void>('closeProject');

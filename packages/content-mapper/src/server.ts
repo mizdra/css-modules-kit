@@ -7,13 +7,7 @@ import {
   StreamMessageWriter,
 } from 'vscode-jsonrpc/node';
 import type { InitializeResult } from './protocol.js';
-import {
-  CloseProjectRequest,
-  DIAGNOSTIC_SOURCE,
-  InitializeRequest,
-  OpenProjectRequest,
-  TransformRequest,
-} from './protocol.js';
+import { CloseProjectRequest, InitializeRequest, OpenProjectRequest, TransformRequest } from './protocol.js';
 import { transformCSS } from './transformer.js';
 
 /**
@@ -26,7 +20,7 @@ export async function runServer(input: Readable, output: Writable): Promise<void
 
   connection.onRequest(InitializeRequest, (): InitializeResult => ({
     positionEncoding: 'utf-16',
-    diagnosticSource: DIAGNOSTIC_SOURCE,
+    diagnosticSource: 'cmk',
   }));
   connection.onRequest(OpenProjectRequest, (params) => {
     projects.add(params.projectHandle);
