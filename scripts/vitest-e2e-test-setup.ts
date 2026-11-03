@@ -9,13 +9,13 @@ const tsgoBinPath = process.env['TSGO_BIN'] ?? resolveNativeTscBinPath();
 
 /**
  * Resolves the platform-specific native tsc binary the same way as `typescript/lib/getExePath.js`.
- * The `typescript` nightly is a devDependency of `packages/content-mapper` under the
- * `typescript-nightly` alias, and its platform package is a dependency of the nightly, so each
- * must be resolved from its dependent package to work with pnpm's non-flat `node_modules`.
+ * The `typescript` nightly is a devDependency of `packages/content-mapper`, and its platform
+ * package is a dependency of the nightly, so each must be resolved from its dependent package to
+ * work with pnpm's non-flat `node_modules`.
  */
 function resolveNativeTscBinPath(): string {
   const contentMapperPkgPath = fileURLToPath(new URL('../packages/content-mapper/package.json', import.meta.url));
-  const typescriptPkgPath = createRequire(contentMapperPkgPath).resolve('typescript-nightly/package.json');
+  const typescriptPkgPath = createRequire(contentMapperPkgPath).resolve('typescript/package.json');
   const platformPkgName = `@typescript/typescript-${process.platform}-${process.arch}`;
   const platformPkgPath = createRequire(typescriptPkgPath).resolve(`${platformPkgName}/package.json`);
   const binName = process.platform === 'win32' ? 'tsc.exe' : 'tsc';

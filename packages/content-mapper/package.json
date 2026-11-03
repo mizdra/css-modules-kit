@@ -34,7 +34,10 @@
     "vscode-jsonrpc": "^10.0.0"
   },
   "devDependencies": {
-    "typescript-nightly": "npm:typescript@7.1.0-dev.20261030.1"
+    "typescript": "7.1.0-dev.20261030.1"
+  },
+  "peerDependencies": {
+    "typescript": "^7.1.0-0"
   },
   "typescript": {
     "contentMapper": {

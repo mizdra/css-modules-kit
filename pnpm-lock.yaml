@@ -358,9 +358,9 @@ importers:
         specifier: ^10.0.0
         version: 10.0.0
     devDependencies:
-      typescript-nightly:
-        specifier: npm:typescript@7.1.0-dev.20261030.1
-        version: typescript@7.1.0-dev.20261030.1
+      typescript:
+        specifier: 7.1.0-dev.20261030.1
+        version: 7.1.0-dev.20261030.1
 
   packages/core:
     dependencies:
