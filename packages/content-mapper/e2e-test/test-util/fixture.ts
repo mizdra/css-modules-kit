@@ -1,20 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import { realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
 import { type FileLocation, type FileSpan, formatPath, type Position } from './language-client.js';
 
-// tmpdir() may be a symlink (e.g. /var -> /private/var on macOS). The paths sent by the language
-// client must match the ones the server reports back, so the real path is resolved up front.
-export const fixtureDir = join(
-  realpathSync(tmpdir()),
-  '@css-modules-kit/content-mapper',
-  process.env['VITEST_POOL_ID']!,
-);
+export const fixtureDir = join(tmpdir(), '@css-modules-kit/content-mapper', process.env['VITEST_POOL_ID']!);
 
 const createIFF = defineIFFCreator({
-  generateRootDir: () => join(fixtureDir, randomUUID()).replaceAll('\\', '/'),
+  generateRootDir: () => join(fixtureDir, randomUUID()),
   unixStylePath: true,
 });
 
