@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
@@ -143,14 +143,6 @@ function languageIdOf(filePath: string): string {
   return 'plaintext';
 }
 
-function resolvesTo(path: string, target: string): boolean {
-  try {
-    return realpathSync(path) === realpathSync(target);
-  } catch {
-    return false;
-  }
-}
-
 /**
  * Makes the content mapper resolvable from every `tsconfig.json` under `rootDir`. The server
  * resolves a mapper with node module resolution, and loads it only from a `node_modules` inside
@@ -162,7 +154,7 @@ function resolvesTo(path: string, target: string): boolean {
 function linkContentMapper(rootDir: string): void {
   const contentMapperDir = resolve(import.meta.dirname, '../..');
   const linkPath = join(rootDir, 'node_modules/@css-modules-kit/content-mapper');
-  if (resolvesTo(linkPath, contentMapperDir)) return;
+  if (existsSync(linkPath) && realpathSync(linkPath) === realpathSync(contentMapperDir)) return;
   rmSync(linkPath, { force: true });
   mkdirSync(dirname(linkPath), { recursive: true });
   symlinkSync(contentMapperDir, linkPath, 'junction');
