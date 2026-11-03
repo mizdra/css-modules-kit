@@ -1,12 +1,12 @@
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
 
-// Keep the resolution in sync with `scripts/vitest-e2e-test-setup.ts`.
-/** The native tsc binary shipped with the `typescript` npm package. Overridable via the `TSGO_BIN` environment variable. */
-const tsgoBinPath = process.env['TSGO_BIN'] ?? resolveNativeTscBinPath(import.meta.url);
+/** The native tsc binary shipped with the `typescript` npm package. */
+const tsgoBinPath = resolveNativeTscBinPath(import.meta.url);
 
 /**
  * Resolves the platform-specific native tsc binary the same way as `typescript/lib/getExePath.js`.
@@ -186,11 +186,38 @@ function languageIdOf(filePath: string): string {
   return 'plaintext';
 }
 
+function resolvesTo(path: string, target: string): boolean {
+  try {
+    return realpathSync(path) === realpathSync(target);
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Launches a tsgo language server shared by all tests in a test file, and resolves after the
- * initialization. The server exits by itself when the test process closes its stdin.
+ * Makes the content mapper resolvable from every `tsconfig.json` under `rootDir`. The server
+ * resolves a mapper with node module resolution, and loads it only from a `node_modules` inside
+ * a workspace folder.
+ *
+ * `rootDir` outlives a test run, so an existing link may point to another checkout. It is replaced
+ * because the tests would otherwise run on the mapper of that checkout.
+ */
+function linkContentMapper(rootDir: string): void {
+  const contentMapperDir = resolve(import.meta.dirname, '../..');
+  const linkPath = join(rootDir, 'node_modules/@css-modules-kit/content-mapper');
+  if (resolvesTo(linkPath, contentMapperDir)) return;
+  rmSync(linkPath, { force: true });
+  mkdirSync(dirname(linkPath), { recursive: true });
+  symlinkSync(contentMapperDir, linkPath, 'junction');
+}
+
+/**
+ * Launches a tsgo language server with `rootDir` as its workspace folder. The server is shared by
+ * all tests in a test file, and resolves after the initialization. The server exits by itself when
+ * the test process closes its stdin.
  */
 export async function launchLanguageClient(rootDir: string): Promise<LanguageClient> {
+  linkContentMapper(rootDir);
   const documentVersions = new Map<string, number>();
   const proc = spawn(tsgoBinPath, ['--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
   const connection = createMessageConnection(new StreamMessageReader(proc.stdout), new StreamMessageWriter(proc.stdin));

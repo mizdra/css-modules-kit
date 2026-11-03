@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, realpathSync, symlinkSync } from 'node:fs';
+import { realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
 import { type FileLocation, type FileSpan, formatPath, type Position } from './language-client.js';
 
@@ -12,14 +12,11 @@ export const fixtureDir = join(
   '@css-modules-kit/content-mapper',
   process.env['VITEST_POOL_ID']!,
 );
-mkdirSync(fixtureDir, { recursive: true });
 
 const createIFF = defineIFFCreator({
   generateRootDir: () => join(fixtureDir, randomUUID()).replaceAll('\\', '/'),
   unixStylePath: true,
 });
-
-const contentMapperDir = resolve(import.meta.dirname, '../..');
 
 function findAllMatches(content: string, search: string): number[] {
   if (search.length === 0) throw new Error('Empty search string is not allowed.');
@@ -75,10 +72,6 @@ export interface SetupFixtureResult<T extends Files> {
 export async function setupFixture<const T extends Files>(files: T): Promise<SetupFixtureResult<T>> {
   // oxlint-disable-next-line typescript/no-explicit-any
   const iff = (await createIFF(files)) as any;
-
-  // tsgo resolves the mapper package from the tsconfig directory with node module resolution.
-  mkdirSync(join(iff.rootDir, 'node_modules/@css-modules-kit'), { recursive: true });
-  symlinkSync(contentMapperDir, join(iff.rootDir, 'node_modules/@css-modules-kit/content-mapper'), 'junction');
 
   function getFileContent(file: string): string {
     const content = files[file];
