@@ -17,7 +17,7 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@css-modules-kit/content-mapper"],
+  "ignore": [],
   "privatePackages": {
     "version": true,
     "tag": true
