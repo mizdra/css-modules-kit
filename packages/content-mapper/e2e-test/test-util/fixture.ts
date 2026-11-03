@@ -3,13 +3,7 @@ import { mkdirSync, realpathSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
-import {
-  type FileLocation,
-  type FileSpan,
-  type FileSpanWithContext,
-  formatPath,
-  type Position,
-} from './language-client.js';
+import { type FileLocation, type FileSpan, formatPath, type Position } from './language-client.js';
 
 // tmpdir() may be a symlink (e.g. /var -> /private/var on macOS). The paths sent by the language
 // client must match the ones the server reports back, so the real path is resolved up front.
@@ -53,18 +47,13 @@ type Files = Record<string, string>;
 export interface GetFileSpanOptions {
   /** 0-based index of the match when `search` matches multiple times. */
   index?: number;
-  /**
-   * A substring enclosing the `search` match. When given, the returned span also carries
-   * `contextRange` pointing to the occurrence of `context` that encloses the match.
-   */
-  context?: string;
 }
 
 export interface SetupFixtureResult<T extends Files> {
   iff: CreateIFFResult<T>;
   /**
    * Get the absolute path of `file` and the (0-based) line/character of the first character of `search` in it.
-   * The result can be passed directly to the LSP client.
+   * The result can be passed directly to the language client.
    *
    * - If `search` matches exactly once, returns that position.
    * - If `search` matches multiple times, an `index` (0-based) must be passed.
@@ -73,14 +62,14 @@ export interface SetupFixtureResult<T extends Files> {
   getFileLocation: (file: string, search: string, index?: number) => FileLocation;
   /**
    * Get the absolute (path-normalized) path of `file` and the (0-based) start/end range of `search` in it.
-   * The result can be compared directly with spans returned by the LSP client.
+   * The result can be compared directly with spans returned by the language client.
    *
    * - `range.start` is identical to the position returned by `getFileLocation`.
    * - `range.end` points to the position immediately AFTER the last character of `search`
    *   (exclusive end, matching the LSP convention).
    * - Same matching/error semantics as `getFileLocation`.
    */
-  getFileSpan: (file: string, search: string, options?: GetFileSpanOptions) => FileSpanWithContext;
+  getFileSpan: (file: string, search: string, options?: GetFileSpanOptions) => FileSpan;
 }
 
 export async function setupFixture<const T extends Files>(files: T): Promise<SetupFixtureResult<T>> {
@@ -120,37 +109,17 @@ export async function setupFixture<const T extends Files>(files: T): Promise<Set
     return target;
   }
 
-  function findEnclosingContextOffset(file: string, context: string, start: number, end: number): number {
-    const content = getFileContent(file);
-    const enclosing = findAllMatches(content, context).find(
-      (offset) => offset <= start && end <= offset + context.length,
-    );
-    if (enclosing === undefined) {
-      throw new Error(`No occurrence of context ${JSON.stringify(context)} encloses the match in "${file}".`);
-    }
-    return enclosing;
-  }
-
   function getFileLocation(file: string, search: string, index?: number): FileLocation {
     return { file: iff.paths[file], position: offsetToPosition(getFileContent(file), findOffset(file, search, index)) };
   }
 
-  function getFileSpan(file: string, search: string, options?: GetFileSpanOptions): FileSpanWithContext {
+  function getFileSpan(file: string, search: string, options?: GetFileSpanOptions): FileSpan {
     const content = getFileContent(file);
     const start = findOffset(file, search, options?.index);
     const end = start + search.length;
-    const span: FileSpan = {
+    return {
       file: formatPath(iff.paths[file]),
       range: { start: offsetToPosition(content, start), end: offsetToPosition(content, end) },
-    };
-    if (options?.context === undefined) return span;
-    const contextStart = findEnclosingContextOffset(file, options.context, start, end);
-    return {
-      ...span,
-      contextRange: {
-        start: offsetToPosition(content, contextStart),
-        end: offsetToPosition(content, contextStart + options.context.length),
-      },
     };
   }
 
