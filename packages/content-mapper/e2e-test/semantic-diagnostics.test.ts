@@ -15,7 +15,7 @@ test('reports an unknown property access on a styles binding', async () => {
     `,
     'a.module.css': `.a_1 { color: red; }`,
   });
-  await client.openFiles([iff.paths['index.ts']]);
+  await client.sendDidOpen([iff.paths['index.ts']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
 
@@ -42,7 +42,7 @@ test('types a token on the styles binding as a readonly string', async () => {
     `,
     'a.module.css': `.a_1 { color: red; }`,
   });
-  await client.openFiles([iff.paths['index.ts']]);
+  await client.sendDidOpen([iff.paths['index.ts']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
 

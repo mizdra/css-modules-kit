@@ -11,7 +11,7 @@ test('rewrites the specifier of a TS-side import statement when the CSS module i
     'index.ts': `import styles from './a.module.css';`,
     'a.module.css': '',
   });
-  await client.openFiles([iff.paths['index.ts']]);
+  await client.sendDidOpen([iff.paths['index.ts']]);
 
   const edits = await client.sendWillRenameFiles({
     oldFilePath: iff.paths['a.module.css'],

@@ -15,7 +15,7 @@ test('finds the TS-side styles.<token>', async () => {
     `,
     'a.module.css': `.a_1 { color: red; }`,
   });
-  await client.openFiles([iff.paths['index.ts'], iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const cases = [
     ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1')],
@@ -40,7 +40,7 @@ test('finds every token definition when the token is defined multiple times', as
       .a_1 { color: red; }
     `,
   });
-  await client.openFiles([iff.paths['index.ts'], iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const cases = [
     ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1')],
@@ -67,7 +67,7 @@ test("finds the TS-side styles['<token>']", async () => {
     `,
     'a.module.css': `.a_1 { color: red; }`,
   });
-  await client.openFiles([iff.paths['index.ts'], iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const cases = [
     ["from the TS-side styles['<token>']", getFileLocation('index.ts', 'a_1')],

@@ -15,7 +15,7 @@ test('reports no diagnostics on the importer after the CSS module is added', asy
       styles.a_1;
     `,
   });
-  await client.openFiles([iff.paths['index.ts']]);
+  await client.sendDidOpen([iff.paths['index.ts']]);
 
   const before = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   const { range } = getFileSpan('index.ts', "'./a.module.css'");
@@ -29,7 +29,7 @@ test('reports no diagnostics on the importer after the CSS module is added', asy
     },
   ]);
 
-  await client.openFiles([{ file: iff.join('a.module.css'), content: '.a_1 { color: red; }' }]);
+  await client.sendDidOpen([{ file: iff.join('a.module.css'), content: '.a_1 { color: red; }' }]);
 
   const after = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   expect(after).toStrictEqual([]);
@@ -44,7 +44,7 @@ test('reports no diagnostics on the importer after the missing token is added to
     `,
     'a.module.css': '',
   });
-  await client.openFiles([iff.paths['index.ts'], iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const before = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   const { range } = getFileSpan('index.ts', 'a_1');
@@ -58,7 +58,7 @@ test('reports no diagnostics on the importer after the missing token is added to
     },
   ]);
 
-  await client.changeFile(iff.paths['a.module.css'], `.a_1 {}`);
+  await client.sendDidChange(iff.paths['a.module.css'], `.a_1 {}`);
 
   const after = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   expect(after).toStrictEqual([]);
@@ -73,13 +73,13 @@ test('reports "Cannot find module" on the importer after the CSS module is remov
     `,
     'a.module.css': '.a_1 { color: red; }',
   });
-  await client.openFiles([iff.paths['index.ts'], iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const before = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   expect(before).toStrictEqual([]);
 
   await rm(iff.paths['a.module.css']);
-  await client.closeFiles([iff.paths['a.module.css']]);
+  await client.sendDidClose([iff.paths['a.module.css']]);
 
   const after = await client.sendDocumentDiagnostic(iff.paths['index.ts']);
   const { range } = getFileSpan('index.ts', "'./a.module.css'");

@@ -1,25 +1,8 @@
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
-
-/** The native tsc binary shipped with the `typescript` npm package. */
-const tsgoBinPath = resolveNativeTscBinPath(import.meta.url);
-
-/**
- * Resolves the platform-specific native tsc binary the same way as `typescript/lib/getExePath.js`.
- * The platform package is a dependency of `typescript`, not of this package, so it must be
- * resolved relative to `typescript` to work with pnpm's non-flat `node_modules`.
- */
-function resolveNativeTscBinPath(base: string): string {
-  const typescriptPkgPath = createRequire(base).resolve('typescript/package.json');
-  const platformPkgName = `@typescript/typescript-${process.platform}-${process.arch}`;
-  const platformPkgPath = createRequire(typescriptPkgPath).resolve(`${platformPkgName}/package.json`);
-  const binName = process.platform === 'win32' ? 'tsc.exe' : 'tsc';
-  return fileURLToPath(new URL(`./lib/${binName}`, pathToFileURL(platformPkgPath)));
-}
 
 export interface Position {
   line: number;
@@ -57,19 +40,8 @@ interface LSPLocation {
   range: Range;
 }
 
-interface LSPLocationLink {
-  targetUri: string;
-  targetSelectionRange: Range;
-}
-
-interface LSPTextDocumentEdit {
-  textDocument: { uri: string; version: number | null };
-  edits: TextEdit[];
-}
-
 interface LSPWorkspaceEdit {
   changes?: Record<string, TextEdit[]>;
-  documentChanges?: LSPTextDocumentEdit[];
 }
 
 /**
@@ -83,10 +55,10 @@ interface LSPWorkspaceEdit {
  */
 export interface LanguageClient {
   /** Opens files. A file is opened with its on-disk content unless `content` is given. */
-  openFiles(files: readonly (string | { file: string; content: string })[]): Promise<void>;
-  closeFiles(files: readonly string[]): Promise<void>;
+  sendDidOpen(files: readonly (string | { file: string; content: string })[]): Promise<void>;
+  sendDidClose(files: readonly string[]): Promise<void>;
   /** Replaces the whole content of an opened file. */
-  changeFile(file: string, content: string): Promise<void>;
+  sendDidChange(file: string, content: string): Promise<void>;
   sendDefinition(args: FileLocation): Promise<FileSpan[]>;
   sendReferences(args: FileLocation): Promise<FileSpan[]>;
   sendRename(args: FileLocation, newName?: string): Promise<RenameLocation[]>;
@@ -104,7 +76,7 @@ export function formatPath(path: string) {
 }
 
 function toFileUri(filePath: string): string {
-  return pathToFileURL(filePath).toString();
+  return pathToFileURL(filePath).href;
 }
 
 function toFilePath(uri: string): string {
@@ -119,16 +91,9 @@ function compareFileSpans(a: FileSpan, b: FileSpan): number {
   return a.file.localeCompare(b.file) || comparePositions(a.range.start, b.range.start);
 }
 
-function normalizeDefinitions(result: LSPLocation | LSPLocation[] | LSPLocationLink[] | null): FileSpan[] {
+function normalizeDefinitions(result: LSPLocation | LSPLocation[] | null): FileSpan[] {
   if (result === null) return [];
-  const definitions = Array.isArray(result) ? result : [result];
-  return definitions
-    .map((definition) =>
-      'targetUri' in definition
-        ? { file: toFilePath(definition.targetUri), range: definition.targetSelectionRange }
-        : { file: toFilePath(definition.uri), range: definition.range },
-    )
-    .toSorted(compareFileSpans);
+  return normalizeLocations(Array.isArray(result) ? result : [result]);
 }
 
 function normalizeLocations(locations: readonly LSPLocation[] | null): FileSpan[] {
@@ -137,18 +102,10 @@ function normalizeLocations(locations: readonly LSPLocation[] | null): FileSpan[
     .toSorted(compareFileSpans);
 }
 
-function collectTextEdits(edit: LSPWorkspaceEdit | null): FileTextEdits[] {
-  const textEdits = new Map<string, TextEdit[]>();
-  for (const [uri, edits] of Object.entries(edit?.changes ?? {})) {
-    textEdits.set(toFilePath(uri), [...edits]);
-  }
-  for (const documentChange of edit?.documentChanges ?? []) {
-    const file = toFilePath(documentChange.textDocument.uri);
-    textEdits.set(file, [...(textEdits.get(file) ?? []), ...documentChange.edits]);
-  }
-  return [...textEdits]
-    .map(([file, edits]) => ({
-      file,
+function normalizeWorkspaceEdit(edit: LSPWorkspaceEdit | null): FileTextEdits[] {
+  return Object.entries(edit?.changes ?? {})
+    .map(([uri, edits]) => ({
+      file: toFilePath(uri),
       textEdits: edits
         .map((textEdit) => ({ range: textEdit.range, newText: textEdit.newText }))
         .toSorted((a, b) => comparePositions(a.range.start, b.range.start)),
@@ -157,7 +114,7 @@ function collectTextEdits(edit: LSPWorkspaceEdit | null): FileTextEdits[] {
 }
 
 function normalizeRenameLocations(edit: LSPWorkspaceEdit | null, newName: string): RenameLocation[] {
-  return collectTextEdits(edit).flatMap(({ file, textEdits }) =>
+  return normalizeWorkspaceEdit(edit).flatMap(({ file, textEdits }) =>
     textEdits.map((textEdit) => ({
       file,
       range: textEdit.range,
@@ -219,7 +176,8 @@ function linkContentMapper(rootDir: string): void {
 export async function launchLanguageClient(rootDir: string): Promise<LanguageClient> {
   linkContentMapper(rootDir);
   const documentVersions = new Map<string, number>();
-  const proc = spawn(tsgoBinPath, ['--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
+  const tscPath = resolve(import.meta.dirname, '../../node_modules/typescript/bin/tsc');
+  const proc = spawn(process.execPath, [tscPath, '--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
   const connection = createMessageConnection(new StreamMessageReader(proc.stdout), new StreamMessageWriter(proc.stdin));
   // The tests need neither user settings nor dynamic capability registration, so every
   // server-to-client request is answered with an empty result.
@@ -240,21 +198,13 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
   await sendRequest('initialize', {
     processId: process.pid,
     rootUri: toFileUri(rootDir),
-    capabilities: {
-      workspace: {
-        workspaceEdit: { documentChanges: true },
-        fileOperations: { willRename: true },
-      },
-      textDocument: {
-        definition: { linkSupport: true },
-      },
-    },
+    capabilities: {},
     initializationOptions: { runExternalCode: true },
   });
   await sendNotification('initialized', {});
 
   return {
-    async openFiles(files) {
+    async sendDidOpen(files) {
       for (const entry of files) {
         const file = typeof entry === 'string' ? entry : entry.file;
         const text = typeof entry === 'string' ? readFileSync(file, 'utf8') : entry.content;
@@ -265,14 +215,14 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
         });
       }
     },
-    async closeFiles(files) {
+    async sendDidClose(files) {
       for (const file of files) {
         const uri = toFileUri(file);
         documentVersions.delete(uri);
         await sendNotification('textDocument/didClose', { textDocument: { uri } });
       }
     },
-    async changeFile(file, content) {
+    async sendDidChange(file, content) {
       const uri = toFileUri(file);
       const version = (documentVersions.get(uri) ?? 1) + 1;
       documentVersions.set(uri, version);
@@ -314,7 +264,7 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
       const result = await sendRequest('workspace/willRenameFiles', {
         files: [{ oldUri: toFileUri(args.oldFilePath), newUri: toFileUri(args.newFilePath) }],
       });
-      return collectTextEdits(result);
+      return normalizeWorkspaceEdit(result);
     },
   };
 }

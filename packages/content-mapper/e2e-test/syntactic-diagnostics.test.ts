@@ -11,7 +11,7 @@ test('reports parse-phase diagnostics on a CSS module', async () => {
     'tsconfig.json': buildTSConfigJSON(),
     'a.module.css': `@value;`,
   });
-  await client.openFiles([iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['a.module.css']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['a.module.css']);
 
@@ -35,7 +35,7 @@ test('reports a CSS syntax error on a CSS module', async () => {
       .a_2 {
     `,
   });
-  await client.openFiles([iff.paths['a.module.css']]);
+  await client.sendDidOpen([iff.paths['a.module.css']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['a.module.css']);
 

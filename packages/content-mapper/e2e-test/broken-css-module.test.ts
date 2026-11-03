@@ -18,7 +18,7 @@ test('returns the token definition even when the file contains invalid syntax el
       .a_2 {
     `,
   });
-  await client.openFiles([iff.paths['index.ts']]);
+  await client.sendDidOpen([iff.paths['index.ts']]);
 
   const definitions = await client.sendDefinition(getFileLocation('index.ts', 'a_1'));
 

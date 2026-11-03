@@ -11,7 +11,7 @@ test('reports no diagnostics for a non-module .css file', async () => {
     'tsconfig.json': buildTSConfigJSON(),
     'global.css': `* { margin: 0; }`,
   });
-  await client.openFiles([iff.paths['global.css']]);
+  await client.sendDidOpen([iff.paths['global.css']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['global.css']);
   expect(diagnostics).toStrictEqual([]);
