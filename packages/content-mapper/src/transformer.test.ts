@@ -21,7 +21,7 @@ test('generates an empty styles object when the CSS module has no tokens', () =>
   `);
 });
 
-test('generates a declaration and a reference to itself for each occurrence of a local token', () => {
+test('generates a declaration for each occurrence of a local token', () => {
   const source = dedent`
     .a_1 { color: red; }
     .a_2 { color: red; }
@@ -31,30 +31,21 @@ test('generates a declaration and a reference to itself for each occurrence of a
     "=== source ===
     .a_1 { color: red; }
      ^^^ #0
-     ^^^ #4
     ¦ #3
     .a_2 { color: red; }
      ^^^ #1
-     ^^^ #5
     .a_2 { color: red; }
      ^^^ #2
-     ^^^ #6
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All~Rename)
+                                ^^^^^ #0 Atom
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #1 Atom(All~Rename)
+                                ^^^^^ #1 Atom
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #2 Atom(All~Rename)
+                                ^^^^^ #2 Atom
     declare const styles: Styles;
                   ^^^^^^ #3 Atom(Definition)
-    styles['a_1'];
-            ^^^ #4 Verbatim(All~Hover)
-    styles['a_2'];
-            ^^^ #5 Verbatim(All~Hover)
-    styles['a_2'];
-            ^^^ #6 Verbatim(All~Hover)
     export default styles;
     "
   `);
@@ -76,18 +67,15 @@ test('omits token importers and token references', () => {
     @value b_1 from './b.module.css';
     .a_1 {
      ^^^ #0
-     ^^^ #2
       composes: a_2;
       composes: b_2 from './b.module.css';
     }
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All~Rename)
+                                ^^^^^ #0 Atom
     declare const styles: Styles;
                   ^^^^^^ #1 Atom(Definition)
-    styles['a_1'];
-            ^^^ #2 Verbatim(All~Hover)
     export default styles;
     "
   `);
@@ -120,24 +108,18 @@ test('converts parse diagnostics into mapper diagnostics', () => {
     "=== source ===
     .a_1 { color: red; }
      ^^^ #0
-     ^^^ #3
     ¦ #2
     .a_2 {
      ^^^ #1
-     ^^^ #4
     ^ diag#0
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All~Rename)
+                                ^^^^^ #0 Atom
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #1 Atom(All~Rename)
+                                ^^^^^ #1 Atom
     declare const styles: Styles;
                   ^^^^^^ #2 Atom(Definition)
-    styles['a_1'];
-            ^^^ #3 Verbatim(All~Hover)
-    styles['a_2'];
-            ^^^ #4 Verbatim(All~Hover)
     export default styles;
 
 

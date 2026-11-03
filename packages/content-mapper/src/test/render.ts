@@ -20,9 +20,6 @@ function formatFeatures(features: number | undefined): string {
       typeof entry[1] === 'number' && entry[1] !== SpanMapFeature.None && entry[1] !== SpanMapFeature.All,
   );
   const included = flags.filter(([, bit]) => (features & bit) !== 0).map(([name]) => name);
-  const excluded = flags.filter(([, bit]) => (features & bit) === 0).map(([name]) => name);
-  if (excluded.length === 0) return '(All)';
-  if (excluded.length < included.length) return `(All~${excluded.join('~')})`;
   return `(${included.join('|')})`;
 }
 

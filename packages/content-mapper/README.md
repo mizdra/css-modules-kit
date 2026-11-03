@@ -69,20 +69,20 @@ See [Glossary](https://github.com/mizdra/css-modules-kit/blob/main/AGENTS.md#glo
 
 The following features target the syntax that is supported in the table above.
 
-| Feature                                                  | Status    | Notes                                                    |
-| -------------------------------------------------------- | --------- | -------------------------------------------------------- |
-| Go to Definition                                         | Supported |                                                          |
-| Find All References                                      | Supported |                                                          |
-| Rename Symbol                                            | Supported |                                                          |
-| Update import statements when moving `*.module.css`      | Supported |                                                          |
-| Diagnostics for invalid token names                      | Supported |                                                          |
-| Diagnostics for unknown tokens on `styles`               | Supported |                                                          |
-| Diagnostics for CSS syntax errors                        | Supported |                                                          |
-| Definition Preview by Hover                              | Undecided | Needs LSP middleware, which is only available in VS Code |
-| Create CSS Module file for current file                  | Undecided | Needs LSP middleware, which is only available in VS Code |
-| Complete `className={...}` instead of `className="..."`  | Undecided | Needs LSP middleware, which is only available in VS Code |
-| Prioritize the `styles` import for the current component | Undecided | Needs LSP middleware, which is only available in VS Code |
-| Add missing CSS rule                                     | Undecided | Needs LSP middleware, which is only available in VS Code |
+| Feature                                                  | Status    | Notes                                                                                |
+| -------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------ |
+| Go to Definition                                         | Supported |                                                                                      |
+| Find All References                                      | Supported |                                                                                      |
+| Rename Symbol                                            | Planned   | Blocked until TypeScript fixes the rename input, which shows token names with quotes |
+| Update import statements when moving `*.module.css`      | Supported |                                                                                      |
+| Diagnostics for invalid token names                      | Supported |                                                                                      |
+| Diagnostics for unknown tokens on `styles`               | Supported |                                                                                      |
+| Diagnostics for CSS syntax errors                        | Supported |                                                                                      |
+| Definition Preview by Hover                              | Undecided | Needs LSP middleware, which is only available in VS Code                             |
+| Create CSS Module file for current file                  | Undecided | Needs LSP middleware, which is only available in VS Code                             |
+| Complete `className={...}` instead of `className="..."`  | Undecided | Needs LSP middleware, which is only available in VS Code                             |
+| Prioritize the `styles` import for the current component | Undecided | Needs LSP middleware, which is only available in VS Code                             |
+| Add missing CSS rule                                     | Undecided | Needs LSP middleware, which is only available in VS Code                             |
 
 ### Configuration
 

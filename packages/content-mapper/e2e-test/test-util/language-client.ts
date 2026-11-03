@@ -18,9 +18,6 @@ export type FileLocation = { file: string; position: Position };
 
 export type FileSpan = { file: string; range: Range };
 
-/** `newText` is kept only when it differs from the requested new name. */
-export type RenameLocation = FileSpan & { newText?: string };
-
 export type TextEdit = { range: Range; newText: string };
 
 export type FileTextEdits = { file: string; textEdits: TextEdit[] };
@@ -47,7 +44,7 @@ interface LSPWorkspaceEdit {
 /**
  * A thin client for the tsgo language server.
  *
- * Methods returning language feature results (definitions, references, rename, file rename edits,
+ * Methods returning language feature results (definitions, references, file rename edits,
  * diagnostics) return normalized values: only the fields relevant to tests are kept, URIs are
  * converted to paths normalized with `formatPath`, and the results are sorted so that they can be
  * compared with `toStrictEqual`. Spans and text edits are sorted by file path, then by position.
@@ -61,7 +58,6 @@ export interface LanguageClient {
   sendDidChange(file: string, content: string): Promise<void>;
   sendDefinition(args: FileLocation): Promise<FileSpan[]>;
   sendReferences(args: FileLocation): Promise<FileSpan[]>;
-  sendRename(args: FileLocation, newName?: string): Promise<RenameLocation[]>;
   /**
    * Returns the diagnostics except the ones with the hint severity (e.g. unused locals), which
    * tsserver reports as suggestion diagnostics instead of semantic or syntactic diagnostics.
@@ -111,16 +107,6 @@ function normalizeWorkspaceEdit(edit: LSPWorkspaceEdit | null): FileTextEdits[] 
         .toSorted((a, b) => comparePositions(a.range.start, b.range.start)),
     }))
     .toSorted((a, b) => a.file.localeCompare(b.file));
-}
-
-function normalizeRenameLocations(edit: LSPWorkspaceEdit | null, newName: string): RenameLocation[] {
-  return normalizeWorkspaceEdit(edit).flatMap(({ file, textEdits }) =>
-    textEdits.map((textEdit) => ({
-      file,
-      range: textEdit.range,
-      ...(textEdit.newText === newName ? {} : { newText: textEdit.newText }),
-    })),
-  );
 }
 
 function normalizeDiagnostics(diagnostics: readonly Diagnostic[]): Diagnostic[] {
@@ -237,14 +223,6 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
         context: { includeDeclaration: true },
       });
       return normalizeLocations(result);
-    },
-    async sendRename(args, newName = 'renamed') {
-      const result = await sendRequest('textDocument/rename', {
-        textDocument: { uri: toFileUri(args.file) },
-        position: args.position,
-        newName,
-      });
-      return normalizeRenameLocations(result, newName);
     },
     async sendDocumentDiagnostic(file) {
       const result: { items: Diagnostic[] } = await sendRequest('textDocument/diagnostic', {

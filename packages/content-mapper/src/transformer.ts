@@ -9,22 +9,12 @@ export interface TransformOutput {
   diagnostics: MapperDiagnostic[];
 }
 
-// Rename edits can only be written back through a Verbatim span, so the declaration excludes Rename.
-const DECLARATION_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Rename;
-
-// Hover results from multiple spans of the same original span are concatenated, so only the declaration answers hover.
-const SELF_REFERENCE_FEATURES = SpanMapFeature.All & ~SpanMapFeature.Hover;
-
 /**
  * Transforms a CSS file into TypeScript text for the content mapper protocol.
  *
- * For each occurrence of a local token, the generated text has two parts:
- *
- * - The declaration `interface Styles { readonly '<name>': string }`. It is mapped with an Atom
- *   span including the quotes, because a definition is mapped back only when its whole range,
- *   which includes the quotes, fits in a single span.
- * - The reference to itself `styles['<name>'];`. It is mapped with a Verbatim span, through which
- *   rename edits are written back.
+ * Each occurrence of a local token becomes the declaration `interface Styles { readonly '<name>': string }`.
+ * It is mapped with an Atom span including the quotes, because a definition is mapped back only when
+ * its whole range, which includes the quotes, fits in a single span.
  *
  * A non-module CSS file becomes an empty module, so that importing it for its side effects
  * type-checks while it exports nothing.
@@ -53,32 +43,13 @@ function generateText(tokens: Token[]): Pick<TransformOutput, 'text' | 'mappings
 
   for (const { name, loc } of tokens) {
     text += 'interface Styles { readonly ';
-    mappings.push([
-      text.length,
-      name.length + 2,
-      loc.start.offset,
-      name.length,
-      SpanMapKind.Atom,
-      DECLARATION_FEATURES,
-    ]);
+    mappings.push([text.length, name.length + 2, loc.start.offset, name.length, SpanMapKind.Atom]);
     text += `'${name}': string }\n`;
   }
   text += 'declare const ';
   // Mapped to the start of the CSS file so that go-to-definition on a binding importing the module lands there.
   mappings.push([text.length, 'styles'.length, 0, 0, SpanMapKind.Atom, SpanMapFeature.Definition]);
   text += `styles: ${tokens.length > 0 ? 'Styles' : '{}'};\n`;
-  for (const { name, loc } of tokens) {
-    text += "styles['";
-    mappings.push([
-      text.length,
-      name.length,
-      loc.start.offset,
-      name.length,
-      SpanMapKind.Verbatim,
-      SELF_REFERENCE_FEATURES,
-    ]);
-    text += `${name}'];\n`;
-  }
   text += 'export default styles;\n';
   return { text, mappings };
 }
