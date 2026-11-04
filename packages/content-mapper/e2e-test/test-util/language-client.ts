@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createMessageConnection, StreamMessageReader, StreamMessageWriter } from 'vscode-jsonrpc/node';
 
@@ -42,7 +42,7 @@ interface LSPWorkspaceEdit {
 }
 
 /**
- * A thin client for the tsgo language server.
+ * A thin client for the TypeScript language server.
  *
  * Methods returning language feature results (definitions, references, file rename edits,
  * diagnostics) return normalized values: only the fields relevant to tests are kept, URIs are
@@ -130,29 +130,9 @@ function languageIdOf(filePath: string): string {
 }
 
 /**
- * Makes the content mapper resolvable from every `tsconfig.json` under `rootDir`. The server
- * resolves a mapper with node module resolution, and loads it only from a `node_modules` inside
- * a workspace folder.
- *
- * `rootDir` outlives a test run, so an existing link may point to another checkout. It is replaced
- * because the tests would otherwise run on the mapper of that checkout.
- */
-function linkContentMapper(rootDir: string): void {
-  const contentMapperDir = resolve(import.meta.dirname, '../..');
-  const linkPath = join(rootDir, 'node_modules/@css-modules-kit/content-mapper');
-  if (existsSync(linkPath) && realpathSync(linkPath) === realpathSync(contentMapperDir)) return;
-  rmSync(linkPath, { force: true });
-  mkdirSync(dirname(linkPath), { recursive: true });
-  symlinkSync(contentMapperDir, linkPath, 'junction');
-}
-
-/**
- * Launches a tsgo language server with `rootDir` as its workspace folder. The server is shared by
- * all tests in a test file, and resolves after the initialization. The server exits by itself when
- * the test process closes its stdin.
+ * Launches a TypeScript language server with `rootDir` as its workspace folder.
  */
 export async function launchLanguageClient(rootDir: string): Promise<LanguageClient> {
-  linkContentMapper(rootDir);
   const documentVersions = new Map<string, number>();
   const tscPath = resolve(import.meta.dirname, '../../node_modules/typescript/bin/tsc');
   const proc = spawn(process.execPath, [tscPath, '--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });

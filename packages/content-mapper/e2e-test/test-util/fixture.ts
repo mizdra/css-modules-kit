@@ -1,10 +1,19 @@
 import { randomUUID } from 'node:crypto';
+import { symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
 import { type FileLocation, type FileSpan, formatPath, type Position } from './language-client.js';
 
 export const fixtureDir = join(tmpdir(), '@css-modules-kit/content-mapper', process.env['VITEST_POOL_ID']!);
+
+// The server resolves a content mapper with node module resolution from `tsconfig.json`, and loads
+// it only from a `node_modules` inside a workspace folder.
+const contentMapperLink = {
+  'node_modules/@css-modules-kit': {
+    'content-mapper': async (path: string) => symlink(resolve(import.meta.dirname, '../..'), path, 'junction'),
+  },
+};
 
 const createIFF = defineIFFCreator({
   generateRootDir: () => join(fixtureDir, randomUUID()),
@@ -64,7 +73,7 @@ export interface SetupFixtureResult<T extends Files> {
 
 export async function setupFixture<const T extends Files>(files: T): Promise<SetupFixtureResult<T>> {
   // oxlint-disable-next-line typescript/no-explicit-any
-  const iff = (await createIFF(files)) as any;
+  const iff = (await createIFF({ ...files, ...contentMapperLink })) as any;
 
   function getFileContent(file: string): string {
     const content = files[file];
