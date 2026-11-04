@@ -36,6 +36,7 @@ See [docs/get-started.md](./docs/get-started.md).
 - [`@css-modules-kit/codegen`](./packages/codegen/README.md)
 - [`@css-modules-kit/stylelint-plugin`](./packages/stylelint-plugin/README.md)
 - [`@css-modules-kit/eslint-plugin`](./packages/eslint-plugin/README.md)
+- [`@css-modules-kit/content-mapper`](./packages/content-mapper/README.md) (experimental)
 
 ## Supported Language Features
 

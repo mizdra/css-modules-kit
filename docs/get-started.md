@@ -10,6 +10,9 @@ Each tool is independent and can be used on its own. However, using all three to
 
 This guide explains each tool and how to set it up.
 
+> [!NOTE]
+> ts-plugin and codegen do not work on TypeScript 7. If you use TypeScript 7, see [Use with TypeScript 7](#use-with-typescript-7-experimental).
+
 ## Install ts-plugin
 
 ts-plugin is a TypeScript Language Service Plugin for CSS Modules. Installing ts-plugin enables various language features (see [Supported Language Features](#supported-language-features)).
@@ -92,3 +95,12 @@ All linter plugins provide the same set of rules—choose and install whichever 
 ## Customization (Optional)
 
 The behavior of ts-plugin and codegen can be customized using the `cmkOptions` option in `tsconfig.json`. For details, see [Configuration](../README.md#configuration).
+
+## Use with TypeScript 7 (Experimental)
+
+ts-plugin and codegen depend on the `typescript` package of version 6 or earlier, so they do not work in projects that use TypeScript 7. In projects that use TypeScript 7.1 or later, use content-mapper ([`@css-modules-kit/content-mapper`](../packages/content-mapper/README.md)) instead. content-mapper makes TypeScript load `*.module.css` files directly, both in the editor and in `tsc`. Therefore, you do not need codegen, `.module.css.d.ts` files, or the `tsconfig.json` settings described above. content-mapper is experimental, and only a part of the features of ts-plugin is available. For the setup and the available features, see the following:
+
+- [Installation](../packages/content-mapper/README.md#installation)
+- [Support Status](../packages/content-mapper/README.md#support-status)
+
+The linter-plugin does not depend on the `typescript` package, so it also works in projects that use TypeScript 7. To use it, follow the steps in [Install linter-plugin](#install-linter-plugin).

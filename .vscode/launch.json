@@ -191,6 +191,34 @@
       }
     },
     {
+      "name": "content-mapper: tsc (7-content-mapper)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/examples/7-content-mapper",
+      "program": "${workspaceFolder}/packages/content-mapper/node_modules/typescript/bin/tsc",
+      "args": ["--noEmit", "--runExternalCode"],
+      "console": "integratedTerminal",
+      "preLaunchTask": "vp: build",
+      "presentation": {
+        "group": "content-mapper"
+      }
+    },
+    {
+      // Uses the default profile instead of `--profile-temp`, because the language server is provided by the TypeScript 7 extension installed there.
+      "name": "content-mapper: vscode (7-content-mapper)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--skip-welcome",
+        "--folder-uri=${workspaceFolder}/examples/7-content-mapper"
+      ],
+      "preLaunchTask": "vp: build",
+      "presentation": {
+        "group": "content-mapper"
+      }
+    },
+    {
       "name": "vscode-test",
       "type": "extensionHost",
       "request": "launch",
