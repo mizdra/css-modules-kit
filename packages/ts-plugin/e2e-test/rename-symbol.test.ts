@@ -7,12 +7,13 @@ import { launchTsserver } from './test-util/tsserver.js';
 const tsserver = launchTsserver();
 
 describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: $namedExports', ({ namedExports }) => {
-  test('renames the token definition and the TS-side styles.<token>', async () => {
+  test("renames the token definition, the TS-side styles.<token>, and styles['<token>']", async () => {
     const { iff, getFileLocation, getFileSpan } = await setupFixture({
       'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
       'index.ts': dedent`
         ${buildStylesImport('./a.module.css', { namedExports })}
         styles.a_1;
+        styles['a_1'];
       `,
       'a.module.css': `.a_1 { color: red; }`,
     });
@@ -21,10 +22,15 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
 
     const cases = [
-      ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1')],
+      ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1', 0)],
+      ["from the TS-side styles['<token>']", getFileLocation('index.ts', 'a_1', 1)],
       ['from the token definition', getFileLocation('a.module.css', 'a_1')],
     ] as const;
-    const expected = [getFileSpan('a.module.css', 'a_1'), getFileSpan('index.ts', 'a_1')];
+    const expected = [
+      getFileSpan('a.module.css', 'a_1'),
+      getFileSpan('index.ts', 'a_1', { index: 0 }),
+      getFileSpan('index.ts', 'a_1', { index: 1 }),
+    ];
     for (const [name, origin] of cases) {
       const { locs } = await tsserver.sendRename(origin);
       expect.soft(locs, name).toStrictEqual(expected);
@@ -229,30 +235,6 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       getFileSpan('c.module.css', 'c_1'),
       getFileSpan('index.ts', 'c_1'),
     ];
-    for (const [name, origin] of cases) {
-      const { locs } = await tsserver.sendRename(origin);
-      expect.soft(locs, name).toStrictEqual(expected);
-    }
-  });
-
-  test("renames the TS-side styles['<token>']", async () => {
-    const { iff, getFileLocation, getFileSpan } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'index.ts': dedent`
-        ${buildStylesImport('./a.module.css', { namedExports })}
-        styles['a_1'];
-      `,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({
-      openFiles: [{ file: iff.paths['index.ts'] }, { file: iff.paths['a.module.css'] }],
-    });
-
-    const cases = [
-      ["from the TS-side styles['<token>']", getFileLocation('index.ts', 'a_1')],
-      ['from the token definition', getFileLocation('a.module.css', 'a_1')],
-    ] as const;
-    const expected = [getFileSpan('a.module.css', 'a_1'), getFileSpan('index.ts', 'a_1')];
     for (const [name, origin] of cases) {
       const { locs } = await tsserver.sendRename(origin);
       expect.soft(locs, name).toStrictEqual(expected);

@@ -17,6 +17,7 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       'index.ts': dedent`
         ${buildStylesImport('./a.module.css', { namedExports })}
         styles.a_1;
+        styles['a_1'];
       `,
       'a.module.css': `.a_1 { color: red; }`,
     });
@@ -25,7 +26,8 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
     });
 
     const cases = [
-      ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1')],
+      ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1', 0)],
+      ["from the TS-side styles['<token>']", getFileLocation('index.ts', 'a_1', 1)],
       ['from the token definition', getFileLocation('a.module.css', 'a_1')],
     ] as const;
     const expected = [getFileSpan('a.module.css', 'a_1', { context: '.a_1 { color: red; }' })];
@@ -209,23 +211,6 @@ describe.each([{ namedExports: false }, { namedExports: true }])('namedExports: 
       const definitions = await tsserver.sendDefinitionAndBoundSpan(origin);
       expect.soft(definitions, name).toStrictEqual(expected);
     }
-  });
-
-  test("returns the token definition from the TS-side styles['<token>']", async () => {
-    const { iff, getFileLocation, getFileSpan } = await setupFixture({
-      'tsconfig.json': buildTSConfigJSON({ cmkOptions: { namedExports } }),
-      'index.ts': dedent`
-        ${buildStylesImport('./a.module.css', { namedExports })}
-        styles['a_1'];
-      `,
-      'a.module.css': `.a_1 { color: red; }`,
-    });
-    await tsserver.sendUpdateOpen({
-      openFiles: [{ file: iff.paths['index.ts'] }, { file: iff.paths['a.module.css'] }],
-    });
-
-    const definitions = await tsserver.sendDefinitionAndBoundSpan(getFileLocation('index.ts', 'a_1'));
-    expect(definitions).toStrictEqual([getFileSpan('a.module.css', 'a_1', { context: '.a_1 { color: red; }' })]);
   });
 
   test('returns the token definition from a local token reference', async () => {
