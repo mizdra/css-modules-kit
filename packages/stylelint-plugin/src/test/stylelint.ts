@@ -1,4 +1,4 @@
-import { resolve } from '@css-modules-kit/core-strada';
+import { resolve } from 'node:path';
 import type stylelint from 'stylelint';
 
 function filterWarning(warning: stylelint.Warning) {
@@ -14,7 +14,7 @@ function filterWarning(warning: stylelint.Warning) {
 
 function formatLintResult(lintResult: stylelint.LintResult, rootDir: string) {
   return {
-    source: resolve(lintResult.source!).replace(rootDir, '<rootDir>'),
+    source: resolve(lintResult.source!).replaceAll('\\', '/').replace(rootDir, '<rootDir>'),
     warnings: lintResult.warnings.map(filterWarning),
   };
 }

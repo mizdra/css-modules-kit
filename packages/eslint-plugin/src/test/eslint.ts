@@ -1,4 +1,4 @@
-import { resolve } from '@css-modules-kit/core-strada';
+import { resolve } from 'node:path';
 import css from '@eslint/css';
 import type { Linter } from 'eslint';
 import { ESLint } from 'eslint';
@@ -17,7 +17,7 @@ function filterMessage(warning: Linter.LintMessage) {
 
 function formatLintResult(lintResult: ESLint.LintResult, rootDir: string) {
   return {
-    filePath: resolve(lintResult.filePath).replace(rootDir, '<rootDir>'),
+    filePath: resolve(lintResult.filePath).replaceAll('\\', '/').replace(rootDir, '<rootDir>'),
     messages: lintResult.messages.map(filterMessage),
   };
 }
