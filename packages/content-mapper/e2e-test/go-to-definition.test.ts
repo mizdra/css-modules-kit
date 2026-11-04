@@ -16,13 +16,15 @@ test('returns the token definition when the token is defined once', async () => 
     'index.ts': dedent`
       import styles from './a.module.css';
       styles.a_1;
+      styles['a_1'];
     `,
     'a.module.css': `.a_1 { color: red; }`,
   });
   await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
 
   const cases = [
-    ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1')],
+    ['from the TS-side styles.<token>', getFileLocation('index.ts', 'a_1', 0)],
+    ["from the TS-side styles['<token>']", getFileLocation('index.ts', 'a_1', 1)],
     ['from the token definition', getFileLocation('a.module.css', 'a_1')],
   ] as const;
   const expected = [getFileSpan('a.module.css', 'a_1')];
@@ -56,21 +58,6 @@ test('returns every token definition when the token is defined multiple times', 
     const definitions = await client.sendDefinition(origin);
     expect.soft(definitions, name).toStrictEqual(expected);
   }
-});
-
-test("returns the token definition from the TS-side styles['<token>']", async () => {
-  const { iff, getFileLocation, getFileSpan } = await setupFixture({
-    'tsconfig.json': buildTSConfigJSON(),
-    'index.ts': dedent`
-      import styles from './a.module.css';
-      styles['a_1'];
-    `,
-    'a.module.css': `.a_1 { color: red; }`,
-  });
-  await client.sendDidOpen([iff.paths['index.ts'], iff.paths['a.module.css']]);
-
-  const definitions = await client.sendDefinition(getFileLocation('index.ts', 'a_1'));
-  expect(definitions).toStrictEqual([getFileSpan('a.module.css', 'a_1')]);
 });
 
 test('returns the head of the imported file from the styles binding and the specifier of a TS-side import statement', async () => {

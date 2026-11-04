@@ -18,10 +18,6 @@ export type FileLocation = { file: string; position: Position };
 
 export type FileSpan = { file: string; range: Range };
 
-export type TextEdit = { range: Range; newText: string };
-
-export type FileTextEdits = { file: string; textEdits: TextEdit[] };
-
 export type Diagnostic = {
   range: Range;
   severity?: number;
@@ -37,25 +33,16 @@ interface LSPLocation {
   range: Range;
 }
 
-interface LSPWorkspaceEdit {
-  changes?: Record<string, TextEdit[]>;
-}
-
 /**
  * A thin client for the TypeScript language server.
  *
- * Methods returning language feature results (definitions, references, file rename edits,
- * diagnostics) return normalized values: only the fields relevant to tests are kept, URIs are
- * converted to paths normalized with `formatPath`, and the results are sorted so that they can be
- * compared with `toStrictEqual`. Spans and text edits are sorted by file path, then by position.
- * Duplicates are not removed.
+ * Methods returning language feature results (definitions, references, diagnostics) return
+ * normalized values: only the fields relevant to tests are kept, URIs are converted to paths
+ * normalized with `formatPath`, and the results are sorted so that they can be compared with
+ * `toStrictEqual`. Spans are sorted by file path, then by position. Duplicates are not removed.
  */
 export interface LanguageClient {
-  /** Opens files. A file is opened with its on-disk content unless `content` is given. */
-  sendDidOpen(files: readonly (string | { file: string; content: string })[]): Promise<void>;
-  sendDidClose(files: readonly string[]): Promise<void>;
-  /** Replaces the whole content of an opened file. */
-  sendDidChange(file: string, content: string): Promise<void>;
+  sendDidOpen(files: readonly string[]): Promise<void>;
   sendDefinition(args: FileLocation): Promise<FileSpan[]>;
   sendReferences(args: FileLocation): Promise<FileSpan[]>;
   /**
@@ -63,7 +50,6 @@ export interface LanguageClient {
    * tsserver reports as suggestion diagnostics instead of semantic or syntactic diagnostics.
    */
   sendDocumentDiagnostic(file: string): Promise<Diagnostic[]>;
-  sendWillRenameFiles(args: { oldFilePath: string; newFilePath: string }): Promise<FileTextEdits[]>;
 }
 
 export function formatPath(path: string) {
@@ -98,17 +84,6 @@ function normalizeLocations(locations: readonly LSPLocation[] | null): FileSpan[
     .toSorted(compareFileSpans);
 }
 
-function normalizeWorkspaceEdit(edit: LSPWorkspaceEdit | null): FileTextEdits[] {
-  return Object.entries(edit?.changes ?? {})
-    .map(([uri, edits]) => ({
-      file: toFilePath(uri),
-      textEdits: edits
-        .map((textEdit) => ({ range: textEdit.range, newText: textEdit.newText }))
-        .toSorted((a, b) => comparePositions(a.range.start, b.range.start)),
-    }))
-    .toSorted((a, b) => a.file.localeCompare(b.file));
-}
-
 function normalizeDiagnostics(diagnostics: readonly Diagnostic[]): Diagnostic[] {
   return diagnostics
     .filter((diagnostic) => diagnostic.severity !== DiagnosticSeverity.Hint)
@@ -133,7 +108,6 @@ function languageIdOf(filePath: string): string {
  * Launches a TypeScript language server with `rootDir` as its workspace folder.
  */
 export async function launchLanguageClient(rootDir: string): Promise<LanguageClient> {
-  const documentVersions = new Map<string, number>();
   const tscPath = resolve(import.meta.dirname, '../../node_modules/typescript/bin/tsc');
   const proc = spawn(process.execPath, [tscPath, '--lsp', '-stdio'], { stdio: ['pipe', 'pipe', 'inherit'] });
   const connection = createMessageConnection(new StreamMessageReader(proc.stdout), new StreamMessageWriter(proc.stdin));
@@ -163,31 +137,16 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
 
   return {
     async sendDidOpen(files) {
-      for (const entry of files) {
-        const file = typeof entry === 'string' ? entry : entry.file;
-        const text = typeof entry === 'string' ? readFileSync(file, 'utf8') : entry.content;
-        const uri = toFileUri(file);
-        documentVersions.set(uri, 1);
+      for (const file of files) {
         await sendNotification('textDocument/didOpen', {
-          textDocument: { uri, languageId: languageIdOf(file), version: 1, text },
+          textDocument: {
+            uri: toFileUri(file),
+            languageId: languageIdOf(file),
+            version: 1,
+            text: readFileSync(file, 'utf8'),
+          },
         });
       }
-    },
-    async sendDidClose(files) {
-      for (const file of files) {
-        const uri = toFileUri(file);
-        documentVersions.delete(uri);
-        await sendNotification('textDocument/didClose', { textDocument: { uri } });
-      }
-    },
-    async sendDidChange(file, content) {
-      const uri = toFileUri(file);
-      const version = (documentVersions.get(uri) ?? 1) + 1;
-      documentVersions.set(uri, version);
-      await sendNotification('textDocument/didChange', {
-        textDocument: { uri, version },
-        contentChanges: [{ text: content }],
-      });
     },
     async sendDefinition(args) {
       const result = await sendRequest('textDocument/definition', {
@@ -209,12 +168,6 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
         textDocument: { uri: toFileUri(file) },
       });
       return normalizeDiagnostics(result.items);
-    },
-    async sendWillRenameFiles(args) {
-      const result = await sendRequest('workspace/willRenameFiles', {
-        files: [{ oldUri: toFileUri(args.oldFilePath), newUri: toFileUri(args.newFilePath) }],
-      });
-      return normalizeWorkspaceEdit(result);
     },
   };
 }

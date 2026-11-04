@@ -6,43 +6,28 @@ import { DiagnosticSeverity, launchLanguageClient } from './test-util/language-c
 
 const client = await launchLanguageClient(fixtureDir);
 
-test('reports parse-phase diagnostics on a CSS module', async () => {
-  const { iff, getFileSpan } = await setupFixture({
-    'tsconfig.json': buildTSConfigJSON(),
-    'a.module.css': `@value;`,
-  });
-  await client.sendDidOpen([iff.paths['a.module.css']]);
-
-  const diagnostics = await client.sendDocumentDiagnostic(iff.paths['a.module.css']);
-
-  const { range } = getFileSpan('a.module.css', '@value;');
-  expect(diagnostics).toStrictEqual([
-    {
-      range,
-      severity: DiagnosticSeverity.Error,
-      code: 1000,
-      source: 'cmk',
-      message: '`@value` is a invalid syntax.',
-    },
-  ]);
-});
-
-test('reports a CSS syntax error on a CSS module', async () => {
+test('reports parse-phase diagnostics and CSS syntax errors on a CSS module', async () => {
   const { iff, getFileSpan } = await setupFixture({
     'tsconfig.json': buildTSConfigJSON(),
     'a.module.css': dedent`
-      .a_1 { color: red; }
-      .a_2 {
+      @value;
+      .a_1 {
     `,
   });
   await client.sendDidOpen([iff.paths['a.module.css']]);
 
   const diagnostics = await client.sendDocumentDiagnostic(iff.paths['a.module.css']);
 
-  const { range } = getFileSpan('a.module.css', '.', { index: 1 });
   expect(diagnostics).toStrictEqual([
     {
-      range,
+      range: getFileSpan('a.module.css', '@value;').range,
+      severity: DiagnosticSeverity.Error,
+      code: 1000,
+      source: 'cmk',
+      message: '`@value` is a invalid syntax.',
+    },
+    {
+      range: getFileSpan('a.module.css', '.').range,
       severity: DiagnosticSeverity.Error,
       code: 1000,
       source: 'cmk',
