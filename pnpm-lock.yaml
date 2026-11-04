@@ -333,6 +333,9 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
+      '@css-modules-kit/core-strada':
+        specifier: workspace:*
+        version: link:../core-strada
       chokidar:
         specifier: ^5.0.0
         version: 5.0.0
@@ -354,6 +357,12 @@ importers:
       postcss-value-parser:
         specifier: ^4.2.0
         version: 4.2.0
+
+  packages/core-strada:
+    dependencies:
+      '@css-modules-kit/core':
+        specifier: workspace:*
+        version: link:../core
       typescript:
         specifier: ^5.7.3 || ^6.0.0
         version: 6.0.3
@@ -363,6 +372,9 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
+      '@css-modules-kit/core-strada':
+        specifier: workspace:*
+        version: link:../core-strada
       '@eslint/css':
         specifier: '>=0.4.0'
         version: 1.4.0
@@ -378,6 +390,9 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
+      '@css-modules-kit/core-strada':
+        specifier: workspace:*
+        version: link:../core-strada
       stylelint:
         specifier: ^16.0.0 || ^17.0.0
         version: 17.14.0(supports-color@8.1.1)(typescript@6.0.3)
@@ -387,6 +402,9 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
+      '@css-modules-kit/core-strada':
+        specifier: workspace:*
+        version: link:../core-strada
       '@volar/language-core':
         specifier: ^2.4.28
         version: 2.4.28

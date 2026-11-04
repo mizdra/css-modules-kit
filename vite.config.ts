@@ -4,6 +4,29 @@ import mizdraOxfmtConfig from '@mizdra/oxfmt-config';
 import mizdraOxlintConfig from '@mizdra/oxlint-config';
 import { defineConfig } from 'vite-plus';
 
+const restrictedImports = {
+  paths: [
+    {
+      name: 'buffer',
+      message: 'Use Uint8Array instead.',
+    },
+    {
+      name: 'node:buffer',
+      message: 'Use Uint8Array instead.',
+    },
+  ],
+  patterns: [
+    {
+      group: ['**/src', '!**/../src'],
+      message: 'Do not import internal modules directly.',
+    },
+  ],
+};
+const restrictedNodePath = {
+  name: 'node:path',
+  message: 'Use original path package instead.',
+};
+
 export default defineConfig({
   staged: {
     '*': 'vp check --fix',
@@ -21,31 +44,31 @@ export default defineConfig({
       ],
       'no-restricted-imports': [
         'error',
-        {
-          paths: [
-            {
-              name: 'buffer',
-              message: 'Use Uint8Array instead.',
-            },
-            {
-              name: 'node:buffer',
-              message: 'Use Uint8Array instead.',
-            },
-            {
-              name: 'node:path',
-              message: 'Use original path package instead.',
-            },
-          ],
-          patterns: [
-            {
-              group: ['**/src', '!**/../src'],
-              message: 'Do not import internal modules directly.',
-            },
-          ],
-        },
+        { ...restrictedImports, paths: [...restrictedImports.paths, restrictedNodePath] },
       ],
     },
     overrides: [
+      {
+        files: ['packages/stylelint-plugin/**', 'packages/eslint-plugin/**', 'packages/content-mapper/**'],
+        rules: {
+          'no-restricted-imports': ['error', restrictedImports],
+        },
+      },
+      {
+        files: ['packages/core/src/**'],
+        rules: {
+          'no-restricted-imports': [
+            'error',
+            {
+              ...restrictedImports,
+              paths: [
+                ...restrictedImports.paths,
+                { name: 'typescript', message: 'Put the code that needs the TypeScript API in core-strada.' },
+              ],
+            },
+          ],
+        },
+      },
       {
         files: ['**/*.test.ts', '**/e2e-test/**', '**/vscode-test/**', '**/src/test/**'],
         rules: {
@@ -82,6 +105,7 @@ export default defineConfig({
         resolve: {
           alias: {
             '@css-modules-kit/core': resolve('packages/core/src/index.ts'),
+            '@css-modules-kit/core-strada': resolve('packages/core-strada/src/index.ts'),
             ...(process.env['STYLELINT_VERSION'] ? { stylelint: `stylelint-${process.env['STYLELINT_VERSION']}` } : {}),
           },
         },

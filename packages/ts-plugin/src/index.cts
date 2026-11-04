@@ -1,6 +1,10 @@
-import type { CMKConfig } from '@css-modules-kit/core';
-import { createMatchesPattern, createResolver, readConfigFile } from '@css-modules-kit/core';
-import { TsConfigFileNotFoundError } from '@css-modules-kit/core';
+import type { CMKConfig } from '@css-modules-kit/core-strada';
+import {
+  createMatchesPattern,
+  createResolver,
+  readConfigFile,
+  TsConfigFileNotFoundError,
+} from '@css-modules-kit/core-strada';
 import type { Language } from '@volar/language-core';
 import { createLanguageServicePlugin } from '@volar/typescript/lib/quickstart/createLanguageServicePlugin.js';
 import type ts from 'typescript';

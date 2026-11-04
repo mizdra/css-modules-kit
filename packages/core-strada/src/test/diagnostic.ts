@@ -1,4 +1,4 @@
-import type { Diagnostic } from '../type.js';
+import type { Diagnostic } from '@css-modules-kit/core';
 
 function formatDiagnostic(diagnostic: Diagnostic, rootDir: string) {
   return {

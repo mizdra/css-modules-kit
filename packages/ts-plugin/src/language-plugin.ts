@@ -1,5 +1,7 @@
-import type { CMKConfig, CSSModule, MatchesPattern } from '@css-modules-kit/core';
-import { generateDts, parseCSSModule } from '@css-modules-kit/core';
+import type { CSSModule } from '@css-modules-kit/core';
+import { parseCSSModule } from '@css-modules-kit/core';
+import type { CMKConfig, MatchesPattern } from '@css-modules-kit/core-strada';
+import { generateDts } from '@css-modules-kit/core-strada';
 import type { LanguagePlugin, SourceScript, VirtualCode } from '@volar/language-core';
 import type {} from '@volar/typescript';
 import ts from 'typescript';

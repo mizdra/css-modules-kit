@@ -1,6 +1,6 @@
 import { inspect } from 'node:util';
-import type { DiagnosticSourceFile } from '@css-modules-kit/core';
-import { convertDiagnostic, convertSystemError, type Diagnostic, SystemError } from '@css-modules-kit/core';
+import type { Diagnostic, DiagnosticSourceFile } from '@css-modules-kit/core';
+import { convertDiagnostic, convertSystemError, SystemError } from '@css-modules-kit/core-strada';
 import ts from 'typescript';
 import { formatDiagnostics, formatTime } from './formatter.js';
 

@@ -1,6 +1,11 @@
+import type {
+  Diagnostic,
+  DiagnosticCategory,
+  DiagnosticSourceFile,
+  DiagnosticWithLocation,
+} from '@css-modules-kit/core';
 import ts from 'typescript';
 import type { SystemError } from './error.js';
-import type { Diagnostic, DiagnosticCategory, DiagnosticSourceFile, DiagnosticWithLocation } from './type.js';
 
 /** The error code used by tsserver to display the css-modules-kit error in the editor. */
 const TS_ERROR_CODE = 0;

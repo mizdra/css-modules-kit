@@ -1,4 +1,4 @@
-import { resolve } from '@css-modules-kit/core';
+import { resolve } from '@css-modules-kit/core-strada';
 import { describe, expect, it } from 'vite-plus/test';
 import { parseCLIArgs } from './cli.js';
 import { ParseCLIArgsError } from './error.js';

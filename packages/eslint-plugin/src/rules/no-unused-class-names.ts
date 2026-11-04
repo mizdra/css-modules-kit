@@ -1,4 +1,5 @@
-import { basename, findComponentFileSync, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import { findComponentFileSync, findUsedTokenNames, isCSSModuleFile, parseRule } from '@css-modules-kit/core';
+import { basename } from '@css-modules-kit/core-strada';
 import type { Rule } from 'eslint';
 import safeParser from 'postcss-safe-parser';
 import { readFile } from '../util.js';
