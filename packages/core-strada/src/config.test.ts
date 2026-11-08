@@ -206,6 +206,67 @@ describe('readConfigFile', () => {
       });
       expect(readConfigFile(iff.rootDir).dtsOutDir).toBe(iff.join('generated2'));
     });
+    test('prefers a later entry of an `extends` array over an earlier one', async () => {
+      const iff = await createIFF({
+        'tsconfig.base1.json': dedent`
+          {
+            "compilerOptions": { "module": "esnext" },
+            "cmkOptions": { "dtsOutDir": "generated1" }
+          }
+        `,
+        'tsconfig.base2.json': dedent`
+          {
+            "compilerOptions": { "module": "es2015" },
+            "cmkOptions": { "dtsOutDir": "generated2" }
+          }
+        `,
+        'tsconfig.json': dedent`
+          {
+            "extends": ["./tsconfig.base1.json", "./tsconfig.base2.json"]
+          }
+        `,
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>(
+        expect.objectContaining({
+          dtsOutDir: iff.join('generated2'),
+          compilerOptions: expect.objectContaining({
+            module: ts.ModuleKind.ES2015,
+          }),
+        }),
+      );
+    });
+    test('prefers the tsconfig extended by a later entry of an `extends` array over an earlier entry', async () => {
+      const iff = await createIFF({
+        'tsconfig.base1.json': dedent`
+          {
+            "cmkOptions": { "dtsOutDir": "generated1", "namedExports": true }
+          }
+        `,
+        'tsconfig.base2-parent.json': dedent`
+          {
+            "cmkOptions": { "dtsOutDir": "generated2-parent", "arbitraryExtensions": true }
+          }
+        `,
+        'tsconfig.base2.json': dedent`
+          {
+            "extends": "./tsconfig.base2-parent.json",
+            "cmkOptions": { "arbitraryExtensions": false }
+          }
+        `,
+        'tsconfig.json': dedent`
+          {
+            "extends": ["./tsconfig.base1.json", "./tsconfig.base2.json"]
+          }
+        `,
+      });
+      expect(readConfigFile(iff.rootDir)).toStrictEqual<CMKConfig>(
+        expect.objectContaining({
+          dtsOutDir: iff.join('generated2-parent'),
+          namedExports: true,
+          arbitraryExtensions: false,
+        }),
+      );
+    });
     test('inherits options from a tsconfig in a package', async () => {
       const iff = await createIFF({
         'node_modules/some-pkg/tsconfig.json': dedent`

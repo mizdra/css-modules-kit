@@ -270,6 +270,45 @@ function parseTsConfigFile(fileName: string, basePath: string) {
   };
 }
 
+type ParsedTsConfig = ReturnType<typeof parseTsConfigFile>;
+
+function readExtendedTsConfigFile(
+  fileName: string,
+  basePath: string,
+  cache: Map<string, ParsedTsConfig | undefined>,
+): ParsedTsConfig | undefined {
+  if (!cache.has(fileName)) {
+    cache.set(fileName, isTsConfigFileExists(fileName) ? parseTsConfigFile(fileName, basePath) : undefined);
+  }
+  return cache.get(fileName);
+}
+
+/**
+ * Merges the options of `tsConfig` with the options it inherits through `extends`, with the same precedence as
+ * TypeScript: the options of the file itself win, and a later entry of an `extends` array wins over an earlier one
+ * (including the files that the earlier entry extends).
+ */
+function resolveInheritedConfig(
+  tsConfig: ParsedTsConfig,
+  basePath: string,
+  cache: Map<string, ParsedTsConfig | undefined>,
+): UnnormalizedRawConfig {
+  // `extendedSourceFiles` is flattened: each entry of `extends` is followed by the files that it extends in turn.
+  // Those transitively extended files are skipped here, since they are merged when their entry is resolved.
+  const extendedSourceFiles = tsConfig.extendedSourceFiles ?? [];
+  let inheritedConfig: UnnormalizedRawConfig = {};
+  let i = 0;
+  while (i < extendedSourceFiles.length) {
+    const base = readExtendedTsConfigFile(extendedSourceFiles[i]!, basePath, cache);
+    i++;
+    if (!base) continue;
+    const transitivelyExtendedSourceFiles = new Set(base.extendedSourceFiles);
+    while (i < extendedSourceFiles.length && transitivelyExtendedSourceFiles.has(extendedSourceFiles[i]!)) i++;
+    inheritedConfig = { ...inheritedConfig, ...resolveInheritedConfig(base, basePath, cache) };
+  }
+  return { ...inheritedConfig, ...tsConfig.config };
+}
+
 const configDirTemplate = /^\$\{configDir\}/iu;
 // https://github.com/microsoft/TypeScript/blob/7b8cb3bdf82f400642b73173f941335775d6f730/src/compiler/commandLineParser.ts#L3300
 function startsWithConfigDirTemplate(path: string) {
@@ -298,15 +337,12 @@ export function readConfigFile(project: string): CMKConfig {
 
   // The options read from `parsedCommandLine.raw` do not inherit values from the file specified in `extends`.
   // So here we read the options from those files and merge them into `parsedRawData`.
-  if (parsedTsConfig.extendedSourceFiles) {
-    for (const extendedSourceFile of parsedTsConfig.extendedSourceFiles) {
-      if (isTsConfigFileExists(extendedSourceFile)) {
-        const base = parseTsConfigFile(extendedSourceFile, basePath);
-        parsedTsConfig.config = { ...base.config, ...parsedTsConfig.config };
-        parsedTsConfig.diagnostics = [...base.diagnostics, ...parsedTsConfig.diagnostics];
-      }
-    }
+  const extendedTsConfigs = new Map<string, ParsedTsConfig | undefined>();
+  for (const extendedSourceFile of parsedTsConfig.extendedSourceFiles ?? []) {
+    const base = readExtendedTsConfigFile(extendedSourceFile, basePath, extendedTsConfigs);
+    if (base) parsedTsConfig.diagnostics = [...base.diagnostics, ...parsedTsConfig.diagnostics];
   }
+  parsedTsConfig.config = resolveInheritedConfig(parsedTsConfig, basePath, extendedTsConfigs);
 
   if (parsedTsConfig.config.animation !== undefined && parsedTsConfig.config.keyframes !== undefined) {
     parsedTsConfig.diagnostics.push({
