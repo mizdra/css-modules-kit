@@ -1,0 +1,11 @@
+@value primary: #2864f0;
+
+.a_1 {
+  color: primary;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}

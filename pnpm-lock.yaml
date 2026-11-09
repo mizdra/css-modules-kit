@@ -328,6 +328,12 @@ importers:
 
   crates/zed: {}
 
+  examples/7-content-mapper:
+    devDependencies:
+      '@css-modules-kit/content-mapper':
+        specifier: workspace:*
+        version: link:../../packages/content-mapper
+
   packages/codegen:
     dependencies:
       '@css-modules-kit/core':

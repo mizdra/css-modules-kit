@@ -1,6 +1,8 @@
 packages:
   - 'packages/*'
   - 'crates/*'
+  # The language server loads a content mapper only from a node_modules inside a workspace folder.
+  - 'examples/7-content-mapper'
 allowBuilds:
   '@vscode/vsce-sign': false
   esbuild: false
