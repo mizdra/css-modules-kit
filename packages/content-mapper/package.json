@@ -1,0 +1,45 @@
+{
+  "name": "@css-modules-kit/content-mapper",
+  "version": "0.0.0",
+  "private": false,
+  "description": "A TypeScript content mapper for CSS Modules",
+  "keywords": [
+    "content-mapper",
+    "css-modules",
+    "typescript"
+  ],
+  "license": "MIT",
+  "author": "mizdra <pp.mizdra@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizdra/css-modules-kit.git",
+    "directory": "packages/content-mapper"
+  },
+  "files": [
+    "src",
+    "!src/**/*.test.ts",
+    "!src/test",
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json"
+  },
+  "dependencies": {
+    "@css-modules-kit/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "7.1.0-dev.20261030.1"
+  },
+  "peerDependencies": {
+    "typescript": ">=7.1.0-0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

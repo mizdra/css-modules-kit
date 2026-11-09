@@ -8,6 +8,18 @@ allowBuilds:
 minimumReleaseAge: 4320
 minimumReleaseAgeExclude:
   - '@mizdra/*'
+  # The typescript nightly (and its native binary packages) pinned for the content-mapper e2e tests.
+  # Unlike the other devDependencies, it is installed in packages/content-mapper instead of the root:
+  # in the root, pnpm would link its `tsc` (the higher version) in place of the `tsc` of typescript 6.
+  # Keep the versions below in sync with the typescript devDependency of packages/content-mapper.
+  - typescript@7.1.0-dev.20261030.1
+  - '@typescript/typescript-darwin-arm64@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-darwin-x64@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-linux-arm@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-linux-arm64@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-linux-x64@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-win32-arm64@7.1.0-dev.20261030.1'
+  - '@typescript/typescript-win32-x64@7.1.0-dev.20261030.1'
 catalog:
   vite: npm:@voidzero-dev/vite-plus-core@1.3.0
   vite-plus: 1.3.0
