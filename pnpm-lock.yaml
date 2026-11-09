@@ -348,6 +348,9 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
+      vscode-jsonrpc:
+        specifier: ^10.0.0
+        version: 10.0.0
     devDependencies:
       typescript:
         specifier: 7.1.0-dev.20261030.1
@@ -3996,6 +3999,10 @@ packages:
         optional: true
       jsdom:
         optional: true
+
+  vscode-jsonrpc@10.0.0:
+    resolution: {integrity: sha512-USSfxg0vDIpTQqlQBGxF3mBARyoS8cU7LHLpbYNh6dOJt32dlskxPWB0Irrh5TllTmyf7oNLAvqDqzklbwwnpA==}
+    engines: {node: '>=14.17.0'}
 
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
@@ -7672,6 +7679,8 @@ snapshots:
       '@vitest/ui': 5.0.5(vitest@5.0.5)
     transitivePeerDependencies:
       - msw
+
+  vscode-jsonrpc@10.0.0: {}
 
   vscode-uri@3.1.0: {}
 
