@@ -1,5 +1,8 @@
 # Get Started
 
+> [!NOTE]
+> ts-plugin and codegen do not work on TypeScript 7. If you use TypeScript 7, see [Get Started (TypeScript 7)](./get-started-ts7.md).
+
 CSS Modules Kit consists of the following three tools:
 
 - ts-plugin ([`@css-modules-kit/ts-plugin`](../packages/ts-plugin/README.md))
