@@ -1,6 +1,6 @@
 {
   "name": "@css-modules-kit/core-strada",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "private": false,
   "description": "The code shared by ts-plugin and codegen of css-modules-kit, the tools that run on the API of TypeScript 6 or earlier",
   "keywords": [

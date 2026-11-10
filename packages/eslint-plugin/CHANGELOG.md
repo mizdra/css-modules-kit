@@ -1,5 +1,16 @@
 # @css-modules-kit/eslint-plugin
 
+## 1.4.2
+
+### Patch Changes
+
+- [#470](https://github.com/mizdra/css-modules-kit/pull/470) [`8b7e191`](https://github.com/mizdra/css-modules-kit/commit/8b7e19189c3498009d47879294ca28b1f8de6fa2) - deps: stop depending on `@css-modules-kit/core-strada` from `@css-modules-kit/eslint-plugin` and `@css-modules-kit/stylelint-plugin`
+
+- [#466](https://github.com/mizdra/css-modules-kit/pull/466) [`d43493e`](https://github.com/mizdra/css-modules-kit/commit/d43493e5d62ee96491b30c1cbb5fe912d8863f2f) - deps: move the code shared by ts-plugin and codegen, the tools that run on the API of TypeScript 6 or earlier, from `@css-modules-kit/core` to the new `@css-modules-kit/core-strada`
+
+- Updated dependencies [[`d43493e`](https://github.com/mizdra/css-modules-kit/commit/d43493e5d62ee96491b30c1cbb5fe912d8863f2f)]:
+  - @css-modules-kit/core@1.4.2
+
 ## 1.4.1
 
 ### Patch Changes
