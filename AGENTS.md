@@ -19,6 +19,7 @@ This project is a monorepo and consists of the following packages:
   - Wrapper to run ts-plugin in VS Code
 - **packages/stylelint-plugin**: Stylelint plugin
 - **packages/eslint-plugin**: ESLint plugin
+- **packages/content-mapper**: TypeScript content mapper that provides language features on TypeScript 7
 - **crates/zed**: Zed editor extension (Rust implementation)
   - Wrapper to run ts-plugin in Zed
 
@@ -149,7 +150,7 @@ function myFunction() {
 - Write PR descriptions and commit messages in English
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
   - `<type>` is one of: feat, fix, docs, refactor, test, chore, deps
-  - `[optional scope]`: choose one of core, ts-plugin, codegen, vscode, stylelint-plugin, eslint-plugin, zed
+  - `[optional scope]`: choose one of core, ts-plugin, codegen, vscode, stylelint-plugin, eslint-plugin, content-mapper, zed
     - For changes spanning multiple packages, use comma-separated scopes like `feat(core, ts-plugin): ...`
 - If you make changes that affect users, add a changeset file under `.changeset`
   - The changeset body must be a single summary line only.

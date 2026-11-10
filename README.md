@@ -22,7 +22,7 @@ In addition, CSS Modules Kit provides various tools for CSS Modules (e.g., codeg
 
 ## Get Started
 
-See [docs/get-started.md](./docs/get-started.md).
+See [docs/get-started.md](./docs/get-started.md). If you use TypeScript 7, see [docs/get-started-ts7.md](./docs/get-started-ts7.md) (experimental).
 
 ## Playground
 
@@ -36,6 +36,7 @@ See [docs/get-started.md](./docs/get-started.md).
 - [`@css-modules-kit/codegen`](./packages/codegen/README.md)
 - [`@css-modules-kit/stylelint-plugin`](./packages/stylelint-plugin/README.md)
 - [`@css-modules-kit/eslint-plugin`](./packages/eslint-plugin/README.md)
+- [`@css-modules-kit/content-mapper`](./packages/content-mapper/README.md) (experimental)
 
 ## Supported Language Features
 

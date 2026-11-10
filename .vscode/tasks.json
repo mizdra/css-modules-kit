@@ -36,6 +36,12 @@
         "cwd": "${workspaceFolder}/packages/vscode"
       },
       "group": "build"
+    },
+    {
+      "label": "vp: build",
+      "type": "shell",
+      "command": "vp run build",
+      "group": "build"
     }
   ]
 }
