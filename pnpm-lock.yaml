@@ -372,9 +372,6 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
-      '@css-modules-kit/core-strada':
-        specifier: workspace:*
-        version: link:../core-strada
       '@eslint/css':
         specifier: '>=0.4.0'
         version: 1.4.0
@@ -390,9 +387,6 @@ importers:
       '@css-modules-kit/core':
         specifier: workspace:*
         version: link:../core
-      '@css-modules-kit/core-strada':
-        specifier: workspace:*
-        version: link:../core-strada
       stylelint:
         specifier: ^16.0.0 || ^17.0.0
         version: 17.14.0(supports-color@8.1.1)(typescript@6.0.3)

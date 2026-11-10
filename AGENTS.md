@@ -24,7 +24,7 @@ This project is a monorepo and consists of the following packages:
 
 Package dependencies:
 
-- ts-plugin, codegen, stylelint-plugin, and eslint-plugin all depend on the core and core-strada packages
+- ts-plugin and codegen depend on the core and core-strada packages
 - core does not depend on `typescript`. core-strada depends on core
 - Functionality is implemented via APIs provided by these packages (`parseCSSModule`, `generateDts`, `checkCSSModule`, etc.)
 
