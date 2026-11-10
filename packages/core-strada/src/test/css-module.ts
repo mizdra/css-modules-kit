@@ -1,18 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { parseCSSModule } from '../parser/css-module-parser.js';
-import type { CSSModule } from '../type.js';
-
-export function fakeCSSModule(args?: Partial<CSSModule>): CSSModule {
-  return {
-    fileName: '/test.module.css',
-    text: '',
-    localTokens: [],
-    tokenImporters: [],
-    tokenReferences: [],
-    diagnostics: [],
-    ...args,
-  };
-}
+import { type CSSModule, parseCSSModule } from '@css-modules-kit/core';
 
 export function readAndParseCSSModule(
   path: string,

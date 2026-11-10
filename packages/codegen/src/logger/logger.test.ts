@@ -1,5 +1,6 @@
 import { stripVTControlCharacters } from 'node:util';
-import { type Diagnostic, SystemError } from '@css-modules-kit/core';
+import type { Diagnostic } from '@css-modules-kit/core';
+import { SystemError } from '@css-modules-kit/core-strada';
 import { describe, expect, test, vi } from 'vite-plus/test';
 import { ReadCSSModuleFileError } from '../error.js';
 import { createLogger } from './logger.js';

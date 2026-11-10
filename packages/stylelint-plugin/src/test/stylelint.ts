@@ -1,4 +1,4 @@
-import { resolve } from '@css-modules-kit/core';
+import { resolve } from '@css-modules-kit/core-strada';
 import type stylelint from 'stylelint';
 
 function filterWarning(warning: stylelint.Warning) {

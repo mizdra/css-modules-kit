@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
-import { join } from '@css-modules-kit/core';
+import { join } from '@css-modules-kit/core-strada';
 import { type CreateIFFResult, defineIFFCreator } from '@mizdra/inline-fixture-files';
 import { type FileSpan, type FileSpanWithContext, formatPath } from './tsserver.js';
 

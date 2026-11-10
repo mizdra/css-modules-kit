@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
-import { join } from '@css-modules-kit/core';
+import { join } from '@css-modules-kit/core-strada';
 import { defineIFFCreator } from '@mizdra/inline-fixture-files';
 
 const fixtureDir = join(tmpdir(), 'css-modules-kit', process.env['VITEST_POOL_ID']!);

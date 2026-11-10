@@ -1,6 +1,6 @@
 import type { Stats } from 'node:fs';
 import { rm } from 'node:fs/promises';
-import { basename } from '@css-modules-kit/core';
+import { basename } from '@css-modules-kit/core-strada';
 import chokidar, { type FSWatcher } from 'chokidar';
 import { CMKDisabledError } from './error.js';
 import type { Logger } from './logger/logger.js';

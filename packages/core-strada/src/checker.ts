@@ -1,13 +1,6 @@
-import type {
-  CSSModule,
-  Diagnostic,
-  ExportRecord,
-  Location,
-  LocalTokenReference,
-  MatchesPattern,
-  Resolver,
-} from './type.js';
-import { isURLSpecifier } from './util.js';
+import type { CSSModule, Diagnostic, Location, LocalTokenReference } from '@css-modules-kit/core';
+import { isURLSpecifier } from '@css-modules-kit/core';
+import type { ExportRecord, MatchesPattern, Resolver } from './type.js';
 
 export interface CheckerArgs {
   getExportRecord: (cssModule: CSSModule) => ExportRecord;

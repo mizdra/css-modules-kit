@@ -1,7 +1,6 @@
+import type { CSSModule, Token, TokenImporter, TokenReference, ValidateTokenNameOptions } from '@css-modules-kit/core';
+import { isURLSpecifier, validateTokenName } from '@css-modules-kit/core';
 import { basename } from './path.js';
-import type { CSSModule, Token, TokenImporter, TokenReference } from './type.js';
-import type { ValidateTokenNameOptions } from './util.js';
-import { isURLSpecifier, validateTokenName } from './util.js';
 
 export const STYLES_EXPORT_NAME = 'styles';
 

@@ -1,4 +1,4 @@
-import { join } from '@css-modules-kit/core';
+import { join } from '@css-modules-kit/core-strada';
 import dedent from 'dedent';
 import ts from 'typescript';
 import { describe, expect, test } from 'vite-plus/test';

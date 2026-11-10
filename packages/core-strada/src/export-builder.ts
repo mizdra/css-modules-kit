@@ -1,4 +1,5 @@
-import type { CSSModule, ExportBuilder, ExportRecord, MatchesPattern, Resolver } from './type.js';
+import type { CSSModule } from '@css-modules-kit/core';
+import type { ExportBuilder, ExportRecord, MatchesPattern, Resolver } from './type.js';
 
 export interface ExportBuilderHost {
   matchesPattern: MatchesPattern;
