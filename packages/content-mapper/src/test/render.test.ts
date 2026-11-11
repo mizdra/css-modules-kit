@@ -51,3 +51,31 @@ test('renders the mappings and the diagnostics as markers under the source and t
     diag#0: Unclosed block"
   `);
 });
+
+test('renders the features as the ones excluded from All when most features are included', () => {
+  const source = '.a_1 {}';
+  const text = "interface Styles { readonly 'a_1': string }";
+  const output: TransformOutput = {
+    text,
+    mappings: [
+      [
+        text.indexOf("'a_1'"),
+        5,
+        source.indexOf('a_1'),
+        3,
+        SpanMapKind.Atom,
+        SpanMapFeature.All & ~SpanMapFeature.Rename & ~SpanMapFeature.Hover,
+      ],
+    ],
+    diagnostics: [],
+  };
+  expect(renderTransformOutput(source, output)).toMatchInlineSnapshot(`
+    "=== source ===
+    .a_1 {}
+     ^^^ #0
+
+    === generated ===
+    interface Styles { readonly 'a_1': string }
+                                ^^^^^ #0 Atom(All&~Hover&~Rename)"
+  `);
+});

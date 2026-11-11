@@ -16,9 +16,14 @@ function formatFeatures(features: number | undefined): string {
   if (features === undefined) return '';
   // A numeric enum also has the entries of its reverse mapping.
   const flags = Object.entries(SpanMapFeature).filter(
-    (entry): entry is [string, SpanMapFeature] => typeof entry[1] === 'number' && entry[1] !== SpanMapFeature.All,
+    (entry): entry is [string, SpanMapFeature] =>
+      typeof entry[1] === 'number' && entry[1] !== SpanMapFeature.All && entry[1] !== SpanMapFeature.None,
   );
   const included = flags.filter(([, bit]) => (features & bit) !== 0).map(([name]) => name);
+  const excluded = flags.filter(([, bit]) => (features & bit) === 0).map(([name]) => name);
+  if (included.length > excluded.length) {
+    return `(${['All', ...excluded].join('&~')})`;
+  }
   return `(${included.join('|')})`;
 }
 
