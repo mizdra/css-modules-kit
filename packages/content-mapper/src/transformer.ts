@@ -35,7 +35,15 @@ function generateText(tokens: Token[]): Pick<TransformOutput, 'text' | 'mappings
   for (const { name, loc } of tokens) {
     text += 'interface Styles { readonly ';
     // The span includes the quotes because go-to-definition works only when the quotes are mapped as well.
-    mappings.push([text.length, name.length + 2, loc.start.offset, name.length, SpanMapKind.Atom]);
+    // Rename is excluded because TypeScript writes rename edits back only through a Verbatim span.
+    mappings.push([
+      text.length,
+      name.length + 2,
+      loc.start.offset,
+      name.length,
+      SpanMapKind.Atom,
+      SpanMapFeature.All & ~SpanMapFeature.Rename,
+    ]);
     text += `'${name}': string }\n`;
   }
   text += 'declare const ';
@@ -43,6 +51,19 @@ function generateText(tokens: Token[]): Pick<TransformOutput, 'text' | 'mappings
   // jumps to the start of the CSS file.
   mappings.push([text.length, 'styles'.length, 0, 0, SpanMapKind.Atom, SpanMapFeature.Definition]);
   text += `styles: ${tokens.length > 0 ? 'Styles' : '{}'};\n`;
+  // A reference to each token, which exists only to provide a Verbatim mapping that writes rename edits back.
+  for (const { name, loc } of tokens) {
+    text += "styles['";
+    mappings.push([
+      text.length,
+      name.length,
+      loc.start.offset,
+      name.length,
+      SpanMapKind.Verbatim,
+      SpanMapFeature.Rename,
+    ]);
+    text += `${name}'];\n`;
+  }
   text += 'export default styles;\n';
   return { text, mappings };
 }
