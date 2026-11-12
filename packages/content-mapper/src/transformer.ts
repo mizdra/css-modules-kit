@@ -35,14 +35,14 @@ function generateText(tokens: Token[]): Pick<TransformOutput, 'text' | 'mappings
   for (const { name, loc } of tokens) {
     text += 'interface Styles { readonly ';
     // The span includes the quotes because go-to-definition works only when the quotes are mapped as well.
-    // Rename is excluded because TypeScript writes rename edits back only through a Verbatim span.
+    // Rename is not enabled because TypeScript writes rename edits back only through a Verbatim span.
     mappings.push([
       text.length,
       name.length + 2,
       loc.start.offset,
       name.length,
       SpanMapKind.Atom,
-      SpanMapFeature.All & ~SpanMapFeature.Rename,
+      SpanMapFeature.Definition | SpanMapFeature.References | SpanMapFeature.DocumentHighlights,
     ]);
     text += `'${name}': string }\n`;
   }

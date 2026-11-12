@@ -42,11 +42,11 @@ test('generates a declaration for each occurrence of a local token', () => {
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All&~Rename)
+                                ^^^^^ #0 Atom(Definition|References|DocumentHighlights)
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #1 Atom(All&~Rename)
+                                ^^^^^ #1 Atom(Definition|References|DocumentHighlights)
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #2 Atom(All&~Rename)
+                                ^^^^^ #2 Atom(Definition|References|DocumentHighlights)
     declare const styles: Styles;
                   ^^^^^^ #3 Atom(Definition)
     styles['a_1'];
@@ -83,7 +83,7 @@ test('omits token importers and token references', () => {
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All&~Rename)
+                                ^^^^^ #0 Atom(Definition|References|DocumentHighlights)
     declare const styles: Styles;
                   ^^^^^^ #1 Atom(Definition)
     styles['a_1'];
@@ -129,9 +129,9 @@ test('converts parse diagnostics into mapper diagnostics', () => {
 
     === generated ===
     interface Styles { readonly 'a_1': string }
-                                ^^^^^ #0 Atom(All&~Rename)
+                                ^^^^^ #0 Atom(Definition|References|DocumentHighlights)
     interface Styles { readonly 'a_2': string }
-                                ^^^^^ #1 Atom(All&~Rename)
+                                ^^^^^ #1 Atom(Definition|References|DocumentHighlights)
     declare const styles: Styles;
                   ^^^^^^ #2 Atom(Definition)
     styles['a_1'];
