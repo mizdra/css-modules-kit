@@ -1,5 +1,11 @@
 # @css-modules-kit/content-mapper
 
+## 0.2.0
+
+### Minor Changes
+
+- [#478](https://github.com/mizdra/css-modules-kit/pull/478) [`90dd7ef`](https://github.com/mizdra/css-modules-kit/commit/90dd7ef9fc872311d370abe75c15662f3a76ff49) - feat: support Rename Symbol for tokens
+
 ## 0.1.0
 
 ### Minor Changes
