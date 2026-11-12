@@ -22,6 +22,8 @@ export type RenameLocation = FileSpan & { newText?: string };
 
 export type PrepareRenameResult = FileSpan & { placeholder?: string };
 
+export type HoverResult = FileSpan & { contents: string };
+
 export type Diagnostic = {
   range: Range;
   severity?: number;
@@ -35,6 +37,11 @@ export const DiagnosticSeverity = { Error: 1, Warning: 2, Information: 3, Hint: 
 interface LSPLocation {
   uri: string;
   range: Range;
+}
+
+interface LSPMultiDocumentHighlight {
+  uri: string;
+  highlights: { range: Range }[];
 }
 
 interface LSPTextEdit {
@@ -52,6 +59,8 @@ export interface LanguageClient {
   sendDidOpen(files: readonly string[]): Promise<void>;
   sendDefinition(args: FileLocation): Promise<FileSpan[]>;
   sendReferences(args: FileLocation): Promise<FileSpan[]>;
+  sendDocumentHighlight(args: FileLocation, filesToSearch: readonly string[]): Promise<FileSpan[]>;
+  sendHover(args: FileLocation): Promise<HoverResult | null>;
   sendPrepareRename(args: FileLocation): Promise<PrepareRenameResult | null>;
   sendRename(args: FileLocation, newName?: string): Promise<RenameLocation[]>;
   sendDocumentDiagnostic(file: string): Promise<Diagnostic[]>;
@@ -186,6 +195,28 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
         context: { includeDeclaration: true },
       });
       return normalizeLocations(result);
+    },
+    async sendDocumentHighlight(args, filesToSearch) {
+      // `textDocument/documentHighlight` returns no highlights when the path contains `@`, as the fixture path does.
+      const result: LSPMultiDocumentHighlight[] | null = await sendRequest(
+        'custom/textDocument/multiDocumentHighlight',
+        {
+          textDocument: { uri: toFileUri(args.file) },
+          position: args.position,
+          filesToSearch: filesToSearch.map(toFileUri),
+        },
+      );
+      return (result ?? [])
+        .flatMap(({ uri, highlights }) => highlights.map(({ range }) => ({ file: toFilePath(uri), range })))
+        .toSorted(compareFileSpans);
+    },
+    async sendHover(args) {
+      const result: { contents: { value: string }; range: Range } | null = await sendRequest('textDocument/hover', {
+        textDocument: { uri: toFileUri(args.file) },
+        position: args.position,
+      });
+      if (result === null) return null;
+      return { file: formatPath(args.file), range: result.range, contents: result.contents.value };
     },
     async sendPrepareRename(args) {
       const result: Range | { range: Range; placeholder: string } | null = await sendRequest(
