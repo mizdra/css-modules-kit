@@ -85,21 +85,21 @@ See [Glossary](https://github.com/mizdra/css-modules-kit/blob/main/AGENTS.md#glo
 
 The following features target the syntax that is supported in the table above.
 
-| Feature                                                            | Status    | Notes                                                                                         |
-| ------------------------------------------------------------------ | --------- | --------------------------------------------------------------------------------------------- |
-| Go to Definition                                                   | Supported |                                                                                               |
-| Find All References                                                | Supported |                                                                                               |
-| Rename Symbol                                                      | Planned   | Currently, you can rename a token in a TypeScript file, but it does not update `*.module.css` |
-| Update import statements when moving `*.module.css`                | Supported |                                                                                               |
-| Diagnostics for invalid token names                                | Supported |                                                                                               |
-| Diagnostics for unknown tokens on `styles`                         | Supported |                                                                                               |
-| Diagnostics for CSS syntax errors                                  | Supported |                                                                                               |
-| Diagnostics for unknown token references and unresolved specifiers | Planned   |                                                                                               |
-| Definition Preview by Hover                                        | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware)         |
-| Create CSS Module file for current file                            | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware)         |
-| Complete `className={...}` instead of `className="..."`            | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware)         |
-| Prioritize the `styles` import for the current component           | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware)         |
-| Add missing CSS rule                                               | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware)         |
+| Feature                                                            | Status    | Notes                                                                                 |
+| ------------------------------------------------------------------ | --------- | ------------------------------------------------------------------------------------- |
+| Go to Definition                                                   | Supported |                                                                                       |
+| Find All References                                                | Supported |                                                                                       |
+| Rename Symbol                                                      | Supported |                                                                                       |
+| Update import statements when moving `*.module.css`                | Supported |                                                                                       |
+| Diagnostics for invalid token names                                | Supported |                                                                                       |
+| Diagnostics for unknown tokens on `styles`                         | Supported |                                                                                       |
+| Diagnostics for CSS syntax errors                                  | Supported |                                                                                       |
+| Diagnostics for unknown token references and unresolved specifiers | Planned   |                                                                                       |
+| Definition Preview by Hover                                        | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware) |
+| Create CSS Module file for current file                            | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware) |
+| Complete `className={...}` instead of `className="..."`            | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware) |
+| Prioritize the `styles` import for the current component           | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware) |
+| Add missing CSS rule                                               | Undecided | Not implemented because it [needs LSP middleware](#features-that-need-lsp-middleware) |
 
 ### Configuration
 

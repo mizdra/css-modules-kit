@@ -18,6 +18,10 @@ export type FileLocation = { file: string; position: Position };
 
 export type FileSpan = { file: string; range: Range };
 
+export type RenameLocation = FileSpan & { newText?: string };
+
+export type PrepareRenameResult = FileSpan & { placeholder?: string };
+
 export type Diagnostic = {
   range: Range;
   severity?: number;
@@ -33,22 +37,23 @@ interface LSPLocation {
   range: Range;
 }
 
-/**
- * A thin client for the TypeScript language server.
- *
- * Methods returning language feature results (definitions, references, diagnostics) return
- * normalized values: only the fields relevant to tests are kept, URIs are converted to paths
- * normalized with `formatPath`, and the results are sorted so that they can be compared with
- * `toStrictEqual`. Spans are sorted by file path, then by position. Duplicates are not removed.
- */
+interface LSPTextEdit {
+  range: Range;
+  newText: string;
+}
+
+interface LSPWorkspaceEdit {
+  changes?: Record<string, LSPTextEdit[]>;
+  documentChanges?: { textDocument: { uri: string }; edits: LSPTextEdit[] }[];
+}
+
+/** A thin client for the TypeScript language server. */
 export interface LanguageClient {
   sendDidOpen(files: readonly string[]): Promise<void>;
   sendDefinition(args: FileLocation): Promise<FileSpan[]>;
   sendReferences(args: FileLocation): Promise<FileSpan[]>;
-  /**
-   * Returns the diagnostics except the ones with the hint severity (e.g. unused locals), which
-   * tsserver reports as suggestion diagnostics instead of semantic or syntactic diagnostics.
-   */
+  sendPrepareRename(args: FileLocation): Promise<PrepareRenameResult | null>;
+  sendRename(args: FileLocation, newName?: string): Promise<RenameLocation[]>;
   sendDocumentDiagnostic(file: string): Promise<Diagnostic[]>;
 }
 
@@ -81,6 +86,25 @@ function normalizeDefinitions(result: LSPLocation | LSPLocation[] | null): FileS
 function normalizeLocations(locations: readonly LSPLocation[] | null): FileSpan[] {
   return (locations ?? [])
     .map((location) => ({ file: toFilePath(location.uri), range: location.range }))
+    .toSorted(compareFileSpans);
+}
+
+function normalizeRenameLocations(edit: LSPWorkspaceEdit | null, newName: string): RenameLocation[] {
+  const editsPerUri: [string, LSPTextEdit[]][] = [
+    ...Object.entries(edit?.changes ?? {}),
+    ...(edit?.documentChanges ?? []).map(({ textDocument, edits }): [string, LSPTextEdit[]] => [
+      textDocument.uri,
+      edits,
+    ]),
+  ];
+  return editsPerUri
+    .flatMap(([uri, edits]) =>
+      edits.map((textEdit) => ({
+        file: toFilePath(uri),
+        range: textEdit.range,
+        ...(textEdit.newText === newName ? {} : { newText: textEdit.newText }),
+      })),
+    )
     .toSorted(compareFileSpans);
 }
 
@@ -162,6 +186,24 @@ export async function launchLanguageClient(rootDir: string): Promise<LanguageCli
         context: { includeDeclaration: true },
       });
       return normalizeLocations(result);
+    },
+    async sendPrepareRename(args) {
+      const result: Range | { range: Range; placeholder: string } | null = await sendRequest(
+        'textDocument/prepareRename',
+        { textDocument: { uri: toFileUri(args.file) }, position: args.position },
+      );
+      if (result === null) return null;
+      if ('range' in result)
+        return { file: formatPath(args.file), range: result.range, placeholder: result.placeholder };
+      return { file: formatPath(args.file), range: result };
+    },
+    async sendRename(args, newName = 'renamed') {
+      const result = await sendRequest('textDocument/rename', {
+        textDocument: { uri: toFileUri(args.file) },
+        position: args.position,
+        newName,
+      });
+      return normalizeRenameLocations(result, newName);
     },
     async sendDocumentDiagnostic(file) {
       const result: { items: Diagnostic[] } = await sendRequest('textDocument/diagnostic', {
